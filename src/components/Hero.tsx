@@ -44,7 +44,7 @@ const Hero = () => {
             </Link>
             <Button 
               variant="outline" 
-              className="border-white text-white hover:bg-white/20 rounded-md flex items-center gap-2 shadow-lg transition-all hover:border-airsoft-red"
+              className="border-white text-white hover:bg-red-700 rounded-md flex items-center gap-2 shadow-lg transition-all hover:border-airsoft-red"
             >
               <Download size={20} />
               Installer l'application (PWA)
