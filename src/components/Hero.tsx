@@ -12,7 +12,7 @@ const Hero = () => {
         <img 
           src="/lovable-uploads/e3177716-6012-4386-a9b2-607ab6f838b0.png" 
           alt="Airsoft background" 
-          className="w-full h-full object-cover opacity-70"
+          className="w-full h-full object-cover opacity-30"
         />
       </div>
       
@@ -22,7 +22,7 @@ const Hero = () => {
             <img
               src="/lovable-uploads/24d6452d-2439-4baf-b334-41863a1077c5.png"
               alt="Airsoft Compagnon Logo"
-              className="h-24 md:h-32 mb-6 mx-auto"
+              className="h-30 md:h-38 mb-6 mx-auto"
             />
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
               AIRSOFT<br/>COMPAGNON
