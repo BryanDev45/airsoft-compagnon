@@ -13,9 +13,9 @@ const Hero = () => {
           className="w-full h-full object-cover"
         />
         {/* Calque blanc semi-transparent par-dessus l'image */}
-        <div className="absolute inset-0 bg-white opacity-40"></div>
+        <div className="absolute inset-0 bg-white opacity-50"></div>
         {/* Dégradé noir si tu veux le garder */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black to-transparent opacity-40"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-black to-transparent opacity-50"></div>
       </div>
       
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-16 md:py-24 lg:py-32">
