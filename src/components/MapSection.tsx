@@ -4,6 +4,7 @@ import { Search, Calendar, Map, MapPin } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Link } from 'react-router-dom';
 
 const MapSection = () => {
   const [mapApiKey, setMapApiKey] = useState('');
@@ -152,7 +153,7 @@ const MapSection = () => {
             <div key={event.id} className="bg-white rounded-lg overflow-hidden shadow-md border border-gray-200 clip-card">
               <div className="h-40 bg-gray-200 relative overflow-hidden">
                 <img 
-                  src={`https://source.unsplash.com/random/300x200?airsoft,military&sig=${event.id}`} 
+                  src="/lovable-uploads/c242d3b0-8906-4f00-9b3b-fc251f703e4b.png" 
                   alt={event.title} 
                   className="w-full h-full object-cover"
                 />
@@ -170,11 +171,13 @@ const MapSection = () => {
                   <MapPin size={16} />
                   <span>{event.location}</span>
                 </div>
-                <Button 
-                  className="w-full mt-4 bg-airsoft-red hover:bg-red-700"
-                >
-                  Plus d'informations
-                </Button>
+                <Link to={`/game/${event.id}`}>
+                  <Button 
+                    className="w-full mt-4 bg-airsoft-red hover:bg-red-700"
+                  >
+                    Plus d'informations
+                  </Button>
+                </Link>
               </div>
             </div>
           ))}

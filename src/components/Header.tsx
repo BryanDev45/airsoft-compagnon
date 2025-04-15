@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
@@ -28,9 +29,11 @@ const Header = () => {
           <Link to="/joueurs" className="hover:text-airsoft-red transition-colors">Joueurs</Link>
           <Link to="/contact" className="hover:text-airsoft-red transition-colors">Contact</Link>
           <div className="flex items-center gap-2 ml-4">
-            <Button variant="default" className="bg-airsoft-red hover:bg-red-700">
-              Se connecter
-            </Button>
+            <Link to="/login">
+              <Button variant="default" className="bg-airsoft-red hover:bg-red-700">
+                Se connecter
+              </Button>
+            </Link>
           </div>
         </nav>
 
@@ -53,9 +56,11 @@ const Header = () => {
           <Link to="/organisateurs" className="hover:text-airsoft-red py-2 transition-colors">Organisateurs</Link>
           <Link to="/joueurs" className="hover:text-airsoft-red py-2 transition-colors">Joueurs</Link>
           <Link to="/contact" className="hover:text-airsoft-red py-2 transition-colors">Contact</Link>
-          <Button variant="default" className="bg-airsoft-red hover:bg-red-700 w-full mt-2">
-            Se connecter
-          </Button>
+          <Link to="/login" className="w-full">
+            <Button variant="default" className="bg-airsoft-red hover:bg-red-700 w-full mt-2">
+              Se connecter
+            </Button>
+          </Link>
         </div>
       )}
     </header>

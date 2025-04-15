@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Apple, ShoppingBag } from 'lucide-react';
+import { ArrowRight, Download } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Hero = () => {
   return (
@@ -33,28 +34,21 @@ const Hero = () => {
           </div>
           
           <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link to="/register">
+              <Button 
+                className="bg-airsoft-red hover:bg-red-700 text-white px-8 py-6 text-lg rounded-md shadow-lg transform transition-transform hover:scale-105" 
+                size="lg"
+              >
+                Nous rejoindre <ArrowRight className="ml-2" />
+              </Button>
+            </Link>
             <Button 
-              className="bg-airsoft-red hover:bg-red-700 text-white px-8 py-6 text-lg rounded-md shadow-lg transform transition-transform hover:scale-105" 
-              size="lg"
+              variant="outline" 
+              className="border-white text-white hover:bg-white/20 rounded-md flex items-center gap-2 shadow-lg transition-all hover:border-airsoft-red"
             >
-              Nous rejoindre <ArrowRight className="ml-2" />
+              <Download size={20} />
+              Installer l'application (PWA)
             </Button>
-            <div className="flex justify-center gap-4">
-              <Button 
-                variant="outline" 
-                className="border-white text-white hover:bg-white/20 rounded-md flex items-center gap-2 shadow-lg transition-all hover:border-airsoft-red"
-              >
-                <Apple size={20} />
-                App Store
-              </Button>
-              <Button 
-                variant="outline" 
-                className="border-white text-white hover:bg-white/20 rounded-md flex items-center gap-2 shadow-lg transition-all hover:border-airsoft-red"
-              >
-                <ShoppingBag size={20} />
-                Google Play
-              </Button>
-            </div>
           </div>
         </div>
       </div>
