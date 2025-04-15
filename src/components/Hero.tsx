@@ -14,7 +14,7 @@ const Hero = () => {
         />
         {/* Calque blanc semi-transparent par-dessus l'image */}
         <div className="absolute inset-0 bg-white opacity-50"></div>
-        {/* Dégradé noir si tu veux le garder */}
+        {/* Dégradé noir */}
         <div className="absolute inset-0 bg-gradient-to-r from-black to-transparent opacity-50"></div>
       </div>
       
