@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Download } from 'lucide-react';
@@ -8,12 +7,15 @@ const Hero = () => {
   return (
     <div className="relative bg-airsoft-dark text-white overflow-hidden clip-bottom">
       <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-r from-black to-transparent opacity-70"></div>
         <img 
           src="/lovable-uploads/e3177716-6012-4386-a9b2-607ab6f838b0.png" 
           alt="Airsoft background" 
-          className="w-full h-full object-cover brightness-70"
+          className="w-full h-full object-cover"
         />
+        {/* Calque blanc semi-transparent par-dessus l'image */}
+        <div className="absolute inset-0 bg-white opacity-70"></div>
+        {/* Dégradé noir si tu veux le garder */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black to-transparent opacity-70"></div>
       </div>
       
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-16 md:py-24 lg:py-32">
