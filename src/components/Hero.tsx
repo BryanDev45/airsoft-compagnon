@@ -18,7 +18,7 @@ const Hero = () => {
         <div className="max-w-3xl">
           <div className="mb-8">
             <img
-              src="/lovable-uploads/1cc60b94-2b6c-4e0e-9ab8-1bd1e8cb1098.png"
+              src="/lovable-uploads/24d6452d-2439-4baf-b334-41863a1077c5.png"
               alt="Airsoft Compagnon Logo"
               className="h-24 md:h-32 mb-6"
             />
