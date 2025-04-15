@@ -18,7 +18,7 @@ const Hero = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-black to-transparent opacity-50"></div>
       </div>
       
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-16 md:py-24 lg:py-32">
+      <div className="relative z-5 max-w-7xl mx-auto px-4 py-16 md:py-24 lg:py-32">
         <div className="max-w-3xl mx-auto text-center">
           <div className="mb-8">
             <img
