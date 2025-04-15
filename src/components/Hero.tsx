@@ -22,7 +22,7 @@ const Hero = () => {
             <img
               src="/lovable-uploads/24d6452d-2439-4baf-b334-41863a1077c5.png"
               alt="Airsoft Compagnon Logo"
-              className="h-30 md:h-36 mb-6 mx-auto"
+              className="h-30 md:h-36 mb-4 mx-auto"
             />
             <p className="text-lg md:text-xl mb-8">
               Trouvez facilement vos parties d'airsoft en un seul clic,
