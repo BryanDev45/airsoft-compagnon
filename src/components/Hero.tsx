@@ -39,7 +39,7 @@ const Hero = () => {
                 className="bg-airsoft-red hover:bg-red-700 text-white px-8 py-6 text-lg rounded-md shadow-lg transform transition-transform hover:scale-105" 
                 size="lg"
               >
-                Nous rejoindre <Arrowright className="ml-2" />
+                Nous rejoindre <ArrowRight className="ml-2" />
               </Button>
             </Link>
             <Button 
