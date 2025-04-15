@@ -12,7 +12,7 @@ const Hero = () => {
         <img 
           src="/lovable-uploads/e3177716-6012-4386-a9b2-607ab6f838b0.png" 
           alt="Airsoft background" 
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover brightness-70"
         />
       </div>
       
