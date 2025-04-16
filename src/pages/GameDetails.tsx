@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -7,10 +7,26 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, MapPin, Users, Info, Shield, ChevronRight, Share2, Star, MessageSquare, FileText, User } from 'lucide-react';
+import { 
+  Calendar, 
+  Clock, 
+  MapPin, 
+  Users, 
+  Info, 
+  Shield, 
+  ChevronRight, 
+  Share2, 
+  Star, 
+  MessageSquare, 
+  FileText, 
+  User,
+  X
+} from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 
 const GameDetails = () => {
   const { id } = useParams();
+  const [participantsOpen, setParticipantsOpen] = useState(false);
   
   // Mock game data (in a real app, would fetch this data based on the ID)
   const game = {
@@ -58,6 +74,14 @@ const GameDetails = () => {
         content: "Est-ce que le terrain dispose d'un espace pour les snipers ?",
       },
     ],
+    participants: Array.from({ length: 28 }).map((_, idx) => ({
+      id: idx + 1,
+      name: `Joueur ${idx + 1}`,
+      avatar: `https://randomuser.me/api/portraits/${idx % 2 === 0 ? 'men' : 'women'}/${20 + (idx % 70)}.jpg`,
+      status: idx < 5 ? "online" : "offline",
+      team: idx % 2 === 0 ? "Alpha" : "Bravo",
+      role: idx % 5 === 0 ? "Organisateur" : "Joueur",
+    }))
   };
 
   return (
@@ -93,7 +117,7 @@ const GameDetails = () => {
                 </div>
               </div>
               <div className="flex gap-2 mt-4 md:mt-0">
-                <Button variant="outline" className="border-white text-white hover:bg-white hover:text-airsoft-dark">
+                <Button variant="outline" className="bg-airsoft-red text-white border-white hover:bg-white hover:text-airsoft-dark">
                   <Share2 size={16} className="mr-2" />
                   Partager
                 </Button>
@@ -296,15 +320,15 @@ const GameDetails = () => {
                 <CardContent className="pt-6">
                   <h3 className="text-lg font-semibold mb-4">Participants ({game.capacity.registered})</h3>
                   <div className="flex flex-wrap gap-2">
-                    {Array.from({ length: 8 }).map((_, idx) => (
+                    {game.participants.slice(0, 8).map((participant, idx) => (
                       <div key={idx} className="flex flex-col items-center">
                         <div className="relative">
                           <img 
-                            src={`https://randomuser.me/api/portraits/${idx % 2 === 0 ? 'men' : 'women'}/${20 + idx}.jpg`}
-                            alt={`Participant ${idx + 1}`}
+                            src={participant.avatar}
+                            alt={participant.name}
                             className="w-10 h-10 rounded-full object-cover"
                           />
-                          {idx < 3 && (
+                          {participant.status === "online" && (
                             <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
                           )}
                         </div>
@@ -317,7 +341,11 @@ const GameDetails = () => {
                       <span className="text-sm text-gray-500 font-medium">+{game.capacity.registered - 9}</span>
                     </div>
                   </div>
-                  <Button variant="outline" className="w-full mt-4">
+                  <Button 
+                    variant="outline" 
+                    className="w-full mt-4"
+                    onClick={() => setParticipantsOpen(true)}
+                  >
                     Voir tous les participants
                   </Button>
                 </CardContent>
@@ -327,6 +355,74 @@ const GameDetails = () => {
         </div>
       </main>
       <Footer />
+
+      {/* Participants Dialog */}
+      <Dialog open={participantsOpen} onOpenChange={setParticipantsOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Participants ({game.participants.length})</DialogTitle>
+            <DialogDescription>
+              Voici la liste des joueurs inscrits à cet événement.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="mt-4">
+            <div className="flex justify-between mb-4">
+              <div className="flex gap-2">
+                <Badge className="bg-green-500">Équipe Alpha: {game.participants.filter(p => p.team === "Alpha").length}</Badge>
+                <Badge className="bg-blue-500">Équipe Bravo: {game.participants.filter(p => p.team === "Bravo").length}</Badge>
+              </div>
+              <Badge variant="outline" className="text-gray-700 border-gray-300">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div> En ligne: {game.participants.filter(p => p.status === "online").length}
+              </Badge>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {game.participants.map((participant, idx) => (
+                  <div key={idx} className="flex items-center gap-3 p-3 border rounded-md hover:bg-gray-50 transition-colors">
+                    <div className="relative">
+                      <img 
+                        src={participant.avatar}
+                        alt={participant.name}
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                      {participant.status === "online" && (
+                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                      )}
+                    </div>
+                    <div className="flex-grow">
+                      <div className="font-medium">{participant.name}</div>
+                      <div className="text-xs text-gray-500 flex items-center">
+                        <Badge className={`text-xs mr-2 ${participant.team === "Alpha" ? "bg-green-500" : "bg-blue-500"}`}>
+                          Équipe {participant.team}
+                        </Badge>
+                        {participant.role === "Organisateur" && (
+                          <Badge variant="outline" className="text-xs border-airsoft-red text-airsoft-red">
+                            Organisateur
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <Button variant="ghost" size="sm" className="flex-shrink-0">
+                      <User size={14} className="mr-1" />
+                      Profil
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter className="mt-6">
+            <DialogClose asChild>
+              <Button variant="outline">
+                <X size={14} className="mr-2" /> Fermer
+              </Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

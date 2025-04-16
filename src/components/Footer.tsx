@@ -1,6 +1,8 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Download } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 
 const Footer = () => {
   return (
@@ -42,40 +44,34 @@ const Footer = () => {
             <h3 className="text-lg font-semibold mb-4">Liens rapides</h3>
             <ul className="space-y-2">
               <li><Link to="/" className="text-gray-400 hover:text-white transition-colors">Accueil</Link></li>
-              <li><Link to="/carte" className="text-gray-400 hover:text-white transition-colors">Carte interactive</Link></li>
-              <li><Link to="/organisateurs" className="text-gray-400 hover:text-white transition-colors">Espace organisateurs</Link></li>
-              <li><Link to="/joueurs" className="text-gray-400 hover:text-white transition-colors">Espace joueurs</Link></li>
-              <li><Link to="/contact" className="text-gray-400 hover:text-white transition-colors">Nous contacter</Link></li>
+              <li><Link to="/parties" className="text-gray-400 hover:text-white transition-colors">Parties</Link></li>
+              <li><Link to="/contact" className="text-gray-400 hover:text-white transition-colors">Contact</Link></li>
+              <li><Link to="/login" className="text-gray-400 hover:text-white transition-colors">Se connecter</Link></li>
+              <li><Link to="/register" className="text-gray-400 hover:text-white transition-colors">S'inscrire</Link></li>
             </ul>
           </div>
           
           <div>
             <h3 className="text-lg font-semibold mb-4">Téléchargez l'application</h3>
-            <p className="text-gray-400 mb-4">Disponible sur iOS et Android.</p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <a href="#" className="bg-white text-black px-4 py-2 rounded flex items-center gap-2 hover:bg-gray-200 transition-colors">
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M17.5675 12.0084C17.5545 9.53118 19.6238 8.16451 19.724 8.10386C18.5638 6.45137 16.7846 6.21028 16.1379 6.19591C14.6136 6.04469 13.1378 7.10277 12.3655 7.10277C11.5776 7.10277 10.3709 6.21028 9.06445 6.23902C7.39759 6.26777 5.85646 7.18889 4.98284 8.62083C3.18223 11.5389 4.54889 15.8575 6.27873 18.2904C7.14375 19.4794 8.15054 20.8173 9.46562 20.7598C10.7519 20.6967 11.2287 19.9101 12.7818 19.9101C14.3204 19.9101 14.7685 20.7598 16.1235 20.7254C17.5224 20.6967 18.3821 19.509 19.2038 18.3057C20.1962 16.9391 20.5998 15.6059 20.6128 15.5484C20.5854 15.5341 17.5819 14.3739 17.5675 12.0084Z" />
-                  <path d="M15.0537 4.45724C15.7556 3.59262 16.2181 2.41117 16.0744 1.2153C15.0824 1.25842 13.8469 1.89001 13.1164 2.74027C12.4719 3.49125 11.9093 4.7183 12.0673 5.86112C13.1737 5.94742 14.3231 5.30721 15.0537 4.45724Z" />
-                </svg>
-                App Store
-              </a>
-              <a href="#" className="bg-white text-black px-4 py-2 rounded flex items-center gap-2 hover:bg-gray-200 transition-colors">
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M3.00977 3V21H21.0098V3H3.00977ZM16.4398 16.3L12.0598 13.188L7.70977 16.3V6.2L12.0598 9.312L16.4398 6.2V16.3Z" />
-                </svg>
-                Google Play
-              </a>
-            </div>
+            <p className="text-gray-400 mb-4">Disponible sous forme d'application web progressive (PWA).</p>
+            <Button 
+              variant="outline" 
+              className="bg-airsoft-red hover:bg-red-700 text-white px-6 py-3 text-lg rounded-md shadow-lg transform transition-transform hover:scale-105 flex items-center gap-2" 
+              size="lg"
+            >
+              <Download size={20} />
+              Installer l'application (PWA)
+            </Button>
           </div>
         </div>
         
         <div className="border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-400 text-sm">© Airsoft Compagnon 2025. Tous droits réservés.</p>
           <div className="flex gap-6 mt-4 md:mt-0">
-            <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Conditions d'utilisation</a>
-            <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Politique de confidentialité</a>
-            <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Cookies</a>
+            <Link to="/terms-of-use" className="text-gray-400 hover:text-white text-sm transition-colors">Conditions d'utilisation</Link>
+            <Link to="/terms-of-sale" className="text-gray-400 hover:text-white text-sm transition-colors">Conditions de vente</Link>
+            <Link to="/privacy-policy" className="text-gray-400 hover:text-white text-sm transition-colors">Politique de confidentialité</Link>
+            <Link to="/cookies-policy" className="text-gray-400 hover:text-white text-sm transition-colors">Cookies</Link>
           </div>
         </div>
       </div>

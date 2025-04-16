@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Input } from "@/components/ui/input";
@@ -7,31 +8,225 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, Mail, Phone, MapPin, Calendar, Edit, Save, Settings, LogOut, Shield, Trophy, Clock } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { 
+  User, Mail, MapPin, Calendar, Edit, Save, Settings, LogOut, Shield, 
+  Trophy, Clock, Plus, Upload, List, Zap, Tag, FileText, Users, 
+  Map, Calendar as CalendarIcon, Award
+} from 'lucide-react';
+import { toast } from "@/components/ui/use-toast";
 
 const Profile = () => {
+  const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
+  const [addingEquipment, setAddingEquipment] = useState(false);
+  const [selectedGame, setSelectedGame] = useState<any>(null);
+  const [showGameDialog, setShowGameDialog] = useState(false);
+  const [showAllGamesDialog, setShowAllGamesDialog] = useState(false);
+  const [showBadgesDialog, setShowBadgesDialog] = useState(false);
   
   // Mock user data
   const user = {
     username: "AirsoftMaster",
     email: "airsoft.master@example.com",
-    phone: "+33 6 12 34 56 78",
+    firstname: "Jean",
+    lastname: "Dupont",
+    age: "28",
+    team: "Les Invincibles",
+    teamId: "1",
     location: "Paris, France",
     joinDate: "Avril 2023",
     bio: "Passionné d'airsoft depuis 5 ans, j'organise régulièrement des parties sur Paris et sa région.",
     avatar: "https://randomuser.me/api/portraits/men/44.jpg",
+    isVerified: true,
+    isTeamLeader: true,
+    badges: [
+      {
+        id: 1,
+        name: "Profil Vérifié",
+        description: "Ce joueur a vérifié son identité auprès de l'équipe Airsoft Compagnon",
+        icon: "/lovable-uploads/381c6357-0426-45d3-8262-7b1be5c1bc96.png",
+        backgroundColor: "#e1f7e1",
+        borderColor: "#4caf50", 
+        date: "15/01/2024"
+      },
+      {
+        id: 2,
+        name: "Chef d'équipe",
+        description: "Ce joueur est le fondateur ou le leader d'une équipe d'airsoft",
+        icon: "/lovable-uploads/3c025802-3046-4c34-ae5e-2328e941b479.png",
+        backgroundColor: "#fff8e1",
+        borderColor: "#ffc107",
+        date: "02/02/2024"
+      },
+      {
+        id: 3,
+        name: "Organisateur",
+        description: "A organisé plus de 5 parties d'airsoft",
+        icon: "https://randomuser.me/api/portraits/men/44.jpg",
+        backgroundColor: "#e3f2fd",
+        borderColor: "#2196f3",
+        date: "10/03/2024"
+      }
+    ],
     games: [
-      { id: 1, title: "Opération Blackout", date: "15/05/2025", role: "Participant", status: "À venir" },
-      { id: 2, title: "CQB Summer Challenge", date: "02/04/2025", role: "Participant", status: "À venir" },
-      { id: 3, title: "Milsim Weekend", date: "10/03/2025", role: "Organisateur", status: "Terminé" },
+      { 
+        id: 1, 
+        title: "Opération Blackout", 
+        date: "15/05/2025", 
+        role: "Participant", 
+        status: "À venir",
+        location: "Terrain Battlezone, Paris",
+        description: "Une partie nocturne avec objectifs tactiques",
+        participants: 24,
+        duration: "8h",
+        gameType: "Milsim"
+      },
+      { 
+        id: 2, 
+        title: "CQB Summer Challenge", 
+        date: "02/04/2025", 
+        role: "Participant", 
+        status: "À venir",
+        location: "Hangar 34, Marseille",
+        description: "Une journée CQB intense avec plusieurs scénarios",
+        participants: 36,
+        duration: "6h",
+        gameType: "CQB"
+      },
+      { 
+        id: 3, 
+        title: "Milsim Weekend", 
+        date: "10/03/2025", 
+        role: "Organisateur", 
+        status: "Terminé",
+        location: "Forêt de Fontainebleau",
+        description: "Week-end simulation militaire avec campement",
+        participants: 80,
+        duration: "48h",
+        gameType: "Milsim"
+      },
+    ],
+    allGames: [
+      // Additional past games
+      { 
+        id: 4, 
+        title: "Opération Eagle", 
+        date: "15/02/2025", 
+        role: "Participant", 
+        status: "Terminé",
+        location: "Terrain Delta Force, Lyon",
+        description: "Scénario tactique en équipes",
+        participants: 30,
+        duration: "5h",
+        gameType: "Woodland"
+      },
+      { 
+        id: 5, 
+        title: "Urban Warfare", 
+        date: "05/01/2025", 
+        role: "Participant", 
+        status: "Terminé",
+        location: "Zone urbaine abandonnée, Lille",
+        description: "Simulation de combat urbain",
+        participants: 40,
+        duration: "7h",
+        gameType: "CQB"
+      },
+      { 
+        id: 6, 
+        title: "Winter Challenge", 
+        date: "20/12/2024", 
+        role: "Organisateur", 
+        status: "Terminé",
+        location: "Forêt des Ardennes",
+        description: "Challenge hivernal avec objectifs et missions",
+        participants: 60,
+        duration: "10h",
+        gameType: "Woodland"
+      },
     ],
     stats: {
       gamesPlayed: 42,
       gamesOrganized: 7,
       reputation: 4.8,
-      level: "Confirmé"
-    }
+      level: "Confirmé",
+      winRate: "68%",
+      objectivesCompleted: 127,
+      flagsCaptured: 53,
+      vipProtection: 12,
+      hostageRescue: 8,
+      bombDefusal: 15,
+      timePlayed: "312h",
+      favoriteRole: "Assaut",
+      preferredGameType: "Milsim",
+      teamwork: "Excellent",
+      tacticalAwareness: "Élevé",
+      accuracy: "76%"
+    },
+    equipment: [
+      { 
+        id: 1, 
+        type: "Fusil d'assaut", 
+        brand: "G&G", 
+        power: "330 FPS", 
+        description: "G&G CM16 Raider 2.0 avec red dot et grip vertical",
+        image: "https://randomuser.me/api/portraits/men/44.jpg" // placeholder image
+      }
+    ]
+  };
+
+  // List of equipment types for the dropdown
+  const equipmentTypes = [
+    "DMR", 
+    "SMG", 
+    "PA", 
+    "Mitrailleuse", 
+    "Fusil d'assaut", 
+    "Fusil de précision", 
+    "Fusil à pompe"
+  ];
+
+  // Function to handle adding new equipment
+  const handleAddEquipment = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Here you would typically save the new equipment
+    setAddingEquipment(false);
+    toast({
+      title: "Équipement ajouté",
+      description: "Votre nouvel équipement a été ajouté avec succès",
+    });
+  };
+
+  // Function to handle viewing game details
+  const handleViewGameDetails = (game: any) => {
+    setSelectedGame(game);
+    setShowGameDialog(true);
+  };
+
+  // Function to handle viewing all games
+  const handleViewAllGames = () => {
+    setShowAllGamesDialog(true);
+  };
+
+  // Function to handle viewing all badges
+  const handleViewAllBadges = () => {
+    setShowBadgesDialog(true);
+  };
+
+  // Function to handle navigation to game page
+  const handleNavigateToGame = (gameId: number) => {
+    setShowGameDialog(false);
+    setShowAllGamesDialog(false);
+    navigate(`/game/${gameId}`);
+  };
+
+  // Function to navigate to team page
+  const handleNavigateToTeam = () => {
+    navigate(`/team/${user.teamId}`);
   };
 
   return (
@@ -45,7 +240,7 @@ const Profile = () => {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="text-white border-white hover:bg-white/20"
+                  className="text-white border-white hover:bg-white/20 hover:text-white bg-airsoft-red border-airsoft-red"
                   onClick={() => setEditing(!editing)}
                 >
                   {editing ? <Save className="mr-2 h-4 w-4" /> : <Edit className="mr-2 h-4 w-4" />}
@@ -54,7 +249,7 @@ const Profile = () => {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="text-white border-white hover:bg-white/20"
+                  className="text-white border-white hover:bg-white/20 hover:text-white bg-airsoft-red border-airsoft-red"
                 >
                   <Settings className="mr-2 h-4 w-4" />
                   Paramètres
@@ -62,7 +257,7 @@ const Profile = () => {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="text-white border-white hover:bg-white/20"
+                  className="text-white border-white hover:bg-white/20 hover:text-white bg-airsoft-red border-airsoft-red"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
                   Déconnexion
@@ -87,7 +282,17 @@ const Profile = () => {
                 </div>
                 
                 <div>
-                  <h1 className="text-2xl font-bold">{user.username}</h1>
+                  <h1 className="text-2xl font-bold flex items-center">
+                    {user.username}
+                    {user.isVerified && (
+                      <img 
+                        src="/lovable-uploads/381c6357-0426-45d3-8262-7b1be5c1bc96.png"
+                        alt="Vérifié"
+                        className="w-6 h-6 ml-1"
+                        title="Profil vérifié"
+                      />
+                    )}
+                  </h1>
                   <div className="flex items-center gap-1 text-sm text-gray-200">
                     <Calendar size={14} />
                     <span>Membre depuis {user.joinDate}</span>
@@ -102,6 +307,13 @@ const Profile = () => {
                     <Badge variant="outline" className="text-white border-white">
                       <Shield size={14} className="mr-1" /> {user.stats.gamesOrganized} organisées
                     </Badge>
+                    <Badge 
+                      variant="outline" 
+                      className="text-white border-white cursor-pointer hover:bg-white/10"
+                      onClick={handleViewAllBadges}
+                    >
+                      <Award size={14} className="mr-1" /> {user.badges.length} badges
+                    </Badge>
                   </div>
                 </div>
               </div>
@@ -114,6 +326,7 @@ const Profile = () => {
                   <TabsTrigger value="games">Mes parties</TabsTrigger>
                   <TabsTrigger value="stats">Statistiques</TabsTrigger>
                   <TabsTrigger value="equipment">Équipement</TabsTrigger>
+                  <TabsTrigger value="badges">Badges</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="profile">
@@ -147,7 +360,17 @@ const Profile = () => {
                             {editing ? (
                               <Input defaultValue={user.username} />
                             ) : (
-                              <p className="text-gray-700">{user.username}</p>
+                              <p className="text-gray-700 flex items-center">
+                                {user.username}
+                                {user.isVerified && (
+                                  <img 
+                                    src="/lovable-uploads/381c6357-0426-45d3-8262-7b1be5c1bc96.png"
+                                    alt="Vérifié"
+                                    className="w-4 h-4 ml-1"
+                                    title="Profil vérifié"
+                                  />
+                                )}
+                              </p>
                             )}
                           </div>
                           
@@ -165,13 +388,64 @@ const Profile = () => {
                           
                           <div className="space-y-2">
                             <label className="text-sm font-medium flex items-center gap-2">
-                              <Phone size={16} />
-                              Téléphone
+                              <User size={16} />
+                              Nom
                             </label>
                             {editing ? (
-                              <Input defaultValue={user.phone} />
+                              <Input defaultValue={user.lastname} />
                             ) : (
-                              <p className="text-gray-700">{user.phone}</p>
+                              <p className="text-gray-700">{user.lastname}</p>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium flex items-center gap-2">
+                              <User size={16} />
+                              Prénom
+                            </label>
+                            {editing ? (
+                              <Input defaultValue={user.firstname} />
+                            ) : (
+                              <p className="text-gray-700">{user.firstname}</p>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium flex items-center gap-2">
+                              <Calendar size={16} />
+                              Âge
+                            </label>
+                            {editing ? (
+                              <Input defaultValue={user.age} />
+                            ) : (
+                              <p className="text-gray-700">{user.age} ans</p>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium flex items-center gap-2">
+                              <Users size={16} />
+                              Équipe
+                            </label>
+                            {editing ? (
+                              <Input defaultValue={user.team} />
+                            ) : (
+                              <p className="text-gray-700">
+                                <Link 
+                                  to={`/team/${user.teamId}`} 
+                                  className="text-airsoft-red hover:underline flex items-center"
+                                >
+                                  {user.team}
+                                  {user.isTeamLeader && (
+                                    <img 
+                                      src="/lovable-uploads/3c025802-3046-4c34-ae5e-2328e941b479.png"
+                                      alt="Chef d'équipe"
+                                      className="w-4 h-4 ml-1"
+                                      title="Chef d'équipe"
+                                    />
+                                  )}
+                                </Link>
+                              </p>
                             )}
                           </div>
                           
@@ -277,7 +551,14 @@ const Profile = () => {
                                 >
                                   {game.status}
                                 </Badge>
-                                <Button variant="outline" size="sm">Détails</Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white"
+                                  onClick={() => handleViewGameDetails(game)}
+                                >
+                                  Détails
+                                </Button>
                               </div>
                             </div>
                           ))
@@ -285,7 +566,10 @@ const Profile = () => {
                       </div>
                     </CardContent>
                     <CardFooter>
-                      <Button className="bg-airsoft-red hover:bg-red-700">
+                      <Button 
+                        className="bg-airsoft-red hover:bg-red-700"
+                        onClick={handleViewAllGames}
+                      >
                         Voir toutes mes parties
                       </Button>
                     </CardFooter>
@@ -301,25 +585,269 @@ const Profile = () => {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-center py-12 text-gray-500">
-                        Statistiques avancées en cours de développement
-                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                          <h3 className="font-semibold text-lg border-b pb-2">Performance</h3>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-500">Taux de victoire</p>
+                              <p className="font-medium">{user.stats.winRate}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-500">Précision</p>
+                              <p className="font-medium">{user.stats.accuracy}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-500">Temps de jeu</p>
+                              <p className="font-medium">{user.stats.timePlayed}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-500">Rôle préféré</p>
+                              <p className="font-medium">{user.stats.favoriteRole}</p>
+                            </div>
+                          </div>
+                          
+                          <h3 className="font-semibold text-lg border-b pb-2 mt-6">Compétences</h3>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-500">Travail d'équipe</p>
+                              <p className="font-medium">{user.stats.teamwork}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-500">Conscience tactique</p>
+                              <p className="font-medium">{user.stats.tacticalAwareness}</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <h3 className="font-semibold text-lg border-b pb-2">Objectifs</h3>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-500">Objectifs complétés</p>
+                              <p className="font-medium">{user.stats.objectivesCompleted}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-500">Drapeaux capturés</p>
+                              <p className="font-medium">{user.stats.flagsCaptured}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-500">Protections VIP</p>
+                              <p className="font-medium">{user.stats.vipProtection}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-500">Sauvetages d'otages</p>
+                              <p className="font-medium">{user.stats.hostageRescue}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-500">Désamorçages de bombes</p>
+                              <p className="font-medium">{user.stats.bombDefusal}</p>
+                            </div>
+                          </div>
+                          
+                          <h3 className="font-semibold text-lg border-b pb-2 mt-6">Préférences</h3>
+                          
+                          <div className="grid grid-cols-1 gap-4">
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-500">Type de jeu préféré</p>
+                              <p className="font-medium">{user.stats.preferredGameType}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 </TabsContent>
                 
                 <TabsContent value="equipment">
                   <Card>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                      <div>
+                        <CardTitle>Mon équipement</CardTitle>
+                        <CardDescription>
+                          Répliques et matériel
+                        </CardDescription>
+                      </div>
+                      <Button 
+                        className="bg-airsoft-red hover:bg-red-700"
+                        onClick={() => setAddingEquipment(true)}
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Ajouter un équipement
+                      </Button>
+                    </CardHeader>
+                    <CardContent>
+                      {addingEquipment ? (
+                        <div className="border rounded-lg p-4 mb-4">
+                          <h3 className="font-semibold mb-4">Nouvel équipement</h3>
+                          <form onSubmit={handleAddEquipment} className="space-y-4">
+                            <div className="flex flex-col items-center mb-4">
+                              <div className="bg-gray-200 w-32 h-32 rounded-lg flex items-center justify-center mb-2 overflow-hidden">
+                                <Upload className="text-gray-400" size={32} />
+                              </div>
+                              <Label htmlFor="photo-upload" className="cursor-pointer text-sm text-airsoft-red">
+                                Ajouter une photo
+                              </Label>
+                              <input id="photo-upload" type="file" className="hidden" />
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="type" className="flex items-center gap-1">
+                                  <List size={16} /> Type d'équipement
+                                </Label>
+                                <Select>
+                                  <SelectTrigger id="type">
+                                    <SelectValue placeholder="Sélectionner un type" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {equipmentTypes.map((type) => (
+                                      <SelectItem key={type} value={type}>
+                                        {type}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <Label htmlFor="power" className="flex items-center gap-1">
+                                  <Zap size={16} /> Puissance (FPS)
+                                </Label>
+                                <Input id="power" placeholder="Ex: 350 FPS" />
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <Label htmlFor="brand" className="flex items-center gap-1">
+                                  <Tag size={16} /> Marque
+                                </Label>
+                                <Input id="brand" placeholder="Ex: G&G, Tokyo Marui..." />
+                              </div>
+                              
+                              <div className="space-y-2 md:col-span-2">
+                                <Label htmlFor="description" className="flex items-center gap-1">
+                                  <FileText size={16} /> Description
+                                </Label>
+                                <Input id="description" placeholder="Décrivez votre équipement..." />
+                              </div>
+                            </div>
+                            
+                            <div className="flex justify-end gap-2">
+                              <Button 
+                                type="button" 
+                                variant="outline" 
+                                onClick={() => setAddingEquipment(false)}
+                              >
+                                Annuler
+                              </Button>
+                              <Button 
+                                type="submit" 
+                                className="bg-airsoft-red hover:bg-red-700"
+                              >
+                                Enregistrer
+                              </Button>
+                            </div>
+                          </form>
+                        </div>
+                      ) : user.equipment.length > 0 ? (
+                        <div className="space-y-4">
+                          {user.equipment.map((item) => (
+                            <div 
+                              key={item.id} 
+                              className="border rounded-lg p-4 hover:shadow-md transition-shadow flex flex-col sm:flex-row gap-4"
+                            >
+                              <div className="flex-shrink-0">
+                                <img 
+                                  src={item.image} 
+                                  alt={item.description} 
+                                  className="w-24 h-24 object-cover rounded-lg"
+                                />
+                              </div>
+                              <div className="flex-grow">
+                                <div className="flex justify-between mb-2">
+                                  <h3 className="font-semibold">{item.type}</h3>
+                                  <Badge className="bg-airsoft-red">{item.power}</Badge>
+                                </div>
+                                <p className="text-sm text-gray-600 mb-1">
+                                  <span className="font-medium">Marque:</span> {item.brand}
+                                </p>
+                                <p className="text-sm text-gray-600">{item.description}</p>
+                              </div>
+                              <div className="flex sm:flex-col gap-2 mt-2 sm:mt-0">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white"
+                                >
+                                  <Edit size={14} className="mr-1" /> Modifier
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-center py-12 text-gray-500">
+                          Vous n'avez pas encore ajouté d'équipement.
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="badges">
+                  <Card>
                     <CardHeader>
-                      <CardTitle>Mon équipement</CardTitle>
+                      <CardTitle className="flex items-center gap-2">
+                        <Award className="text-airsoft-red" size={20} />
+                        Mes badges
+                      </CardTitle>
                       <CardDescription>
-                        Répliques et matériel
+                        Badges et récompenses débloqués
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-center py-12 text-gray-500">
-                        Section équipement en cours de développement
-                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        {user.badges.map((badge) => (
+                          <div 
+                            key={badge.id}
+                            className="border rounded-lg p-4 flex flex-col items-center text-center"
+                            style={{ 
+                              backgroundColor: badge.backgroundColor,
+                              borderColor: badge.borderColor
+                            }}
+                          >
+                            <img 
+                              src={badge.icon} 
+                              alt={badge.name} 
+                              className="w-16 h-16 mb-3"
+                            />
+                            <h3 className="font-semibold mb-1">{badge.name}</h3>
+                            <p className="text-xs text-gray-600 mb-2">{badge.description}</p>
+                            <p className="text-xs text-gray-500">Obtenu le {badge.date}</p>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {user.badges.length === 0 && (
+                        <div className="text-center py-12">
+                          <Award className="mx-auto h-12 w-12 text-gray-300 mb-3" />
+                          <p className="text-gray-500">Vous n'avez pas encore obtenu de badges</p>
+                          <p className="text-sm text-gray-400 mt-1">Participez à des parties et complétez des objectifs pour en obtenir</p>
+                        </div>
+                      )}
+                      
+                      <div className="mt-6 text-center">
+                        <Button
+                          variant="outline"
+                          onClick={handleViewAllBadges}
+                          className="border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white"
+                        >
+                          Voir tous les badges disponibles
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 </TabsContent>
@@ -329,6 +857,201 @@ const Profile = () => {
         </div>
       </main>
       <Footer />
+
+      {/* Game Details Dialog */}
+      <Dialog open={showGameDialog} onOpenChange={setShowGameDialog}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">{selectedGame?.title}</DialogTitle>
+            <DialogDescription className="text-sm text-gray-500">
+              Détails de la partie
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedGame && (
+            <div className="mt-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <Badge 
+                  className={
+                    selectedGame.status === "À venir" 
+                      ? "bg-blue-500" 
+                      : selectedGame.status === "Terminé" 
+                      ? "bg-gray-500" 
+                      : "bg-green-500"
+                  }
+                >
+                  {selectedGame.status}
+                </Badge>
+                <span className="text-sm font-medium">{selectedGame.role}</span>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <CalendarIcon size={16} className="text-airsoft-red" />
+                  <span>{selectedGame.date}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock size={16} className="text-airsoft-red" />
+                  <span>Durée: {selectedGame.duration}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Map size={16} className="text-airsoft-red" />
+                  <span>{selectedGame.location}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Users size={16} className="text-airsoft-red" />
+                  <span>{selectedGame.participants} participants</span>
+                </div>
+              </div>
+              
+              <div className="mt-2">
+                <h4 className="font-medium text-sm mb-1">Description:</h4>
+                <p className="text-sm text-gray-600">{selectedGame.description}</p>
+              </div>
+              
+              <div className="flex justify-end mt-4">
+                <Button 
+                  className="bg-airsoft-red hover:bg-red-700"
+                  onClick={() => handleNavigateToGame(selectedGame.id)}
+                >
+                  Voir la page complète
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+      
+      {/* All Games Dialog */}
+      <Dialog open={showAllGamesDialog} onOpenChange={setShowAllGamesDialog}>
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Toutes mes parties</DialogTitle>
+            <DialogDescription className="text-sm text-gray-500">
+              Historique complet de vos participations
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="mt-4 max-h-96 overflow-y-auto pr-2">
+            <div className="space-y-4">
+              {[...user.games, ...user.allGames].map(game => (
+                <div 
+                  key={game.id} 
+                  className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div>
+                      <h3 className="font-semibold">{game.title}</h3>
+                      <div className="flex flex-wrap items-center gap-4 mt-1 text-sm text-gray-600">
+                        <span className="flex items-center gap-1">
+                          <Calendar size={14} /> {game.date}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <User size={14} /> {game.role}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Map size={14} /> {game.location.split(',')[0]}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                      <Badge 
+                        className={
+                          game.status === "À venir" 
+                            ? "bg-blue-500" 
+                            : game.status === "Terminé" 
+                            ? "bg-gray-500" 
+                            : "bg-green-500"
+                        }
+                      >
+                        {game.status}
+                      </Badge>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white"
+                        onClick={() => {
+                          setShowAllGamesDialog(false);
+                          handleViewGameDetails(game);
+                        }}
+                      >
+                        Détails
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Badges Dialog */}
+      <Dialog open={showBadgesDialog} onOpenChange={setShowBadgesDialog}>
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Award className="text-airsoft-red" size={20} />
+              Mes badges
+            </DialogTitle>
+            <DialogDescription className="text-sm text-gray-500">
+              Badges et accomplissements débloqués
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="mt-4 max-h-96 overflow-y-auto pr-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {user.badges.map((badge) => (
+                <div 
+                  key={badge.id}
+                  className="border rounded-lg p-4 flex items-center gap-3"
+                  style={{ 
+                    backgroundColor: badge.backgroundColor,
+                    borderColor: badge.borderColor
+                  }}
+                >
+                  <img 
+                    src={badge.icon} 
+                    alt={badge.name} 
+                    className="w-14 h-14"
+                  />
+                  <div>
+                    <h3 className="font-semibold">{badge.name}</h3>
+                    <p className="text-xs text-gray-600 mb-1">{badge.description}</p>
+                    <p className="text-xs text-gray-500">Obtenu le {badge.date}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-6 border-t pt-4">
+              <h3 className="font-medium mb-3">Badges à débloquer</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 opacity-60">
+                <div className="border rounded-lg p-4 flex items-center gap-3 bg-gray-100">
+                  <div className="w-14 h-14 bg-gray-300 flex items-center justify-center rounded-full">
+                    <Trophy size={24} className="text-gray-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Champion</h3>
+                    <p className="text-xs text-gray-600">Gagner 10 parties consécutives</p>
+                    <p className="text-xs text-gray-500">Progression: 4/10</p>
+                  </div>
+                </div>
+                <div className="border rounded-lg p-4 flex items-center gap-3 bg-gray-100">
+                  <div className="w-14 h-14 bg-gray-300 flex items-center justify-center rounded-full">
+                    <Flag size={24} className="text-gray-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Capture de drapeaux</h3>
+                    <p className="text-xs text-gray-600">Capturer 100 drapeaux</p>
+                    <p className="text-xs text-gray-500">Progression: 53/100</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
