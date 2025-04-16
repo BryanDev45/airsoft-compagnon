@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import Header from '../components/Header';
@@ -7,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
+
 const Contact = () => {
   const form = useForm({
     defaultValues: {
@@ -35,11 +37,38 @@ const Contact = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mb-12">
-            
+            <div className="bg-white rounded-lg shadow-md p-6 flex flex-col items-center text-center">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                <Mail className="h-6 w-6 text-airsoft-red" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Email</h3>
+              <p className="text-gray-600 mb-4">contact@airsoft-compagnon.fr</p>
+              <a href="mailto:contact@airsoft-compagnon.fr" className="text-airsoft-red hover:underline">
+                Envoyez-nous un email
+              </a>
+            </div>
 
-            
+            <div className="bg-white rounded-lg shadow-md p-6 flex flex-col items-center text-center">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                <Phone className="h-6 w-6 text-airsoft-red" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Téléphone</h3>
+              <p className="text-gray-600 mb-4">+33 1 23 45 67 89</p>
+              <a href="tel:+33123456789" className="text-airsoft-red hover:underline">
+                Appelez-nous
+              </a>
+            </div>
 
-            
+            <div className="bg-white rounded-lg shadow-md p-6 flex flex-col items-center text-center">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                <MapPin className="h-6 w-6 text-airsoft-red" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Adresse</h3>
+              <p className="text-gray-600 mb-4">123 Avenue de l'Airsoft<br/>75000 Paris, France</p>
+              <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" className="text-airsoft-red hover:underline">
+                Voir sur la carte
+              </a>
+            </div>
           </div>
 
           <div className="bg-white rounded-lg shadow-md p-6 md:p-8 max-w-3xl mx-auto">

@@ -31,12 +31,18 @@ const Login = () => {
 
   const handleFacebookLogin = () => {
     console.log('Facebook login attempt');
-    // Mock Facebook OAuth login
+    // Facebook OAuth login implementation
+    const facebookAuthUrl = "https://www.facebook.com/v18.0/dialog/oauth";
+    const redirectUri = window.location.origin + "/auth/facebook/callback";
+    const clientId = "YOUR_FACEBOOK_APP_ID"; // This would be your app's ID
+    
+    // For demo purposes only - in a real app we would redirect to the actual OAuth URL
     toast({
       title: "Connexion avec Facebook",
       description: "Redirection vers Facebook...",
     });
-    // In a real implementation, you would redirect to Facebook OAuth URL
+    
+    // Simulate successful login after a delay
     setTimeout(() => {
       toast({
         title: "Connexion réussie",
@@ -48,12 +54,19 @@ const Login = () => {
 
   const handleGoogleLogin = () => {
     console.log('Google login attempt');
-    // Mock Google OAuth login
+    // Google OAuth login implementation
+    const googleAuthUrl = "https://accounts.google.com/o/oauth2/v2/auth";
+    const redirectUri = window.location.origin + "/auth/google/callback";
+    const clientId = "YOUR_GOOGLE_CLIENT_ID"; // This would be your app's ID
+    const scope = "email profile";
+    
+    // For demo purposes only - in a real app we would redirect to the actual OAuth URL
     toast({
       title: "Connexion avec Google",
       description: "Redirection vers Google...",
     });
-    // In a real implementation, you would redirect to Google OAuth URL
+    
+    // Simulate successful login after a delay
     setTimeout(() => {
       toast({
         title: "Connexion réussie",
@@ -74,6 +87,13 @@ const Login = () => {
           }}>
           <div className="bg-white p-7 rounded-lg">
             <div className="text-center mb-8">
+              <div className="flex justify-center mb-2">
+                <img
+                  src="/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png"
+                  alt="Logo"
+                  className="h-16"
+                />
+              </div>
               <h1 className="text-2xl font-bold">Connexion</h1>
               <p className="text-gray-600 mt-2">
                 Accédez à votre compte pour gérer vos parties d'airsoft

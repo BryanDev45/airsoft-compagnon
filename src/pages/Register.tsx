@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import Header from '../components/Header';
@@ -7,13 +7,23 @@ import Footer from '../components/Footer';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { UserPlus, User, Lock, Mail, Check, Calendar, AlertCircle } from 'lucide-react';
+import { UserPlus, User, Lock, Mail, Check, Calendar, AlertCircle, X } from 'lucide-react';
 import { toast } from "@/components/ui/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
+// Password validation regex patterns
+const PASSWORD_REGEX = {
+  minLength: /.{8,}/,
+  uppercase: /[A-Z]/,
+  lowercase: /[a-z]/,
+  number: /[0-9]/,
+  special: /[!@#$%^&*(),.?":{}|<>]/
+};
+
 const Register = () => {
   const navigate = useNavigate();
-  const [isUnderAge, setIsUnderAge] = React.useState(false);
+  const [isUnderAge, setIsUnderAge] = useState(false);
+  const [password, setPassword] = useState('');
   const form = useForm({
     defaultValues: {
       firstname: '',
@@ -41,6 +51,14 @@ const Register = () => {
     return age < 18;
   };
 
+  const validatePassword = (password: string): boolean => {
+    return PASSWORD_REGEX.minLength.test(password) &&
+      PASSWORD_REGEX.uppercase.test(password) &&
+      PASSWORD_REGEX.lowercase.test(password) &&
+      PASSWORD_REGEX.number.test(password) &&
+      PASSWORD_REGEX.special.test(password);
+  };
+
   const onSubmit = (data: any) => {
     console.log('Registration data:', data);
     
@@ -53,6 +71,15 @@ const Register = () => {
         title: "Inscription impossible",
         description: "Vous devez avoir au moins 18 ans pour vous inscrire",
         variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate password
+    if (!validatePassword(data.password)) {
+      form.setError('password', {
+        type: 'manual',
+        message: 'Le mot de passe ne respecte pas les critères de sécurité'
       });
       return;
     }
@@ -82,14 +109,26 @@ const Register = () => {
     setIsUnderAge(underAge);
   };
 
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+    form.setValue('password', newPassword);
+  };
+
   const handleFacebookRegistration = () => {
     console.log('Facebook registration attempt');
-    // Mock Facebook OAuth registration
+    // Facebook OAuth registration implementation
+    const facebookAuthUrl = "https://www.facebook.com/v18.0/dialog/oauth";
+    const redirectUri = window.location.origin + "/auth/facebook/callback";
+    const clientId = "YOUR_FACEBOOK_APP_ID"; // This would be your app's ID
+    
+    // For demo purposes only - in a real app we would redirect to the actual OAuth URL
     toast({
       title: "Inscription avec Facebook",
       description: "Redirection vers Facebook...",
     });
-    // In a real implementation, you would redirect to Facebook OAuth URL
+    
+    // Simulate successful registration after a delay
     setTimeout(() => {
       toast({
         title: "Inscription réussie",
@@ -101,12 +140,19 @@ const Register = () => {
 
   const handleGoogleRegistration = () => {
     console.log('Google registration attempt');
-    // Mock Google OAuth registration
+    // Google OAuth registration implementation
+    const googleAuthUrl = "https://accounts.google.com/o/oauth2/v2/auth";
+    const redirectUri = window.location.origin + "/auth/google/callback";
+    const clientId = "YOUR_GOOGLE_CLIENT_ID"; // This would be your app's ID
+    const scope = "email profile";
+    
+    // For demo purposes only - in a real app we would redirect to the actual OAuth URL
     toast({
       title: "Inscription avec Google",
       description: "Redirection vers Google...",
     });
-    // In a real implementation, you would redirect to Google OAuth URL
+    
+    // Simulate successful registration after a delay
     setTimeout(() => {
       toast({
         title: "Inscription réussie",
@@ -127,6 +173,13 @@ const Register = () => {
           }}>
           <div className="bg-white p-7 rounded-lg">
             <div className="text-center mb-8">
+              <div className="flex justify-center mb-2">
+                <img
+                  src="/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png"
+                  alt="Logo"
+                  className="h-16"
+                />
+              </div>
               <h1 className="text-2xl font-bold">Inscription</h1>
               <p className="text-gray-600 mt-2">
                 Créez votre compte pour rejoindre la communauté Airsoft Compagnon
@@ -258,10 +311,56 @@ const Register = () => {
                             className="pl-10" 
                             type="password" 
                             {...field} 
+                            onChange={handlePasswordChange}
                             required 
                           />
                         </div>
                       </FormControl>
+                      <div className="mt-2 text-sm">
+                        <p className="font-medium mb-1">Le mot de passe doit contenir :</p>
+                        <ul className="space-y-1">
+                          <li className="flex items-center">
+                            {PASSWORD_REGEX.minLength.test(password) ? 
+                              <Check className="h-4 w-4 text-green-500 mr-1" /> : 
+                              <X className="h-4 w-4 text-gray-400 mr-1" />}
+                            <span className={PASSWORD_REGEX.minLength.test(password) ? "text-green-600" : "text-gray-600"}>
+                              Au moins 8 caractères
+                            </span>
+                          </li>
+                          <li className="flex items-center">
+                            {PASSWORD_REGEX.uppercase.test(password) ? 
+                              <Check className="h-4 w-4 text-green-500 mr-1" /> : 
+                              <X className="h-4 w-4 text-gray-400 mr-1" />}
+                            <span className={PASSWORD_REGEX.uppercase.test(password) ? "text-green-600" : "text-gray-600"}>
+                              Une lettre majuscule (A-Z)
+                            </span>
+                          </li>
+                          <li className="flex items-center">
+                            {PASSWORD_REGEX.lowercase.test(password) ? 
+                              <Check className="h-4 w-4 text-green-500 mr-1" /> : 
+                              <X className="h-4 w-4 text-gray-400 mr-1" />}
+                            <span className={PASSWORD_REGEX.lowercase.test(password) ? "text-green-600" : "text-gray-600"}>
+                              Une lettre minuscule (a-z)
+                            </span>
+                          </li>
+                          <li className="flex items-center">
+                            {PASSWORD_REGEX.number.test(password) ? 
+                              <Check className="h-4 w-4 text-green-500 mr-1" /> : 
+                              <X className="h-4 w-4 text-gray-400 mr-1" />}
+                            <span className={PASSWORD_REGEX.number.test(password) ? "text-green-600" : "text-gray-600"}>
+                              Un chiffre (0-9)
+                            </span>
+                          </li>
+                          <li className="flex items-center">
+                            {PASSWORD_REGEX.special.test(password) ? 
+                              <Check className="h-4 w-4 text-green-500 mr-1" /> : 
+                              <X className="h-4 w-4 text-gray-400 mr-1" />}
+                            <span className={PASSWORD_REGEX.special.test(password) ? "text-green-600" : "text-gray-600"}>
+                              Un caractère spécial (!@#$%^&*.,?:{}|&lt;&gt;)
+                            </span>
+                          </li>
+                        </ul>
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
