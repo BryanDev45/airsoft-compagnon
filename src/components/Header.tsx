@@ -1,11 +1,36 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Menu, X, User as UserIcon } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  
+  // Mock authenticated state and user data - in a real app, this would come from authentication context
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const user = {
+    username: "AirsoftMaster",
+    avatar: "https://randomuser.me/api/portraits/men/44.jpg"
+  };
+
+  const handleLogout = () => {
+    // Clear user session/localStorage
+    setIsAuthenticated(false);
+    
+    // Navigate to login page
+    navigate('/login');
+  };
 
   return (
     <header className="bg-airsoft-dark text-white py-3 px-4 relative">
@@ -27,11 +52,40 @@ const Header = () => {
           <Link to="/parties" className="hover:text-airsoft-red transition-colors">Parties</Link>
           <Link to="/contact" className="hover:text-airsoft-red transition-colors">Contact</Link>
           <div className="flex items-center gap-2 ml-4">
-            <Link to="/login">
-              <Button variant="default" className="bg-airsoft-red hover:bg-red-700">
-                Se connecter
-              </Button>
-            </Link>
+            {isAuthenticated ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                    <Avatar>
+                      <AvatarImage src={user.avatar} alt={user.username} />
+                      <AvatarFallback>{user.username.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel className="flex items-center gap-2">
+                    <span>{user.username}</span>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate('/profile')}>
+                    Mon profil
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/parties')}>
+                    Mes parties
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    Déconnexion
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link to="/login">
+                <Button variant="default" className="bg-airsoft-red hover:bg-red-700">
+                  Se connecter
+                </Button>
+              </Link>
+            )}
           </div>
         </nav>
 
@@ -52,11 +106,37 @@ const Header = () => {
           <Link to="/" className="hover:text-airsoft-red py-2 transition-colors">Accueil</Link>
           <Link to="/parties" className="hover:text-airsoft-red py-2 transition-colors">Parties</Link>
           <Link to="/contact" className="hover:text-airsoft-red py-2 transition-colors">Contact</Link>
-          <Link to="/login" className="w-full">
-            <Button variant="default" className="bg-airsoft-red hover:bg-red-700 w-full mt-2">
-              Se connecter
-            </Button>
-          </Link>
+          
+          {isAuthenticated ? (
+            <>
+              <div className="flex items-center gap-3 py-2">
+                <Avatar>
+                  <AvatarImage src={user.avatar} alt={user.username} />
+                  <AvatarFallback>{user.username.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <span>{user.username}</span>
+              </div>
+              <Link to="/profile" className="hover:text-airsoft-red py-2 transition-colors">
+                Mon profil
+              </Link>
+              <Link to="/parties" className="hover:text-airsoft-red py-2 transition-colors">
+                Mes parties
+              </Link>
+              <Button 
+                variant="destructive" 
+                className="mt-2 bg-airsoft-red hover:bg-red-700" 
+                onClick={handleLogout}
+              >
+                Déconnexion
+              </Button>
+            </>
+          ) : (
+            <Link to="/login" className="w-full">
+              <Button variant="default" className="bg-airsoft-red hover:bg-red-700 w-full mt-2">
+                Se connecter
+              </Button>
+            </Link>
+          )}
         </div>
       )}
     </header>

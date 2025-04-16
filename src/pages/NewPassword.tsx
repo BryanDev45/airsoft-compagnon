@@ -1,100 +1,63 @@
+
 import React, { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Lock, Check, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Lock, Eye, EyeOff, Check } from 'lucide-react';
 import { toast } from "@/components/ui/use-toast";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+const passwordSchema = z.object({
+  password: z.string()
+    .min(8, "Le mot de passe doit contenir au moins 8 caractères")
+    .regex(/[A-Z]/, "Le mot de passe doit contenir au moins une lettre majuscule")
+    .regex(/[a-z]/, "Le mot de passe doit contenir au moins une lettre minuscule")
+    .regex(/[0-9]/, "Le mot de passe doit contenir au moins un chiffre")
+    .regex(/[^A-Za-z0-9]/, "Le mot de passe doit contenir au moins un caractère spécial"),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Les mots de passe ne correspondent pas",
+  path: ["confirmPassword"],
+});
+
+type FormValues = z.infer<typeof passwordSchema>;
 
 const NewPassword = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get('token');
-  const [passwordStrength, setPasswordStrength] = useState({
-    length: false,
-    uppercase: false,
-    lowercase: false,
-    number: false,
-    special: false,
-  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordChanged, setPasswordChanged] = useState(false);
   
-  const form = useForm({
+  const form = useForm<FormValues>({
+    resolver: zodResolver(passwordSchema),
     defaultValues: {
       password: '',
       confirmPassword: '',
     },
   });
 
-  const checkPasswordStrength = (password: string) => {
-    setPasswordStrength({
-      length: password.length >= 8,
-      uppercase: /[A-Z]/.test(password),
-      lowercase: /[a-z]/.test(password),
-      number: /[0-9]/.test(password),
-      special: /[^A-Za-z0-9]/.test(password),
-    });
-  };
-
-  const onSubmit = (data: { password: string; confirmPassword: string }) => {
-    console.log('New password set with token:', token);
+  const onSubmit = (data: FormValues) => {
+    console.log('Reset password with:', data);
     
-    const allCriteriaMet = Object.values(passwordStrength).every(value => value === true);
-    if (!allCriteriaMet) {
-      toast({
-        title: "Mot de passe trop faible",
-        description: "Veuillez respecter tous les critères de sécurité",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (data.password !== data.confirmPassword) {
-      form.setError('confirmPassword', {
-        type: 'manual',
-        message: 'Les mots de passe ne correspondent pas'
-      });
-      return;
-    }
-    
+    // Simulated API call for password reset
     setTimeout(() => {
       toast({
-        title: "Mot de passe mis à jour",
+        title: "Mot de passe modifié",
         description: "Votre mot de passe a été réinitialisé avec succès",
       });
-      navigate('/login');
+      setPasswordChanged(true);
     }, 1500);
   };
 
-  if (!token) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-grow bg-gray-50 py-12">
-          <div className="max-w-md mx-auto">
-            <Alert variant="destructive" className="mb-6">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Lien invalide</AlertTitle>
-              <AlertDescription>
-                Ce lien de réinitialisation est invalide ou a expiré. 
-                Veuillez demander un nouveau lien de réinitialisation.
-              </AlertDescription>
-            </Alert>
-            <Button 
-              onClick={() => navigate('/reset-password')}
-              className="w-full bg-airsoft-red hover:bg-red-700"
-            >
-              Demander un nouveau lien
-            </Button>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
+  const handleRedirectToLogin = () => {
+    navigate('/login');
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -109,100 +72,120 @@ const NewPassword = () => {
             <div className="text-center mb-8">
               <div className="flex justify-center mb-4">
                 <img 
-                  src="/lovable-uploads/1cc60b94-2b6c-4e0e-9ab8-1bd1e8cb1098.png" 
+                  src="/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png" 
                   alt="Airsoft Compagnon Logo" 
                   className="h-16 w-auto" 
                 />
               </div>
-              <h1 className="text-2xl font-bold">Créer un nouveau mot de passe</h1>
+              <h1 className="text-2xl font-bold">Nouveau mot de passe</h1>
               <p className="text-gray-600 mt-2">
-                Choisissez un nouveau mot de passe sécurisé
+                Créez un nouveau mot de passe sécurisé
               </p>
             </div>
 
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nouveau mot de passe</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Lock className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                          <Input 
-                            placeholder="••••••••" 
-                            className="pl-10" 
-                            type="password" 
-                            {...field} 
-                            onChange={(e) => {
-                              field.onChange(e);
-                              checkPasswordStrength(e.target.value);
-                            }}
-                            required 
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                      
-                      <div className="mt-3 space-y-2 text-sm">
-                        <p className="font-medium text-gray-700">Votre mot de passe doit contenir :</p>
-                        <ul className="space-y-1 pl-2">
-                          <li className={`flex items-center ${passwordStrength.length ? 'text-green-600' : 'text-gray-500'}`}>
-                            {passwordStrength.length ? <Check size={16} className="mr-1" /> : <span className="w-4 mr-1">-</span>}
-                            Au moins 8 caractères
-                          </li>
-                          <li className={`flex items-center ${passwordStrength.uppercase ? 'text-green-600' : 'text-gray-500'}`}>
-                            {passwordStrength.uppercase ? <Check size={16} className="mr-1" /> : <span className="w-4 mr-1">-</span>}
-                            Au moins une majuscule
-                          </li>
-                          <li className={`flex items-center ${passwordStrength.lowercase ? 'text-green-600' : 'text-gray-500'}`}>
-                            {passwordStrength.lowercase ? <Check size={16} className="mr-1" /> : <span className="w-4 mr-1">-</span>}
-                            Au moins une minuscule
-                          </li>
-                          <li className={`flex items-center ${passwordStrength.number ? 'text-green-600' : 'text-gray-500'}`}>
-                            {passwordStrength.number ? <Check size={16} className="mr-1" /> : <span className="w-4 mr-1">-</span>}
-                            Au moins un chiffre
-                          </li>
-                          <li className={`flex items-center ${passwordStrength.special ? 'text-green-600' : 'text-gray-500'}`}>
-                            {passwordStrength.special ? <Check size={16} className="mr-1" /> : <span className="w-4 mr-1">-</span>}
-                            Au moins un caractère spécial
-                          </li>
-                        </ul>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Confirmez le mot de passe</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Lock className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                          <Input 
-                            placeholder="••••••••" 
-                            className="pl-10" 
-                            type="password" 
-                            {...field} 
-                            required 
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <Button type="submit" className="w-full bg-airsoft-red hover:bg-red-700">
-                  Réinitialiser mon mot de passe
+            {passwordChanged ? (
+              <div className="space-y-6">
+                <Alert className="bg-green-50 border-green-200">
+                  <AlertDescription>
+                    Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.
+                  </AlertDescription>
+                </Alert>
+                <Button 
+                  className="w-full bg-airsoft-red hover:bg-red-700"
+                  onClick={handleRedirectToLogin}
+                >
+                  <Check className="mr-2 h-4 w-4" /> Aller à la page de connexion
                 </Button>
-              </form>
-            </Form>
+              </div>
+            ) : (
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nouveau mot de passe</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                            <Input 
+                              placeholder="Votre nouveau mot de passe" 
+                              className="pl-10 pr-10" 
+                              type={showPassword ? "text" : "password"} 
+                              {...field} 
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                              onClick={() => setShowPassword(!showPassword)}
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4 text-gray-400" />
+                              ) : (
+                                <Eye className="h-4 w-4 text-gray-400" />
+                              )}
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                        <div className="text-xs text-gray-500 mt-2">
+                          <p>Le mot de passe doit contenir au moins:</p>
+                          <ul className="list-disc list-inside mt-1">
+                            <li>8 caractères</li>
+                            <li>Une lettre majuscule</li>
+                            <li>Une lettre minuscule</li>
+                            <li>Un chiffre</li>
+                            <li>Un caractère spécial</li>
+                          </ul>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Confirmez le mot de passe</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                            <Input 
+                              placeholder="Confirmez votre mot de passe" 
+                              className="pl-10 pr-10" 
+                              type={showConfirmPassword ? "text" : "password"} 
+                              {...field} 
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            >
+                              {showConfirmPassword ? (
+                                <EyeOff className="h-4 w-4 text-gray-400" />
+                              ) : (
+                                <Eye className="h-4 w-4 text-gray-400" />
+                              )}
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <Button type="submit" className="w-full bg-airsoft-red hover:bg-red-700">
+                    Réinitialiser le mot de passe
+                  </Button>
+                </form>
+              </Form>
+            )}
           </div>
         </div>
       </main>

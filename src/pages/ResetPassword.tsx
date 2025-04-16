@@ -45,7 +45,7 @@ const ResetPassword = () => {
             <div className="text-center mb-8">
               <div className="flex justify-center mb-4">
                 <img 
-                  src="/lovable-uploads/1cc60b94-2b6c-4e0e-9ab8-1bd1e8cb1098.png" 
+                  src="/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png" 
                   alt="Airsoft Compagnon Logo" 
                   className="h-16 w-auto" 
                 />

@@ -48,7 +48,7 @@ const Profile = () => {
         id: 1,
         name: "Profil Vérifié",
         description: "Ce joueur a vérifié son identité auprès de l'équipe Airsoft Compagnon",
-        icon: "/lovable-uploads/381c6357-0426-45d3-8262-7b1be5c1bc96.png",
+        icon: "/lovable-uploads/3c025802-3046-4c34-ae5e-2328e941b479.png",
         backgroundColor: "#e1f7e1",
         borderColor: "#4caf50", 
         date: "15/01/2024"
@@ -57,7 +57,7 @@ const Profile = () => {
         id: 2,
         name: "Chef d'équipe",
         description: "Ce joueur est le fondateur ou le leader d'une équipe d'airsoft",
-        icon: "/lovable-uploads/3c025802-3046-4c34-ae5e-2328e941b479.png",
+        icon: "/lovable-uploads/381c6357-0426-45d3-8262-7b1be5c1bc96.png",
         backgroundColor: "#fff8e1",
         borderColor: "#ffc107",
         date: "02/02/2024"
@@ -229,6 +229,18 @@ const Profile = () => {
     navigate(`/team/${user.teamId}`);
   };
 
+  // Function to handle logout
+  const handleLogout = () => {
+    // Here you would typically clear user session/localStorage
+    toast({
+      title: "Déconnexion réussie",
+      description: "Vous êtes maintenant déconnecté",
+    });
+    
+    // Redirect to login page
+    navigate('/login');
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -258,6 +270,7 @@ const Profile = () => {
                   variant="outline" 
                   size="sm" 
                   className="text-white border-white hover:bg-white/20 hover:text-white bg-airsoft-red border-airsoft-red"
+                  onClick={handleLogout}
                 >
                   <LogOut className="mr-2 h-4 w-4" />
                   Déconnexion
@@ -286,7 +299,7 @@ const Profile = () => {
                     {user.username}
                     {user.isVerified && (
                       <img 
-                        src="/lovable-uploads/381c6357-0426-45d3-8262-7b1be5c1bc96.png"
+                        src="/lovable-uploads/3c025802-3046-4c34-ae5e-2328e941b479.png"
                         alt="Vérifié"
                         className="w-6 h-6 ml-1"
                         title="Profil vérifié"
@@ -364,7 +377,7 @@ const Profile = () => {
                                 {user.username}
                                 {user.isVerified && (
                                   <img 
-                                    src="/lovable-uploads/381c6357-0426-45d3-8262-7b1be5c1bc96.png"
+                                    src="/lovable-uploads/3c025802-3046-4c34-ae5e-2328e941b479.png"
                                     alt="Vérifié"
                                     className="w-4 h-4 ml-1"
                                     title="Profil vérifié"
@@ -438,7 +451,7 @@ const Profile = () => {
                                   {user.team}
                                   {user.isTeamLeader && (
                                     <img 
-                                      src="/lovable-uploads/3c025802-3046-4c34-ae5e-2328e941b479.png"
+                                      src="/lovable-uploads/381c6357-0426-45d3-8262-7b1be5c1bc96.png"
                                       alt="Chef d'équipe"
                                       className="w-4 h-4 ml-1"
                                       title="Chef d'équipe"
@@ -1057,3 +1070,4 @@ const Profile = () => {
 };
 
 export default Profile;
+
