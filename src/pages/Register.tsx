@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import Header from '../components/Header';
@@ -13,7 +13,15 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Register = () => {
   const navigate = useNavigate();
-  const [isUnderAge, setIsUnderAge] = React.useState(false);
+  const [isUnderAge, setIsUnderAge] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState({
+    length: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    special: false,
+  });
+  
   const form = useForm({
     defaultValues: {
       firstname: '',
@@ -41,6 +49,17 @@ const Register = () => {
     return age < 18;
   };
 
+  // Vérifie la force du mot de passe et met à jour les indicateurs
+  const checkPasswordStrength = (password: string) => {
+    setPasswordStrength({
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /[0-9]/.test(password),
+      special: /[^A-Za-z0-9]/.test(password),
+    });
+  };
+
   const onSubmit = (data: any) => {
     console.log('Registration data:', data);
     
@@ -52,6 +71,17 @@ const Register = () => {
       toast({
         title: "Inscription impossible",
         description: "Vous devez avoir au moins 18 ans pour vous inscrire",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Vérifier si le mot de passe correspond à tous les critères
+    const allCriteriaMet = Object.values(passwordStrength).every(value => value === true);
+    if (!allCriteriaMet) {
+      toast({
+        title: "Mot de passe trop faible",
+        description: "Veuillez respecter tous les critères de sécurité",
         variant: "destructive",
       });
       return;
@@ -127,6 +157,9 @@ const Register = () => {
           }}>
           <div className="bg-white p-7 rounded-lg">
             <div className="text-center mb-8">
+              <div className="flex justify-center mb-4">
+                <UserPlus className="h-12 w-12 text-airsoft-red" />
+              </div>
               <h1 className="text-2xl font-bold">Inscription</h1>
               <p className="text-gray-600 mt-2">
                 Créez votre compte pour rejoindre la communauté Airsoft Compagnon
@@ -258,11 +291,41 @@ const Register = () => {
                             className="pl-10" 
                             type="password" 
                             {...field} 
+                            onChange={(e) => {
+                              field.onChange(e);
+                              checkPasswordStrength(e.target.value);
+                            }}
                             required 
                           />
                         </div>
                       </FormControl>
                       <FormMessage />
+                      
+                      <div className="mt-3 space-y-2 text-sm">
+                        <p className="font-medium text-gray-700">Votre mot de passe doit contenir :</p>
+                        <ul className="space-y-1 pl-2">
+                          <li className={`flex items-center ${passwordStrength.length ? 'text-green-600' : 'text-gray-500'}`}>
+                            {passwordStrength.length ? <Check size={16} className="mr-1" /> : <span className="w-4 mr-1">-</span>}
+                            Au moins 8 caractères
+                          </li>
+                          <li className={`flex items-center ${passwordStrength.uppercase ? 'text-green-600' : 'text-gray-500'}`}>
+                            {passwordStrength.uppercase ? <Check size={16} className="mr-1" /> : <span className="w-4 mr-1">-</span>}
+                            Au moins une majuscule
+                          </li>
+                          <li className={`flex items-center ${passwordStrength.lowercase ? 'text-green-600' : 'text-gray-500'}`}>
+                            {passwordStrength.lowercase ? <Check size={16} className="mr-1" /> : <span className="w-4 mr-1">-</span>}
+                            Au moins une minuscule
+                          </li>
+                          <li className={`flex items-center ${passwordStrength.number ? 'text-green-600' : 'text-gray-500'}`}>
+                            {passwordStrength.number ? <Check size={16} className="mr-1" /> : <span className="w-4 mr-1">-</span>}
+                            Au moins un chiffre
+                          </li>
+                          <li className={`flex items-center ${passwordStrength.special ? 'text-green-600' : 'text-gray-500'}`}>
+                            {passwordStrength.special ? <Check size={16} className="mr-1" /> : <span className="w-4 mr-1">-</span>}
+                            Au moins un caractère spécial
+                          </li>
+                        </ul>
+                      </div>
                     </FormItem>
                   )}
                 />
