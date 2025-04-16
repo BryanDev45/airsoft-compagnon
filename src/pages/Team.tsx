@@ -3,16 +3,18 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { Users, Flag, Trophy, Shield, Calendar, MapPin, Info, User, ArrowLeft, MessageSquare, Share, Send } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
-import LocationMap from '../components/map/LocationMap';
+
+// Composants refactorisés
+import TeamBanner from '../components/team/TeamBanner';
+import TeamAbout from '../components/team/TeamAbout';
+import TeamMembers from '../components/team/TeamMembers';
+import TeamGames from '../components/team/TeamGames';
+import TeamField from '../components/team/TeamField';
+import TeamDialogs from '../components/team/TeamDialogs';
 
 const Team = () => {
   const { id } = useParams();
@@ -37,6 +39,7 @@ const Team = () => {
         slogan: "Ensemble, invincibles",
         location: "Paris, France",
         founded: "2019",
+        organizationType: "association", // 'association' ou 'team'
         members: [
           {
             id: 1,
@@ -129,7 +132,6 @@ const Team = () => {
           }
         ],
         stats: {
-          winRate: "68%",
           gamesPlayed: 42,
           memberCount: 5,
           averageRating: 4.8
@@ -140,7 +142,9 @@ const Team = () => {
           address: "Forêt de Fontainebleau, 77300",
           coordinates: [2.6667, 48.4167], // Fontainebleau coordinates
           surface: "10 hectares",
-          type: "Forestier avec structures CQB"
+          type: "Forestier avec structures CQB",
+          hasBuildings: true,
+          amenities: ["Zone de repos", "Parking", "Sanitaires", "Zone CQB"]
         }
       });
       setLoading(false);
@@ -169,7 +173,7 @@ const Team = () => {
     // Simulate sending a message
     toast({
       title: "Message envoyé",
-      description: "Votre message a été envoyé à l'équipe Les Invincibles"
+      description: `Votre message a été envoyé à l'équipe ${team.name}`
     });
     setContactMessage('');
     setContactSubject('');
@@ -255,101 +259,17 @@ const Team = () => {
       <Header />
       <main className="flex-grow bg-gray-50">
         {/* Team Banner */}
-        <div 
-          className="h-64 bg-cover bg-center relative" 
-          style={{ backgroundImage: `url(${team.banner})` }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-          <div className="absolute bottom-0 left-0 w-full p-6 flex items-end">
-            <Link to="/" className="text-white hover:text-gray-200 transition-colors absolute top-6 left-6">
-              <ArrowLeft className="mr-2" />
-              <span className="sr-only">Retour</span>
-            </Link>
-            <div className="flex items-center gap-6">
-              <div className="relative">
-                <img 
-                  src={team.logo} 
-                  alt={team.name} 
-                  className="w-24 h-24 rounded-full border-4 border-white object-cover"
-                />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-white">{team.name}</h1>
-                <p className="text-gray-200 italic">"{team.slogan}"</p>
-                <div className="flex items-center gap-4 mt-2 text-sm text-gray-200">
-                  <span className="flex items-center gap-1">
-                    <MapPin size={14} />
-                    {team.location}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Calendar size={14} />
-                    Fondée en {team.founded}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Users size={14} />
-                    {team.members.length} membres
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <TeamBanner team={team} />
 
         <div className="max-w-6xl mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row md:items-start gap-8">
             {/* Team Details */}
             <div className="md:w-1/3 space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>À propos de nous</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-700">{team.description}</p>
-                  <div className="grid grid-cols-2 gap-4 mt-6">
-                    <div className="bg-gray-100 p-3 rounded-lg text-center">
-                      <p className="text-sm text-gray-500">Victoires</p>
-                      <p className="text-xl font-bold text-airsoft-red">{team.stats.winRate}</p>
-                    </div>
-                    <div className="bg-gray-100 p-3 rounded-lg text-center">
-                      <p className="text-sm text-gray-500">Parties</p>
-                      <p className="text-xl font-bold text-airsoft-red">{team.stats.gamesPlayed}</p>
-                    </div>
-                    <div className="bg-gray-100 p-3 rounded-lg text-center">
-                      <p className="text-sm text-gray-500">Membres</p>
-                      <p className="text-xl font-bold text-airsoft-red">{team.stats.memberCount}</p>
-                    </div>
-                    <div className="bg-gray-100 p-3 rounded-lg text-center">
-                      <p className="text-sm text-gray-500">Évaluation</p>
-                      <p className="text-xl font-bold text-airsoft-red flex items-center justify-center">
-                        {team.stats.averageRating}
-                        <svg className="w-5 h-5 text-yellow-500 ml-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                        </svg>
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex justify-between mt-6">
-                    <Button 
-                      variant="outline" 
-                      className="flex items-center gap-2"
-                      onClick={handleContactTeam}
-                    >
-                      <MessageSquare size={16} />
-                      Contacter
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="flex items-center gap-2 bg-airsoft-red text-white hover:bg-red-700"
-                      onClick={handleShare}
-                    >
-                      <Share size={16} />
-                      Partager
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* La section Récompenses a été supprimée comme demandé */}
+              <TeamAbout 
+                team={team} 
+                handleContactTeam={handleContactTeam} 
+                handleShare={handleShare} 
+              />
             </div>
 
             {/* Team Content */}
@@ -362,195 +282,15 @@ const Team = () => {
                 </TabsList>
 
                 <TabsContent value="members">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {team.members.map((member: any) => (
-                      <Card key={member.id} className="overflow-hidden hover:shadow-md transition-shadow">
-                        <CardContent className="p-0">
-                          <div className="flex items-start p-4">
-                            <div className="relative">
-                              <img 
-                                src={member.avatar} 
-                                alt={member.username} 
-                                className="w-16 h-16 rounded-full object-cover"
-                              />
-                              {member.isTeamLeader && (
-                                <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5">
-                                  <img 
-                                    src="/lovable-uploads/3c025802-3046-4c34-ae5e-2328e941b479.png" 
-                                    alt="Team Leader" 
-                                    className="w-6 h-6"
-                                  />
-                                </div>
-                              )}
-                            </div>
-                            <div className="ml-4 flex-grow">
-                              <div className="flex items-center">
-                                <h3 className="font-semibold">{member.username}</h3>
-                                {member.verified && (
-                                  <img 
-                                    src="/lovable-uploads/381c6357-0426-45d3-8262-7b1be5c1bc96.png" 
-                                    alt="Vérifié" 
-                                    className="w-5 h-5 ml-1"
-                                  />
-                                )}
-                              </div>
-                              <p className="text-sm text-gray-500">{member.role}</p>
-                              <p className="text-xs text-gray-400 mt-1">Membre depuis {member.joinedTeam}</p>
-                            </div>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="text-airsoft-red border-airsoft-red hover:bg-airsoft-red hover:text-white"
-                              onClick={() => handleViewMember(member)}
-                            >
-                              Profil
-                            </Button>
-                          </div>
-                          <div className="bg-gray-50 px-4 py-2 border-t">
-                            <p className="text-xs text-gray-600">
-                              <span className="font-medium">Spécialité:</span> {member.specialty}
-                            </p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
+                  <TeamMembers members={team.members} handleViewMember={handleViewMember} />
                 </TabsContent>
 
                 <TabsContent value="games">
-                  <div className="space-y-6">
-                    <div>
-                      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                        <Calendar className="text-airsoft-red" size={20} />
-                        Parties à venir
-                      </h3>
-                      {team.upcomingGames.length > 0 ? (
-                        <div className="space-y-4">
-                          {team.upcomingGames.map((game: any) => (
-                            <Card key={game.id}>
-                              <CardContent className="p-4">
-                                <div className="flex justify-between items-center">
-                                  <div>
-                                    <h4 className="font-semibold">{game.title}</h4>
-                                    <div className="flex items-center gap-4 mt-1 text-sm text-gray-600">
-                                      <span className="flex items-center gap-1">
-                                        <Calendar size={14} /> {game.date}
-                                      </span>
-                                      <span className="flex items-center gap-1">
-                                        <MapPin size={14} /> {game.location}
-                                      </span>
-                                      <span className="flex items-center gap-1">
-                                        <Users size={14} /> {game.participants} participants
-                                      </span>
-                                    </div>
-                                  </div>
-                                  <Button 
-                                    className="bg-airsoft-red hover:bg-red-700 text-white"
-                                  >
-                                    Voir détails
-                                  </Button>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-gray-500 text-center py-4 bg-gray-50 rounded-lg">
-                          Aucune partie à venir
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                        <Flag className="text-airsoft-red" size={20} />
-                        Parties passées
-                      </h3>
-                      {team.pastGames.length > 0 ? (
-                        <div className="space-y-4">
-                          {team.pastGames.map((game: any) => (
-                            <Card key={game.id}>
-                              <CardContent className="p-4">
-                                <div className="flex justify-between items-center">
-                                  <div>
-                                    <h4 className="font-semibold">{game.title}</h4>
-                                    <div className="flex items-center gap-4 mt-1 text-sm text-gray-600">
-                                      <span className="flex items-center gap-1">
-                                        <Calendar size={14} /> {game.date}
-                                      </span>
-                                      <span className="flex items-center gap-1">
-                                        <MapPin size={14} /> {game.location}
-                                      </span>
-                                      <span className="flex items-center gap-1">
-                                        <Trophy size={14} className="text-yellow-500" /> {game.result}
-                                      </span>
-                                    </div>
-                                  </div>
-                                  <Button 
-                                    variant="outline"
-                                    className="border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white"
-                                  >
-                                    Voir détails
-                                  </Button>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-gray-500 text-center py-4 bg-gray-50 rounded-lg">
-                          Aucune partie passée
-                        </p>
-                      )}
-                    </div>
-                  </div>
+                  <TeamGames upcomingGames={team.upcomingGames} pastGames={team.pastGames} />
                 </TabsContent>
 
                 <TabsContent value="field">
-                  {team.field ? (
-                    <div className="space-y-6">
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>{team.field.name}</CardTitle>
-                          <CardDescription>{team.field.description}</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-4">
-                              <div>
-                                <h4 className="text-sm font-medium text-gray-500 mb-1">Adresse</h4>
-                                <p className="text-gray-800">{team.field.address}</p>
-                              </div>
-                              <div>
-                                <h4 className="text-sm font-medium text-gray-500 mb-1">Surface</h4>
-                                <p className="text-gray-800">{team.field.surface}</p>
-                              </div>
-                              <div>
-                                <h4 className="text-sm font-medium text-gray-500 mb-1">Type</h4>
-                                <p className="text-gray-800">{team.field.type}</p>
-                              </div>
-                            </div>
-                            <div className="h-64 rounded-lg overflow-hidden">
-                              <LocationMap 
-                                location={team.field.address} 
-                                coordinates={team.field.coordinates}
-                              />
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  ) : (
-                    <div className="bg-gray-50 p-6 rounded-lg text-center">
-                      <MapPin className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                      <h3 className="text-lg font-medium text-gray-700 mb-2">
-                        Aucun terrain disponible
-                      </h3>
-                      <p className="text-gray-500 max-w-md mx-auto">
-                        Cette équipe n'a pas encore ajouté d'informations sur son terrain d'entraînement.
-                      </p>
-                    </div>
-                  )}
+                  <TeamField field={team.field} />
                 </TabsContent>
               </Tabs>
             </div>
@@ -559,178 +299,23 @@ const Team = () => {
       </main>
       <Footer />
 
-      {/* Member Dialog */}
-      <Dialog open={showMemberDialog} onOpenChange={setShowMemberDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center">
-              {selectedMember?.username}
-              {selectedMember?.verified && (
-                <img 
-                  src="/lovable-uploads/381c6357-0426-45d3-8262-7b1be5c1bc96.png" 
-                  alt="Vérifié" 
-                  className="w-5 h-5 ml-1"
-                />
-              )}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <img 
-                src={selectedMember?.avatar} 
-                alt={selectedMember?.username} 
-                className="w-20 h-20 rounded-full object-cover"
-              />
-              {selectedMember?.isTeamLeader && (
-                <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5">
-                  <img 
-                    src="/lovable-uploads/3c025802-3046-4c34-ae5e-2328e941b479.png" 
-                    alt="Team Leader" 
-                    className="w-6 h-6"
-                  />
-                </div>
-              )}
-            </div>
-            <div>
-              <h3 className="font-semibold">{selectedMember?.username}</h3>
-              <p className="text-sm text-gray-500">{selectedMember?.role}</p>
-              <p className="text-xs text-gray-400">Membre depuis {selectedMember?.joinedTeam}</p>
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="bg-gray-50 p-3 rounded-lg">
-              <h4 className="text-sm font-medium mb-2">Spécialité</h4>
-              <p className="text-sm">{selectedMember?.specialty}</p>
-            </div>
-            {selectedMember?.isTeamLeader && (
-              <div className="mt-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                <div className="flex items-center gap-2">
-                  <Shield className="text-yellow-600" size={16} />
-                  <p className="text-sm font-medium text-yellow-800">Chef d'équipe</p>
-                </div>
-                <p className="text-xs text-yellow-700 mt-1">
-                  Ce joueur est le fondateur et leader de l'équipe
-                </p>
-              </div>
-            )}
-          </div>
-          <div className="flex justify-end space-x-2 mt-4">
-            <Button 
-              variant="outline" 
-              onClick={() => setShowMemberDialog(false)}
-            >
-              Fermer
-            </Button>
-            <Button 
-              className="bg-airsoft-red hover:bg-red-700"
-              asChild
-            >
-              <Link to={`/profile`}>Voir profil complet</Link>
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Contact Dialog */}
-      <Dialog open={showContactDialog} onOpenChange={setShowContactDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Contacter {team.name}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">
-                Sujet
-              </label>
-              <Input 
-                id="subject" 
-                value={contactSubject} 
-                onChange={(e) => setContactSubject(e.target.value)} 
-                placeholder="Entrez le sujet de votre message" 
-              />
-            </div>
-            <div>
-              <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
-                Message
-              </label>
-              <Textarea 
-                id="message" 
-                value={contactMessage} 
-                onChange={(e) => setContactMessage(e.target.value)} 
-                placeholder="Écrivez votre message ici..." 
-                rows={6}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowContactDialog(false)}
-            >
-              Annuler
-            </Button>
-            <Button
-              className="bg-airsoft-red hover:bg-red-700 text-white flex gap-2"
-              onClick={handleSendMessage}
-            >
-              <Send size={16} />
-              Envoyer
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Share Dialog */}
-      <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Partager {team.name}</DialogTitle>
-          </DialogHeader>
-          <div className="grid grid-cols-2 gap-4">
-            <Button 
-              variant="outline" 
-              className="flex flex-col items-center py-6"
-              onClick={() => handleShareVia('facebook')}
-            >
-              <img src="/lovable-uploads/1cc60b94-2b6c-4e0e-9ab8-1bd1e8cb1098.png" alt="Facebook" className="w-8 h-8 mb-2" />
-              <span>Facebook</span>
-            </Button>
-            <Button 
-              variant="outline" 
-              className="flex flex-col items-center py-6"
-              onClick={() => handleShareVia('twitter')}
-            >
-              <img src="/lovable-uploads/84404d08-fa37-4317-80e0-d607d3676fd5.png" alt="Twitter" className="w-8 h-8 mb-2" />
-              <span>Twitter</span>
-            </Button>
-            <Button 
-              variant="outline" 
-              className="flex flex-col items-center py-6"
-              onClick={() => handleShareVia('whatsapp')}
-            >
-              <img src="/lovable-uploads/e3177716-6012-4386-a9b2-607ab6f838b0.png" alt="WhatsApp" className="w-8 h-8 mb-2" />
-              <span>WhatsApp</span>
-            </Button>
-            <Button 
-              variant="outline" 
-              className="flex flex-col items-center py-6"
-              onClick={() => handleShareVia('email')}
-            >
-              <img src="/lovable-uploads/c242d3b0-8906-4f00-9b3b-fc251f703e4b.png" alt="Email" className="w-8 h-8 mb-2" />
-              <span>Email</span>
-            </Button>
-          </div>
-          <div className="mt-4">
-            <Button 
-              className="w-full flex items-center justify-center gap-2 bg-airsoft-red hover:bg-red-700 text-white"
-              onClick={() => handleShareVia('copy')}
-            >
-              <Share size={16} />
-              Copier le lien
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Dialogs */}
+      <TeamDialogs 
+        team={team}
+        selectedMember={selectedMember}
+        showMemberDialog={showMemberDialog}
+        setShowMemberDialog={setShowMemberDialog}
+        showContactDialog={showContactDialog}
+        setShowContactDialog={setShowContactDialog}
+        showShareDialog={showShareDialog}
+        setShowShareDialog={setShowShareDialog}
+        contactMessage={contactMessage}
+        setContactMessage={setContactMessage}
+        contactSubject={contactSubject}
+        setContactSubject={setContactSubject}
+        handleSendMessage={handleSendMessage}
+        handleShareVia={handleShareVia}
+      />
     </div>
   );
 };

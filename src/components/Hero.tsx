@@ -41,28 +41,15 @@ const Hero = () => {
         </div>
       </div>
       
-      {/* V-shape with gradient border */}
-      <div className="v-shape-container">
-        <div className="v-shape"></div>
+      {/* V-shape with gradient border - Modification du bas en forme de V */}
+      <div className="absolute bottom-0 left-0 w-full overflow-hidden" style={{ height: '60px' }}>
+        <div className="absolute bottom-0 left-0 w-full h-full" 
+             style={{ 
+               clipPath: 'polygon(0 0, 100% 0, 100% 0, 50% 100%, 0 0)',
+               background: 'linear-gradient(to right, #ea384c, #ff6b6b)'
+             }}>
+        </div>
       </div>
-
-      <style dangerouslySetInnerHTML={{ __html: `
-        .v-shape-container {
-          position: relative;
-          height: 60px;
-          width: 100%;
-          overflow: hidden;
-        }
-        .v-shape {
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          clip-path: polygon(0 0, 50% 100%, 100% 0);
-          background: linear-gradient(to right, #ea384c, #ff6b6b);
-        }
-      `}} />
     </div>;
 };
 
