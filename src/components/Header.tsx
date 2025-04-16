@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, User as UserIcon, LogOut } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -18,24 +18,40 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   
-  // Mock authenticated state and user data - in a real app, this would come from authentication context
+  // État d'authentification basé sur localStorage
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const user = {
-    username: "AirsoftMaster",
-    avatar: "https://randomuser.me/api/portraits/men/44.jpg"
-  };
+  const [user, setUser] = useState<{username: string, avatar: string} | null>(null);
+  
+  // Vérifier l'état d'authentification au chargement du composant
+  useEffect(() => {
+    const authState = localStorage.getItem('isAuthenticated');
+    const userState = localStorage.getItem('user');
+    
+    if (authState === 'true' && userState) {
+      setIsAuthenticated(true);
+      setUser(JSON.parse(userState));
+    } else {
+      setIsAuthenticated(false);
+      setUser(null);
+    }
+  }, []);
 
   const handleLogout = () => {
-    // Clear user session/localStorage
-    setIsAuthenticated(false);
+    // Effacer les données d'authentification
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('user');
     
-    // Show feedback to the user
+    // Mettre à jour l'état
+    setIsAuthenticated(false);
+    setUser(null);
+    
+    // Afficher un message de confirmation
     toast({
       title: "Déconnexion réussie",
       description: "À bientôt sur Airsoft Compagnon",
     });
     
-    // Navigate to login page
+    // Rediriger vers la page de connexion
     navigate('/login');
   };
 
@@ -63,7 +79,7 @@ const Header = () => {
           <Link to="/parties" className="hover:text-airsoft-red transition-colors">Parties</Link>
           <Link to="/contact" className="hover:text-airsoft-red transition-colors">Contact</Link>
           <div className="flex items-center gap-2 ml-4">
-            {isAuthenticated ? (
+            {isAuthenticated && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-10 w-10 rounded-full">
@@ -116,7 +132,7 @@ const Header = () => {
           <Link to="/parties" className="hover:text-airsoft-red py-2 transition-colors">Parties</Link>
           <Link to="/contact" className="hover:text-airsoft-red py-2 transition-colors">Contact</Link>
           
-          {isAuthenticated ? (
+          {isAuthenticated && user ? (
             <>
               <div className="flex items-center gap-3 py-2">
                 <Avatar>
