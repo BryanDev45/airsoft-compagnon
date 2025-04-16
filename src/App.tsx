@@ -15,6 +15,7 @@ import Parties from "./pages/Parties";
 import CreateParty from "./pages/CreateParty";
 import GameDetails from "./pages/GameDetails";
 import Team from "./pages/Team";
+import FAQ from "./pages/FAQ";
 import NotFound from "./pages/NotFound";
 import TermsOfUse from "./pages/TermsOfUse";
 import TermsOfSale from "./pages/TermsOfSale";
@@ -41,6 +42,7 @@ const App = () => (
           <Route path="/profile" element={<Profile />} />
           <Route path="/game/:id" element={<GameDetails />} />
           <Route path="/team/:id" element={<Team />} />
+          <Route path="/faq" element={<FAQ />} />
           <Route path="/terms-of-use" element={<TermsOfUse />} />
           <Route path="/terms-of-sale" element={<TermsOfSale />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />

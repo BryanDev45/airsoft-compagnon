@@ -1,9 +1,10 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
 const Hero = () => {
-  return <div className="relative bg-airsoft-dark text-white overflow-hidden clip-bottom border-b-4 border-gradient-red">
+  return <div className="relative bg-airsoft-dark text-white overflow-hidden border-b-4 border-gradient-red">
       <div className="absolute inset-0 z-0">
         <img src="/lovable-uploads/e3177716-6012-4386-a9b2-607ab6f838b0.png" alt="Airsoft background" className="w-full h-full object-cover" />
         {/* Calque blanc semi-transparent par-dessus l'image */}
@@ -35,6 +36,9 @@ const Hero = () => {
           </div>
         </div>
       </div>
+      
+      {/* Flèche du bas avec dégradé */}
+      <div className="hero-arrow-shape"></div>
     </div>;
 };
 export default Hero;

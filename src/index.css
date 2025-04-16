@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -89,3 +90,27 @@
   border-image: linear-gradient(to right, #ea384c, #ff6b6b);
   border-image-slice: 1;
 }
+
+/* Hero component arrow shape */
+.hero-arrow-shape {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  overflow: hidden;
+}
+
+.hero-arrow-shape::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, #ea384c, #ff6b6b);
+  transform: translateX(-50%) translateY(50%) rotate(45deg);
+  transform-origin: center;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+

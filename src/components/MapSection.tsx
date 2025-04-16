@@ -5,13 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from 'react-router-dom';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
 import { Badge } from '@/components/ui/badge';
+import 'ol/ol.css';
+import Map from 'ol/Map';
+import View from 'ol/View';
+import TileLayer from 'ol/layer/Tile';
+import OSM from 'ol/source/OSM';
+import { fromLonLat } from 'ol/proj';
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
+import Feature from 'ol/Feature';
+import Point from 'ol/geom/Point';
+import { Style, Icon } from 'ol/style';
+import Overlay from 'ol/Overlay';
 
 const MapSection = () => {
-  const [mapApiKey, setMapApiKey] = useState('');
-  const [showMapKeyInput, setShowMapKeyInput] = useState(true);
   const mapContainer = useRef(null);
   const map = useRef(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -39,44 +47,129 @@ const MapSection = () => {
     return matchesSearch && matchesType && matchesDepartment && matchesDate;
   });
 
-  // Initialiser la carte Mapbox lorsque l'API key est fournie
+  // Initialiser la carte OpenLayers
   useEffect(() => {
-    if (!mapApiKey || showMapKeyInput || !mapContainer.current || map.current) return;
+    if (!mapContainer.current || map.current) return;
     
-    mapboxgl.accessToken = mapApiKey;
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v11',
-      center: [2.3522, 46.2276], // Centre de la France
-      zoom: 5
-    });
-
-    // Ajouter les contrôles de navigation
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-
+    // Créer une source de vecteur pour les marqueurs
+    const vectorSource = new VectorSource();
+    
     // Ajouter les marqueurs pour chaque événement
     filteredEvents.forEach(event => {
-      const popup = new mapboxgl.Popup({ offset: 25 })
-        .setHTML(`
-          <strong>${event.title}</strong><br>
-          ${event.location}<br>
-          ${event.date}
-        `);
-
-      new mapboxgl.Marker({ color: '#ff0000' })
-        .setLngLat([event.lng, event.lat])
-        .setPopup(popup)
-        .addTo(map.current);
+      const feature = new Feature({
+        geometry: new Point(fromLonLat([event.lng, event.lat])),
+        name: event.title,
+        location: event.location,
+        date: event.date
+      });
+      
+      vectorSource.addFeature(feature);
+    });
+    
+    // Style pour les marqueurs
+    const vectorLayer = new VectorLayer({
+      source: vectorSource,
+      style: new Style({
+        image: new Icon({
+          anchor: [0.5, 1],
+          src: 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/icons/geo-alt-fill.svg',
+          scale: 1.5,
+          color: '#ea384c'
+        })
+      })
+    });
+    
+    // Créer la carte
+    map.current = new Map({
+      target: mapContainer.current,
+      layers: [
+        new TileLayer({
+          source: new OSM()
+        }),
+        vectorLayer
+      ],
+      view: new View({
+        center: fromLonLat([2.3522, 46.2276]), // Centre de la France
+        zoom: 5
+      })
+    });
+    
+    // Ajouter les infobulles
+    const container = document.createElement('div');
+    container.className = 'ol-popup bg-white p-3 rounded-lg shadow-lg text-sm max-w-xs';
+    
+    const overlay = new Overlay({
+      element: container,
+      autoPan: true,
+      autoPanAnimation: {
+        duration: 250
+      }
+    });
+    
+    map.current.addOverlay(overlay);
+    
+    // Ajouter un gestionnaire d'événements pour afficher les infobulles
+    map.current.on('click', function(evt) {
+      const feature = map.current.forEachFeatureAtPixel(evt.pixel, function(feature) {
+        return feature;
+      });
+      
+      if (feature) {
+        const geometry = feature.getGeometry();
+        const coordinate = geometry.getCoordinates();
+        
+        container.innerHTML = `
+          <strong>${feature.get('name')}</strong><br>
+          ${feature.get('location')}<br>
+          ${feature.get('date')}
+        `;
+        
+        overlay.setPosition(coordinate);
+      } else {
+        overlay.setPosition(undefined);
+      }
+    });
+    
+    // Changer le curseur au survol des marqueurs
+    map.current.on('pointermove', function(e) {
+      const pixel = map.current.getEventPixel(e.originalEvent);
+      const hit = map.current.hasFeatureAtPixel(pixel);
+      map.current.getTargetElement().style.cursor = hit ? 'pointer' : '';
     });
 
     // Nettoyage
     return () => {
       if (map.current) {
-        map.current.remove();
+        map.current.setTarget(null);
         map.current = null;
       }
     };
-  }, [mapApiKey, showMapKeyInput, filteredEvents]);
+  }, [filteredEvents]);
+  
+  // Mettre à jour la carte lorsque les filtres changent
+  useEffect(() => {
+    if (!map.current) return;
+    
+    const vectorLayer = map.current.getLayers().getArray().find(layer => 
+      layer instanceof VectorLayer
+    );
+    
+    if (!vectorLayer) return;
+    
+    const vectorSource = vectorLayer.getSource();
+    vectorSource.clear();
+    
+    filteredEvents.forEach(event => {
+      const feature = new Feature({
+        geometry: new Point(fromLonLat([event.lng, event.lat])),
+        name: event.title,
+        location: event.location,
+        date: event.date
+      });
+      
+      vectorSource.addFeature(feature);
+    });
+  }, [filteredEvents]);
 
   return (
     <div className="py-12 md:py-16 bg-gray-100">
@@ -84,141 +177,116 @@ const MapSection = () => {
         <h2 className="text-3xl font-bold mb-8 text-center">Trouvez votre prochaine partie</h2>
         
         <div className="bg-white rounded-lg overflow-hidden shadow-xl mb-8 border border-gray-200">
-          {showMapKeyInput ? (
-            <div className="p-8 text-center">
-              <h3 className="text-xl font-semibold mb-4">Carte interactive</h3>
-              <p className="mb-4">Pour afficher la carte, veuillez entrer votre clé API Mapbox :</p>
-              <div className="flex max-w-md mx-auto gap-2">
-                <Input
-                  value={mapApiKey}
-                  onChange={(e) => setMapApiKey(e.target.value)}
-                  placeholder="Entrez votre clé API Mapbox"
-                  className="flex-grow"
-                />
-                <Button 
-                  onClick={() => setShowMapKeyInput(false)} 
-                  className="bg-airsoft-red hover:bg-red-700"
-                  disabled={!mapApiKey}
-                >
-                  Afficher la carte
-                </Button>
-              </div>
-              <p className="mt-4 text-sm text-gray-500">
-                Vous pouvez obtenir une clé API gratuite sur <a href="https://www.mapbox.com/" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">mapbox.com</a>
-              </p>
-            </div>
-          ) : (
-            <div className="flex flex-col md:flex-row">
-              <div className="w-full md:w-1/4 bg-gray-800 p-4 text-white">
-                <div className="mb-6">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                    <Input 
-                      placeholder="Rechercher..." 
-                      className="pl-10 bg-gray-700 border-none text-white placeholder:text-gray-400"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-2 mb-6">
-                  <Button variant="outline" className="border-gray-600 text-white hover:bg-gray-700 w-full justify-start">
-                    Domicile
-                  </Button>
-                  <Button variant="outline" className="border-gray-600 text-white hover:bg-gray-700 w-full justify-start">
-                    Ops
-                  </Button>
-                </div>
-                
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Département</label>
-                    <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
-                      <SelectTrigger className="bg-gray-700 border-gray-600">
-                        <SelectValue placeholder="Tous" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Tous</SelectItem>
-                        <SelectItem value="75">Paris (75)</SelectItem>
-                        <SelectItem value="69">Rhône (69)</SelectItem>
-                        <SelectItem value="33">Gironde (33)</SelectItem>
-                        <SelectItem value="13">Bouches-du-Rhône (13)</SelectItem>
-                        <SelectItem value="59">Nord (59)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Type</label>
-                    <Select value={selectedType} onValueChange={setSelectedType}>
-                      <SelectTrigger className="bg-gray-700 border-gray-600">
-                        <SelectValue placeholder="Tous les types" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Tous les types</SelectItem>
-                        <SelectItem value="cqb">CQB</SelectItem>
-                        <SelectItem value="milsim">Milsim</SelectItem>
-                        <SelectItem value="woodland">Woodland</SelectItem>
-                        <SelectItem value="speedsoft">Speedsoft</SelectItem>
-                        <SelectItem value="tournament">Tournoi</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Date</label>
-                    <div className="relative">
-                      <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                      <Input 
-                        type="date" 
-                        className="pl-10 bg-gray-700 border-gray-600 text-white"
-                        value={selectedDate}
-                        onChange={(e) => setSelectedDate(e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="pt-4">
-                    <p className="text-sm mb-2">{filteredEvents.length} parties trouvées</p>
-                    <div className="flex flex-wrap gap-2">
-                      {searchQuery && (
-                        <Badge className="bg-airsoft-red hover:bg-red-700" onClick={() => setSearchQuery('')}>
-                          {searchQuery} ×
-                        </Badge>
-                      )}
-                      {selectedType !== 'all' && (
-                        <Badge className="bg-airsoft-red hover:bg-red-700" onClick={() => setSelectedType('all')}>
-                          {selectedType} ×
-                        </Badge>
-                      )}
-                      {selectedDepartment !== 'all' && (
-                        <Badge className="bg-airsoft-red hover:bg-red-700" onClick={() => setSelectedDepartment('all')}>
-                          Dép. {selectedDepartment} ×
-                        </Badge>
-                      )}
-                      {selectedDate && (
-                        <Badge className="bg-airsoft-red hover:bg-red-700" onClick={() => setSelectedDate('')}>
-                          {selectedDate} ×
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
+          <div className="flex flex-col md:flex-row">
+            <div className="w-full md:w-1/4 bg-gray-800 p-4 text-white">
+              <div className="mb-6">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                  <Input 
+                    placeholder="Rechercher..." 
+                    className="pl-10 bg-gray-700 border-none text-white placeholder:text-gray-400"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
                 </div>
               </div>
               
-              <div ref={mapContainer} className="w-full md:w-3/4 h-[400px] md:h-[600px] relative bg-gray-300">
-                {!map.current && (
-                  <div className="absolute inset-0 flex items-center justify-center flex-col">
-                    <MapIcon size={48} className="text-gray-400 mb-2" />
-                    <p className="text-center text-gray-500">
-                      Chargement de la carte...
-                    </p>
+              <div className="grid grid-cols-2 gap-2 mb-6">
+                <Button variant="outline" className="border-gray-600 text-white hover:bg-gray-700 w-full justify-start">
+                  Domicile
+                </Button>
+                <Button variant="outline" className="border-gray-600 text-white hover:bg-gray-700 w-full justify-start">
+                  Ops
+                </Button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Département</label>
+                  <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
+                    <SelectTrigger className="bg-gray-700 border-gray-600">
+                      <SelectValue placeholder="Tous" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tous</SelectItem>
+                      <SelectItem value="75">Paris (75)</SelectItem>
+                      <SelectItem value="69">Rhône (69)</SelectItem>
+                      <SelectItem value="33">Gironde (33)</SelectItem>
+                      <SelectItem value="13">Bouches-du-Rhône (13)</SelectItem>
+                      <SelectItem value="59">Nord (59)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-1">Type</label>
+                  <Select value={selectedType} onValueChange={setSelectedType}>
+                    <SelectTrigger className="bg-gray-700 border-gray-600">
+                      <SelectValue placeholder="Tous les types" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tous les types</SelectItem>
+                      <SelectItem value="cqb">CQB</SelectItem>
+                      <SelectItem value="milsim">Milsim</SelectItem>
+                      <SelectItem value="woodland">Woodland</SelectItem>
+                      <SelectItem value="speedsoft">Speedsoft</SelectItem>
+                      <SelectItem value="tournament">Tournoi</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-1">Date</label>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                    <Input 
+                      type="date" 
+                      className="pl-10 bg-gray-700 border-gray-600 text-white"
+                      value={selectedDate}
+                      onChange={(e) => setSelectedDate(e.target.value)}
+                    />
                   </div>
-                )}
+                </div>
+
+                <div className="pt-4">
+                  <p className="text-sm mb-2">{filteredEvents.length} parties trouvées</p>
+                  <div className="flex flex-wrap gap-2">
+                    {searchQuery && (
+                      <Badge className="bg-airsoft-red hover:bg-red-700" onClick={() => setSearchQuery('')}>
+                        {searchQuery} ×
+                      </Badge>
+                    )}
+                    {selectedType !== 'all' && (
+                      <Badge className="bg-airsoft-red hover:bg-red-700" onClick={() => setSelectedType('all')}>
+                        {selectedType} ×
+                      </Badge>
+                    )}
+                    {selectedDepartment !== 'all' && (
+                      <Badge className="bg-airsoft-red hover:bg-red-700" onClick={() => setSelectedDepartment('all')}>
+                        Dép. {selectedDepartment} ×
+                      </Badge>
+                    )}
+                    {selectedDate && (
+                      <Badge className="bg-airsoft-red hover:bg-red-700" onClick={() => setSelectedDate('')}>
+                        {selectedDate} ×
+                      </Badge>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
-          )}
+            
+            <div ref={mapContainer} className="w-full md:w-3/4 h-[400px] md:h-[600px] relative bg-gray-300">
+              {!map.current && (
+                <div className="absolute inset-0 flex items-center justify-center flex-col">
+                  <MapIcon size={48} className="text-gray-400 mb-2" />
+                  <p className="text-center text-gray-500">
+                    Chargement de la carte...
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
         
         {/* Liste des événements */}

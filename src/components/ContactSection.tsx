@@ -42,10 +42,12 @@ const ContactSection = () => {
                   Nous contacter
                 </Button>
               </Link>
-              <Button className="bg-airsoft-red text-white hover:bg-red-700 border border-white">
-                <MessageSquare className="mr-2" size={18} />
-                FAQ
-              </Button>
+              <Link to="/faq">
+                <Button className="bg-airsoft-red text-white hover:bg-red-700 border border-white">
+                  <MessageSquare className="mr-2" size={18} />
+                  FAQ
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
