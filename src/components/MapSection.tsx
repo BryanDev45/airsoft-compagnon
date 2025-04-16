@@ -23,10 +23,29 @@ import Overlay from 'ol/Overlay';
 import { transform } from 'ol/proj';
 import GeoJSON from 'ol/format/GeoJSON';
 
+// Helper functions - define before they are used
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; // Radius of the earth in km
+  const dLat = deg2rad(lat2 - lat1);
+  const dLon = deg2rad(lon2 - lon1);
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2); 
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+  const distance = R * c; // Distance in km
+  return distance;
+};
+
+const deg2rad = (deg) => {
+  return deg * (Math.PI/180);
+};
+
 const MapSection = () => {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const searchCircleLayer = useRef(null);
+  const popupOverlay = useRef(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [selectedDepartment, setSelectedDepartment] = useState('all');
@@ -34,6 +53,16 @@ const MapSection = () => {
   const [selectedCountry, setSelectedCountry] = useState('france');
   const [searchRadius, setSearchRadius] = useState([50]);
   const [searchCenter, setSearchCenter] = useState([2.3522, 46.2276]); // Default to center of France
+
+  // Country coordinates (centers)
+  const countryCoordinates = {
+    france: [2.3522, 46.2276],
+    belgique: [4.3517, 50.8503],
+    suisse: [8.2275, 46.8182],
+    allemagne: [10.4515, 51.1657],
+    espagne: [-3.7492, 40.4637],
+    italie: [12.5674, 41.8719]
+  };
 
   // Simulons des données de parties d'airsoft
   const [events] = useState([{
@@ -43,6 +72,7 @@ const MapSection = () => {
     location: "Paris",
     department: "75",
     type: "cqb",
+    country: "france",
     lat: 48.8566,
     lng: 2.3522
   }, {
@@ -52,6 +82,7 @@ const MapSection = () => {
     location: "Lyon",
     department: "69",
     type: "milsim",
+    country: "france",
     lat: 45.7640,
     lng: 4.8357
   }, {
@@ -61,6 +92,7 @@ const MapSection = () => {
     location: "Marseille",
     department: "13",
     type: "woodland",
+    country: "france",
     lat: 43.2965,
     lng: 5.3698
   }, {
@@ -70,6 +102,7 @@ const MapSection = () => {
     location: "Bordeaux",
     department: "33",
     type: "woodland",
+    country: "france",
     lat: 44.8378,
     lng: -0.5792
   }, {
@@ -79,37 +112,26 @@ const MapSection = () => {
     location: "Lille",
     department: "59",
     type: "tournament",
+    country: "france",
     lat: 50.6292,
     lng: 3.0573
   }]);
-  
-  // Helper functions - MOVED BEFORE THEY ARE USED
-  // Calculate distance between two points using Haversine formula
-  const calculateDistance = (lat1, lon1, lat2, lon2) => {
-    const R = 6371; // Radius of the earth in km
-    const dLat = deg2rad(lat2 - lat1);
-    const dLon = deg2rad(lon2 - lon1);
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
-      Math.sin(dLon/2) * Math.sin(dLon/2); 
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-    const distance = R * c; // Distance in km
-    return distance;
-  };
-  
-  const deg2rad = (deg) => {
-    return deg * (Math.PI/180);
-  };
 
   // Filtrer les événements en fonction des critères de recherche
   const filteredEvents = events.filter(event => {
-    const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) || event.location.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                        event.location.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = selectedType === 'all' || event.type === selectedType;
     const matchesDepartment = selectedDepartment === 'all' || event.department === selectedDepartment;
     const matchesDate = !selectedDate || event.date.includes(selectedDate);
+    const matchesCountry = selectedCountry === 'all' || event.country === selectedCountry;
     
-    // Filter by distance if we have a search center
+    // If search radius is 0, show all events filtered by other criteria
+    if (searchRadius[0] === 0) {
+      return matchesSearch && matchesType && matchesDepartment && matchesDate && matchesCountry;
+    }
+    
+    // Filter by distance if we have a search center and radius > 0
     if (searchCenter && searchRadius[0] > 0) {
       const distance = calculateDistance(
         searchCenter[1], 
@@ -118,11 +140,11 @@ const MapSection = () => {
         event.lng
       );
       
-      // Convert km to miles (search radius is in km)
-      return matchesSearch && matchesType && matchesDepartment && matchesDate && distance <= searchRadius[0];
+      return matchesSearch && matchesType && matchesDepartment && matchesDate && 
+             matchesCountry && distance <= searchRadius[0];
     }
     
-    return matchesSearch && matchesType && matchesDepartment && matchesDate;
+    return matchesSearch && matchesType && matchesDepartment && matchesDate && matchesCountry;
   });
 
   // Function to geocode a location name to coordinates
@@ -184,6 +206,9 @@ const MapSection = () => {
       map.current.removeLayer(searchCircleLayer.current);
       searchCircleLayer.current = null;
     }
+    
+    // If radius is 0, don't show the circle
+    if (radiusKm === 0) return;
     
     // Create a new vector source for the circle
     const circleSource = new VectorSource();
@@ -271,6 +296,27 @@ const MapSection = () => {
     searchCircleLayer.current = vectorLayer;
   };
 
+  // Handle country selection change
+  useEffect(() => {
+    if (selectedCountry !== 'all' && countryCoordinates[selectedCountry]) {
+      setSearchCenter(countryCoordinates[selectedCountry]);
+      
+      if (map.current) {
+        // Center map on selected country
+        map.current.getView().animate({
+          center: fromLonLat(countryCoordinates[selectedCountry]),
+          zoom: 6,
+          duration: 1000
+        });
+        
+        // Update search circle if radius > 0
+        if (searchRadius[0] > 0) {
+          updateSearchCircle(countryCoordinates[selectedCountry], searchRadius[0]);
+        }
+      }
+    }
+  }, [selectedCountry]);
+
   // Handle search query changes
   useEffect(() => {
     const searchLocation = async () => {
@@ -286,7 +332,9 @@ const MapSection = () => {
             });
             
             // Update search circle
-            updateSearchCircle(coords, searchRadius[0]);
+            if (searchRadius[0] > 0) {
+              updateSearchCircle(coords, searchRadius[0]);
+            }
           }
         }
       }
@@ -303,13 +351,33 @@ const MapSection = () => {
   // Update search circle when radius changes
   useEffect(() => {
     if (searchCenter) {
-      updateSearchCircle(searchCenter, searchRadius[0]);
+      if (searchRadius[0] > 0) {
+        updateSearchCircle(searchCenter, searchRadius[0]);
+      } else {
+        // If radius is 0, remove the circle
+        if (searchCircleLayer.current && map.current) {
+          map.current.removeLayer(searchCircleLayer.current);
+          searchCircleLayer.current = null;
+        }
+      }
     }
   }, [searchRadius]);
 
   // Initialize the map OpenLayers
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
+
+    // Create popup overlay for marker info
+    const container = document.createElement('div');
+    container.className = 'ol-popup bg-white p-4 rounded-lg shadow-xl text-sm max-w-xs';
+    const overlay = new Overlay({
+      element: container,
+      autoPan: true,
+      autoPanAnimation: {
+        duration: 250
+      }
+    });
+    popupOverlay.current = overlay;
 
     // Créer une source de vecteur pour les marqueurs
     const vectorSource = new VectorSource();
@@ -320,7 +388,10 @@ const MapSection = () => {
         geometry: new Point(fromLonLat([event.lng, event.lat])),
         name: event.title,
         location: event.location,
-        date: event.date
+        date: event.date,
+        type: event.type,
+        department: event.department,
+        id: event.id
       });
       vectorSource.addFeature(feature);
     });
@@ -346,36 +417,47 @@ const MapSection = () => {
       }), vectorLayer],
       view: new View({
         center: fromLonLat(searchCenter),
-        // Centre de la France
         zoom: 5
-      })
+      }),
+      controls: []
     });
+
+    // Add the popup overlay to the map
+    map.current.addOverlay(overlay);
 
     // Create initial search radius circle
-    updateSearchCircle(searchCenter, searchRadius[0]);
-
-    // Ajouter les infobulles
-    const container = document.createElement('div');
-    container.className = 'ol-popup bg-white p-3 rounded-lg shadow-lg text-sm max-w-xs';
-    const overlay = new Overlay({
-      element: container,
-      autoPan: true,
-    });
-    map.current.addOverlay(overlay);
+    if (searchRadius[0] > 0) {
+      updateSearchCircle(searchCenter, searchRadius[0]);
+    }
 
     // Ajouter un gestionnaire d'événements pour afficher les infobulles
     map.current.on('click', function (evt) {
       const feature = map.current.forEachFeatureAtPixel(evt.pixel, function (feature) {
         return feature;
       });
+      
       if (feature) {
         const geometry = feature.getGeometry();
         const coordinate = geometry.getCoordinates();
+        
+        const eventId = feature.get('id');
+        const eventType = feature.get('type');
+        
         container.innerHTML = `
-          <strong>${feature.get('name')}</strong><br>
-          ${feature.get('location')}<br>
-          ${feature.get('date')}
+          <div class="font-semibold text-lg text-airsoft-red mb-2">${feature.get('name')}</div>
+          <div class="mb-1"><span class="font-medium">Lieu:</span> ${feature.get('location')}</div>
+          <div class="mb-1"><span class="font-medium">Date:</span> ${feature.get('date')}</div>
+          <div class="mb-1"><span class="font-medium">Type:</span> ${eventType === 'cqb' ? 'CQB' : 
+            eventType === 'milsim' ? 'Milsim' : 
+            eventType === 'woodland' ? 'Woodland' : 
+            eventType === 'speedsoft' ? 'Speedsoft' : 
+            eventType === 'tournament' ? 'Tournoi' : eventType}</div>
+          <div class="mb-3"><span class="font-medium">Département:</span> ${feature.get('department')}</div>
+          <a href="/game/${eventId}" class="bg-airsoft-red text-white px-3 py-1 rounded text-sm inline-block hover:bg-red-700">
+            Plus d'informations
+          </a>
         `;
+        
         overlay.setPosition(coordinate);
       } else {
         overlay.setPosition(undefined);
@@ -410,7 +492,10 @@ const MapSection = () => {
         geometry: new Point(fromLonLat([event.lng, event.lat])),
         name: event.title,
         location: event.location,
-        date: event.date
+        date: event.date,
+        type: event.type,
+        department: event.department,
+        id: event.id
       });
       vectorSource.addFeature(feature);
     });
@@ -431,10 +516,10 @@ const MapSection = () => {
               </div>
               
               <div className="grid grid-cols-2 gap-2 mb-6">
-                <Button variant="outline" className="border-gray-600 bg-airsoft-red hover:bg-red-700 text-white w-full justify-start">
+                <Button variant="outline" className="border-gray-600 bg-airsoft-red hover:bg-red-700 text-white w-full justify-center">
                   Dominicale
                 </Button>
-                <Button variant="outline" className="border-gray-600 bg-airsoft-red hover:bg-red-700 text-white w-full justify-start">
+                <Button variant="outline" className="border-gray-600 bg-airsoft-red hover:bg-red-700 text-white w-full justify-center">
                   Opé
                 </Button>
               </div>
@@ -447,6 +532,7 @@ const MapSection = () => {
                       <SelectValue placeholder="Tous les pays" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="all">Tous les pays</SelectItem>
                       <SelectItem value="france">France</SelectItem>
                       <SelectItem value="belgique">Belgique</SelectItem>
                       <SelectItem value="suisse">Suisse</SelectItem>
@@ -500,11 +586,11 @@ const MapSection = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Rayon de recherche: {searchRadius[0]} km</label>
+                  <label className="block text-sm font-medium mb-1">Rayon de recherche: {searchRadius[0]} km {searchRadius[0] === 0 && "(Toutes les parties)"}</label>
                   <Slider
                     defaultValue={[50]}
                     max={200}
-                    min={10}
+                    min={0}
                     step={10}
                     className="pt-2"
                     value={searchRadius}
@@ -530,6 +616,9 @@ const MapSection = () => {
                       </Badge>}
                     {selectedDepartment !== 'all' && <Badge className="bg-airsoft-red hover:bg-red-700" onClick={() => setSelectedDepartment('all')}>
                         Dép. {selectedDepartment} ×
+                      </Badge>}
+                    {selectedCountry !== 'all' && selectedCountry !== 'france' && <Badge className="bg-airsoft-red hover:bg-red-700" onClick={() => setSelectedCountry('all')}>
+                        {selectedCountry} ×
                       </Badge>}
                     {selectedDate && <Badge className="bg-airsoft-red hover:bg-red-700" onClick={() => setSelectedDate('')}>
                         {selectedDate} ×

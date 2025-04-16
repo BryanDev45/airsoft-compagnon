@@ -41,13 +41,12 @@ const Hero = () => {
       {/* V-shape with gradient border */}
       <div className="v-shape-container">
         <div className="v-shape"></div>
-        <div className="v-gradient"></div>
       </div>
 
       <style>{`
         .v-shape-container {
           position: relative;
-          height: 50px;
+          height: 60px;
           width: 100%;
           overflow: hidden;
         }
@@ -58,17 +57,7 @@ const Hero = () => {
           width: 100%;
           height: 100%;
           clip-path: polygon(0 0, 50% 100%, 100% 0);
-          background-color: white;
-        }
-        .v-gradient {
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          clip-path: polygon(0 0, 50% 100%, 100% 0);
           background: linear-gradient(to right, #ea384c, #ff6b6b);
-          opacity: 0.8;
         }
       `}</style>
     </div>;
