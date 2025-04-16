@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Calendar, Map as MapIcon, MapPin, Maximize, Navigation } from 'lucide-react';
+import { Search, Calendar, Map as MapIcon, MapPin, Maximize, Navigation, autoPanAnimation } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
