@@ -372,10 +372,11 @@ const MapSection = () => {
     const overlay = new Overlay({
       element: container,
       autoPan: true,
+      // Fix: Use autoPanAnimation as a separate property with correct typing
       autoPanAnimation: {
         duration: 250
       }
-    } as any);
+    });
     popupOverlay.current = overlay;
 
     // Create the map

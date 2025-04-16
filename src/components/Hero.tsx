@@ -4,9 +4,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-npm install --save styled-jsx
-npm install --save-dev @types/styled-jsx
-
 const Hero = () => {
   return <div className="relative bg-airsoft-dark text-white overflow-hidden">
       <div className="absolute inset-0 z-0">
@@ -46,7 +43,7 @@ const Hero = () => {
         <div className="v-shape"></div>
       </div>
 
-      <style jsx>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .v-shape-container {
           position: relative;
           height: 60px;
@@ -62,8 +59,9 @@ const Hero = () => {
           clip-path: polygon(0 0, 50% 100%, 100% 0);
           background: linear-gradient(to right, #ea384c, #ff6b6b);
         }
-      `}</style>
+      `}} />
     </div>;
 };
 
 export default Hero;
+
