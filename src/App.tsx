@@ -11,6 +11,10 @@ import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import GameDetails from "./pages/GameDetails";
 import NotFound from "./pages/NotFound";
+import TermsOfUse from "./pages/TermsOfUse";
+import TermsOfSale from "./pages/TermsOfSale";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import CookiesPolicy from "./pages/CookiesPolicy";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +34,10 @@ const App = () => (
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/game/:id" element={<GameDetails />} />
+          <Route path="/terms-of-use" element={<TermsOfUse />} />
+          <Route path="/terms-of-sale" element={<TermsOfSale />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/cookies-policy" element={<CookiesPolicy />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

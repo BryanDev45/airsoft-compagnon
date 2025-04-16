@@ -68,9 +68,10 @@ const Footer = () => {
         <div className="border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-400 text-sm">© Airsoft Compagnon 2025. Tous droits réservés.</p>
           <div className="flex gap-6 mt-4 md:mt-0">
-            <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Conditions d'utilisation</a>
-            <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Politique de confidentialité</a>
-            <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Cookies</a>
+            <Link to="/terms-of-use" className="text-gray-400 hover:text-white text-sm transition-colors">Conditions d'utilisation</Link>
+            <Link to="/terms-of-sale" className="text-gray-400 hover:text-white text-sm transition-colors">Conditions de vente</Link>
+            <Link to="/privacy-policy" className="text-gray-400 hover:text-white text-sm transition-colors">Politique de confidentialité</Link>
+            <Link to="/cookies-policy" className="text-gray-400 hover:text-white text-sm transition-colors">Cookies</Link>
           </div>
         </div>
       </div>
