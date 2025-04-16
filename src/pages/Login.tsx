@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -8,8 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { LogIn, User, Lock, Facebook, Mail } from 'lucide-react';
+import { toast } from "@/components/ui/use-toast";
 
 const Login = () => {
+  const navigate = useNavigate();
   const form = useForm({
     defaultValues: {
       email: '',
@@ -19,7 +21,46 @@ const Login = () => {
 
   const onSubmit = (data: any) => {
     console.log('Login attempt:', data);
-    // TODO: Implement authentication logic
+    // Mock successful login
+    toast({
+      title: "Connexion réussie",
+      description: "Vous êtes maintenant connecté",
+    });
+    setTimeout(() => navigate('/profile'), 1000);
+  };
+
+  const handleFacebookLogin = () => {
+    console.log('Facebook login attempt');
+    // Mock Facebook OAuth login
+    toast({
+      title: "Connexion avec Facebook",
+      description: "Redirection vers Facebook...",
+    });
+    // In a real implementation, you would redirect to Facebook OAuth URL
+    setTimeout(() => {
+      toast({
+        title: "Connexion réussie",
+        description: "Vous êtes maintenant connecté avec Facebook",
+      });
+      navigate('/profile');
+    }, 2000);
+  };
+
+  const handleGoogleLogin = () => {
+    console.log('Google login attempt');
+    // Mock Google OAuth login
+    toast({
+      title: "Connexion avec Google",
+      description: "Redirection vers Google...",
+    });
+    // In a real implementation, you would redirect to Google OAuth URL
+    setTimeout(() => {
+      toast({
+        title: "Connexion réussie",
+        description: "Vous êtes maintenant connecté avec Google",
+      });
+      navigate('/profile');
+    }, 2000);
   };
 
   return (
@@ -108,11 +149,19 @@ const Login = () => {
             </div>
 
             <div className="flex gap-4">
-              <Button variant="outline" className="w-full">
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={handleFacebookLogin}
+              >
                 <Facebook className="mr-2 h-4 w-4" />
                 Facebook
               </Button>
-              <Button variant="outline" className="w-full">
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={handleGoogleLogin}
+              >
                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                   <path 
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" 

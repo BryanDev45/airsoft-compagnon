@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Input } from "@/components/ui/input";
@@ -10,31 +11,124 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Label } from "@/components/ui/label";
-import { User, Mail, Phone, MapPin, Calendar, Edit, Save, Settings, LogOut, Shield, Trophy, Clock, Plus, Upload, List, Zap, Tag, FileText } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { User, Mail, MapPin, Calendar, Edit, Save, Settings, LogOut, Shield, Trophy, Clock, Plus, Upload, List, Zap, Tag, FileText, Users, Map, Calendar as CalendarIcon } from 'lucide-react';
+import { toast } from "@/components/ui/use-toast";
 
 const Profile = () => {
+  const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [addingEquipment, setAddingEquipment] = useState(false);
+  const [selectedGame, setSelectedGame] = useState<any>(null);
+  const [showGameDialog, setShowGameDialog] = useState(false);
+  const [showAllGamesDialog, setShowAllGamesDialog] = useState(false);
   
   // Mock user data
   const user = {
     username: "AirsoftMaster",
     email: "airsoft.master@example.com",
-    phone: "+33 6 12 34 56 78",
+    firstname: "Jean",
+    lastname: "Dupont",
+    age: "28",
+    team: "Les Invincibles",
     location: "Paris, France",
     joinDate: "Avril 2023",
     bio: "Passionné d'airsoft depuis 5 ans, j'organise régulièrement des parties sur Paris et sa région.",
     avatar: "https://randomuser.me/api/portraits/men/44.jpg",
     games: [
-      { id: 1, title: "Opération Blackout", date: "15/05/2025", role: "Participant", status: "À venir" },
-      { id: 2, title: "CQB Summer Challenge", date: "02/04/2025", role: "Participant", status: "À venir" },
-      { id: 3, title: "Milsim Weekend", date: "10/03/2025", role: "Organisateur", status: "Terminé" },
+      { 
+        id: 1, 
+        title: "Opération Blackout", 
+        date: "15/05/2025", 
+        role: "Participant", 
+        status: "À venir",
+        location: "Terrain Battlezone, Paris",
+        description: "Une partie nocturne avec objectifs tactiques",
+        participants: 24,
+        duration: "8h",
+        gameType: "Milsim"
+      },
+      { 
+        id: 2, 
+        title: "CQB Summer Challenge", 
+        date: "02/04/2025", 
+        role: "Participant", 
+        status: "À venir",
+        location: "Hangar 34, Marseille",
+        description: "Une journée CQB intense avec plusieurs scénarios",
+        participants: 36,
+        duration: "6h",
+        gameType: "CQB"
+      },
+      { 
+        id: 3, 
+        title: "Milsim Weekend", 
+        date: "10/03/2025", 
+        role: "Organisateur", 
+        status: "Terminé",
+        location: "Forêt de Fontainebleau",
+        description: "Week-end simulation militaire avec campement",
+        participants: 80,
+        duration: "48h",
+        gameType: "Milsim"
+      },
+    ],
+    allGames: [
+      // Additional past games
+      { 
+        id: 4, 
+        title: "Opération Eagle", 
+        date: "15/02/2025", 
+        role: "Participant", 
+        status: "Terminé",
+        location: "Terrain Delta Force, Lyon",
+        description: "Scénario tactique en équipes",
+        participants: 30,
+        duration: "5h",
+        gameType: "Woodland"
+      },
+      { 
+        id: 5, 
+        title: "Urban Warfare", 
+        date: "05/01/2025", 
+        role: "Participant", 
+        status: "Terminé",
+        location: "Zone urbaine abandonnée, Lille",
+        description: "Simulation de combat urbain",
+        participants: 40,
+        duration: "7h",
+        gameType: "CQB"
+      },
+      { 
+        id: 6, 
+        title: "Winter Challenge", 
+        date: "20/12/2024", 
+        role: "Organisateur", 
+        status: "Terminé",
+        location: "Forêt des Ardennes",
+        description: "Challenge hivernal avec objectifs et missions",
+        participants: 60,
+        duration: "10h",
+        gameType: "Woodland"
+      },
     ],
     stats: {
       gamesPlayed: 42,
       gamesOrganized: 7,
       reputation: 4.8,
-      level: "Confirmé"
+      level: "Confirmé",
+      winRate: "68%",
+      objectivesCompleted: 127,
+      flagsCaptured: 53,
+      vipProtection: 12,
+      hostageRescue: 8,
+      bombDefusal: 15,
+      timePlayed: "312h",
+      favoriteRole: "Assaut",
+      preferredGameType: "Milsim",
+      teamwork: "Excellent",
+      tacticalAwareness: "Élevé",
+      accuracy: "76%"
     },
     equipment: [
       { 
@@ -64,6 +158,28 @@ const Profile = () => {
     e.preventDefault();
     // Here you would typically save the new equipment
     setAddingEquipment(false);
+    toast({
+      title: "Équipement ajouté",
+      description: "Votre nouvel équipement a été ajouté avec succès",
+    });
+  };
+
+  // Function to handle viewing game details
+  const handleViewGameDetails = (game: any) => {
+    setSelectedGame(game);
+    setShowGameDialog(true);
+  };
+
+  // Function to handle viewing all games
+  const handleViewAllGames = () => {
+    setShowAllGamesDialog(true);
+  };
+
+  // Function to handle navigation to game page
+  const handleNavigateToGame = (gameId: number) => {
+    setShowGameDialog(false);
+    setShowAllGamesDialog(false);
+    navigate(`/game/${gameId}`);
   };
 
   return (
@@ -197,13 +313,49 @@ const Profile = () => {
                           
                           <div className="space-y-2">
                             <label className="text-sm font-medium flex items-center gap-2">
-                              <Phone size={16} />
-                              Téléphone
+                              <User size={16} />
+                              Nom
                             </label>
                             {editing ? (
-                              <Input defaultValue={user.phone} />
+                              <Input defaultValue={user.lastname} />
                             ) : (
-                              <p className="text-gray-700">{user.phone}</p>
+                              <p className="text-gray-700">{user.lastname}</p>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium flex items-center gap-2">
+                              <User size={16} />
+                              Prénom
+                            </label>
+                            {editing ? (
+                              <Input defaultValue={user.firstname} />
+                            ) : (
+                              <p className="text-gray-700">{user.firstname}</p>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium flex items-center gap-2">
+                              <Calendar size={16} />
+                              Âge
+                            </label>
+                            {editing ? (
+                              <Input defaultValue={user.age} />
+                            ) : (
+                              <p className="text-gray-700">{user.age} ans</p>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium flex items-center gap-2">
+                              <Users size={16} />
+                              Équipe
+                            </label>
+                            {editing ? (
+                              <Input defaultValue={user.team} />
+                            ) : (
+                              <p className="text-gray-700">{user.team}</p>
                             )}
                           </div>
                           
@@ -309,7 +461,14 @@ const Profile = () => {
                                 >
                                   {game.status}
                                 </Badge>
-                                <Button variant="outline" size="sm" className="border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white">Détails</Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white"
+                                  onClick={() => handleViewGameDetails(game)}
+                                >
+                                  Détails
+                                </Button>
                               </div>
                             </div>
                           ))
@@ -317,7 +476,10 @@ const Profile = () => {
                       </div>
                     </CardContent>
                     <CardFooter>
-                      <Button className="bg-airsoft-red hover:bg-red-700">
+                      <Button 
+                        className="bg-airsoft-red hover:bg-red-700"
+                        onClick={handleViewAllGames}
+                      >
                         Voir toutes mes parties
                       </Button>
                     </CardFooter>
@@ -333,9 +495,79 @@ const Profile = () => {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-center py-12 text-gray-500">
-                        Statistiques avancées en cours de développement
-                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                          <h3 className="font-semibold text-lg border-b pb-2">Performance</h3>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-500">Taux de victoire</p>
+                              <p className="font-medium">{user.stats.winRate}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-500">Précision</p>
+                              <p className="font-medium">{user.stats.accuracy}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-500">Temps de jeu</p>
+                              <p className="font-medium">{user.stats.timePlayed}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-500">Rôle préféré</p>
+                              <p className="font-medium">{user.stats.favoriteRole}</p>
+                            </div>
+                          </div>
+                          
+                          <h3 className="font-semibold text-lg border-b pb-2 mt-6">Compétences</h3>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-500">Travail d'équipe</p>
+                              <p className="font-medium">{user.stats.teamwork}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-500">Conscience tactique</p>
+                              <p className="font-medium">{user.stats.tacticalAwareness}</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <h3 className="font-semibold text-lg border-b pb-2">Objectifs</h3>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-500">Objectifs complétés</p>
+                              <p className="font-medium">{user.stats.objectivesCompleted}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-500">Drapeaux capturés</p>
+                              <p className="font-medium">{user.stats.flagsCaptured}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-500">Protections VIP</p>
+                              <p className="font-medium">{user.stats.vipProtection}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-500">Sauvetages d'otages</p>
+                              <p className="font-medium">{user.stats.hostageRescue}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-500">Désamorçages de bombes</p>
+                              <p className="font-medium">{user.stats.bombDefusal}</p>
+                            </div>
+                          </div>
+                          
+                          <h3 className="font-semibold text-lg border-b pb-2 mt-6">Préférences</h3>
+                          
+                          <div className="grid grid-cols-1 gap-4">
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-500">Type de jeu préféré</p>
+                              <p className="font-medium">{user.stats.preferredGameType}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 </TabsContent>
@@ -480,6 +712,134 @@ const Profile = () => {
         </div>
       </main>
       <Footer />
+
+      {/* Game Details Dialog */}
+      <Dialog open={showGameDialog} onOpenChange={setShowGameDialog}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">{selectedGame?.title}</DialogTitle>
+            <DialogDescription className="text-sm text-gray-500">
+              Détails de la partie
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedGame && (
+            <div className="mt-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <Badge 
+                  className={
+                    selectedGame.status === "À venir" 
+                      ? "bg-blue-500" 
+                      : selectedGame.status === "Terminé" 
+                      ? "bg-gray-500" 
+                      : "bg-green-500"
+                  }
+                >
+                  {selectedGame.status}
+                </Badge>
+                <span className="text-sm font-medium">{selectedGame.role}</span>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <CalendarIcon size={16} className="text-airsoft-red" />
+                  <span>{selectedGame.date}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock size={16} className="text-airsoft-red" />
+                  <span>Durée: {selectedGame.duration}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Map size={16} className="text-airsoft-red" />
+                  <span>{selectedGame.location}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Users size={16} className="text-airsoft-red" />
+                  <span>{selectedGame.participants} participants</span>
+                </div>
+              </div>
+              
+              <div className="mt-2">
+                <h4 className="font-medium text-sm mb-1">Description:</h4>
+                <p className="text-sm text-gray-600">{selectedGame.description}</p>
+              </div>
+              
+              <div className="flex justify-end mt-4">
+                <Button 
+                  className="bg-airsoft-red hover:bg-red-700"
+                  onClick={() => handleNavigateToGame(selectedGame.id)}
+                >
+                  Voir la page complète
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+      
+      {/* All Games Dialog */}
+      <Dialog open={showAllGamesDialog} onOpenChange={setShowAllGamesDialog}>
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Toutes mes parties</DialogTitle>
+            <DialogDescription className="text-sm text-gray-500">
+              Historique complet de vos participations
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="mt-4 max-h-96 overflow-y-auto pr-2">
+            <div className="space-y-4">
+              {[...user.games, ...user.allGames].map(game => (
+                <div 
+                  key={game.id} 
+                  className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div>
+                      <h3 className="font-semibold">{game.title}</h3>
+                      <div className="flex flex-wrap items-center gap-4 mt-1 text-sm text-gray-600">
+                        <span className="flex items-center gap-1">
+                          <Calendar size={14} /> {game.date}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <User size={14} /> {game.role}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Map size={14} /> {game.location.split(',')[0]}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                      <Badge 
+                        className={
+                          game.status === "À venir" 
+                            ? "bg-blue-500" 
+                            : game.status === "Terminé" 
+                            ? "bg-gray-500" 
+                            : "bg-green-500"
+                        }
+                      >
+                        {game.status}
+                      </Badge>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white"
+                        onClick={() => {
+                          setShowAllGamesDialog(false);
+                          handleViewGameDetails(game);
+                        }}
+                      >
+                        Détails
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

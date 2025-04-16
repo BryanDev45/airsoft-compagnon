@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -8,8 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { UserPlus, User, Lock, Mail, Check, Calendar } from 'lucide-react';
+import { toast } from "@/components/ui/use-toast";
 
 const Register = () => {
+  const navigate = useNavigate();
   const form = useForm({
     defaultValues: {
       firstname: '',
@@ -31,7 +33,47 @@ const Register = () => {
       });
       return;
     }
-    // TODO: Implement registration logic
+    
+    // Mock successful registration
+    toast({
+      title: "Inscription réussie",
+      description: "Votre compte a été créé avec succès",
+    });
+    setTimeout(() => navigate('/profile'), 1000);
+  };
+
+  const handleFacebookRegistration = () => {
+    console.log('Facebook registration attempt');
+    // Mock Facebook OAuth registration
+    toast({
+      title: "Inscription avec Facebook",
+      description: "Redirection vers Facebook...",
+    });
+    // In a real implementation, you would redirect to Facebook OAuth URL
+    setTimeout(() => {
+      toast({
+        title: "Inscription réussie",
+        description: "Votre compte a été créé avec Facebook",
+      });
+      navigate('/profile');
+    }, 2000);
+  };
+
+  const handleGoogleRegistration = () => {
+    console.log('Google registration attempt');
+    // Mock Google OAuth registration
+    toast({
+      title: "Inscription avec Google",
+      description: "Redirection vers Google...",
+    });
+    // In a real implementation, you would redirect to Google OAuth URL
+    setTimeout(() => {
+      toast({
+        title: "Inscription réussie",
+        description: "Votre compte a été créé avec Google",
+      });
+      navigate('/profile');
+    }, 2000);
   };
 
   return (
@@ -200,7 +242,7 @@ const Register = () => {
                     required
                   />
                   <label htmlFor="agree-terms" className="text-sm text-gray-600">
-                    J'accepte les <Link to="/terms" className="text-airsoft-red hover:underline">conditions d'utilisation</Link>
+                    J'accepte les <Link to="/terms-of-use" className="text-airsoft-red hover:underline">conditions d'utilisation</Link>
                   </label>
                 </div>
 
@@ -220,7 +262,11 @@ const Register = () => {
             </div>
 
             <div className="space-y-4">
-              <Button variant="outline" className="w-full flex justify-center">
+              <Button 
+                variant="outline" 
+                className="w-full flex justify-center"
+                onClick={handleGoogleRegistration}
+              >
                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                   <path 
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" 
@@ -242,11 +288,15 @@ const Register = () => {
                 S'inscrire avec Google
               </Button>
               
-              <Button variant="outline" className="w-full flex justify-center">
-                <svg className="mr-2 h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M9.68 18.791h-2.88v-11.16h2.88v11.16zm-1.44-12.67c-.92 0-1.68-.75-1.68-1.68s.75-1.68 1.68-1.68 1.68.75 1.68 1.68-.75 1.68-1.68 1.68zm13.92 12.67h-2.88v-5.52c0-1.08 0-2.46-1.5-2.46s-1.73 1.17-1.73 2.39v5.59h-2.88v-11.16h2.77v1.26h.04c.38-.72 1.33-1.5 2.73-1.5 2.92 0 3.45 1.92 3.45 4.42v5.98z" />
+              <Button 
+                variant="outline" 
+                className="w-full flex justify-center"
+                onClick={handleFacebookRegistration}
+              >
+                <svg className="mr-2 h-4 w-4" fill="#1877F2" viewBox="0 0 24 24">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                 </svg>
-                S'inscrire avec LinkedIn
+                S'inscrire avec Facebook
               </Button>
             </div>
 
