@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
   User, Mail, MapPin, Calendar, Edit, Save, Settings, LogOut, Shield, 
-  Trophy, Clock, Plus, Upload, List, Zap, Tag, FileText, Users, 
+  Trophy, Flag, Clock, Plus, Upload, List, Zap, Tag, FileText, Users, 
   Map, Calendar as CalendarIcon, Award
 } from 'lucide-react';
 import { toast } from "@/components/ui/use-toast";
