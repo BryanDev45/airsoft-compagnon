@@ -277,7 +277,7 @@ const Profile = () => {
                                 >
                                   {game.status}
                                 </Badge>
-                                <Button variant="outline" size="sm">Détails</Button>
+                                <Button variant="outline" size="sm" className="border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white">Détails</Button>
                               </div>
                             </div>
                           ))
