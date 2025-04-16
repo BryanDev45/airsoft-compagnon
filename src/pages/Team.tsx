@@ -40,6 +40,7 @@ const Team = () => {
         location: "Paris, France",
         founded: "2019",
         organizationType: "association", // 'association' ou 'team'
+        contactEmail: "contact@lesinvincibles.fr",
         members: [
           {
             id: 1,
@@ -170,10 +171,10 @@ const Team = () => {
       return;
     }
 
-    // Simulate sending a message
+    // Simulate sending a message to team.contactEmail
     toast({
       title: "Message envoyé",
-      description: `Votre message a été envoyé à l'équipe ${team.name}`
+      description: `Votre message a été envoyé à ${team.name} (${team.contactEmail})`
     });
     setContactMessage('');
     setContactSubject('');

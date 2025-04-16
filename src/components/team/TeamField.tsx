@@ -62,7 +62,6 @@ const TeamField = ({ field }: TeamFieldProps) => {
               <LocationMap 
                 location={field.address} 
                 coordinates={field.coordinates}
-                zoom={14}
               />
             </div>
           </div>

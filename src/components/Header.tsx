@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, User as UserIcon, LogOut, Bell, BellOff } from 'lucide-react';
+import { Menu, X, User as UserIcon, LogOut, Bell, BellOff, Settings } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -89,12 +89,6 @@ const Header = () => {
   
   const handleLogin = () => {
     navigate('/login');
-  };
-  
-  const handleNotificationClick = () => {
-    // La fonction est maintenant gérée par le Sheet component
-    // Nous gardons cette fonction vide pour compatibilité avec le code existant 
-    // mais elle n'est plus utilisée directement
   };
 
   const handleNotificationRead = (id: number) => {

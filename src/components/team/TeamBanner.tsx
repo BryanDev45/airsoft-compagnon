@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, MapPin, Calendar, Users } from 'lucide-react';
+import TeamSettings from './TeamSettings';
 
 interface TeamBannerProps {
   team: any;
@@ -19,6 +20,10 @@ const TeamBanner = ({ team }: TeamBannerProps) => {
           <ArrowLeft className="mr-2" />
           <span className="sr-only">Retour</span>
         </Link>
+        
+        {/* Team Settings Button */}
+        <TeamSettings team={team} />
+        
         <div className="flex items-center gap-6">
           <div className="relative">
             <img 

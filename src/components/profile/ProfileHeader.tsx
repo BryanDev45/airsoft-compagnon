@@ -1,256 +1,105 @@
 
-import React, { useState } from 'react';
-import { Edit, Save, Settings, LogOut, Calendar, Trophy, Clock, Shield, Award } from 'lucide-react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogDescription,
-  DialogFooter
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "@/components/ui/use-toast";
+  Edit,
+  Mail,
+  MessageCircle,
+  UserPlus,
+  MapPin,
+  Calendar,
+  Shield
+} from "lucide-react";
+import { Link } from 'react-router-dom';
+import ReportUserButton from './ReportUserButton';
 
 interface ProfileHeaderProps {
   user: any;
-  editing: boolean;
-  setEditing: (editing: boolean) => void;
-  handleLogout: () => void;
-  handleViewAllBadges: () => void;
+  isOwnProfile: boolean;
+  setEditing?: (value: boolean) => void;
 }
 
-const ProfileHeader = ({ user, editing, setEditing, handleLogout, handleViewAllBadges }: ProfileHeaderProps) => {
-  const [showSettingsDialog, setShowSettingsDialog] = useState(false);
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [currentPassword, setCurrentPassword] = useState('');
-  
-  const handleSavePassword = () => {
-    if (newPassword !== confirmPassword) {
-      toast({
-        title: "Erreur",
-        description: "Les mots de passe ne correspondent pas",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (newPassword.length < 8) {
-      toast({
-        title: "Erreur",
-        description: "Le mot de passe doit contenir au moins 8 caractères",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    toast({
-      title: "Succès",
-      description: "Votre mot de passe a été modifié avec succès",
-    });
-    
-    setNewPassword('');
-    setConfirmPassword('');
-    setCurrentPassword('');
-  };
-  
-  const handleVerificationRequest = () => {
-    toast({
-      title: "Demande envoyée",
-      description: "Votre demande de vérification d'identité a été envoyée. Vous recevrez une réponse par email dans les prochains jours.",
-    });
-    setShowSettingsDialog(false);
-  };
-  
+const ProfileHeader = ({ user, isOwnProfile, setEditing }: ProfileHeaderProps) => {
   return (
-    <div className="bg-airsoft-dark text-white p-6 relative">
-      <div className="absolute right-6 top-6 flex gap-2">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="text-white border-white hover:bg-white/20 hover:text-white bg-airsoft-red border-airsoft-red"
-          onClick={() => setEditing(!editing)}
-        >
-          {editing ? <Save className="mr-2 h-4 w-4" /> : <Edit className="mr-2 h-4 w-4" />}
-          {editing ? "Sauvegarder" : "Modifier"}
-        </Button>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="text-white border-white hover:bg-white/20 hover:text-white bg-airsoft-red border-airsoft-red"
-          onClick={() => setShowSettingsDialog(true)}
-        >
-          <Settings className="mr-2 h-4 w-4" />
-          Paramètres
-        </Button>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="text-white border-white hover:bg-white/20 hover:text-white bg-airsoft-red border-airsoft-red"
-          onClick={handleLogout}
-        >
-          <LogOut className="mr-2 h-4 w-4" />
-          Déconnexion
-        </Button>
-      </div>
-      
-      <div className="flex flex-col sm:flex-row items-center gap-6">
-        <div className="relative">
-          <img 
-            src={user.avatar} 
-            alt={user.username} 
-            className="w-24 h-24 rounded-full border-4 border-white object-cover"
-          />
-          {editing && (
-            <Button 
-              size="sm" 
-              className="absolute -bottom-2 -right-2 rounded-full h-8 w-8 p-0 bg-airsoft-red hover:bg-red-700"
-            >
-              <Edit size={14} />
-            </Button>
-          )}
+    <div className="bg-white shadow rounded-lg overflow-hidden">
+      <div className="h-32 bg-gradient-to-r from-blue-600 to-airsoft-red"></div>
+      <div className="px-6 py-4 flex flex-col sm:flex-row items-center sm:items-start relative">
+        <div className="w-24 h-24 sm:w-32 sm:h-32 -mt-12 sm:-mt-16 rounded-full overflow-hidden border-4 border-white bg-white">
+          <Avatar className="w-full h-full">
+            <AvatarImage src={user.avatar} alt={user.username} />
+            <AvatarFallback>{user.username.charAt(0)}</AvatarFallback>
+          </Avatar>
         </div>
         
-        <div>
-          <h1 className="text-2xl font-bold flex items-center">
-            {user.username}
-            {user.isVerified && (
-              <img 
-                src="/lovable-uploads/3c025802-3046-4c34-ae5e-2328e941b479.png"
-                alt="Vérifié"
-                className="w-6 h-6 ml-1"
-                title="Profil vérifié"
-              />
+        <div className="flex-1 text-center sm:text-left sm:ml-4 mt-2 sm:mt-0">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1">
+            <h1 className="text-2xl font-bold text-gray-900">{user.username}</h1>
+            {user.verified && (
+              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                Vérifié
+              </Badge>
             )}
-          </h1>
-          <div className="flex items-center gap-1 text-sm text-gray-200">
-            <Calendar size={14} />
-            <span>Membre depuis {user.joinDate}</span>
+            {user.premium && (
+              <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                Premium
+              </Badge>
+            )}
           </div>
-          <div className="flex flex-wrap gap-2 mt-2">
-            <Badge variant="secondary" className="bg-airsoft-red border-none">
-              <Trophy size={14} className="mr-1" /> {user.stats.level}
-            </Badge>
-            <Badge variant="outline" className="text-white border-white">
-              <Clock size={14} className="mr-1" /> {user.stats.gamesPlayed} parties
-            </Badge>
-            <Badge variant="outline" className="text-white border-white">
-              <Shield size={14} className="mr-1" /> {user.stats.gamesOrganized} organisées
-            </Badge>
-            <Badge 
-              variant="outline" 
-              className="text-white border-white cursor-pointer hover:bg-white/10"
-              onClick={handleViewAllBadges}
-            >
-              <Award size={14} className="mr-1" /> {user.badges.length} badges
-            </Badge>
+          
+          <p className="text-gray-600">{user.bio}</p>
+          
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-2 mt-3 text-sm text-gray-600">
+            {user.location && (
+              <div className="flex items-center gap-1">
+                <MapPin size={16} />
+                {user.location}
+              </div>
+            )}
+            
+            {user.team && (
+              <div className="flex items-center gap-1">
+                <Shield size={16} />
+                <Link to={`/team/${user.teamId}`} className="hover:text-airsoft-red transition-colors">
+                  {user.team}
+                </Link>
+              </div>
+            )}
+            
+            <div className="flex items-center gap-1">
+              <Calendar size={16} />
+              Membre depuis {user.memberSince}
+            </div>
           </div>
         </div>
-      </div>
-      
-      {/* Settings Dialog */}
-      <Dialog open={showSettingsDialog} onOpenChange={setShowSettingsDialog}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Paramètres du compte</DialogTitle>
-            <DialogDescription>
-              Gérez vos informations personnelles et les paramètres de sécurité.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <Tabs defaultValue="account">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="account">Compte</TabsTrigger>
-              <TabsTrigger value="security">Sécurité</TabsTrigger>
-              <TabsTrigger value="verification">Vérification</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="account" className="space-y-4 pt-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Adresse email</Label>
-                <Input id="email" value={user.email} readOnly />
-                <p className="text-sm text-gray-500">
-                  Cette adresse est utilisée pour la connexion et les notifications.
-                </p>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="username">Nom d'utilisateur</Label>
-                <Input id="username" value={user.username} readOnly />
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="security" className="space-y-4 pt-4">
-              <div className="space-y-2">
-                <Label htmlFor="current-password">Mot de passe actuel</Label>
-                <Input id="current-password" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="new-password">Nouveau mot de passe</Label>
-                <Input id="new-password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
-                <Input id="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-              </div>
-              
-              <Button 
-                className="w-full bg-airsoft-red hover:bg-red-700"
-                onClick={handleSavePassword}
-                disabled={!currentPassword || !newPassword || !confirmPassword}
-              >
-                Changer le mot de passe
-              </Button>
-            </TabsContent>
-            
-            <TabsContent value="verification" className="space-y-4 pt-4">
-              {user.isVerified ? (
-                <div className="flex items-center space-x-2 p-4 bg-green-50 text-green-700 rounded-md border border-green-200">
-                  <img 
-                    src="/lovable-uploads/3c025802-3046-4c34-ae5e-2328e941b479.png"
-                    alt="Vérifié"
-                    className="w-5 h-5"
-                  />
-                  <span>Votre profil est vérifié</span>
-                </div>
-              ) : (
-                <>
-                  <div className="space-y-2">
-                    <h3 className="font-medium">Demander une vérification de profil</h3>
-                    <p className="text-sm text-gray-500">
-                      La vérification de votre identité vous permet d'avoir accès à plus de fonctionnalités et d'augmenter la confiance des autres joueurs envers vous.
-                    </p>
-                  </div>
-                  
-                  <div className="p-4 bg-amber-50 text-amber-700 rounded-md border border-amber-200 text-sm">
-                    Pour obtenir le badge de vérification, vous devrez fournir un document d'identité valide et une photo de vous tenant ce document. Ces informations seront traitées de manière confidentielle et supprimées après vérification.
-                  </div>
-                  
-                  <Button 
-                    className="w-full bg-airsoft-red hover:bg-red-700"
-                    onClick={handleVerificationRequest}
-                  >
-                    Demander une vérification
-                  </Button>
-                </>
-              )}
-            </TabsContent>
-          </Tabs>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowSettingsDialog(false)}>
-              Fermer
+        
+        <div className="mt-4 sm:mt-0 flex flex-wrap justify-center sm:justify-end items-center gap-2">
+          {isOwnProfile ? (
+            <Button 
+              onClick={() => setEditing?.(true)} 
+              variant="outline" 
+              size="sm" 
+              className="flex items-center gap-1"
+            >
+              <Edit size={16} />
+              Modifier profil
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          ) : (
+            <>
+              <Button variant="outline" size="sm" className="flex items-center gap-1">
+                <MessageCircle size={16} />
+                Message
+              </Button>
+              <Button variant="outline" size="sm" className="flex items-center gap-1">
+                <UserPlus size={16} />
+                Ajouter
+              </Button>
+              <ReportUserButton username={user.username} />
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

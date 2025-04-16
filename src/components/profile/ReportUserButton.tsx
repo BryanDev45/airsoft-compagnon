@@ -1,0 +1,119 @@
+
+import React, { useState } from 'react';
+import { UserX } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription,
+  DialogFooter,
+  DialogTrigger
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { toast } from "@/components/ui/use-toast";
+
+interface ReportUserButtonProps {
+  username: string;
+}
+
+const ReportUserButton = ({ username }: ReportUserButtonProps) => {
+  const [reason, setReason] = useState("");
+  const [details, setDetails] = useState("");
+  const [open, setOpen] = useState(false);
+
+  const handleReport = () => {
+    if (!reason) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez sélectionner une raison",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Simulate report submission
+    toast({
+      title: "Signalement envoyé",
+      description: "Merci pour votre signalement. Notre équipe va l'examiner."
+    });
+    setReason("");
+    setDetails("");
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button 
+          variant="outline" 
+          size="sm"
+          className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
+        >
+          <UserX className="mr-2 h-4 w-4" />
+          Signaler
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Signaler {username}</DialogTitle>
+          <DialogDescription>
+            Si vous pensez que cet utilisateur enfreint les règles de la communauté, veuillez le signaler.
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="reason">Raison du signalement</Label>
+            <Select 
+              value={reason}
+              onValueChange={setReason}
+            >
+              <SelectTrigger id="reason">
+                <SelectValue placeholder="Sélectionner une raison" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="inappropriate">Contenu inapproprié</SelectItem>
+                <SelectItem value="harassment">Harcèlement</SelectItem>
+                <SelectItem value="spam">Spam</SelectItem>
+                <SelectItem value="fake">Faux profil</SelectItem>
+                <SelectItem value="other">Autre raison</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="details">Détails</Label>
+            <Textarea 
+              id="details"
+              placeholder="Veuillez fournir plus de détails sur votre signalement..."
+              value={details}
+              onChange={(e) => setDetails(e.target.value)}
+              rows={4}
+            />
+          </div>
+          
+          <div className="text-xs text-gray-500">
+            Toutes les informations que vous fournissez resteront confidentielles. Notre équipe examinera votre signalement dans les plus brefs délais.
+          </div>
+        </div>
+        
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>Annuler</Button>
+          <Button variant="destructive" onClick={handleReport}>Envoyer</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default ReportUserButton;
