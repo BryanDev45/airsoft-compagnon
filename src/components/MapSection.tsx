@@ -11,23 +11,28 @@ import Map from 'ol/Map';
 import View from 'ol/View';
 import TileLayer from 'ol/layer/Tile';
 import OSM from 'ol/source/OSM';
-import { fromLonLat } from 'ol/proj';
+import { fromLonLat, toLonLat } from 'ol/proj';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
-import { Style, Icon } from 'ol/style';
+import Circle from 'ol/geom/Circle';
+import { Style, Icon, Fill, Stroke } from 'ol/style';
 import Overlay from 'ol/Overlay';
+import { transform } from 'ol/proj';
+import GeoJSON from 'ol/format/GeoJSON';
 
 const MapSection = () => {
   const mapContainer = useRef(null);
   const map = useRef(null);
+  const searchCircleLayer = useRef(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('france');
   const [searchRadius, setSearchRadius] = useState([50]);
+  const [searchCenter, setSearchCenter] = useState([2.3522, 46.2276]); // Default to center of France
 
   // Simulons des données de parties d'airsoft
   const [events] = useState([{
@@ -83,20 +88,78 @@ const MapSection = () => {
     const matchesType = selectedType === 'all' || event.type === selectedType;
     const matchesDepartment = selectedDepartment === 'all' || event.department === selectedDepartment;
     const matchesDate = !selectedDate || event.date.includes(selectedDate);
+    
+    // Filter by distance if we have a search center
+    if (searchCenter && searchRadius[0] > 0) {
+      const distance = calculateDistance(
+        searchCenter[1], 
+        searchCenter[0], 
+        event.lat, 
+        event.lng
+      );
+      
+      // Convert km to miles (search radius is in km)
+      return matchesSearch && matchesType && matchesDepartment && matchesDate && distance <= searchRadius[0];
+    }
+    
     return matchesSearch && matchesType && matchesDepartment && matchesDate;
   });
+
+  // Calculate distance between two points using Haversine formula
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Radius of the earth in km
+    const dLat = deg2rad(lat2 - lat1);
+    const dLon = deg2rad(lon2 - lon1);
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2); 
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+    const distance = R * c; // Distance in km
+    return distance;
+  };
+  
+  const deg2rad = (deg) => {
+    return deg * (Math.PI/180);
+  };
+
+  // Function to geocode a location name to coordinates
+  const geocodeLocation = async (locationName) => {
+    if (!locationName) return null;
+    
+    try {
+      // Using OpenStreetMap Nominatim API for geocoding
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationName)}`);
+      const data = await response.json();
+      
+      if (data && data.length > 0) {
+        // Use the first result
+        const { lat, lon } = data[0];
+        return [parseFloat(lon), parseFloat(lat)];
+      }
+      return null;
+    } catch (error) {
+      console.error("Error geocoding location:", error);
+      return null;
+    }
+  };
 
   // Fonction pour obtenir la position actuelle
   const getCurrentPosition = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((position) => {
         const { latitude, longitude } = position.coords;
+        setSearchCenter([longitude, latitude]);
+        
         if (map.current) {
           map.current.getView().animate({
             center: fromLonLat([longitude, latitude]),
             zoom: 12,
             duration: 1000
           });
+          
+          // Update search circle
+          updateSearchCircle([longitude, latitude], searchRadius[0]);
         }
       }, (error) => {
         console.error("Erreur de géolocalisation:", error);
@@ -107,7 +170,142 @@ const MapSection = () => {
     }
   };
 
-  // Initialiser la carte OpenLayers
+  // Function to update the search circle on the map
+  const updateSearchCircle = (center, radiusKm) => {
+    if (!map.current) return;
+    
+    // Get existing vector layers
+    const layers = map.current.getLayers().getArray();
+    
+    // Remove any existing search circle layer
+    if (searchCircleLayer.current) {
+      map.current.removeLayer(searchCircleLayer.current);
+      searchCircleLayer.current = null;
+    }
+    
+    // Create a new vector source for the circle
+    const circleSource = new VectorSource();
+    
+    // Create a point feature at the center
+    const centerFeature = new Feature({
+      geometry: new Point(fromLonLat(center))
+    });
+    
+    // Calculate radius in meters (OL uses meters)
+    const radiusMeters = radiusKm * 1000;
+    
+    // Create circle geometry in EPSG:3857 (Web Mercator)
+    const centerPoint = fromLonLat(center);
+    
+    // Create a polygon that approximates a circle
+    // OL doesn't have true circles, so we'll create one using a polygon
+    const circleCoords = [];
+    const steps = 100;
+    for (let i = 0; i < steps; i++) {
+      const angle = i * (2 * Math.PI / steps);
+      const x = centerPoint[0] + radiusMeters * Math.cos(angle) / (111320 * Math.cos(center[1] * Math.PI / 180));
+      const y = centerPoint[1] + radiusMeters * Math.sin(angle) / 111320;
+      circleCoords.push([x, y]);
+    }
+    circleCoords.push(circleCoords[0]); // Close the polygon
+    
+    // Create circle feature
+    const circleFeature = new Feature({
+      geometry: new Point(centerPoint)
+    });
+    
+    circleSource.addFeature(circleFeature);
+    circleSource.addFeature(centerFeature);
+    
+    // Create a new vector layer for the circle
+    searchCircleLayer.current = new VectorLayer({
+      source: circleSource,
+      style: new Style({
+        image: new Icon({
+          anchor: [0.5, 0.5],
+          src: 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/icons/geo-alt-fill.svg',
+          scale: 1.5,
+          color: '#ea384c'
+        }),
+        // Style for the circle
+        stroke: new Stroke({
+          color: 'rgba(234, 56, 76, 0.8)',
+          width: 2
+        }),
+        fill: new Fill({
+          color: 'rgba(234, 56, 76, 0.1)'
+        })
+      })
+    });
+    
+    // Add circle layer to map
+    map.current.addLayer(searchCircleLayer.current);
+    
+    // Create a circle feature with proper radius
+    const circle = new Circle(centerPoint, radiusMeters);
+    const circleFeature2 = new Feature(circle);
+    
+    // Add to vector source
+    const vectorSource = new VectorSource({
+      features: [circleFeature2]
+    });
+    
+    // Create vector layer with style
+    const vectorLayer = new VectorLayer({
+      source: vectorSource,
+      style: new Style({
+        stroke: new Stroke({
+          color: 'rgba(234, 56, 76, 0.8)',
+          width: 2
+        }),
+        fill: new Fill({
+          color: 'rgba(234, 56, 76, 0.1)'
+        })
+      })
+    });
+    
+    // Add to map
+    map.current.addLayer(vectorLayer);
+    searchCircleLayer.current = vectorLayer;
+  };
+
+  // Handle search query changes
+  useEffect(() => {
+    const searchLocation = async () => {
+      if (searchQuery) {
+        const coords = await geocodeLocation(searchQuery);
+        if (coords) {
+          setSearchCenter(coords);
+          if (map.current) {
+            map.current.getView().animate({
+              center: fromLonLat(coords),
+              zoom: 12,
+              duration: 1000
+            });
+            
+            // Update search circle
+            updateSearchCircle(coords, searchRadius[0]);
+          }
+        }
+      }
+    };
+    
+    // Debounce search to avoid too many requests
+    const timerId = setTimeout(() => {
+      searchLocation();
+    }, 500);
+    
+    return () => clearTimeout(timerId);
+  }, [searchQuery]);
+
+  // Update search circle when radius changes
+  useEffect(() => {
+    if (searchCenter) {
+      updateSearchCircle(searchCenter, searchRadius[0]);
+    }
+  }, [searchRadius]);
+
+  // Initialize the map OpenLayers
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
@@ -145,11 +343,14 @@ const MapSection = () => {
         source: new OSM()
       }), vectorLayer],
       view: new View({
-        center: fromLonLat([2.3522, 46.2276]),
+        center: fromLonLat(searchCenter),
         // Centre de la France
         zoom: 5
       })
     });
+
+    // Create initial search radius circle
+    updateSearchCircle(searchCenter, searchRadius[0]);
 
     // Ajouter les infobulles
     const container = document.createElement('div');
@@ -193,7 +394,7 @@ const MapSection = () => {
         map.current = null;
       }
     };
-  }, [filteredEvents]);
+  }, []);
 
   // Mettre à jour la carte lorsque les filtres changent
   useEffect(() => {

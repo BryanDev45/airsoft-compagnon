@@ -38,13 +38,13 @@ const Hero = () => {
         </div>
       </div>
       
-      {/* Forme en V avec dégradé */}
+      {/* V-shape with gradient border */}
       <div className="v-shape-container">
         <div className="v-shape"></div>
         <div className="v-gradient"></div>
       </div>
 
-      <style jsx="true">{`
+      <style>{`
         .v-shape-container {
           position: relative;
           height: 50px;
