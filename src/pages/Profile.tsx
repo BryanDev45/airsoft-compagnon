@@ -2,7 +2,7 @@ import React from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Badge } from "@/components/ui/badge";
-import { Check, User, Mail } from 'lucide-react';
+import { Check, User } from 'lucide-react';
 import { CalendarDays, MapPin, Flag } from "lucide-react";
 
 const Profile = () => {
