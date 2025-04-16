@@ -7,8 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Users, Flag, Trophy, Shield, Calendar, MapPin, Info, User, ArrowLeft, MessageSquare, Share } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Users, Flag, Trophy, Shield, Calendar, MapPin, Info, User, ArrowLeft, MessageSquare, Share, Send } from 'lucide-react';
+import { toast } from "@/components/ui/use-toast";
+import LocationMap from '../components/map/LocationMap';
 
 const Team = () => {
   const { id } = useParams();
@@ -16,6 +20,10 @@ const Team = () => {
   const [loading, setLoading] = useState(true);
   const [selectedMember, setSelectedMember] = useState<any>(null);
   const [showMemberDialog, setShowMemberDialog] = useState(false);
+  const [showContactDialog, setShowContactDialog] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [contactMessage, setContactMessage] = useState('');
+  const [contactSubject, setContactSubject] = useState('');
 
   useEffect(() => {
     // Mock data fetch
@@ -125,6 +133,14 @@ const Team = () => {
           gamesPlayed: 42,
           memberCount: 5,
           averageRating: 4.8
+        },
+        field: {
+          name: "Terrain Les Invincibles",
+          description: "Terrain forestier de 10 hectares avec zones CQB et bunkers",
+          address: "Forêt de Fontainebleau, 77300",
+          coordinates: [2.6667, 48.4167], // Fontainebleau coordinates
+          surface: "10 hectares",
+          type: "Forestier avec structures CQB"
         }
       });
       setLoading(false);
@@ -134,6 +150,66 @@ const Team = () => {
   const handleViewMember = (member: any) => {
     setSelectedMember(member);
     setShowMemberDialog(true);
+  };
+
+  const handleContactTeam = () => {
+    setShowContactDialog(true);
+  };
+
+  const handleSendMessage = () => {
+    if (!contactSubject.trim() || !contactMessage.trim()) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Simulate sending a message
+    toast({
+      title: "Message envoyé",
+      description: "Votre message a été envoyé à l'équipe Les Invincibles"
+    });
+    setContactMessage('');
+    setContactSubject('');
+    setShowContactDialog(false);
+  };
+
+  const handleShare = () => {
+    setShowShareDialog(true);
+  };
+
+  const handleShareVia = (method: string) => {
+    // Prepare share URL
+    const shareUrl = window.location.href;
+    const shareText = `Découvrez l'équipe ${team?.name} sur Airsoft Compagnon!`;
+
+    // Handle different sharing methods
+    switch (method) {
+      case 'facebook':
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank');
+        break;
+      case 'twitter':
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
+        break;
+      case 'whatsapp':
+        window.open(`https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`, '_blank');
+        break;
+      case 'email':
+        window.open(`mailto:?subject=${encodeURIComponent(shareText)}&body=${encodeURIComponent(shareUrl)}`, '_blank');
+        break;
+      case 'copy':
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          toast({
+            title: "Lien copié",
+            description: "Le lien a été copié dans votre presse-papier"
+          });
+        });
+        break;
+    }
+
+    setShowShareDialog(false);
   };
 
   if (loading) {
@@ -253,11 +329,19 @@ const Team = () => {
                     </div>
                   </div>
                   <div className="flex justify-between mt-6">
-                    <Button variant="outline" className="flex items-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      className="flex items-center gap-2"
+                      onClick={handleContactTeam}
+                    >
                       <MessageSquare size={16} />
                       Contacter
                     </Button>
-                    <Button variant="outline" className="flex items-center gap-2 bg-airsoft-red text-white hover:bg-red-700">
+                    <Button 
+                      variant="outline" 
+                      className="flex items-center gap-2 bg-airsoft-red text-white hover:bg-red-700"
+                      onClick={handleShare}
+                    >
                       <Share size={16} />
                       Partager
                     </Button>
@@ -274,6 +358,7 @@ const Team = () => {
                 <TabsList className="mb-6">
                   <TabsTrigger value="members">Membres</TabsTrigger>
                   <TabsTrigger value="games">Parties</TabsTrigger>
+                  <TabsTrigger value="field">Terrain</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="members">
@@ -420,6 +505,53 @@ const Team = () => {
                     </div>
                   </div>
                 </TabsContent>
+
+                <TabsContent value="field">
+                  {team.field ? (
+                    <div className="space-y-6">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>{team.field.name}</CardTitle>
+                          <CardDescription>{team.field.description}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-4">
+                              <div>
+                                <h4 className="text-sm font-medium text-gray-500 mb-1">Adresse</h4>
+                                <p className="text-gray-800">{team.field.address}</p>
+                              </div>
+                              <div>
+                                <h4 className="text-sm font-medium text-gray-500 mb-1">Surface</h4>
+                                <p className="text-gray-800">{team.field.surface}</p>
+                              </div>
+                              <div>
+                                <h4 className="text-sm font-medium text-gray-500 mb-1">Type</h4>
+                                <p className="text-gray-800">{team.field.type}</p>
+                              </div>
+                            </div>
+                            <div className="h-64 rounded-lg overflow-hidden">
+                              <LocationMap 
+                                location={team.field.address} 
+                                coordinates={team.field.coordinates}
+                              />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 p-6 rounded-lg text-center">
+                      <MapPin className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                      <h3 className="text-lg font-medium text-gray-700 mb-2">
+                        Aucun terrain disponible
+                      </h3>
+                      <p className="text-gray-500 max-w-md mx-auto">
+                        Cette équipe n'a pas encore ajouté d'informations sur son terrain d'entraînement.
+                      </p>
+                    </div>
+                  )}
+                </TabsContent>
               </Tabs>
             </div>
           </div>
@@ -494,6 +626,107 @@ const Team = () => {
               asChild
             >
               <Link to={`/profile`}>Voir profil complet</Link>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Contact Dialog */}
+      <Dialog open={showContactDialog} onOpenChange={setShowContactDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Contacter {team.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">
+                Sujet
+              </label>
+              <Input 
+                id="subject" 
+                value={contactSubject} 
+                onChange={(e) => setContactSubject(e.target.value)} 
+                placeholder="Entrez le sujet de votre message" 
+              />
+            </div>
+            <div>
+              <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+                Message
+              </label>
+              <Textarea 
+                id="message" 
+                value={contactMessage} 
+                onChange={(e) => setContactMessage(e.target.value)} 
+                placeholder="Écrivez votre message ici..." 
+                rows={6}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowContactDialog(false)}
+            >
+              Annuler
+            </Button>
+            <Button
+              className="bg-airsoft-red hover:bg-red-700 text-white flex gap-2"
+              onClick={handleSendMessage}
+            >
+              <Send size={16} />
+              Envoyer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Share Dialog */}
+      <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Partager {team.name}</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-4">
+            <Button 
+              variant="outline" 
+              className="flex flex-col items-center py-6"
+              onClick={() => handleShareVia('facebook')}
+            >
+              <img src="/lovable-uploads/1cc60b94-2b6c-4e0e-9ab8-1bd1e8cb1098.png" alt="Facebook" className="w-8 h-8 mb-2" />
+              <span>Facebook</span>
+            </Button>
+            <Button 
+              variant="outline" 
+              className="flex flex-col items-center py-6"
+              onClick={() => handleShareVia('twitter')}
+            >
+              <img src="/lovable-uploads/84404d08-fa37-4317-80e0-d607d3676fd5.png" alt="Twitter" className="w-8 h-8 mb-2" />
+              <span>Twitter</span>
+            </Button>
+            <Button 
+              variant="outline" 
+              className="flex flex-col items-center py-6"
+              onClick={() => handleShareVia('whatsapp')}
+            >
+              <img src="/lovable-uploads/e3177716-6012-4386-a9b2-607ab6f838b0.png" alt="WhatsApp" className="w-8 h-8 mb-2" />
+              <span>WhatsApp</span>
+            </Button>
+            <Button 
+              variant="outline" 
+              className="flex flex-col items-center py-6"
+              onClick={() => handleShareVia('email')}
+            >
+              <img src="/lovable-uploads/c242d3b0-8906-4f00-9b3b-fc251f703e4b.png" alt="Email" className="w-8 h-8 mb-2" />
+              <span>Email</span>
+            </Button>
+          </div>
+          <div className="mt-4">
+            <Button 
+              className="w-full flex items-center justify-center gap-2 bg-airsoft-red hover:bg-red-700 text-white"
+              onClick={() => handleShareVia('copy')}
+            >
+              <Share size={16} />
+              Copier le lien
             </Button>
           </div>
         </DialogContent>
