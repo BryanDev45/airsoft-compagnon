@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 
 const Hero = () => {
   return (
-    <div className="relative bg-airsoft-dark text-white overflow-hidden clip-bottom">
+    <div className="relative bg-airsoft-dark text-white overflow-hidden clip-bottom border-b-4 border-gradient-red">
       <div className="absolute inset-0 z-0">
         <img 
           src="/lovable-uploads/e3177716-6012-4386-a9b2-607ab6f838b0.png" 
@@ -19,7 +19,7 @@ const Hero = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-black to-transparent opacity-50"></div>
       </div>
       
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-16 md:py-24 lg:py-32">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 md:py-12 lg:py-16">
         <div className="max-w-3xl mx-auto text-center">
           <div className="mb-8">
             <img
