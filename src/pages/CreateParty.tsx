@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
@@ -36,8 +36,11 @@ const partyFormSchema = z.object({
   maxPlayers: z.string().min(1, "Le nombre maximum de joueurs est requis"),
   price: z.string(),
   gameType: z.string().min(1, "Le type de jeu est requis"),
-  isPrivate: z.boolean().default(false),
   requiresReplica: z.boolean().default(true),
+  manualValidation: z.boolean().default(false),
+  hasToilets: z.boolean().default(false),
+  hasParking: z.boolean().default(false),
+  hasEquipmentRental: z.boolean().default(false),
   terms: z.boolean().refine(val => val === true, {
     message: "Vous devez accepter les conditions",
   }),
@@ -71,8 +74,11 @@ const CreateParty = () => {
       maxPlayers: "20",
       price: "0",
       gameType: "",
-      isPrivate: false,
       requiresReplica: true,
+      manualValidation: false,
+      hasToilets: false,
+      hasParking: false,
+      hasEquipmentRental: false,
       terms: false,
     },
   });
@@ -382,14 +388,14 @@ const CreateParty = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                       control={form.control}
-                      name="isPrivate"
+                      name="manualValidation"
                       render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                           <div className="space-y-0.5">
-                            <FormLabel className="text-base">Partie privée</FormLabel>
-                            <FormDescription>
-                              Seuls les joueurs avec un lien peuvent voir et rejoindre
-                            </FormDescription>
+                            <FormLabel className="text-base">Validation manuelle</FormLabel>
+                            <p className="text-sm text-muted-foreground">
+                              Les demandes de participation doivent être validées manuellement
+                            </p>
                           </div>
                           <FormControl>
                             <Switch
@@ -408,9 +414,72 @@ const CreateParty = () => {
                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                           <div className="space-y-0.5">
                             <FormLabel className="text-base">Réplique requise</FormLabel>
-                            <FormDescription>
+                            <p className="text-sm text-muted-foreground">
                               Les joueurs doivent avoir leur propre réplique
-                            </FormDescription>
+                            </p>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="hasToilets"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base">Toilettes</FormLabel>
+                            <p className="text-sm text-muted-foreground">
+                              Des toilettes sont disponibles sur le terrain
+                            </p>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="hasParking"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base">Parking</FormLabel>
+                            <p className="text-sm text-muted-foreground">
+                              Un parking est disponible sur place
+                            </p>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="hasEquipmentRental"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base">Location de matériel</FormLabel>
+                            <p className="text-sm text-muted-foreground">
+                              Des répliques et équipements sont disponibles à la location
+                            </p>
                           </div>
                           <FormControl>
                             <Switch

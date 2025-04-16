@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Header from '../components/Header';
@@ -28,7 +27,6 @@ const Profile = () => {
   const [showAllGamesDialog, setShowAllGamesDialog] = useState(false);
   const [showBadgesDialog, setShowBadgesDialog] = useState(false);
   
-  // Mock user data
   const user = {
     username: "AirsoftMaster",
     email: "airsoft.master@example.com",
@@ -111,7 +109,6 @@ const Profile = () => {
       },
     ],
     allGames: [
-      // Additional past games
       { 
         id: 4, 
         title: "Opération Eagle", 
@@ -179,7 +176,6 @@ const Profile = () => {
     ]
   };
 
-  // List of equipment types for the dropdown
   const equipmentTypes = [
     "DMR", 
     "SMG", 
@@ -190,10 +186,8 @@ const Profile = () => {
     "Fusil à pompe"
   ];
 
-  // Function to handle adding new equipment
   const handleAddEquipment = (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically save the new equipment
     setAddingEquipment(false);
     toast({
       title: "Équipement ajouté",
@@ -201,43 +195,35 @@ const Profile = () => {
     });
   };
 
-  // Function to handle viewing game details
   const handleViewGameDetails = (game: any) => {
     setSelectedGame(game);
     setShowGameDialog(true);
   };
 
-  // Function to handle viewing all games
   const handleViewAllGames = () => {
     setShowAllGamesDialog(true);
   };
 
-  // Function to handle viewing all badges
   const handleViewAllBadges = () => {
     setShowBadgesDialog(true);
   };
 
-  // Function to handle navigation to game page
   const handleNavigateToGame = (gameId: number) => {
     setShowGameDialog(false);
     setShowAllGamesDialog(false);
     navigate(`/game/${gameId}`);
   };
 
-  // Function to navigate to team page
   const handleNavigateToTeam = () => {
     navigate(`/team/${user.teamId}`);
   };
 
-  // Function to handle logout
   const handleLogout = () => {
-    // Here you would typically clear user session/localStorage
     toast({
       title: "Déconnexion réussie",
       description: "Vous êtes maintenant déconnecté",
     });
     
-    // Redirect to login page
     navigate('/login');
   };
 
@@ -384,18 +370,6 @@ const Profile = () => {
                                   />
                                 )}
                               </p>
-                            )}
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium flex items-center gap-2">
-                              <Mail size={16} />
-                              Email
-                            </label>
-                            {editing ? (
-                              <Input defaultValue={user.email} />
-                            ) : (
-                              <p className="text-gray-700">{user.email}</p>
                             )}
                           </div>
                           
@@ -871,7 +845,6 @@ const Profile = () => {
       </main>
       <Footer />
 
-      {/* Game Details Dialog */}
       <Dialog open={showGameDialog} onOpenChange={setShowGameDialog}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
@@ -909,7 +882,7 @@ const Profile = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <Map size={16} className="text-airsoft-red" />
-                  <span>{selectedGame.location}</span>
+                  <span>{selectedGame.location.split(',')[0]}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Users size={16} className="text-airsoft-red" />
@@ -935,7 +908,6 @@ const Profile = () => {
         </DialogContent>
       </Dialog>
       
-      {/* All Games Dialog */}
       <Dialog open={showAllGamesDialog} onOpenChange={setShowAllGamesDialog}>
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
@@ -999,7 +971,6 @@ const Profile = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Badges Dialog */}
       <Dialog open={showBadgesDialog} onOpenChange={setShowBadgesDialog}>
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
@@ -1070,4 +1041,3 @@ const Profile = () => {
 };
 
 export default Profile;
-
