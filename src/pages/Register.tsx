@@ -352,7 +352,7 @@ const Register = () => {
                   type="button" 
                   variant="outline" 
                   className="w-full flex items-center justify-center gap-2"
-                  onClick={() => form.handleSubmit((data) => handleSocialLogin('Facebook'))({})}
+                  onClick={() => handleSocialLogin('Facebook')}
                 >
                   <Facebook className="h-5 w-5 text-blue-600" />
                   <span>S'inscrire avec Facebook</span>
@@ -362,7 +362,7 @@ const Register = () => {
                   type="button" 
                   variant="outline" 
                   className="w-full flex items-center justify-center gap-2"
-                  onClick={() => form.handleSubmit((data) => handleSocialLogin('Google'))({})}
+                  onClick={() => handleSocialLogin('Google')}
                 >
                   <svg viewBox="0 0 24 24" width="20" height="20" className="mr-1">
                     <path

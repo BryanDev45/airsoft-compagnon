@@ -17,9 +17,8 @@ const ProfileInfo = ({ user, editing, setEditing }) => {
             type="text"
             value={user.firstname}
             readOnly
-            className="bg-gray-100 cursor-not-allowed"
+            className={editing ? "bg-gray-100 cursor-not-allowed" : "bg-white border-none"}
           />
-          <p className="text-xs text-gray-500 mt-1">Ce champ n'est pas modifiable</p>
         </div>
         <div>
           <Label htmlFor="lastname">Nom</Label>
@@ -28,9 +27,8 @@ const ProfileInfo = ({ user, editing, setEditing }) => {
             type="text"
             value={user.lastname}
             readOnly
-            className="bg-gray-100 cursor-not-allowed"
+            className={editing ? "bg-gray-100 cursor-not-allowed" : "bg-white border-none"}
           />
-          <p className="text-xs text-gray-500 mt-1">Ce champ n'est pas modifiable</p>
         </div>
         <div>
           <Label htmlFor="username">Nom d'utilisateur</Label>
@@ -39,7 +37,7 @@ const ProfileInfo = ({ user, editing, setEditing }) => {
             type="text"
             value={user.username}
             disabled={!editing}
-            className={!editing ? "bg-gray-100" : ""}
+            className={!editing ? "bg-white border-none" : ""}
           />
         </div>
         <div>
@@ -49,7 +47,7 @@ const ProfileInfo = ({ user, editing, setEditing }) => {
             type="email"
             value={user.email}
             disabled={!editing}
-            className={!editing ? "bg-gray-100" : ""}
+            className={!editing ? "bg-white border-none" : ""}
           />
         </div>
         <div>
@@ -59,9 +57,8 @@ const ProfileInfo = ({ user, editing, setEditing }) => {
             type="text"
             value={user.age}
             readOnly
-            className="bg-gray-100 cursor-not-allowed"
+            className={editing ? "bg-gray-100 cursor-not-allowed" : "bg-white border-none"}
           />
-          <p className="text-xs text-gray-500 mt-1">Ce champ n'est pas modifiable</p>
         </div>
         <div>
           <Label htmlFor="team">Équipe</Label>
@@ -70,7 +67,7 @@ const ProfileInfo = ({ user, editing, setEditing }) => {
             type="text"
             value={user.team}
             disabled={!editing}
-            className={!editing ? "bg-gray-100" : ""}
+            className={!editing ? "bg-white border-none" : ""}
           />
         </div>
         <div>
@@ -80,7 +77,7 @@ const ProfileInfo = ({ user, editing, setEditing }) => {
             type="text"
             value={user.location}
             disabled={!editing}
-            className={!editing ? "bg-gray-100" : ""}
+            className={!editing ? "bg-white border-none" : ""}
           />
         </div>
         <div>
@@ -90,7 +87,7 @@ const ProfileInfo = ({ user, editing, setEditing }) => {
             type="text"
             value={user.joinDate}
             disabled={true}
-            className="bg-gray-100"
+            className={editing ? "bg-gray-100" : "bg-white border-none"}
           />
         </div>
         <div className="md:col-span-2">
@@ -99,7 +96,7 @@ const ProfileInfo = ({ user, editing, setEditing }) => {
             id="bio"
             value={user.bio}
             disabled={!editing}
-            className={`min-h-[100px] ${!editing ? "bg-gray-100" : ""}`}
+            className={`min-h-[100px] ${!editing ? "bg-white border-none resize-none" : ""}`}
           />
         </div>
       </div>

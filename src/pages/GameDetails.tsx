@@ -52,7 +52,7 @@ const GameDetails = () => {
     date: "15 Mai 2025",
     time: "09:00 - 17:00",
     location: "Terrain CQB Paris, 75012 Paris",
-    coordinates: [2.3522, 48.8566], // Paris coordinates
+    coordinates: [2.3522, 48.8566] as [number, number], // Paris coordinates - Fixed with type assertion
     organizer: {
       name: "Team Ghost",
       avatar: "https://randomuser.me/api/portraits/men/32.jpg",
