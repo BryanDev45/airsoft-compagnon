@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, User as UserIcon } from 'lucide-react';
+import { Menu, X, User as UserIcon, LogOut } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { 
@@ -12,13 +12,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { toast } from "@/components/ui/use-toast";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   
   // Mock authenticated state and user data - in a real app, this would come from authentication context
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const user = {
     username: "AirsoftMaster",
     avatar: "https://randomuser.me/api/portraits/men/44.jpg"
@@ -28,7 +29,17 @@ const Header = () => {
     // Clear user session/localStorage
     setIsAuthenticated(false);
     
+    // Show feedback to the user
+    toast({
+      title: "Déconnexion réussie",
+      description: "À bientôt sur Airsoft Compagnon",
+    });
+    
     // Navigate to login page
+    navigate('/login');
+  };
+
+  const handleLogin = () => {
     navigate('/login');
   };
 
@@ -75,16 +86,14 @@ const Header = () => {
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
-                    Déconnexion
+                    <LogOut className="mr-2 h-4 w-4" /> Déconnexion
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Link to="/login">
-                <Button variant="default" className="bg-airsoft-red hover:bg-red-700">
-                  Se connecter
-                </Button>
-              </Link>
+              <Button variant="default" className="bg-airsoft-red hover:bg-red-700" onClick={handleLogin}>
+                Se connecter
+              </Button>
             )}
           </div>
         </nav>
@@ -127,15 +136,17 @@ const Header = () => {
                 className="mt-2 bg-airsoft-red hover:bg-red-700" 
                 onClick={handleLogout}
               >
-                Déconnexion
+                <LogOut className="mr-2 h-4 w-4" /> Déconnexion
               </Button>
             </>
           ) : (
-            <Link to="/login" className="w-full">
-              <Button variant="default" className="bg-airsoft-red hover:bg-red-700 w-full mt-2">
-                Se connecter
-              </Button>
-            </Link>
+            <Button 
+              variant="default" 
+              className="bg-airsoft-red hover:bg-red-700 w-full mt-2"
+              onClick={handleLogin}
+            >
+              Se connecter
+            </Button>
           )}
         </div>
       )}
