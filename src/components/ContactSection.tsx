@@ -2,6 +2,7 @@
 import React from 'react';
 import { Facebook, Instagram, Mail, MessageSquare, Download } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { Link } from 'react-router-dom';
 
 const ContactSection = () => {
   return (
@@ -35,10 +36,12 @@ const ContactSection = () => {
             </div>
             
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
-              <Button className="bg-airsoft-red text-white hover:bg-red-700 border border-white">
-                <Mail className="mr-2" size={18} />
-                Nous contacter
-              </Button>
+              <Link to="/contact">
+                <Button className="bg-airsoft-red text-white hover:bg-red-700 border border-white">
+                  <Mail className="mr-2" size={18} />
+                  Nous contacter
+                </Button>
+              </Link>
               <Button className="bg-airsoft-red text-white hover:bg-red-700 border border-white">
                 <MessageSquare className="mr-2" size={18} />
                 FAQ

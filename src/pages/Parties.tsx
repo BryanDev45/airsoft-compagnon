@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Header from '../components/Header';
 import MapSection from '../components/MapSection';
 import Footer from '../components/Footer';
@@ -9,12 +9,20 @@ import { useNavigate } from 'react-router-dom';
 
 const Parties = () => {
   const navigate = useNavigate();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    // Check if user is authenticated
+    const authState = localStorage.getItem('isAuthenticated');
+    setIsAuthenticated(authState === 'true');
+  }, []);
 
   const handleCreateParty = () => {
-    // Dans une version future, ceci naviguerait vers un formulaire de création
-    // Pour l'instant, simulons juste la navigation
-    console.log("Création d'une nouvelle partie");
-    // navigate('/parties/create');
+    if (isAuthenticated) {
+      navigate('/parties/create');
+    } else {
+      navigate('/login');
+    }
   };
 
   return (

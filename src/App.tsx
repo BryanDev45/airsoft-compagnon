@@ -12,6 +12,7 @@ import ResetPassword from "./pages/ResetPassword";
 import NewPassword from "./pages/NewPassword";
 import Profile from "./pages/Profile";
 import Parties from "./pages/Parties";
+import CreateParty from "./pages/CreateParty";
 import GameDetails from "./pages/GameDetails";
 import Team from "./pages/Team";
 import NotFound from "./pages/NotFound";
@@ -31,6 +32,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/parties" element={<Parties />} />
+          <Route path="/parties/create" element={<CreateParty />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
