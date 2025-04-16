@@ -1,9 +1,7 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
 const Hero = () => {
   return <div className="relative bg-airsoft-dark text-white overflow-hidden border-b-4 border-gradient-red">
       <div className="absolute inset-0 z-0">
@@ -39,9 +37,7 @@ const Hero = () => {
       </div>
       
       {/* V-shape with gradient border */}
-      <div className="v-shape-container">
-        <div className="v-shape"></div>
-      </div>
+      
 
       <style>{`
         .v-shape-container {
@@ -62,5 +58,4 @@ const Hero = () => {
       `}</style>
     </div>;
 };
-
 export default Hero;
