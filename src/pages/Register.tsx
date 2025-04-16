@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -17,7 +16,7 @@ import { Separator } from "@/components/ui/separator";
 const registerSchema = z.object({
   firstname: z.string().min(2, "Le prénom doit contenir au moins 2 caractères"),
   lastname: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  username: z.string().min(3, "Le nom d'utilisateur doit contenir au moins 3 caractères"),
+  username: z.string().min(3, "Le nom d'utilisateur doit contenir au moins 3 caractères").optional(),
   email: z.string().email("L'adresse email n'est pas valide"),
   password: z.string()
     .min(8, "Le mot de passe doit contenir au moins 8 caractères")
@@ -61,11 +60,11 @@ const Register = () => {
     setTimeout(() => {
       // Create a user object to store in localStorage
       const user = {
-        username: data.username,
+        username: data.username || `${data.firstname.toLowerCase()}_${Math.floor(Math.random() * 1000)}`,
         email: data.email,
         firstName: data.firstname,
         lastName: data.lastname,
-        avatar: 'https://i.pravatar.cc/150?u=' + data.email, // Using a placeholder avatar
+        avatar: 'https://i.pravatar.cc/150?u=' + data.email,
       };
       
       // Set authentication state
@@ -184,7 +183,7 @@ const Register = () => {
                     name="username"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nom d'utilisateur</FormLabel>
+                        <FormLabel>Nom d'utilisateur (optionnel)</FormLabel>
                         <FormControl>
                           <div className="relative">
                             <User className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
@@ -192,7 +191,6 @@ const Register = () => {
                               placeholder="Votre nom d'utilisateur" 
                               className="pl-10" 
                               {...field} 
-                              required 
                             />
                           </div>
                         </FormControl>
@@ -354,7 +352,7 @@ const Register = () => {
                   type="button" 
                   variant="outline" 
                   className="w-full flex items-center justify-center gap-2"
-                  onClick={() => handleSocialLogin('Facebook')}
+                  onClick={() => form.handleSubmit((data) => handleSocialLogin('Facebook'))({})}
                 >
                   <Facebook className="h-5 w-5 text-blue-600" />
                   <span>S'inscrire avec Facebook</span>
@@ -364,7 +362,7 @@ const Register = () => {
                   type="button" 
                   variant="outline" 
                   className="w-full flex items-center justify-center gap-2"
-                  onClick={() => handleSocialLogin('Google')}
+                  onClick={() => form.handleSubmit((data) => handleSocialLogin('Google'))({})}
                 >
                   <svg viewBox="0 0 24 24" width="20" height="20" className="mr-1">
                     <path

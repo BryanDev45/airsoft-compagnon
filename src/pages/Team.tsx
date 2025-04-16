@@ -265,24 +265,7 @@ const Team = () => {
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Trophy size={20} className="text-airsoft-red" />
-                    Récompenses
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-4">
-                    {team.achievements.map((achievement: any) => (
-                      <li key={achievement.id} className="border-b pb-3 last:border-0 last:pb-0">
-                        <p className="font-medium">{achievement.title}</p>
-                        <p className="text-sm text-gray-500">{achievement.date}</p>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
+              {/* La section Récompenses a été supprimée comme demandé */}
             </div>
 
             {/* Team Content */}

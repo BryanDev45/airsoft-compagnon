@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { MapIcon } from 'lucide-react';
 import 'ol/ol.css';
@@ -28,24 +27,20 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
   const markersLayer = useRef<VectorLayer<VectorSource> | null>(null);
   const popupOverlay = useRef<Overlay | null>(null);
 
-  // Initialize the map OpenLayers
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
-    // Create popup overlay for marker info
     const container = document.createElement('div');
     container.className = 'ol-popup bg-white p-4 rounded-lg shadow-xl text-sm max-w-xs';
     const overlay = new Overlay({
       element: container,
       autoPan: true,
-      // Fix for autoPanAnimation typing issue
       autoPanAnimation: {
         duration: 250
       } as any
     });
     popupOverlay.current = overlay;
 
-    // Create the map
     map.current = new Map({
       target: mapContainer.current,
       layers: [new TileLayer({
@@ -58,17 +53,14 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
       controls: []
     });
 
-    // Add the popup overlay to the map
     map.current.addOverlay(overlay);
 
-    // Add click event handler for markers
     map.current.on('click', function (evt) {
       const feature = map.current?.forEachFeatureAtPixel(evt.pixel, function (feature) {
         return feature;
       });
       
       if (feature) {
-        // Fix for getCoordinates typing issue
         const coordinates = (feature.getGeometry() as Point).getCoordinates();
         if (coordinates) {
           const eventId = feature.get('id');
@@ -89,7 +81,6 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
             </a>
           `;
           
-          // Fix for optional property access issue
           if (overlay) {
             overlay.setPosition(coordinates);
           }
@@ -101,7 +92,6 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
       }
     });
 
-    // Change cursor when hovering over markers
     map.current.on('pointermove', function (e) {
       const pixel = map.current?.getEventPixel(e.originalEvent);
       if (pixel && map.current) {
@@ -110,7 +100,6 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
       }
     });
 
-    // Cleanup on unmount
     return () => {
       if (map.current) {
         map.current.setTarget(null);
@@ -119,35 +108,26 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
     };
   }, []);
 
-  // Function to update the search circle on the map
   const updateSearchCircle = (center: [number, number], radiusKm: number) => {
     if (!map.current) return;
     
-    // Remove any existing search circle layer
     if (searchCircleLayer.current) {
       map.current.removeLayer(searchCircleLayer.current);
       searchCircleLayer.current = null;
     }
     
-    // If radius is 0, don't show the circle
     if (radiusKm === 0) return;
     
-    // Calculate radius in meters (OL uses meters)
     const radiusMeters = radiusKm * 1000;
-    
-    // Create center point in EPSG:3857 (Web Mercator)
     const centerPoint = fromLonLat(center);
     
-    // Create a circle feature with proper radius
     const circle = new Circle(centerPoint, radiusMeters);
     const circleFeature = new Feature(circle);
     
-    // Create vector source with the circle feature
     const vectorSource = new VectorSource({
       features: [circleFeature]
     });
     
-    // Create vector layer with style
     const vectorLayer = new VectorLayer({
       source: vectorSource,
       style: new Style({
@@ -159,28 +139,23 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
           color: 'rgba(234, 56, 76, 0.1)'
         })
       }),
-      zIndex: 1 // Lower zIndex so markers appear above
+      zIndex: 1
     });
     
-    // Add to map
     map.current.addLayer(vectorLayer);
     searchCircleLayer.current = vectorLayer;
   };
 
-  // Update markers on the map
   const updateMarkers = () => {
     if (!map.current) return;
     
-    // Remove existing markers layer if it exists
     if (markersLayer.current) {
       map.current.removeLayer(markersLayer.current);
       markersLayer.current = null;
     }
     
-    // Create a new vector source for markers
     const vectorSource = new VectorSource();
     
-    // Add markers for filtered events
     filteredEvents.forEach(event => {
       const feature = new Feature({
         geometry: new Point(fromLonLat([event.lng, event.lat])),
@@ -195,7 +170,6 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
       vectorSource.addFeature(feature);
     });
     
-    // Create a new vector layer with the markers
     const newMarkersLayer = new VectorLayer({
       source: vectorSource,
       style: new Style({
@@ -206,15 +180,13 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
           color: '#ea384c'
         })
       }),
-      zIndex: 2 // Higher zIndex to ensure markers are on top
+      zIndex: 2
     });
     
-    // Add the new markers layer to the map
     map.current.addLayer(newMarkersLayer);
     markersLayer.current = newMarkersLayer;
   };
 
-  // Update view when search center changes
   useEffect(() => {
     if (map.current && searchCenter) {
       map.current.getView().animate({
@@ -223,21 +195,17 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
         duration: 1000
       });
       
-      // Update search circle if radius > 0
       if (searchRadius > 0) {
         updateSearchCircle(searchCenter, searchRadius);
       } else if (searchCircleLayer.current && map.current) {
-        // Remove circle if radius is 0
         map.current.removeLayer(searchCircleLayer.current);
         searchCircleLayer.current = null;
       }
       
-      // Update markers
       updateMarkers();
     }
   }, [searchCenter, searchRadius]);
 
-  // Update markers when filteredEvents change
   useEffect(() => {
     updateMarkers();
   }, [filteredEvents]);

@@ -5,6 +5,9 @@ import { ArrowRight, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Hero = () => {
+  // Vérification si l'utilisateur est connecté
+  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+  
   return <div className="relative bg-airsoft-dark text-white overflow-hidden">
       <div className="absolute inset-0 z-0">
         <img src="/lovable-uploads/e3177716-6012-4386-a9b2-607ab6f838b0.png" alt="Airsoft background" className="w-full h-full object-cover" />
@@ -25,9 +28,9 @@ const Hero = () => {
           </div>
           
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link to="/register">
+            <Link to={isAuthenticated ? "/profile" : "/register"}>
               <Button className="bg-airsoft-red hover:bg-red-700 text-white px-8 py-6 text-lg rounded-md shadow-lg transform transition-transform hover:scale-105" size="lg">
-                Nous rejoindre <ArrowRight className="ml-2" />
+                {isAuthenticated ? "Mon profil" : "Nous rejoindre"} <ArrowRight className="ml-2" />
               </Button>
             </Link>
             <Button variant="outline" className="bg-airsoft-red hover:bg-red-700 text-white px-8 py-6 text-lg rounded-md shadow-lg transform transition-transform hover:scale-105" size="lg">
