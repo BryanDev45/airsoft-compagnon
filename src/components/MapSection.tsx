@@ -104,7 +104,7 @@ const MapSection = () => {
       autoPanAnimation: {
         duration: 250
       }
-    });
+    } as any);
     
     map.current.addOverlay(overlay);
     
