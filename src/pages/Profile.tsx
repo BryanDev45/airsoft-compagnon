@@ -59,7 +59,12 @@ const Profile = () => {
                 </TabsList>
                 
                 <TabsContent value="profile">
-                  <ProfileInfo user={user} editing={editing} setEditing={setEditing} />
+                  <ProfileInfo 
+                    user={user} 
+                    editing={editing} 
+                    setEditing={setEditing} 
+                    handleNavigateToTeam={handleNavigateToTeam}
+                  />
                 </TabsContent>
                 
                 <TabsContent value="games">
