@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Calendar, Map as MapIcon, MapPin, Maximize, Navigation, autoPanAnimation } from 'lucide-react';
+import { Search, Calendar, Map as MapIcon, MapPin, Maximize, Navigation } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -24,6 +24,10 @@ import { transform } from 'ol/proj';
 import GeoJSON from 'ol/format/GeoJSON';
 
 // Helper functions - define before they are used
+const deg2rad = (deg) => {
+  return deg * (Math.PI/180);
+};
+
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371; // Radius of the earth in km
   const dLat = deg2rad(lat2 - lat1);
@@ -37,14 +41,11 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
   return distance;
 };
 
-const deg2rad = (deg) => {
-  return deg * (Math.PI/180);
-};
-
 const MapSection = () => {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const searchCircleLayer = useRef(null);
+  const markersLayer = useRef(null);
   const popupOverlay = useRef(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState('all');
@@ -198,9 +199,6 @@ const MapSection = () => {
   const updateSearchCircle = (center, radiusKm) => {
     if (!map.current) return;
     
-    // Get existing vector layers
-    const layers = map.current.getLayers().getArray();
-    
     // Remove any existing search circle layer
     if (searchCircleLayer.current) {
       map.current.removeLayer(searchCircleLayer.current);
@@ -210,71 +208,19 @@ const MapSection = () => {
     // If radius is 0, don't show the circle
     if (radiusKm === 0) return;
     
-    // Create a new vector source for the circle
-    const circleSource = new VectorSource();
-    
-    // Create a point feature at the center
-    const centerFeature = new Feature({
-      geometry: new Point(fromLonLat(center))
-    });
-    
     // Calculate radius in meters (OL uses meters)
     const radiusMeters = radiusKm * 1000;
     
-    // Create circle geometry in EPSG:3857 (Web Mercator)
+    // Create center point in EPSG:3857 (Web Mercator)
     const centerPoint = fromLonLat(center);
-    
-    // Create a polygon that approximates a circle
-    // OL doesn't have true circles, so we'll create one using a polygon
-    const circleCoords = [];
-    const steps = 100;
-    for (let i = 0; i < steps; i++) {
-      const angle = i * (2 * Math.PI / steps);
-      const x = centerPoint[0] + radiusMeters * Math.cos(angle) / (111320 * Math.cos(center[1] * Math.PI / 180));
-      const y = centerPoint[1] + radiusMeters * Math.sin(angle) / 111320;
-      circleCoords.push([x, y]);
-    }
-    circleCoords.push(circleCoords[0]); // Close the polygon
-    
-    // Create circle feature
-    const circleFeature = new Feature({
-      geometry: new Point(centerPoint)
-    });
-    
-    circleSource.addFeature(circleFeature);
-    circleSource.addFeature(centerFeature);
-    
-    // Create a new vector layer for the circle
-    searchCircleLayer.current = new VectorLayer({
-      source: circleSource,
-      style: new Style({
-        image: new Icon({
-          anchor: [0.5, 0.5],
-          src: 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/icons/geo-alt-fill.svg',
-          scale: 1.5,
-          color: '#ea384c'
-        }),
-        // Style for the circle
-        stroke: new Stroke({
-          color: 'rgba(234, 56, 76, 0.8)',
-          width: 2
-        }),
-        fill: new Fill({
-          color: 'rgba(234, 56, 76, 0.1)'
-        })
-      })
-    });
-    
-    // Add circle layer to map
-    map.current.addLayer(searchCircleLayer.current);
     
     // Create a circle feature with proper radius
     const circle = new Circle(centerPoint, radiusMeters);
-    const circleFeature2 = new Feature(circle);
+    const circleFeature = new Feature(circle);
     
-    // Add to vector source
+    // Create vector source with the circle feature
     const vectorSource = new VectorSource({
-      features: [circleFeature2]
+      features: [circleFeature]
     });
     
     // Create vector layer with style
@@ -288,12 +234,18 @@ const MapSection = () => {
         fill: new Fill({
           color: 'rgba(234, 56, 76, 0.1)'
         })
-      })
+      }),
+      zIndex: 1 // Lower zIndex so markers appear above
     });
     
     // Add to map
     map.current.addLayer(vectorLayer);
     searchCircleLayer.current = vectorLayer;
+
+    // Update the markers layer to ensure it's on top
+    if (markersLayer.current) {
+      markersLayer.current.setZIndex(2);
+    }
   };
 
   // Handle country selection change
@@ -363,6 +315,53 @@ const MapSection = () => {
     }
   }, [searchRadius]);
 
+  // Update markers on the map
+  const updateMarkers = () => {
+    if (!map.current) return;
+    
+    // Remove existing markers layer if it exists
+    if (markersLayer.current) {
+      map.current.removeLayer(markersLayer.current);
+      markersLayer.current = null;
+    }
+    
+    // Create a new vector source for markers
+    const vectorSource = new VectorSource();
+    
+    // Add markers for filtered events
+    filteredEvents.forEach(event => {
+      const feature = new Feature({
+        geometry: new Point(fromLonLat([event.lng, event.lat])),
+        name: event.title,
+        location: event.location,
+        date: event.date,
+        type: event.type,
+        department: event.department,
+        id: event.id
+      });
+      
+      vectorSource.addFeature(feature);
+    });
+    
+    // Create a new vector layer with the markers
+    const newMarkersLayer = new VectorLayer({
+      source: vectorSource,
+      style: new Style({
+        image: new Icon({
+          anchor: [0.5, 1],
+          src: 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/icons/geo-alt-fill.svg',
+          scale: 1.5,
+          color: '#ea384c'
+        })
+      }),
+      zIndex: 2 // Higher zIndex to ensure markers are on top
+    });
+    
+    // Add the new markers layer to the map
+    map.current.addLayer(newMarkersLayer);
+    markersLayer.current = newMarkersLayer;
+  };
+
   // Initialize the map OpenLayers
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
@@ -379,42 +378,12 @@ const MapSection = () => {
     });
     popupOverlay.current = overlay;
 
-    // Créer une source de vecteur pour les marqueurs
-    const vectorSource = new VectorSource();
-
-    // Ajouter les marqueurs pour chaque événement
-    filteredEvents.forEach(event => {
-      const feature = new Feature({
-        geometry: new Point(fromLonLat([event.lng, event.lat])),
-        name: event.title,
-        location: event.location,
-        date: event.date,
-        type: event.type,
-        department: event.department,
-        id: event.id
-      });
-      vectorSource.addFeature(feature);
-    });
-
-    // Style pour les marqueurs
-    const vectorLayer = new VectorLayer({
-      source: vectorSource,
-      style: new Style({
-        image: new Icon({
-          anchor: [0.5, 1],
-          src: 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/icons/geo-alt-fill.svg',
-          scale: 1.5,
-          color: '#ea384c'
-        })
-      })
-    });
-
-    // Créer la carte
+    // Create the map
     map.current = new Map({
       target: mapContainer.current,
       layers: [new TileLayer({
         source: new OSM()
-      }), vectorLayer],
+      })],
       view: new View({
         center: fromLonLat(searchCenter),
         zoom: 5
@@ -425,12 +394,15 @@ const MapSection = () => {
     // Add the popup overlay to the map
     map.current.addOverlay(overlay);
 
-    // Create initial search radius circle
+    // Create initial search radius circle if needed
     if (searchRadius[0] > 0) {
       updateSearchCircle(searchCenter, searchRadius[0]);
     }
+    
+    // Add initial markers
+    updateMarkers();
 
-    // Ajouter un gestionnaire d'événements pour afficher les infobulles
+    // Add click event handler for markers
     map.current.on('click', function (evt) {
       const feature = map.current.forEachFeatureAtPixel(evt.pixel, function (feature) {
         return feature;
@@ -464,14 +436,14 @@ const MapSection = () => {
       }
     });
 
-    // Changer le curseur au survol des marqueurs
+    // Change cursor when hovering over markers
     map.current.on('pointermove', function (e) {
       const pixel = map.current.getEventPixel(e.originalEvent);
       const hit = map.current.hasFeatureAtPixel(pixel);
       map.current.getTargetElement().style.cursor = hit ? 'pointer' : '';
     });
 
-    // Nettoyage
+    // Cleanup on unmount
     return () => {
       if (map.current) {
         map.current.setTarget(null);
@@ -480,25 +452,9 @@ const MapSection = () => {
     };
   }, []);
 
-  // Mettre à jour la carte lorsque les filtres changent
+  // Update markers when filters change
   useEffect(() => {
-    if (!map.current) return;
-    const vectorLayer = map.current.getLayers().getArray().find(layer => layer instanceof VectorLayer);
-    if (!vectorLayer) return;
-    const vectorSource = vectorLayer.getSource();
-    vectorSource.clear();
-    filteredEvents.forEach(event => {
-      const feature = new Feature({
-        geometry: new Point(fromLonLat([event.lng, event.lat])),
-        name: event.title,
-        location: event.location,
-        date: event.date,
-        type: event.type,
-        department: event.department,
-        id: event.id
-      });
-      vectorSource.addFeature(feature);
-    });
+    updateMarkers();
   }, [filteredEvents]);
   
   return <div className="py-12 md:py-16 bg-gray-100">
@@ -506,7 +462,7 @@ const MapSection = () => {
         <h2 className="text-3xl font-bold mb-8 text-center">Trouvez votre prochaine partie</h2>
         
         <div className="bg-white rounded-lg overflow-hidden shadow-xl mb-8 border border-gray-200">
-          <div className="flex flex-col md:flex-row">
+          <div className="flex flex-col md:flex-row h-full">
             <div className="w-full md:w-1/4 bg-gray-800 p-4 text-white">
               <div className="mb-6">
                 <div className="relative">
@@ -516,11 +472,11 @@ const MapSection = () => {
               </div>
               
               <div className="grid grid-cols-2 gap-2 mb-6">
-                <Button variant="outline" className="border-gray-600 bg-airsoft-red hover:bg-red-700 text-white w-full justify-center">
-                  Dominicale
+                <Button variant="outline" className="border-gray-600 bg-airsoft-red hover:bg-red-700 text-white w-full text-center">
+                  <span className="mx-auto">Dominicale</span>
                 </Button>
-                <Button variant="outline" className="border-gray-600 bg-airsoft-red hover:bg-red-700 text-white w-full justify-center">
-                  Opé
+                <Button variant="outline" className="border-gray-600 bg-airsoft-red hover:bg-red-700 text-white w-full text-center">
+                  <span className="mx-auto">Opé</span>
                 </Button>
               </div>
               
@@ -628,13 +584,15 @@ const MapSection = () => {
               </div>
             </div>
             
-            <div ref={mapContainer} className="w-full md:w-3/4 h-[400px] md:h-[600px] relative bg-gray-300">
-              {!map.current && <div className="absolute inset-0 flex items-center justify-center flex-col">
-                  <MapIcon size={48} className="text-gray-400 mb-2" />
-                  <p className="text-center text-gray-500">
-                    Chargement de la carte...
-                  </p>
-                </div>}
+            <div className="w-full md:w-3/4 h-full relative">
+              <div ref={mapContainer} className="w-full h-[600px] md:h-full bg-gray-300">
+                {!map.current && <div className="absolute inset-0 flex items-center justify-center flex-col">
+                    <MapIcon size={48} className="text-gray-400 mb-2" />
+                    <p className="text-center text-gray-500">
+                      Chargement de la carte...
+                    </p>
+                  </div>}
+              </div>
             </div>
           </div>
         </div>
