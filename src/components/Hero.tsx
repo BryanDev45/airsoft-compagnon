@@ -44,7 +44,7 @@ const Hero = () => {
         <div className="v-gradient"></div>
       </div>
 
-      <style ="true">{`
+      <style jsx="true">{`
         .v-shape-container {
           position: relative;
           height: 50px;
