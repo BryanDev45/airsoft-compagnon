@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Map, Calendar as CalendarIcon, Clock, Users } from 'lucide-react';
+import { Map, Calendar as CalendarIcon, Clock, Users, Trophy, Flag } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -167,7 +167,9 @@ const ProfileDialogs = ({
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
-              <Badge className="text-airsoft-red" size={20} />
+              <Badge className="text-airsoft-red" 
+                <Trophy size={20} />
+              </Badge>
               Mes badges
             </DialogTitle>
             <DialogDescription className="text-sm text-gray-500">
