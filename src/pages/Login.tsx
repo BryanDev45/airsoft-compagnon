@@ -75,7 +75,11 @@ const Login = () => {
           <div className="bg-white p-7 rounded-lg">
             <div className="text-center mb-8">
               <div className="flex justify-center mb-4">
-                <Lock className="h-12 w-12 text-airsoft-red" />
+                <img 
+                  src="/lovable-uploads/1cc60b94-2b6c-4e0e-9ab8-1bd1e8cb1098.png" 
+                  alt="Airsoft Compagnon Logo" 
+                  className="h-16 w-auto" 
+                />
               </div>
               <h1 className="text-2xl font-bold">Connexion</h1>
               <p className="text-gray-600 mt-2">

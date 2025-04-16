@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -30,7 +29,6 @@ const NewPassword = () => {
     },
   });
 
-  // Vérifie la force du mot de passe et met à jour les indicateurs
   const checkPasswordStrength = (password: string) => {
     setPasswordStrength({
       length: password.length >= 8,
@@ -44,7 +42,6 @@ const NewPassword = () => {
   const onSubmit = (data: { password: string; confirmPassword: string }) => {
     console.log('New password set with token:', token);
     
-    // Vérifier si le mot de passe correspond à tous les critères
     const allCriteriaMet = Object.values(passwordStrength).every(value => value === true);
     if (!allCriteriaMet) {
       toast({
@@ -55,7 +52,6 @@ const NewPassword = () => {
       return;
     }
     
-    // Vérifier que les mots de passe correspondent
     if (data.password !== data.confirmPassword) {
       form.setError('confirmPassword', {
         type: 'manual',
@@ -64,7 +60,6 @@ const NewPassword = () => {
       return;
     }
     
-    // Simulated API call to set new password
     setTimeout(() => {
       toast({
         title: "Mot de passe mis à jour",
@@ -74,7 +69,6 @@ const NewPassword = () => {
     }, 1500);
   };
 
-  // Si pas de token dans l'URL, afficher un message d'erreur
   if (!token) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -114,7 +108,11 @@ const NewPassword = () => {
           <div className="bg-white p-7 rounded-lg">
             <div className="text-center mb-8">
               <div className="flex justify-center mb-4">
-                <Lock className="h-12 w-12 text-airsoft-red" />
+                <img 
+                  src="/lovable-uploads/1cc60b94-2b6c-4e0e-9ab8-1bd1e8cb1098.png" 
+                  alt="Airsoft Compagnon Logo" 
+                  className="h-16 w-auto" 
+                />
               </div>
               <h1 className="text-2xl font-bold">Créer un nouveau mot de passe</h1>
               <p className="text-gray-600 mt-2">

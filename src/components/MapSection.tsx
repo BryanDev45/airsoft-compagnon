@@ -1,23 +1,82 @@
 
-import React, { useState } from 'react';
-import { Search, Calendar, Map, MapPin } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Search, Calendar, Map as MapIcon, MapPin } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from 'react-router-dom';
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
+import { Badge } from '@/components/ui/badge';
 
 const MapSection = () => {
   const [mapApiKey, setMapApiKey] = useState('');
   const [showMapKeyInput, setShowMapKeyInput] = useState(true);
-
+  const mapContainer = useRef(null);
+  const map = useRef(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedType, setSelectedType] = useState('all');
+  const [selectedDepartment, setSelectedDepartment] = useState('all');
+  const [selectedDate, setSelectedDate] = useState('');
+  
   // Simulons des données de parties d'airsoft
   const [events] = useState([
-    { id: 1, title: "Partie CQB", date: "25/04/2025", location: "Paris", lat: 48.8566, lng: 2.3522 },
-    { id: 2, title: "Milsim Forest", date: "02/05/2025", location: "Lyon", lat: 45.7640, lng: 4.8357 },
-    { id: 3, title: "Partie nocturne", date: "15/05/2025", location: "Marseille", lat: 43.2965, lng: 5.3698 },
-    { id: 4, title: "Open day", date: "22/05/2025", location: "Bordeaux", lat: 44.8378, lng: -0.5792 },
-    { id: 5, title: "Tournoi 3v3", date: "30/05/2025", location: "Lille", lat: 50.6292, lng: 3.0573 },
+    { id: 1, title: "Partie CQB", date: "25/04/2025", location: "Paris", department: "75", type: "cqb", lat: 48.8566, lng: 2.3522 },
+    { id: 2, title: "Milsim Forest", date: "02/05/2025", location: "Lyon", department: "69", type: "milsim", lat: 45.7640, lng: 4.8357 },
+    { id: 3, title: "Partie nocturne", date: "15/05/2025", location: "Marseille", department: "13", type: "woodland", lat: 43.2965, lng: 5.3698 },
+    { id: 4, title: "Open day", date: "22/05/2025", location: "Bordeaux", department: "33", type: "woodland", lat: 44.8378, lng: -0.5792 },
+    { id: 5, title: "Tournoi 3v3", date: "30/05/2025", location: "Lille", department: "59", type: "tournament", lat: 50.6292, lng: 3.0573 },
   ]);
+
+  // Filtrer les événements en fonction des critères de recherche
+  const filteredEvents = events.filter(event => {
+    const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         event.location.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesType = selectedType === 'all' || event.type === selectedType;
+    const matchesDepartment = selectedDepartment === 'all' || event.department === selectedDepartment;
+    const matchesDate = !selectedDate || event.date.includes(selectedDate);
+    
+    return matchesSearch && matchesType && matchesDepartment && matchesDate;
+  });
+
+  // Initialiser la carte Mapbox lorsque l'API key est fournie
+  useEffect(() => {
+    if (!mapApiKey || showMapKeyInput || !mapContainer.current || map.current) return;
+    
+    mapboxgl.accessToken = mapApiKey;
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center: [2.3522, 46.2276], // Centre de la France
+      zoom: 5
+    });
+
+    // Ajouter les contrôles de navigation
+    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+    // Ajouter les marqueurs pour chaque événement
+    filteredEvents.forEach(event => {
+      const popup = new mapboxgl.Popup({ offset: 25 })
+        .setHTML(`
+          <strong>${event.title}</strong><br>
+          ${event.location}<br>
+          ${event.date}
+        `);
+
+      new mapboxgl.Marker({ color: '#ff0000' })
+        .setLngLat([event.lng, event.lat])
+        .setPopup(popup)
+        .addTo(map.current);
+    });
+
+    // Nettoyage
+    return () => {
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+    };
+  }, [mapApiKey, showMapKeyInput, filteredEvents]);
 
   return (
     <div className="py-12 md:py-16 bg-gray-100">
@@ -57,6 +116,8 @@ const MapSection = () => {
                     <Input 
                       placeholder="Rechercher..." 
                       className="pl-10 bg-gray-700 border-none text-white placeholder:text-gray-400"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
                     />
                   </div>
                 </div>
@@ -73,7 +134,7 @@ const MapSection = () => {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium mb-1">Département</label>
-                    <Select>
+                    <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
                       <SelectTrigger className="bg-gray-700 border-gray-600">
                         <SelectValue placeholder="Tous" />
                       </SelectTrigger>
@@ -90,7 +151,7 @@ const MapSection = () => {
                   
                   <div>
                     <label className="block text-sm font-medium mb-1">Type</label>
-                    <Select>
+                    <Select value={selectedType} onValueChange={setSelectedType}>
                       <SelectTrigger className="bg-gray-700 border-gray-600">
                         <SelectValue placeholder="Tous les types" />
                       </SelectTrigger>
@@ -112,36 +173,49 @@ const MapSection = () => {
                       <Input 
                         type="date" 
                         className="pl-10 bg-gray-700 border-gray-600 text-white"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
                       />
+                    </div>
+                  </div>
+
+                  <div className="pt-4">
+                    <p className="text-sm mb-2">{filteredEvents.length} parties trouvées</p>
+                    <div className="flex flex-wrap gap-2">
+                      {searchQuery && (
+                        <Badge className="bg-airsoft-red hover:bg-red-700" onClick={() => setSearchQuery('')}>
+                          {searchQuery} ×
+                        </Badge>
+                      )}
+                      {selectedType !== 'all' && (
+                        <Badge className="bg-airsoft-red hover:bg-red-700" onClick={() => setSelectedType('all')}>
+                          {selectedType} ×
+                        </Badge>
+                      )}
+                      {selectedDepartment !== 'all' && (
+                        <Badge className="bg-airsoft-red hover:bg-red-700" onClick={() => setSelectedDepartment('all')}>
+                          Dép. {selectedDepartment} ×
+                        </Badge>
+                      )}
+                      {selectedDate && (
+                        <Badge className="bg-airsoft-red hover:bg-red-700" onClick={() => setSelectedDate('')}>
+                          {selectedDate} ×
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
               
-              <div className="w-full md:w-3/4 h-[400px] md:h-[600px] relative bg-gray-300 flex items-center justify-center">
-                <Map size={48} className="text-gray-400" />
-                <p className="absolute text-center">
-                  Ici s'afficherait la carte avec les marqueurs<br />
-                  en utilisant l'API Mapbox
-                </p>
-                
-                {/* Simulation des marqueurs de la carte */}
-                <div className="absolute inset-0 p-4 pointer-events-none">
-                  {events.map((event) => (
-                    <div 
-                      key={event.id}
-                      className="absolute transform -translate-x-1/2 -translate-y-1/2"
-                      style={{
-                        left: `${(event.lng + 5) / 15 * 100}%`,
-                        top: `${(55 - event.lat) / 15 * 100}%`,
-                      }}
-                    >
-                      <div className="flex flex-col items-center">
-                        <MapPin size={24} className="text-airsoft-red" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              <div ref={mapContainer} className="w-full md:w-3/4 h-[400px] md:h-[600px] relative bg-gray-300">
+                {!map.current && (
+                  <div className="absolute inset-0 flex items-center justify-center flex-col">
+                    <MapIcon size={48} className="text-gray-400 mb-2" />
+                    <p className="text-center text-gray-500">
+                      Chargement de la carte...
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -149,7 +223,7 @@ const MapSection = () => {
         
         {/* Liste des événements */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-          {events.map((event) => (
+          {filteredEvents.map((event) => (
             <div key={event.id} className="bg-white rounded-lg overflow-hidden shadow-md border border-gray-200 clip-card">
               <div className="h-40 bg-gray-200 relative overflow-hidden">
                 <img 
@@ -170,6 +244,19 @@ const MapSection = () => {
                 <div className="flex items-center gap-2 text-gray-600">
                   <MapPin size={16} />
                   <span>{event.location}</span>
+                </div>
+                <div className="mt-2">
+                  <Badge variant="outline" className="mr-2">
+                    {event.type === 'cqb' ? 'CQB' : 
+                     event.type === 'milsim' ? 'Milsim' : 
+                     event.type === 'woodland' ? 'Woodland' : 
+                     event.type === 'speedsoft' ? 'Speedsoft' : 
+                     event.type === 'tournament' ? 'Tournoi' : 
+                     event.type}
+                  </Badge>
+                  <Badge variant="outline">
+                    Dép. {event.department}
+                  </Badge>
                 </div>
                 <Link to={`/game/${event.id}`}>
                   <Button 
