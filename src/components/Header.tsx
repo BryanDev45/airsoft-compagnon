@@ -24,7 +24,9 @@ const Header = () => {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6">
           <Link to="/" className="hover:text-airsoft-red transition-colors">Accueil</Link>
-          <Link to="/parties" className="hover:text-airsoft-red transition-colors">Parties</Link>
+          <Link to="/carte" className="hover:text-airsoft-red transition-colors">Carte</Link>
+          <Link to="/organisateurs" className="hover:text-airsoft-red transition-colors">Organisateurs</Link>
+          <Link to="/joueurs" className="hover:text-airsoft-red transition-colors">Joueurs</Link>
           <Link to="/contact" className="hover:text-airsoft-red transition-colors">Contact</Link>
           <div className="flex items-center gap-2 ml-4">
             <Link to="/login">
@@ -50,7 +52,9 @@ const Header = () => {
       {isMenuOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-airsoft-dark z-50 py-4 px-6 flex flex-col gap-4 shadow-lg">
           <Link to="/" className="hover:text-airsoft-red py-2 transition-colors">Accueil</Link>
-          <Link to="/parties" className="hover:text-airsoft-red py-2 transition-colors">Parties</Link>
+          <Link to="/carte" className="hover:text-airsoft-red py-2 transition-colors">Carte</Link>
+          <Link to="/organisateurs" className="hover:text-airsoft-red py-2 transition-colors">Organisateurs</Link>
+          <Link to="/joueurs" className="hover:text-airsoft-red py-2 transition-colors">Joueurs</Link>
           <Link to="/contact" className="hover:text-airsoft-red py-2 transition-colors">Contact</Link>
           <Link to="/login" className="w-full">
             <Button variant="default" className="bg-airsoft-red hover:bg-red-700 w-full mt-2">
