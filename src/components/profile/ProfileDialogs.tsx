@@ -167,7 +167,7 @@ const ProfileDialogs = ({
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
-              <Badge className="text-airsoft-red" 
+              <Badge className="text-airsoft-red">
                 <Trophy size={20} />
               </Badge>
               Mes badges
