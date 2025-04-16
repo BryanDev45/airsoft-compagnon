@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Calendar, Map as MapIcon, MapPin } from 'lucide-react';
+import { Search, Calendar, Map as MapIcon, MapPin, Maximize, Navigation } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
+import { Slider } from "@/components/ui/slider";
 import 'ol/ol.css';
 import Map from 'ol/Map';
 import View from 'ol/View';
@@ -17,6 +18,7 @@ import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
 import { Style, Icon } from 'ol/style';
 import Overlay from 'ol/Overlay';
+
 const MapSection = () => {
   const mapContainer = useRef(null);
   const map = useRef(null);
@@ -24,6 +26,8 @@ const MapSection = () => {
   const [selectedType, setSelectedType] = useState('all');
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [selectedDate, setSelectedDate] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState('france');
+  const [searchRadius, setSearchRadius] = useState([50]);
 
   // Simulons des données de parties d'airsoft
   const [events] = useState([{
@@ -82,6 +86,27 @@ const MapSection = () => {
     return matchesSearch && matchesType && matchesDepartment && matchesDate;
   });
 
+  // Fonction pour obtenir la position actuelle
+  const getCurrentPosition = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+        if (map.current) {
+          map.current.getView().animate({
+            center: fromLonLat([longitude, latitude]),
+            zoom: 12,
+            duration: 1000
+          });
+        }
+      }, (error) => {
+        console.error("Erreur de géolocalisation:", error);
+        alert("Impossible d'obtenir votre position actuelle. Veuillez vérifier vos paramètres de localisation.");
+      });
+    } else {
+      alert("La géolocalisation n'est pas prise en charge par votre navigateur.");
+    }
+  };
+
   // Initialiser la carte OpenLayers
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
@@ -132,10 +157,7 @@ const MapSection = () => {
     const overlay = new Overlay({
       element: container,
       autoPan: true,
-      autoPanAnimation: {
-        duration: 250
-      }
-    } as any);
+    });
     map.current.addOverlay(overlay);
 
     // Ajouter un gestionnaire d'événements pour afficher les infobulles
@@ -190,6 +212,7 @@ const MapSection = () => {
       vectorSource.addFeature(feature);
     });
   }, [filteredEvents]);
+  
   return <div className="py-12 md:py-16 bg-gray-100">
       <div className="max-w-7xl mx-auto px-4">
         <h2 className="text-3xl font-bold mb-8 text-center">Trouvez votre prochaine partie</h2>
@@ -205,13 +228,32 @@ const MapSection = () => {
               </div>
               
               <div className="grid grid-cols-2 gap-2 mb-6">
-                <Button variant="outline" className="border-gray-600 text-white hover:bg-gray-700 w-full justify-start">
-                  Domicile
+                <Button variant="outline" className="border-gray-600 bg-airsoft-red hover:bg-red-700 text-white w-full justify-start">
+                  Dominicale
                 </Button>
-                <Button variant="outline" className="border-gray-600 text-white hover:bg-gray-700 w-full justify-start">Opé</Button>
+                <Button variant="outline" className="border-gray-600 bg-airsoft-red hover:bg-red-700 text-white w-full justify-start">
+                  Opé
+                </Button>
               </div>
               
               <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Pays</label>
+                  <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+                    <SelectTrigger className="bg-gray-700 border-gray-600">
+                      <SelectValue placeholder="Tous les pays" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="france">France</SelectItem>
+                      <SelectItem value="belgique">Belgique</SelectItem>
+                      <SelectItem value="suisse">Suisse</SelectItem>
+                      <SelectItem value="allemagne">Allemagne</SelectItem>
+                      <SelectItem value="espagne">Espagne</SelectItem>
+                      <SelectItem value="italie">Italie</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
                 <div>
                   <label className="block text-sm font-medium mb-1">Département</label>
                   <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
@@ -253,6 +295,26 @@ const MapSection = () => {
                     <Input type="date" className="pl-10 bg-gray-700 border-gray-600 text-white" value={selectedDate} onChange={e => setSelectedDate(e.target.value)} />
                   </div>
                 </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-1">Rayon de recherche: {searchRadius[0]} km</label>
+                  <Slider
+                    defaultValue={[50]}
+                    max={200}
+                    min={10}
+                    step={10}
+                    className="pt-2"
+                    value={searchRadius}
+                    onValueChange={setSearchRadius}
+                  />
+                </div>
+                
+                <div>
+                  <Button onClick={getCurrentPosition} className="w-full bg-airsoft-red hover:bg-red-700 text-white flex items-center justify-center gap-2">
+                    <Navigation size={16} />
+                    Ma position
+                  </Button>
+                </div>
 
                 <div className="pt-4">
                   <p className="text-sm mb-2">{filteredEvents.length} parties trouvées</p>
@@ -287,7 +349,8 @@ const MapSection = () => {
         
         {/* Liste des événements */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-          {filteredEvents.map(event => <div key={event.id} className="bg-white rounded-lg overflow-hidden shadow-md border border-gray-200 clip-card">
+          {filteredEvents.map(event => (
+            <div key={event.id} className="bg-white rounded-lg overflow-hidden shadow-md border border-gray-200 clip-card">
               <div className="h-40 bg-gray-200 relative overflow-hidden">
                 <img src="/lovable-uploads/c242d3b0-8906-4f00-9b3b-fc251f703e4b.png" alt={event.title} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
@@ -318,9 +381,11 @@ const MapSection = () => {
                   </Button>
                 </Link>
               </div>
-            </div>)}
+            </div>
+          ))}
         </div>
       </div>
     </div>;
 };
+
 export default MapSection;

@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
 const Hero = () => {
   return <div className="relative bg-airsoft-dark text-white overflow-hidden border-b-4 border-gradient-red">
       <div className="absolute inset-0 z-0">
@@ -13,7 +14,7 @@ const Hero = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-black to-transparent opacity-50"></div>
       </div>
       
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 lg:py-16 md:py-[70px]">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 py-6 lg:py-12 md:py-[60px]">
         <div className="max-w-3xl mx-auto text-center">
           <div className="mb-8">
             <img src="/lovable-uploads/24d6452d-2439-4baf-b334-41863a1077c5.png" alt="Airsoft Compagnon Logo" className="h-30 md:h-38 mb-6 mx-auto" />
@@ -37,8 +38,40 @@ const Hero = () => {
         </div>
       </div>
       
-      {/* Flèche du bas avec dégradé */}
-      <div className="hero-arrow-shape"></div>
+      {/* Forme en V avec dégradé */}
+      <div className="v-shape-container">
+        <div className="v-shape"></div>
+        <div className="v-gradient"></div>
+      </div>
+
+      <style jsx="true">{`
+        .v-shape-container {
+          position: relative;
+          height: 50px;
+          width: 100%;
+          overflow: hidden;
+        }
+        .v-shape {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          clip-path: polygon(0 0, 50% 100%, 100% 0);
+          background-color: white;
+        }
+        .v-gradient {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          clip-path: polygon(0 0, 50% 100%, 100% 0);
+          background: linear-gradient(to right, #ea384c, #ff6b6b);
+          opacity: 0.8;
+        }
+      `}</style>
     </div>;
 };
+
 export default Hero;
