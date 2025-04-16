@@ -1,32 +1,25 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, User as UserIcon, LogOut } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "@/components/ui/use-toast";
-
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
-  
+
   // État d'authentification basé sur localStorage
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<{username: string, avatar: string} | null>(null);
-  
+  const [user, setUser] = useState<{
+    username: string;
+    avatar: string;
+  } | null>(null);
+
   // Vérifier l'état d'authentification au chargement du composant
   useEffect(() => {
     const authState = localStorage.getItem('isAuthenticated');
     const userState = localStorage.getItem('user');
-    
     if (authState === 'true' && userState) {
       setIsAuthenticated(true);
       setUser(JSON.parse(userState));
@@ -35,40 +28,32 @@ const Header = () => {
       setUser(null);
     }
   }, []);
-
   const handleLogout = () => {
     // Effacer les données d'authentification
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('user');
-    
+
     // Mettre à jour l'état
     setIsAuthenticated(false);
     setUser(null);
-    
+
     // Afficher un message de confirmation
     toast({
       title: "Déconnexion réussie",
-      description: "À bientôt sur Airsoft Compagnon",
+      description: "À bientôt sur Airsoft Compagnon"
     });
-    
+
     // Rediriger vers la page de connexion
     navigate('/login');
   };
-
   const handleLogin = () => {
     navigate('/login');
   };
-
-  return (
-    <header className="bg-airsoft-dark text-white py-3 px-4 relative">
+  return <header className="bg-airsoft-dark text-white py-3 px-4 relative">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <div className="flex items-center">
           <Link to="/" className="flex items-center gap-2">
-            <img
-              src="/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png"
-              alt="Airsoft Compagnon Logo"
-              className="h-12"
-            />
+            <img src="/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png" alt="Airsoft Compagnon Logo" className="h-12" />
             <span className="hidden md:block text-lg font-bold">Airsoft Compagnon</span>
           </Link>
         </div>
@@ -79,8 +64,7 @@ const Header = () => {
           <Link to="/parties" className="hover:text-airsoft-red transition-colors">Parties</Link>
           <Link to="/contact" className="hover:text-airsoft-red transition-colors">Contact</Link>
           <div className="flex items-center gap-2 ml-4">
-            {isAuthenticated && user ? (
-              <DropdownMenu>
+            {isAuthenticated && user ? <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                     <Avatar>
@@ -97,43 +81,31 @@ const Header = () => {
                   <DropdownMenuItem onClick={() => navigate('/profile')}>
                     Mon profil
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/parties')}>
-                    Mes parties
-                  </DropdownMenuItem>
+                  
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" /> Déconnexion
                   </DropdownMenuItem>
                 </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button variant="default" className="bg-airsoft-red hover:bg-red-700" onClick={handleLogin}>
+              </DropdownMenu> : <Button variant="default" className="bg-airsoft-red hover:bg-red-700" onClick={handleLogin}>
                 Se connecter
-              </Button>
-            )}
+              </Button>}
           </div>
         </nav>
 
         {/* Mobile Menu Button */}
-        <Button 
-          variant="ghost" 
-          size="icon"
-          className="md:hidden text-white"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-        >
+        <Button variant="ghost" size="icon" className="md:hidden text-white" onClick={() => setIsMenuOpen(!isMenuOpen)}>
           {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </Button>
       </div>
 
       {/* Mobile Navigation */}
-      {isMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-airsoft-dark z-50 py-4 px-6 flex flex-col gap-4 shadow-lg">
+      {isMenuOpen && <div className="md:hidden absolute top-full left-0 right-0 bg-airsoft-dark z-50 py-4 px-6 flex flex-col gap-4 shadow-lg">
           <Link to="/" className="hover:text-airsoft-red py-2 transition-colors">Accueil</Link>
           <Link to="/parties" className="hover:text-airsoft-red py-2 transition-colors">Parties</Link>
           <Link to="/contact" className="hover:text-airsoft-red py-2 transition-colors">Contact</Link>
           
-          {isAuthenticated && user ? (
-            <>
+          {isAuthenticated && user ? <>
               <div className="flex items-center gap-3 py-2">
                 <Avatar>
                   <AvatarImage src={user.avatar} alt={user.username} />
@@ -147,27 +119,13 @@ const Header = () => {
               <Link to="/parties" className="hover:text-airsoft-red py-2 transition-colors">
                 Mes parties
               </Link>
-              <Button 
-                variant="destructive" 
-                className="mt-2 bg-airsoft-red hover:bg-red-700" 
-                onClick={handleLogout}
-              >
+              <Button variant="destructive" className="mt-2 bg-airsoft-red hover:bg-red-700" onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" /> Déconnexion
               </Button>
-            </>
-          ) : (
-            <Button 
-              variant="default" 
-              className="bg-airsoft-red hover:bg-red-700 w-full mt-2"
-              onClick={handleLogin}
-            >
+            </> : <Button variant="default" className="bg-airsoft-red hover:bg-red-700 w-full mt-2" onClick={handleLogin}>
               Se connecter
-            </Button>
-          )}
-        </div>
-      )}
-    </header>
-  );
+            </Button>}
+        </div>}
+    </header>;
 };
-
 export default Header;
