@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+npm install --save styled-jsx
+npm install --save-dev @types/styled-jsx
+
 const Hero = () => {
   return <div className="relative bg-airsoft-dark text-white overflow-hidden">
       <div className="absolute inset-0 z-0">
