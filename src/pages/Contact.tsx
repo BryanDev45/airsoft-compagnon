@@ -15,16 +15,19 @@ const Contact = () => {
       name: '',
       email: '',
       subject: '',
-      message: ''
-    }
+      message: '',
+    },
   });
+
   const onSubmit = (data: any) => {
     console.log(data);
     // TODO: Add form submission logic
     alert("Message envoyé avec succès !");
     form.reset();
   };
-  return <div className="min-h-screen flex flex-col">
+
+  return (
+    <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 py-12 md:py-16">
@@ -37,37 +40,38 @@ const Contact = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mb-12">
-            <div className="bg-white rounded-lg shadow-md p-6 flex flex-col items-center text-center">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
-                <Mail className="h-6 w-6 text-airsoft-red" />
+            <div className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center text-center">
+              <div className="bg-airsoft-red p-3 rounded-full mb-4">
+                <Mail className="text-white h-6 w-6" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Email</h3>
-              <p className="text-gray-600 mb-4">contact@airsoft-compagnon.fr</p>
+              <h3 className="font-semibold text-lg mb-2">Email</h3>
+              <p className="text-gray-600 mb-2">Notre équipe vous répondra sous 24h</p>
               <a href="mailto:contact@airsoft-compagnon.fr" className="text-airsoft-red hover:underline">
-                Envoyez-nous un email
+                contact@airsoft-compagnon.fr
               </a>
             </div>
 
-            <div className="bg-white rounded-lg shadow-md p-6 flex flex-col items-center text-center">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
-                <Phone className="h-6 w-6 text-airsoft-red" />
+            <div className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center text-center">
+              <div className="bg-airsoft-red p-3 rounded-full mb-4">
+                <Phone className="text-white h-6 w-6" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Téléphone</h3>
-              <p className="text-gray-600 mb-4">+33 1 23 45 67 89</p>
+              <h3 className="font-semibold text-lg mb-2">Téléphone</h3>
+              <p className="text-gray-600 mb-2">Disponible du lundi au vendredi</p>
               <a href="tel:+33123456789" className="text-airsoft-red hover:underline">
-                Appelez-nous
+                +33 1 23 45 67 89
               </a>
             </div>
 
-            <div className="bg-white rounded-lg shadow-md p-6 flex flex-col items-center text-center">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
-                <MapPin className="h-6 w-6 text-airsoft-red" />
+            <div className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center text-center">
+              <div className="bg-airsoft-red p-3 rounded-full mb-4">
+                <MapPin className="text-white h-6 w-6" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Adresse</h3>
-              <p className="text-gray-600 mb-4">123 Avenue de l'Airsoft<br/>75000 Paris, France</p>
-              <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" className="text-airsoft-red hover:underline">
-                Voir sur la carte
-              </a>
+              <h3 className="font-semibold text-lg mb-2">Adresse</h3>
+              <p className="text-gray-600 mb-2">Venez nous rencontrer</p>
+              <address className="not-italic text-airsoft-red">
+                15 rue des Airsofteurs<br />
+                75001 Paris, France
+              </address>
             </div>
           </div>
 
@@ -77,46 +81,67 @@ const Contact = () => {
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
-                  <FormField control={form.control} name="name" render={({
-                  field
-                }) => <FormItem>
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
                         <FormLabel>Nom</FormLabel>
                         <FormControl>
                           <Input placeholder="Votre nom" {...field} required />
                         </FormControl>
                         <FormMessage />
-                      </FormItem>} />
+                      </FormItem>
+                    )}
+                  />
                   
-                  <FormField control={form.control} name="email" render={({
-                  field
-                }) => <FormItem>
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
                           <Input type="email" placeholder="Votre email" {...field} required />
                         </FormControl>
                         <FormMessage />
-                      </FormItem>} />
+                      </FormItem>
+                    )}
+                  />
                 </div>
                 
-                <FormField control={form.control} name="subject" render={({
-                field
-              }) => <FormItem>
+                <FormField
+                  control={form.control}
+                  name="subject"
+                  render={({ field }) => (
+                    <FormItem>
                       <FormLabel>Sujet</FormLabel>
                       <FormControl>
                         <Input placeholder="Sujet de votre message" {...field} required />
                       </FormControl>
                       <FormMessage />
-                    </FormItem>} />
+                    </FormItem>
+                  )}
+                />
                 
-                <FormField control={form.control} name="message" render={({
-                field
-              }) => <FormItem>
+                <FormField
+                  control={form.control}
+                  name="message"
+                  render={({ field }) => (
+                    <FormItem>
                       <FormLabel>Message</FormLabel>
                       <FormControl>
-                        <textarea className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" placeholder="Votre message" {...field} required />
+                        <textarea 
+                          className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          placeholder="Votre message"
+                          {...field}
+                          required
+                        />
                       </FormControl>
                       <FormMessage />
-                    </FormItem>} />
+                    </FormItem>
+                  )}
+                />
                 
                 <Button type="submit" className="w-full bg-airsoft-red hover:bg-red-700">
                   <Send className="mr-2 h-4 w-4" /> Envoyer le message
@@ -127,6 +152,8 @@ const Contact = () => {
         </div>
       </main>
       <Footer />
-    </div>;
+    </div>
+  );
 };
+
 export default Contact;
