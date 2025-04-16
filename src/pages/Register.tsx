@@ -7,11 +7,13 @@ import Footer from '../components/Footer';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { UserPlus, User, Lock, Mail, Check, Calendar } from 'lucide-react';
+import { UserPlus, User, Lock, Mail, Check, Calendar, AlertCircle } from 'lucide-react';
 import { toast } from "@/components/ui/use-toast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Register = () => {
   const navigate = useNavigate();
+  const [isUnderAge, setIsUnderAge] = React.useState(false);
   const form = useForm({
     defaultValues: {
       firstname: '',
@@ -24,8 +26,37 @@ const Register = () => {
     },
   });
 
+  const checkAge = (birthdate: string) => {
+    if (!birthdate) return false;
+    
+    const today = new Date();
+    const birthdateObj = new Date(birthdate);
+    let age = today.getFullYear() - birthdateObj.getFullYear();
+    const m = today.getMonth() - birthdateObj.getMonth();
+    
+    if (m < 0 || (m === 0 && today.getDate() < birthdateObj.getDate())) {
+      age--;
+    }
+    
+    return age < 18;
+  };
+
   const onSubmit = (data: any) => {
     console.log('Registration data:', data);
+    
+    // Validate age first
+    const underAge = checkAge(data.birthdate);
+    setIsUnderAge(underAge);
+    
+    if (underAge) {
+      toast({
+        title: "Inscription impossible",
+        description: "Vous devez avoir au moins 18 ans pour vous inscrire",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     if (data.password !== data.confirmPassword) {
       form.setError('confirmPassword', {
         type: 'manual',
@@ -40,6 +71,15 @@ const Register = () => {
       description: "Votre compte a été créé avec succès",
     });
     setTimeout(() => navigate('/profile'), 1000);
+  };
+
+  const handleBirthdateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    form.setValue('birthdate', value);
+    
+    // Check age whenever birthdate changes
+    const underAge = checkAge(value);
+    setIsUnderAge(underAge);
   };
 
   const handleFacebookRegistration = () => {
@@ -93,6 +133,16 @@ const Register = () => {
               </p>
             </div>
 
+            {isUnderAge && (
+              <Alert variant="destructive" className="mb-6">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Attention</AlertTitle>
+                <AlertDescription>
+                  Vous devez avoir au moins 18 ans pour vous inscrire sur Airsoft Compagnon.
+                </AlertDescription>
+              </Alert>
+            )}
+
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -140,7 +190,13 @@ const Register = () => {
                       <FormControl>
                         <div className="relative">
                           <Calendar className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                          <Input type="date" className="pl-10" {...field} required />
+                          <Input 
+                            type="date" 
+                            className={`pl-10 ${isUnderAge ? 'border-red-500 focus:border-red-500' : ''}`} 
+                            {...field} 
+                            onChange={handleBirthdateChange}
+                            required 
+                          />
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -246,7 +302,11 @@ const Register = () => {
                   </label>
                 </div>
 
-                <Button type="submit" className="w-full bg-airsoft-red hover:bg-red-700">
+                <Button 
+                  type="submit" 
+                  className="w-full bg-airsoft-red hover:bg-red-700"
+                  disabled={isUnderAge}
+                >
                   <UserPlus className="mr-2 h-4 w-4" /> S'inscrire
                 </Button>
               </form>

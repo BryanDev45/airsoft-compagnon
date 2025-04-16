@@ -10,6 +10,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import GameDetails from "./pages/GameDetails";
+import Team from "./pages/Team";
 import NotFound from "./pages/NotFound";
 import TermsOfUse from "./pages/TermsOfUse";
 import TermsOfSale from "./pages/TermsOfSale";
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/game/:id" element={<GameDetails />} />
+          <Route path="/team/:id" element={<Team />} />
           <Route path="/terms-of-use" element={<TermsOfUse />} />
           <Route path="/terms-of-sale" element={<TermsOfSale />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />

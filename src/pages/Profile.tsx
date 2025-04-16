@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { User, Mail, MapPin, Calendar, Edit, Save, Settings, LogOut, Shield, Trophy, Clock, Plus, Upload, List, Zap, Tag, FileText, Users, Map, Calendar as CalendarIcon } from 'lucide-react';
+import { 
+  User, Mail, MapPin, Calendar, Edit, Save, Settings, LogOut, Shield, 
+  Trophy, Clock, Plus, Upload, List, Zap, Tag, FileText, Users, 
+  Map, Calendar as CalendarIcon, Award
+} from 'lucide-react';
 import { toast } from "@/components/ui/use-toast";
 
 const Profile = () => {
@@ -22,6 +26,7 @@ const Profile = () => {
   const [selectedGame, setSelectedGame] = useState<any>(null);
   const [showGameDialog, setShowGameDialog] = useState(false);
   const [showAllGamesDialog, setShowAllGamesDialog] = useState(false);
+  const [showBadgesDialog, setShowBadgesDialog] = useState(false);
   
   // Mock user data
   const user = {
@@ -31,10 +36,42 @@ const Profile = () => {
     lastname: "Dupont",
     age: "28",
     team: "Les Invincibles",
+    teamId: "1",
     location: "Paris, France",
     joinDate: "Avril 2023",
     bio: "Passionné d'airsoft depuis 5 ans, j'organise régulièrement des parties sur Paris et sa région.",
     avatar: "https://randomuser.me/api/portraits/men/44.jpg",
+    isVerified: true,
+    isTeamLeader: true,
+    badges: [
+      {
+        id: 1,
+        name: "Profil Vérifié",
+        description: "Ce joueur a vérifié son identité auprès de l'équipe Airsoft Compagnon",
+        icon: "/lovable-uploads/381c6357-0426-45d3-8262-7b1be5c1bc96.png",
+        backgroundColor: "#e1f7e1",
+        borderColor: "#4caf50", 
+        date: "15/01/2024"
+      },
+      {
+        id: 2,
+        name: "Chef d'équipe",
+        description: "Ce joueur est le fondateur ou le leader d'une équipe d'airsoft",
+        icon: "/lovable-uploads/3c025802-3046-4c34-ae5e-2328e941b479.png",
+        backgroundColor: "#fff8e1",
+        borderColor: "#ffc107",
+        date: "02/02/2024"
+      },
+      {
+        id: 3,
+        name: "Organisateur",
+        description: "A organisé plus de 5 parties d'airsoft",
+        icon: "https://randomuser.me/api/portraits/men/44.jpg",
+        backgroundColor: "#e3f2fd",
+        borderColor: "#2196f3",
+        date: "10/03/2024"
+      }
+    ],
     games: [
       { 
         id: 1, 
@@ -175,11 +212,21 @@ const Profile = () => {
     setShowAllGamesDialog(true);
   };
 
+  // Function to handle viewing all badges
+  const handleViewAllBadges = () => {
+    setShowBadgesDialog(true);
+  };
+
   // Function to handle navigation to game page
   const handleNavigateToGame = (gameId: number) => {
     setShowGameDialog(false);
     setShowAllGamesDialog(false);
     navigate(`/game/${gameId}`);
+  };
+
+  // Function to navigate to team page
+  const handleNavigateToTeam = () => {
+    navigate(`/team/${user.teamId}`);
   };
 
   return (
@@ -235,7 +282,17 @@ const Profile = () => {
                 </div>
                 
                 <div>
-                  <h1 className="text-2xl font-bold">{user.username}</h1>
+                  <h1 className="text-2xl font-bold flex items-center">
+                    {user.username}
+                    {user.isVerified && (
+                      <img 
+                        src="/lovable-uploads/381c6357-0426-45d3-8262-7b1be5c1bc96.png"
+                        alt="Vérifié"
+                        className="w-6 h-6 ml-1"
+                        title="Profil vérifié"
+                      />
+                    )}
+                  </h1>
                   <div className="flex items-center gap-1 text-sm text-gray-200">
                     <Calendar size={14} />
                     <span>Membre depuis {user.joinDate}</span>
@@ -250,6 +307,13 @@ const Profile = () => {
                     <Badge variant="outline" className="text-white border-white">
                       <Shield size={14} className="mr-1" /> {user.stats.gamesOrganized} organisées
                     </Badge>
+                    <Badge 
+                      variant="outline" 
+                      className="text-white border-white cursor-pointer hover:bg-white/10"
+                      onClick={handleViewAllBadges}
+                    >
+                      <Award size={14} className="mr-1" /> {user.badges.length} badges
+                    </Badge>
                   </div>
                 </div>
               </div>
@@ -262,6 +326,7 @@ const Profile = () => {
                   <TabsTrigger value="games">Mes parties</TabsTrigger>
                   <TabsTrigger value="stats">Statistiques</TabsTrigger>
                   <TabsTrigger value="equipment">Équipement</TabsTrigger>
+                  <TabsTrigger value="badges">Badges</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="profile">
@@ -295,7 +360,17 @@ const Profile = () => {
                             {editing ? (
                               <Input defaultValue={user.username} />
                             ) : (
-                              <p className="text-gray-700">{user.username}</p>
+                              <p className="text-gray-700 flex items-center">
+                                {user.username}
+                                {user.isVerified && (
+                                  <img 
+                                    src="/lovable-uploads/381c6357-0426-45d3-8262-7b1be5c1bc96.png"
+                                    alt="Vérifié"
+                                    className="w-4 h-4 ml-1"
+                                    title="Profil vérifié"
+                                  />
+                                )}
+                              </p>
                             )}
                           </div>
                           
@@ -355,7 +430,22 @@ const Profile = () => {
                             {editing ? (
                               <Input defaultValue={user.team} />
                             ) : (
-                              <p className="text-gray-700">{user.team}</p>
+                              <p className="text-gray-700">
+                                <Link 
+                                  to={`/team/${user.teamId}`} 
+                                  className="text-airsoft-red hover:underline flex items-center"
+                                >
+                                  {user.team}
+                                  {user.isTeamLeader && (
+                                    <img 
+                                      src="/lovable-uploads/3c025802-3046-4c34-ae5e-2328e941b479.png"
+                                      alt="Chef d'équipe"
+                                      className="w-4 h-4 ml-1"
+                                      title="Chef d'équipe"
+                                    />
+                                  )}
+                                </Link>
+                              </p>
                             )}
                           </div>
                           
@@ -706,6 +796,61 @@ const Profile = () => {
                     </CardContent>
                   </Card>
                 </TabsContent>
+                
+                <TabsContent value="badges">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Award className="text-airsoft-red" size={20} />
+                        Mes badges
+                      </CardTitle>
+                      <CardDescription>
+                        Badges et récompenses débloqués
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        {user.badges.map((badge) => (
+                          <div 
+                            key={badge.id}
+                            className="border rounded-lg p-4 flex flex-col items-center text-center"
+                            style={{ 
+                              backgroundColor: badge.backgroundColor,
+                              borderColor: badge.borderColor
+                            }}
+                          >
+                            <img 
+                              src={badge.icon} 
+                              alt={badge.name} 
+                              className="w-16 h-16 mb-3"
+                            />
+                            <h3 className="font-semibold mb-1">{badge.name}</h3>
+                            <p className="text-xs text-gray-600 mb-2">{badge.description}</p>
+                            <p className="text-xs text-gray-500">Obtenu le {badge.date}</p>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {user.badges.length === 0 && (
+                        <div className="text-center py-12">
+                          <Award className="mx-auto h-12 w-12 text-gray-300 mb-3" />
+                          <p className="text-gray-500">Vous n'avez pas encore obtenu de badges</p>
+                          <p className="text-sm text-gray-400 mt-1">Participez à des parties et complétez des objectifs pour en obtenir</p>
+                        </div>
+                      )}
+                      
+                      <div className="mt-6 text-center">
+                        <Button
+                          variant="outline"
+                          onClick={handleViewAllBadges}
+                          className="border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white"
+                        >
+                          Voir tous les badges disponibles
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
               </Tabs>
             </div>
           </div>
@@ -836,6 +981,73 @@ const Profile = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Badges Dialog */}
+      <Dialog open={showBadgesDialog} onOpenChange={setShowBadgesDialog}>
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Award className="text-airsoft-red" size={20} />
+              Mes badges
+            </DialogTitle>
+            <DialogDescription className="text-sm text-gray-500">
+              Badges et accomplissements débloqués
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="mt-4 max-h-96 overflow-y-auto pr-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {user.badges.map((badge) => (
+                <div 
+                  key={badge.id}
+                  className="border rounded-lg p-4 flex items-center gap-3"
+                  style={{ 
+                    backgroundColor: badge.backgroundColor,
+                    borderColor: badge.borderColor
+                  }}
+                >
+                  <img 
+                    src={badge.icon} 
+                    alt={badge.name} 
+                    className="w-14 h-14"
+                  />
+                  <div>
+                    <h3 className="font-semibold">{badge.name}</h3>
+                    <p className="text-xs text-gray-600 mb-1">{badge.description}</p>
+                    <p className="text-xs text-gray-500">Obtenu le {badge.date}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-6 border-t pt-4">
+              <h3 className="font-medium mb-3">Badges à débloquer</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 opacity-60">
+                <div className="border rounded-lg p-4 flex items-center gap-3 bg-gray-100">
+                  <div className="w-14 h-14 bg-gray-300 flex items-center justify-center rounded-full">
+                    <Trophy size={24} className="text-gray-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Champion</h3>
+                    <p className="text-xs text-gray-600">Gagner 10 parties consécutives</p>
+                    <p className="text-xs text-gray-500">Progression: 4/10</p>
+                  </div>
+                </div>
+                <div className="border rounded-lg p-4 flex items-center gap-3 bg-gray-100">
+                  <div className="w-14 h-14 bg-gray-300 flex items-center justify-center rounded-full">
+                    <Flag size={24} className="text-gray-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Capture de drapeaux</h3>
+                    <p className="text-xs text-gray-600">Capturer 100 drapeaux</p>
+                    <p className="text-xs text-gray-500">Progression: 53/100</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </DialogContent>
