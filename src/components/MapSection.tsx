@@ -20,10 +20,11 @@ const MapSection = () => {
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('france');
   const [searchRadius, setSearchRadius] = useState([50]);
-  const [searchCenter, setSearchCenter] = useState([2.3522, 46.2276]); // Default to center of France
+  // Fix the type of searchCenter to be a tuple of two numbers
+  const [searchCenter, setSearchCenter] = useState<[number, number]>([2.3522, 46.2276]); // Default to center of France
 
   // Country coordinates (centers)
-  const countryCoordinates = {
+  const countryCoordinates: Record<string, [number, number]> = {
     france: [2.3522, 46.2276],
     belgique: [4.3517, 50.8503],
     suisse: [8.2275, 46.8182],
@@ -116,7 +117,7 @@ const MapSection = () => {
   });
 
   // Function to geocode a location name to coordinates
-  const geocodeLocation = async (locationName) => {
+  const geocodeLocation = async (locationName: string) => {
     if (!locationName) return null;
     
     try {
@@ -127,7 +128,7 @@ const MapSection = () => {
       if (data && data.length > 0) {
         // Use the first result
         const { lat, lon } = data[0];
-        return [parseFloat(lon), parseFloat(lat)];
+        return [parseFloat(lon), parseFloat(lat)] as [number, number];
       }
       return null;
     } catch (error) {
@@ -237,7 +238,7 @@ const MapSection = () => {
               </div>
             </div>
             
-            <div className="w-full md:w-3/4 h-full relative" style={{ height: "600px" }}>
+            <div className="w-full md:w-3/4 h-[600px] relative">
               <MapComponent 
                 searchCenter={searchCenter}
                 searchRadius={searchRadius[0]} 

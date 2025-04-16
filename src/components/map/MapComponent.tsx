@@ -38,9 +38,10 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
     const overlay = new Overlay({
       element: container,
       autoPan: true,
+      // Fix for autoPanAnimation typing issue
       autoPanAnimation: {
         duration: 250
-      } as any // Type assertion to avoid TypeScript error
+      } as any
     });
     popupOverlay.current = overlay;
 
@@ -67,10 +68,9 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
       });
       
       if (feature) {
-        const geometry = feature.getGeometry();
-        if (geometry) {
-          const coordinate = geometry.getCoordinates();
-          
+        // Fix for getCoordinates typing issue
+        const coordinates = (feature.getGeometry() as Point).getCoordinates();
+        if (coordinates) {
           const eventId = feature.get('id');
           const eventType = feature.get('type');
           
@@ -89,19 +89,24 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
             </a>
           `;
           
-          overlay.setPosition(coordinate);
+          // Fix for optional property access issue
+          if (overlay) {
+            overlay.setPosition(coordinates);
+          }
         }
       } else {
-        overlay.setPosition(undefined);
+        if (overlay) {
+          overlay.setPosition(undefined);
+        }
       }
     });
 
     // Change cursor when hovering over markers
     map.current.on('pointermove', function (e) {
       const pixel = map.current?.getEventPixel(e.originalEvent);
-      if (pixel) {
-        const hit = map.current?.hasFeatureAtPixel(pixel);
-        map.current?.getTargetElement().style.cursor = hit ? 'pointer' : '';
+      if (pixel && map.current) {
+        const hit = map.current.hasFeatureAtPixel(pixel);
+        map.current.getTargetElement().style.cursor = hit ? 'pointer' : '';
       }
     });
 
