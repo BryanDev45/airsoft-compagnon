@@ -375,7 +375,7 @@ const MapSection = () => {
       autoPanAnimation: {
         duration: 250
       }
-    });
+    } as any);
     popupOverlay.current = overlay;
 
     // Create the map
