@@ -35,9 +35,6 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
     const overlay = new Overlay({
       element: container,
       autoPan: true,
-      autoPanAnimation: {
-        duration: 250
-      } as any
     });
     popupOverlay.current = overlay;
 
