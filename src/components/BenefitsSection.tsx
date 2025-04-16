@@ -19,17 +19,25 @@ const BenefitsSection = () => {
         {/* Avantages pour les organisateurs */}
         <div className="mb-16">
           <div className="bg-airsoft-red text-white p-6 md:p-10 rounded-lg mb-8 relative overflow-hidden">
-            <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-black/20 to-transparent"></div>
-            <div className="relative z-10 max-w-2xl">
-              <h2 className="text-3xl font-bold mb-4">Quels avantages pour les organisateurs ?</h2>
-              <p className="text-lg mb-4">
-                Vous en avez assez de gaspiller votre temps dans la gestion des inscriptions ?
-              </p>
-              <p className="text-lg">
-                Airsoft Compagnon s'occupe de tout pour vous. Déposez simplement votre annonce et c'est tout !
-                Les joueurs trouvent automatiquement votre annonce grâce à nos filtres et tous les paiements de PAF sont gérés par l'application.
-                Réduisez le taux d'absentéisme grâce à la validation des inscriptions après le paiement de la PAF.
-              </p>
+            <div className="flex flex-col md:flex-row gap-8">
+              <div className="relative z-10 max-w-2xl">
+                <h2 className="text-3xl font-bold mb-4">Quels avantages pour les organisateurs ?</h2>
+                <p className="text-lg mb-4">
+                  Vous en avez assez de gaspiller votre temps dans la gestion des inscriptions ?
+                </p>
+                <p className="text-lg">
+                  Airsoft Compagnon s'occupe de tout pour vous. Déposez simplement votre annonce et c'est tout !
+                  Les joueurs trouvent automatiquement votre annonce grâce à nos filtres et tous les paiements de PAF sont gérés par l'application.
+                  Réduisez le taux d'absentéisme grâce à la validation des inscriptions après le paiement de la PAF.
+                </p>
+              </div>
+              <div className="md:w-1/3 flex-shrink-0">
+                <img 
+                  src="/lovable-uploads/84404d08-fa37-4317-80e0-d607d3676fd5.png" 
+                  alt="Joueurs d'airsoft en équipement militaire" 
+                  className="rounded-lg w-full h-full object-cover shadow-lg"
+                />
+              </div>
             </div>
           </div>
           
