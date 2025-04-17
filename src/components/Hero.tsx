@@ -40,21 +40,6 @@ const Hero = () => {
           </div>
         </div>
       </div>
-      
-      {/* Triangle en bas du hero */}
-      <div className="relative w-full h-[60px] overflow-hidden">
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute bottom-0 w-full h-full">
-          <polygon points="0,0 100,0 50,100 0,0" fill="url(#gradient)" />
-        </svg>
-        <svg width="0" height="0">
-          <defs>
-            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#ea384c" />
-              <stop offset="100%" stopColor="#ff6b6b" />
-            </linearGradient>
-          </defs>
-        </svg>
-      </div>
     </div>;
 };
 

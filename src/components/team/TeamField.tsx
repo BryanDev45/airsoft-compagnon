@@ -81,26 +81,37 @@ const TeamField = ({ field }: TeamFieldProps) => {
     }
   };
 
+  // Moved "Add terrain" button outside the conditional rendering to always show it
+  const addTerrainButton = (
+    <div className="mb-4">
+      <Button onClick={() => setShowAddDialog(true)} className="bg-airsoft-red hover:bg-red-700">
+        <Plus className="mr-2 h-4 w-4" />
+        Ajouter un terrain
+      </Button>
+    </div>
+  );
+
   if (!field && !isEditing) {
     return (
-      <div className="bg-gray-50 p-6 rounded-lg text-center">
-        <MapPin className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-        <h3 className="text-lg font-medium text-gray-700 mb-2">
-          Aucun terrain disponible
-        </h3>
-        <p className="text-gray-500 max-w-md mx-auto mb-6">
-          Cette équipe n'a pas encore ajouté d'informations sur son terrain d'entraînement.
-        </p>
-        <Button onClick={() => setShowAddDialog(true)} className="bg-airsoft-red hover:bg-red-700">
-          <Plus className="mr-2 h-4 w-4" />
-          Ajouter un terrain
-        </Button>
+      <div className="space-y-6">
+        {addTerrainButton}
+        <div className="bg-gray-50 p-6 rounded-lg text-center">
+          <MapPin className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+          <h3 className="text-lg font-medium text-gray-700 mb-2">
+            Aucun terrain disponible
+          </h3>
+          <p className="text-gray-500 max-w-md mx-auto mb-6">
+            Cette équipe n'a pas encore ajouté d'informations sur son terrain d'entraînement.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
+      {addTerrainButton}
+      
       <Card>
         <CardHeader className="relative">
           <div className="flex justify-between items-start">
@@ -117,27 +128,17 @@ const TeamField = ({ field }: TeamFieldProps) => {
               /> : field.description}</CardDescription>
             </div>
             {!isEditing && (
-              <div className="flex space-x-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => {
-                    setEditedField({...field});
-                    setIsEditing(true);
-                  }}
-                >
-                  <Edit className="h-4 w-4 mr-1" />
-                  Modifier
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setShowAddDialog(true)}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Ajouter
-                </Button>
-              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => {
+                  setEditedField({...field});
+                  setIsEditing(true);
+                }}
+              >
+                <Edit className="h-4 w-4 mr-1" />
+                Modifier
+              </Button>
             )}
           </div>
         </CardHeader>

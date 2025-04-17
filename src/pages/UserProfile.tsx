@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -19,7 +18,24 @@ const UserProfile = () => {
   
   // In a real app, we would fetch user data based on username
   // For now, we'll use mock data
-  const [user, setUser] = useState(mockUserData);
+  const [user, setUser] = useState({
+    id: '1',
+    username: 'JohnDoe',
+    fullName: 'John Doe',
+    firstName: 'John',
+    lastName: 'Doe',
+    age: '28', // Changed from number to string to fix the type error
+    email: 'john.doe@example.com',
+    avatar: 'https://randomuser.me/api/portraits/men/44.jpg',
+    bio: 'Passionate airsoft player with 5+ years of experience',
+    location: 'Paris, France',
+    memberSince: '2021',
+    team: 'Les Invincibles',
+    teamId: '1',
+    verified: true,
+    premium: true,
+    // ... keep existing code (rest of user properties)
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [selectedGame, setSelectedGame] = useState(null);
   const [showGameDialog, setShowGameDialog] = useState(false);

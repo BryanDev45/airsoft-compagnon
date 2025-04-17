@@ -1,6 +1,6 @@
 
 import React, { useState, useRef } from 'react';
-import { Settings, UserPlus, Shield, Mail, Trash2, ImageIcon, Image } from 'lucide-react';
+import { Settings, UserPlus, Shield, Mail, Trash2, ImageIcon, Image, LogOut, AlertTriangle } from 'lucide-react';
 import { 
   Dialog, 
   DialogContent, 
@@ -33,16 +33,20 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useNavigate } from 'react-router-dom';
 
 interface TeamSettingsProps {
   team: any;
 }
 
 const TeamSettings = ({ team }: TeamSettingsProps) => {
+  const navigate = useNavigate();
   const [contactEmail, setContactEmail] = useState(team.contactEmail || "");
   const [selectedMember, setSelectedMember] = useState<any>(null);
   const [memberRole, setMemberRole] = useState("");
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDeleteMemberDialog, setShowDeleteMemberDialog] = useState(false);
+  const [showLeaveTeamDialog, setShowLeaveTeamDialog] = useState(false);
+  const [showDeleteTeamDialog, setShowDeleteTeamDialog] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
   
@@ -75,8 +79,30 @@ const TeamSettings = ({ team }: TeamSettingsProps) => {
       description: `${selectedMember.username} a été retiré de l'équipe`
     });
     
-    setShowDeleteDialog(false);
+    setShowDeleteMemberDialog(false);
     setSelectedMember(null);
+  };
+
+  const handleLeaveTeam = () => {
+    // Simulating API call
+    toast({
+      title: "Équipe quittée",
+      description: "Vous avez quitté l'équipe avec succès"
+    });
+    
+    setShowLeaveTeamDialog(false);
+    navigate('/profile');
+  };
+  
+  const handleDeleteTeam = () => {
+    // Simulating API call
+    toast({
+      title: "Équipe supprimée",
+      description: "L'équipe a été supprimée avec succès"
+    });
+    
+    setShowDeleteTeamDialog(false);
+    navigate('/profile');
   };
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -205,7 +231,7 @@ const TeamSettings = ({ team }: TeamSettingsProps) => {
                             className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setShowDeleteDialog(true);
+                              setShowDeleteMemberDialog(true);
                             }}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -354,10 +380,33 @@ const TeamSettings = ({ team }: TeamSettingsProps) => {
               </DialogFooter>
             </TabsContent>
           </Tabs>
+          
+          <div className="border-t pt-4 space-y-2">
+            <Button 
+              variant="outline" 
+              className="w-full justify-start text-amber-600 border-amber-200 hover:bg-amber-50"
+              onClick={() => setShowLeaveTeamDialog(true)}
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Quitter l'équipe
+            </Button>
+            
+            {team.members.some((m: any) => m.isTeamLeader) && (
+              <Button 
+                variant="outline" 
+                className="w-full justify-start text-red-600 border-red-200 hover:bg-red-50"
+                onClick={() => setShowDeleteTeamDialog(true)}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Supprimer l'équipe
+              </Button>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
       
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      {/* Delete Member Dialog */}
+      <AlertDialog open={showDeleteMemberDialog} onOpenChange={setShowDeleteMemberDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
@@ -372,6 +421,51 @@ const TeamSettings = ({ team }: TeamSettingsProps) => {
               onClick={handleDeleteMember}
             >
               Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      {/* Leave Team Dialog */}
+      <AlertDialog open={showLeaveTeamDialog} onOpenChange={setShowLeaveTeamDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Quitter l'équipe</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir quitter cette équipe ? Vous pourrez toujours demander à rejoindre l'équipe ultérieurement.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction 
+              className="bg-amber-500 hover:bg-amber-700 text-white" 
+              onClick={handleLeaveTeam}
+            >
+              Quitter l'équipe
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      {/* Delete Team Dialog */}
+      <AlertDialog open={showDeleteTeamDialog} onOpenChange={setShowDeleteTeamDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-red-600 flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              Supprimer l'équipe
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Attention ! Supprimer l'équipe est une action irréversible. Tous les membres, parties et données associés seront définitivement supprimés.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction 
+              className="bg-red-500 hover:bg-red-700 text-white" 
+              onClick={handleDeleteTeam}
+            >
+              Supprimer définitivement
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
