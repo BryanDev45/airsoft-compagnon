@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Calendar, Map as MapIcon, MapPin, Maximize, Navigation } from 'lucide-react';
+import { Search, Calendar, Map as MapIcon, MapPin, Maximize, Navigation, Plus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -18,9 +18,8 @@ const MapSection = () => {
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('france');
-  const [searchRadius, setSearchRadius] = useState([0]); // Changé de 50 à 0 comme demandé
-  // Fix the type of searchCenter to be a tuple of two numbers
-  const [searchCenter, setSearchCenter] = useState<[number, number]>([2.3522, 46.2276]); // Default to center of France
+  const [searchRadius, setSearchRadius] = useState([0]); 
+  const [searchCenter, setSearchCenter] = useState<[number, number]>([2.3522, 46.2276]); 
 
   // Country coordinates (centers)
   const countryCoordinates: Record<string, [number, number]> = {
@@ -44,7 +43,8 @@ const MapSection = () => {
     lat: 48.8566,
     lng: 2.3522,
     maxPlayers: 20,
-    price: 15
+    price: 15,
+    image: "/lovable-uploads/1cc60b94-2b6c-4e0e-9ab8-1bd1e8cb1098.png"
   }, {
     id: 2,
     title: "Milsim Forest",
@@ -56,7 +56,8 @@ const MapSection = () => {
     lat: 45.7640,
     lng: 4.8357,
     maxPlayers: 30,
-    price: 25
+    price: 25,
+    image: "/lovable-uploads/24d6452d-2439-4baf-b334-41863a1077c5.png"
   }, {
     id: 3,
     title: "Partie nocturne",
@@ -68,7 +69,8 @@ const MapSection = () => {
     lat: 43.2965,
     lng: 5.3698,
     maxPlayers: 15,
-    price: 10
+    price: 10,
+    image: "/lovable-uploads/381c6357-0426-45d3-8262-7b1be5c1bc96.png"
   }, {
     id: 4,
     title: "Open day",
@@ -80,7 +82,8 @@ const MapSection = () => {
     lat: 44.8378,
     lng: -0.5792,
     maxPlayers: 25,
-    price: 20
+    price: 20,
+    image: "/lovable-uploads/3c025802-3046-4c34-ae5e-2328e941b479.png"
   }, {
     id: 5,
     title: "Tournoi 3v3",
@@ -92,7 +95,8 @@ const MapSection = () => {
     lat: 50.6292,
     lng: 3.0573,
     maxPlayers: 10,
-    price: 30
+    price: 30,
+    image: "/lovable-uploads/84404d08-fa37-4317-80e0-d607d3676fd5.png"
   }]);
 
   // Filtrer les événements en fonction des critères de recherche
@@ -191,6 +195,15 @@ const MapSection = () => {
     <div className="py-12 md:py-16 bg-gray-100">
       <div className="max-w-7xl mx-auto px-4">
         <h2 className="text-3xl font-bold mb-8 text-center">Trouvez votre prochaine partie</h2>
+        
+        <div className="flex justify-end mb-6">
+          <Link to="/parties/create">
+            <Button className="bg-airsoft-red hover:bg-red-700">
+              <Plus className="mr-2 h-4 w-4" />
+              Créer une partie
+            </Button>
+          </Link>
+        </div>
         
         <div className="bg-white rounded-lg overflow-hidden shadow-xl mb-8 border border-gray-200">
           <div className="flex flex-col md:flex-row h-full">

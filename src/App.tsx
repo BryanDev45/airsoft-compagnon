@@ -28,6 +28,23 @@ import CookieConsent from './components/CookieConsent';
 function App() {
   const [cookiesAccepted, setCookiesAccepted] = useState<boolean | null>(null);
 
+  // Scroll to top on route change
+  useEffect(() => {
+    const handleRouteChange = () => {
+      window.scrollTo(0, 0);
+    };
+
+    // Add event listener for route changes
+    window.addEventListener('popstate', handleRouteChange);
+    
+    // Initial scroll to top
+    handleRouteChange();
+
+    return () => {
+      window.removeEventListener('popstate', handleRouteChange);
+    };
+  }, []);
+
   useEffect(() => {
     const consentStatus = localStorage.getItem('cookieConsent');
     setCookiesAccepted(consentStatus === 'accepted');
@@ -56,6 +73,7 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/parties" element={<Parties />} />
         <Route path="/create-party" element={<CreateParty />} />
+        <Route path="/parties/create" element={<CreateParty />} />
         <Route path="/game/:id" element={<GameDetails />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-of-use" element={<TermsOfUse />} />

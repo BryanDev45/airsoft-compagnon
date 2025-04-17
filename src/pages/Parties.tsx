@@ -26,7 +26,7 @@ const Recherche = () => {
 
   const handleCreateParty = () => {
     if (isAuthenticated) {
-      navigate('/parties/create');
+      navigate('/create-party');
     } else {
       navigate('/login');
     }

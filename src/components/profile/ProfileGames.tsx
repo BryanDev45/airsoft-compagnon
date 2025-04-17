@@ -23,7 +23,7 @@ const ProfileGames = ({ games, handleViewGameDetails, handleViewAllGames }: Prof
               Historique et parties à venir
             </CardDescription>
           </div>
-          <Link to="/parties/create">
+          <Link to="/create-party">
             <Button className="bg-airsoft-red hover:bg-red-700">
               <Plus className="h-4 w-4 mr-2" />
               Créer une partie
