@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Plus, Edit, Upload, List, Zap, Tag, FileText, Pencil, Trash } from 'lucide-react';
+import { Plus, Pencil, Upload, List, Zap, Tag, FileText, Trash2, Wrench } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,24 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ProfileEquipmentProps {
   equipment: any[];
@@ -21,7 +39,8 @@ const ProfileEquipment = ({
   readOnly = false
 }: ProfileEquipmentProps) => {
   const [addingEquipment, setAddingEquipment] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingEquipment, setEditingEquipment] = useState<any>(null);
+  const [deletingEquipmentId, setDeletingEquipmentId] = useState<string | null>(null);
   
   const handleAddEquipment = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,12 +51,29 @@ const ProfileEquipment = ({
     });
   };
 
-  const handleEditEquipment = (id: string) => {
-    setEditingId(id);
+  const handleEditEquipment = (item: any) => {
+    setEditingEquipment(item);
+  };
+
+  const handleSaveEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setEditingEquipment(null);
     toast({
-      title: "Modification",
-      description: "Mode édition activé pour cet équipement"
+      title: "Équipement modifié",
+      description: "Votre équipement a été modifié avec succès"
     });
+  };
+
+  const handleDeleteEquipment = (id: string) => {
+    setDeletingEquipmentId(id);
+  };
+
+  const confirmDelete = () => {
+    toast({
+      title: "Équipement supprimé",
+      description: "Votre équipement a été supprimé avec succès"
+    });
+    setDeletingEquipmentId(null);
   };
 
   return (
@@ -144,11 +180,21 @@ const ProfileEquipment = ({
                 </div>
                 {!readOnly && (
                   <div className="flex sm:flex-col gap-2 mt-2 sm:mt-0">
-                    <Button variant="outline" size="sm" onClick={() => handleEditEquipment(item.id)}>
-                      <Pencil size={16} className="mr-1" /> Modifier
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => handleEditEquipment(item)}
+                      className="hover:text-blue-700"
+                    >
+                      <Wrench size={16} className="mr-1" /> Modifier
                     </Button>
-                    <Button variant="outline" size="sm" className="text-red-500 hover:text-red-700">
-                      <Trash size={16} className="mr-1" /> Supprimer
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-red-500 hover:text-red-700"
+                      onClick={() => handleDeleteEquipment(item.id)}
+                    >
+                      <Trash2 size={16} className="mr-1" /> Supprimer
                     </Button>
                   </div>
                 )}
@@ -161,6 +207,105 @@ const ProfileEquipment = ({
           </p>
         )}
       </CardContent>
+
+      {/* Edit Equipment Dialog */}
+      <Dialog open={editingEquipment !== null} onOpenChange={(open) => !open && setEditingEquipment(null)}>
+        <DialogContent className="sm:max-w-[550px]">
+          <DialogHeader>
+            <DialogTitle>Modifier l'équipement</DialogTitle>
+            <DialogDescription>
+              Mettez à jour les détails de votre équipement.
+            </DialogDescription>
+          </DialogHeader>
+
+          {editingEquipment && (
+            <form onSubmit={handleSaveEdit} className="space-y-4">
+              <div className="flex justify-center mb-4">
+                <div className="relative">
+                  <img 
+                    src={editingEquipment.image} 
+                    alt="Equipment" 
+                    className="w-32 h-32 object-cover rounded-lg" 
+                  />
+                  <Button 
+                    size="sm"
+                    variant="outline"
+                    className="absolute bottom-2 right-2 h-8 w-8 p-0 rounded-full bg-white"
+                  >
+                    <Upload className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-type">Type d'équipement</Label>
+                  <Select defaultValue={editingEquipment.type}>
+                    <SelectTrigger id="edit-type">
+                      <SelectValue>{editingEquipment.type}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {equipmentTypes.map(type => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="edit-power">Puissance (FPS)</Label>
+                  <Input id="edit-power" defaultValue={editingEquipment.power} />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="edit-brand">Marque</Label>
+                  <Input id="edit-brand" defaultValue={editingEquipment.brand} />
+                </div>
+                
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="edit-description">Description</Label>
+                  <Input id="edit-description" defaultValue={editingEquipment.description} />
+                </div>
+              </div>
+              
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setEditingEquipment(null)}>
+                  Annuler
+                </Button>
+                <Button type="submit" className="bg-airsoft-red hover:bg-red-700">
+                  Enregistrer
+                </Button>
+              </DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Equipment Dialog */}
+      <AlertDialog 
+        open={deletingEquipmentId !== null} 
+        onOpenChange={(open) => !open && setDeletingEquipmentId(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer cet équipement ? Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete} 
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };

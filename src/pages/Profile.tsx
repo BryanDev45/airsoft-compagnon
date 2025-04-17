@@ -13,6 +13,8 @@ import ProfileBadges from '../components/profile/ProfileBadges';
 import ProfileDialogs from '../components/profile/ProfileDialogs';
 import ProfileSettingsDialog from '../components/profile/ProfileSettingsDialog';
 import ProfileEditMediaDialog from '../components/profile/ProfileEditMediaDialog';
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 const Profile = () => {
   const {
@@ -38,6 +40,7 @@ const Profile = () => {
 
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [showEditMediaDialog, setShowEditMediaDialog] = useState(false);
+  const [addingEquipment, setAddingEquipment] = useState(false);
 
   const toggleProfileSettings = () => {
     setShowSettingsDialog(true);
@@ -49,6 +52,10 @@ const Profile = () => {
     
     // If we want to edit profile info
     // setEditing(true);
+  };
+
+  const handleAddEquipment = () => {
+    setAddingEquipment(true);
   };
 
   return (
@@ -96,9 +103,21 @@ const Profile = () => {
                 </TabsContent>
                 
                 <TabsContent value="equipment">
+                  <div className="mb-4 flex justify-end">
+                    <Button 
+                      onClick={handleAddEquipment} 
+                      className="bg-airsoft-red hover:bg-red-700 text-white"
+                    >
+                      <Plus className="h-4 w-4 mr-2" /> Ajouter un équipement
+                    </Button>
+                  </div>
+                  
                   <ProfileEquipment 
                     equipment={user.equipment} 
-                    equipmentTypes={equipmentTypes} 
+                    equipmentTypes={equipmentTypes}
+                    readOnly={false}
+                    addingEquipment={addingEquipment}
+                    setAddingEquipment={setAddingEquipment}
                   />
                 </TabsContent>
                 

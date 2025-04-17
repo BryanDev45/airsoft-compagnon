@@ -61,13 +61,14 @@ const UserProfile = () => {
     setTimeout(() => {
       // For demo purposes, we're using the mock data
       // This would be replaced with actual API call in a real app
-      setUser({
+      const userData = {
         ...mockUserData,
         username: username || mockUserData.username,
         firstName: "Jean",
         lastName: "Dupont",
         age: "28",
-      });
+      };
+      setUser(userData);
       setIsLoading(false);
     }, 500);
   }, [username]);

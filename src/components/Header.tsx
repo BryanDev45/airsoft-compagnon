@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, User as UserIcon, LogOut, Bell, BellOff, Settings } from 'lucide-react';
+import { Menu, X, User as UserIcon, LogOut, Bell, BellOff, Settings, Users, Toolbox } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -26,6 +26,7 @@ const Header = () => {
   const [user, setUser] = useState<{
     username: string;
     avatar: string;
+    teamId?: string;
   } | null>(null);
   const [notificationCount, setNotificationCount] = useState(3); // Mock notification count
   const [notifications, setNotifications] = useState([
@@ -91,6 +92,22 @@ const Header = () => {
     navigate('/login');
   };
 
+  const handleNavigateToTeam = () => {
+    // Navigate to the user's team page
+    if (user?.teamId) {
+      navigate(`/team/${user.teamId}`);
+    } else {
+      toast({
+        title: "Information",
+        description: "Vous n'êtes pas membre d'une équipe"
+      });
+    }
+  };
+
+  const handleNavigateToToolbox = () => {
+    navigate('/toolbox');
+  };
+
   const handleNotificationRead = (id: number) => {
     // Marquer une notification comme lue
     setNotifications(prev => 
@@ -137,6 +154,10 @@ const Header = () => {
           <Link to="/" className="hover:text-airsoft-red transition-colors">Accueil</Link>
           <Link to="/recherche" className="hover:text-airsoft-red transition-colors">Recherche</Link>
           <Link to="/contact" className="hover:text-airsoft-red transition-colors">Contact</Link>
+          <Link to="/toolbox" className="hover:text-airsoft-red transition-colors flex items-center gap-1">
+            <Toolbox size={18} />
+            <span>ToolBox</span>
+          </Link>
           <div className="flex items-center gap-4 ml-4">
             {isAuthenticated && (
               <Sheet>
@@ -219,7 +240,10 @@ const Header = () => {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => navigate('/profile')}>
-                    Mon profil
+                    <UserIcon className="mr-2 h-4 w-4" /> Mon profil
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleNavigateToTeam}>
+                    <Users className="mr-2 h-4 w-4" /> Mon équipe
                   </DropdownMenuItem>
                   
                   <DropdownMenuSeparator />
@@ -248,6 +272,10 @@ const Header = () => {
           <Link to="/" className="hover:text-airsoft-red py-2 transition-colors">Accueil</Link>
           <Link to="/recherche" className="hover:text-airsoft-red py-2 transition-colors">Recherche</Link>
           <Link to="/contact" className="hover:text-airsoft-red py-2 transition-colors">Contact</Link>
+          <Link to="/toolbox" className="hover:text-airsoft-red py-2 transition-colors flex items-center gap-2">
+            <Toolbox size={18} />
+            <span>ToolBox</span>
+          </Link>
           
           {isAuthenticated && (
             <div className="flex items-center py-2">
@@ -322,12 +350,12 @@ const Header = () => {
                 </Avatar>
                 <span>{user.username}</span>
               </div>
-              <Link to="/profile" className="hover:text-airsoft-red py-2 transition-colors">
-                Mon profil
+              <Link to="/profile" className="hover:text-airsoft-red py-2 transition-colors flex items-center gap-2">
+                <UserIcon size={16} /> Mon profil
               </Link>
-              <Link to="/recherche" className="hover:text-airsoft-red py-2 transition-colors">
-                Mes parties
-              </Link>
+              <div onClick={handleNavigateToTeam} className="hover:text-airsoft-red py-2 transition-colors flex items-center gap-2 cursor-pointer">
+                <Users size={16} /> Mon équipe
+              </div>
               <Button variant="destructive" className="mt-2 bg-airsoft-red hover:bg-red-700" onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" /> Déconnexion
               </Button>

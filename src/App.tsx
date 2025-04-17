@@ -1,62 +1,82 @@
 
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import './App.css';
+import Index from './pages/Index';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import ResetPassword from './pages/ResetPassword';
+import NewPassword from './pages/NewPassword';
+import Profile from './pages/Profile';
+import UserProfile from './pages/UserProfile';
+import Contact from './pages/Contact';
+import Parties from './pages/Parties';
+import GameDetails from './pages/GameDetails';
+import NotFound from './pages/NotFound';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfUse from './pages/TermsOfUse';
+import TermsOfSale from './pages/TermsOfSale';
+import CookiesPolicy from './pages/CookiesPolicy';
+import FAQ from './pages/FAQ';
+import CreateParty from './pages/CreateParty';
+import Team from './pages/Team';
+import Toolbox from './pages/Toolbox';
+
+import { useState, useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import Contact from "./pages/Contact";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import ResetPassword from "./pages/ResetPassword";
-import NewPassword from "./pages/NewPassword";
-import Profile from "./pages/Profile";
-import UserProfile from "./pages/UserProfile";
-import Recherche from "./pages/Parties";
-import CreateParty from "./pages/CreateParty";
-import GameDetails from "./pages/GameDetails";
-import Team from "./pages/Team";
-import FAQ from "./pages/FAQ";
-import NotFound from "./pages/NotFound";
-import TermsOfUse from "./pages/TermsOfUse";
-import TermsOfSale from "./pages/TermsOfSale";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import CookiesPolicy from "./pages/CookiesPolicy";
-import CookieConsent from "./components/CookieConsent";
+import CookieConsent from './components/CookieConsent';
 
-const queryClient = new QueryClient();
+function App() {
+  const [cookiesAccepted, setCookiesAccepted] = useState<boolean | null>(null);
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
+  useEffect(() => {
+    const consentStatus = localStorage.getItem('cookieConsent');
+    setCookiesAccepted(consentStatus === 'accepted');
+  }, []);
+
+  const handleAcceptCookies = () => {
+    localStorage.setItem('cookieConsent', 'accepted');
+    setCookiesAccepted(true);
+  };
+
+  const handleDeclineCookies = () => {
+    localStorage.setItem('cookieConsent', 'declined');
+    setCookiesAccepted(false);
+  };
+
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/new-password" element={<NewPassword />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/user/:username" element={<UserProfile />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/parties" element={<Parties />} />
+        <Route path="/create-party" element={<CreateParty />} />
+        <Route path="/game/:id" element={<GameDetails />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-of-use" element={<TermsOfUse />} />
+        <Route path="/terms-of-sale" element={<TermsOfSale />} />
+        <Route path="/cookies-policy" element={<CookiesPolicy />} />
+        <Route path="/faq" element={<FAQ />} />
+        <Route path="/team/:id" element={<Team />} />
+        <Route path="/toolbox" element={<Toolbox />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      
+      {cookiesAccepted === null && (
+        <CookieConsent
+          onAccept={handleAcceptCookies}
+          onDecline={handleDeclineCookies}
+        />
+      )}
+      
       <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <CookieConsent />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/recherche" element={<Recherche />} />
-          <Route path="/parties/create" element={<CreateParty />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/new-password" element={<NewPassword />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/user/:username" element={<UserProfile />} />
-          <Route path="/game/:id" element={<GameDetails />} />
-          <Route path="/team/:id" element={<Team />} />
-          <Route path="/faq" element={<FAQ />} />
-          <Route path="/terms-of-use" element={<TermsOfUse />} />
-          <Route path="/terms-of-sale" element={<TermsOfSale />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/cookies-policy" element={<CookiesPolicy />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+    </Router>
+  );
+}
 
 export default App;

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Download } from 'lucide-react';
+import { Download, Toolbox } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 
 const Footer = () => {
@@ -40,6 +40,9 @@ const Footer = () => {
             <ul className="space-y-2">
               <li><Link to="/" className="text-gray-400 hover:text-white transition-colors">Accueil</Link></li>
               <li><Link to="/recherche" className="text-gray-400 hover:text-white transition-colors">Recherche</Link></li>
+              <li><Link to="/toolbox" className="text-gray-400 hover:text-white transition-colors flex items-center gap-2">
+                <Toolbox size={16} /> ToolBox
+              </Link></li>
               <li><Link to="/faq" className="text-gray-400 hover:text-white transition-colors">FAQ</Link></li>
               <li><Link to="/contact" className="text-gray-400 hover:text-white transition-colors">Contact</Link></li>
               <li><Link to="/login" className="text-gray-400 hover:text-white transition-colors">Se connecter</Link></li>
