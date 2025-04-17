@@ -1,76 +1,44 @@
 
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { X } from 'lucide-react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/use-toast";
+import { Shield, X } from 'lucide-react';
 
-const CookieConsent = () => {
-  const [showBanner, setShowBanner] = useState(false);
+interface CookieConsentProps {
+  onAccept: () => void;
+  onDecline: () => void;
+}
 
-  useEffect(() => {
-    // Check if user has already accepted cookies
-    const cookiesAccepted = localStorage.getItem('cookiesAccepted');
-    if (!cookiesAccepted) {
-      setShowBanner(true);
-    }
-  }, []);
-
-  const acceptCookies = () => {
-    localStorage.setItem('cookiesAccepted', 'true');
-    setShowBanner(false);
-    toast({
-      title: "Cookies acceptés",
-      description: "Vos préférences ont été enregistrées"
-    });
-  };
-
-  const refuseCookies = () => {
-    localStorage.setItem('cookiesAccepted', 'false');
-    setShowBanner(false);
-    toast({
-      title: "Cookies refusés",
-      description: "Seuls les cookies essentiels seront utilisés"
-    });
-  };
-
-  if (!showBanner) return null;
-
+const CookieConsent: React.FC<CookieConsentProps> = ({ onAccept, onDecline }) => {
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white shadow-lg border-t p-4">
-      <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex-1">
-          <h3 className="text-lg font-semibold mb-1">Nous utilisons des cookies</h3>
-          <p className="text-sm text-gray-600">
-            Ce site utilise des cookies pour améliorer votre expérience. 
-            Voir notre <Link to="/cookies-policy" className="text-airsoft-red hover:underline">politique de cookies</Link> pour plus d'informations.
-          </p>
+    <div className="fixed bottom-0 left-0 right-0 bg-white p-4 shadow-lg z-50 border-t border-gray-200">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <Shield className="h-6 w-6 text-airsoft-red flex-shrink-0 mt-1" />
+          <div>
+            <h3 className="font-bold text-lg mb-1">Nous utilisons des cookies</h3>
+            <p className="text-sm text-gray-600">
+              Nous utilisons des cookies pour améliorer votre expérience, personnaliser le contenu et les publicités, fournir des fonctionnalités de médias sociaux et analyser notre trafic.
+            </p>
+          </div>
         </div>
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={refuseCookies}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onDecline}
+            className="whitespace-nowrap"
           >
             Refuser
           </Button>
-          <Button 
-            variant="default" 
-            size="sm" 
-            className="bg-airsoft-red hover:bg-red-700"
-            onClick={acceptCookies}
+          <Button
+            variant="default"
+            size="sm"
+            onClick={onAccept}
+            className="whitespace-nowrap bg-airsoft-red hover:bg-red-700"
           >
             Accepter
           </Button>
         </div>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="absolute top-2 right-2 h-6 w-6 sm:hidden" 
-          onClick={() => setShowBanner(false)}
-        >
-          <X size={16} />
-        </Button>
       </div>
     </div>
   );

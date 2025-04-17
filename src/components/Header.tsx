@@ -134,7 +134,6 @@ const Header = () => {
         <nav className="hidden md:flex items-center gap-6">
           <Link to="/" className="hover:text-airsoft-red transition-colors">Accueil</Link>
           <Link to="/recherche" className="hover:text-airsoft-red transition-colors">Recherche</Link>
-          <Link to="/contact" className="hover:text-airsoft-red transition-colors">Contact</Link>
           <Link to="/toolbox" className="hover:text-airsoft-red transition-colors flex items-center gap-1">
             <Wrench size={18} />
             <span>ToolBox</span>
@@ -250,7 +249,6 @@ const Header = () => {
         <div className="md:hidden absolute top-full left-0 right-0 bg-airsoft-dark z-50 py-4 px-6 flex flex-col gap-4 shadow-lg">
           <Link to="/" className="hover:text-airsoft-red py-2 transition-colors">Accueil</Link>
           <Link to="/recherche" className="hover:text-airsoft-red py-2 transition-colors">Recherche</Link>
-          <Link to="/contact" className="hover:text-airsoft-red py-2 transition-colors">Contact</Link>
           <Link to="/toolbox" className="hover:text-airsoft-red py-2 transition-colors flex items-center gap-2">
             <Wrench size={18} />
             <span>ToolBox</span>
