@@ -6,29 +6,16 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { 
-  Calculator, 
-  Wrench, 
-  Gauge, 
-  Zap, 
-  ChevronRight, 
-  BarChart4, 
-  Settings, 
-  Ruler, 
-  Info
-} from 'lucide-react';
+import { Calculator, Wrench, Gauge, Zap, ChevronRight, BarChart4, Settings, Ruler, Info } from 'lucide-react';
 import { toast } from "@/components/ui/use-toast";
 import FpsJouleCalculator from '../components/toolbox/FpsJouleCalculator';
-
 const Toolbox = () => {
   // États pour les calculateurs
   const [fps, setFps] = useState<string>('');
   const [joules, setJoules] = useState<string>('');
-  
   const [gearTeeth, setGearTeeth] = useState<string>('');
   const [pistonTeeth, setPistonTeeth] = useState<string>('');
   const [gearRatio, setGearRatio] = useState<string>('');
-  
   const [batteryVoltage, setBatteryVoltage] = useState<string>('');
   const [motorType, setMotorType] = useState<string>('');
   const [compatibilityResult, setCompatibilityResult] = useState<string>('');
@@ -43,7 +30,6 @@ const Toolbox = () => {
       });
       return;
     }
-    
     const fpsValue = Number(fps);
     // Formule pour calculer les Joules à partir des FPS avec une bille de 0.20g
     // E(J) = 0.5 * m * v^2, où m est en kg et v en m/s
@@ -51,7 +37,6 @@ const Toolbox = () => {
     const velocity = fpsValue * 0.3048; // conversion en m/s
     const energy = 0.5 * 0.00020 * velocity * velocity;
     setJoules(energy.toFixed(2));
-    
     toast({
       title: "Calcul effectué",
       description: `${fpsValue} FPS = ${energy.toFixed(2)} Joules`
@@ -68,19 +53,17 @@ const Toolbox = () => {
       });
       return;
     }
-    
     const joulesValue = Number(joules);
     // Formule inverse: v = sqrt(2 * E / m), puis conversion en FPS
     const velocity = Math.sqrt(2 * joulesValue / 0.00020);
     const fpsValue = velocity / 0.3048;
     setFps(fpsValue.toFixed(0));
-    
     toast({
       title: "Calcul effectué",
       description: `${joulesValue} Joules = ${fpsValue.toFixed(0)} FPS`
     });
   };
-  
+
   // Fonction pour calculer le rapport de démultiplication
   const calculateGearRatio = () => {
     if (!gearTeeth || !pistonTeeth || isNaN(Number(gearTeeth)) || isNaN(Number(pistonTeeth))) {
@@ -91,18 +74,16 @@ const Toolbox = () => {
       });
       return;
     }
-    
     const gearValue = Number(gearTeeth);
     const pistonValue = Number(pistonTeeth);
     const ratio = (gearValue / pistonValue).toFixed(2);
     setGearRatio(ratio);
-    
     toast({
       title: "Calcul effectué",
       description: `Rapport de démultiplication: ${ratio}:1`
     });
   };
-  
+
   // Vérification de compatibilité électrique
   const checkElectricalCompatibility = () => {
     if (!batteryVoltage || isNaN(Number(batteryVoltage)) || !motorType) {
@@ -113,10 +94,8 @@ const Toolbox = () => {
       });
       return;
     }
-    
     const voltage = Number(batteryVoltage);
     let result = "";
-    
     if (motorType.toLowerCase().includes("high speed") || motorType.toLowerCase().includes("rapide")) {
       if (voltage <= 7.4) {
         result = "Compatible - Configuration idéale pour un moteur rapide";
@@ -144,15 +123,12 @@ const Toolbox = () => {
     } else {
       result = "Type de moteur non reconnu, veuillez spécifier 'High Speed', 'High Torque' ou 'Balanced'";
     }
-    
     setCompatibilityResult(result);
-    
     toast({
       title: "Vérification effectuée",
       description: result
     });
   };
-
   const handleFpsJouleCalculator = () => {
     if (fps && !joules) {
       calculateJoules();
@@ -184,11 +160,9 @@ const Toolbox = () => {
       description: `Les solutions pour les problèmes de ${problemType} seront bientôt disponibles`
     });
   };
-
-  return (
-    <div className="min-h-screen flex flex-col">
+  return <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-grow bg-gray-900 py-12">
+      <main className="flex-grow py-12 bg-slate-50">
         <div className="max-w-6xl mx-auto px-4">
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2 flex items-center gap-2">
@@ -231,17 +205,15 @@ const Toolbox = () => {
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="gearTeeth">Dents d'engrenage</Label>
-                        <Input id="gearTeeth" placeholder="16" type="number" value={gearTeeth} onChange={(e) => setGearTeeth(e.target.value)} />
+                        <Input id="gearTeeth" placeholder="16" type="number" value={gearTeeth} onChange={e => setGearTeeth(e.target.value)} />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="pistonTeeth">Dents de piston</Label>
-                        <Input id="pistonTeeth" placeholder="14" type="number" value={pistonTeeth} onChange={(e) => setPistonTeeth(e.target.value)} />
+                        <Input id="pistonTeeth" placeholder="14" type="number" value={pistonTeeth} onChange={e => setPistonTeeth(e.target.value)} />
                       </div>
-                      {gearRatio && (
-                        <div className="pt-2">
+                      {gearRatio && <div className="pt-2">
                           <p className="text-sm font-medium">Résultat: <span className="text-airsoft-red">{gearRatio}:1</span></p>
-                        </div>
-                      )}
+                        </div>}
                     </div>
                   </CardContent>
                   <CardFooter>
@@ -263,18 +235,16 @@ const Toolbox = () => {
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="batteryVoltage">Voltage batterie (V)</Label>
-                        <Input id="batteryVoltage" placeholder="11.1" type="number" value={batteryVoltage} onChange={(e) => setBatteryVoltage(e.target.value)} />
+                        <Input id="batteryVoltage" placeholder="11.1" type="number" value={batteryVoltage} onChange={e => setBatteryVoltage(e.target.value)} />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="motorType">Type de moteur</Label>
-                        <Input id="motorType" placeholder="High Speed" value={motorType} onChange={(e) => setMotorType(e.target.value)} />
+                        <Input id="motorType" placeholder="High Speed" value={motorType} onChange={e => setMotorType(e.target.value)} />
                         <p className="text-xs text-gray-500 mt-1">Ex: High Speed, High Torque, Balanced</p>
                       </div>
-                      {compatibilityResult && (
-                        <div className="pt-2">
+                      {compatibilityResult && <div className="pt-2">
                           <p className="text-sm">{compatibilityResult}</p>
-                        </div>
-                      )}
+                        </div>}
                     </div>
                   </CardContent>
                   <CardFooter>
@@ -290,44 +260,28 @@ const Toolbox = () => {
                 
                 <div className="space-y-4">
                   <div className="border-b pb-4">
-                    <Button 
-                      variant="link" 
-                      className="p-0 h-auto text-left font-medium text-lg w-full flex justify-between items-center"
-                      onClick={() => openTroubleshooting("alimentation")}
-                    >
+                    <Button variant="link" className="p-0 h-auto text-left font-medium text-lg w-full flex justify-between items-center" onClick={() => openTroubleshooting("alimentation")}>
                       <span>Problèmes d'alimentation</span>
                       <ChevronRight className="h-5 w-5" />
                     </Button>
                   </div>
                   
                   <div className="border-b pb-4">
-                    <Button 
-                      variant="link" 
-                      className="p-0 h-auto text-left font-medium text-lg w-full flex justify-between items-center"
-                      onClick={() => openTroubleshooting("tir")}
-                    >
+                    <Button variant="link" className="p-0 h-auto text-left font-medium text-lg w-full flex justify-between items-center" onClick={() => openTroubleshooting("tir")}>
                       <span>Problèmes de tir</span>
                       <ChevronRight className="h-5 w-5" />
                     </Button>
                   </div>
                   
                   <div className="border-b pb-4">
-                    <Button 
-                      variant="link" 
-                      className="p-0 h-auto text-left font-medium text-lg w-full flex justify-between items-center"
-                      onClick={() => openTroubleshooting("gearbox")}
-                    >
+                    <Button variant="link" className="p-0 h-auto text-left font-medium text-lg w-full flex justify-between items-center" onClick={() => openTroubleshooting("gearbox")}>
                       <span>Problèmes de gearbox</span>
                       <ChevronRight className="h-5 w-5" />
                     </Button>
                   </div>
                   
                   <div className="border-b pb-4">
-                    <Button 
-                      variant="link" 
-                      className="p-0 h-auto text-left font-medium text-lg w-full flex justify-between items-center"
-                      onClick={() => openTroubleshooting("hop-up")}
-                    >
+                    <Button variant="link" className="p-0 h-auto text-left font-medium text-lg w-full flex justify-between items-center" onClick={() => openTroubleshooting("hop-up")}>
                       <span>Problèmes de hop-up</span>
                       <ChevronRight className="h-5 w-5" />
                     </Button>
@@ -383,8 +337,6 @@ const Toolbox = () => {
         </div>
       </main>
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default Toolbox;
