@@ -11,7 +11,8 @@ import {
   MapPin,
   Calendar,
   Shield,
-  Settings
+  Settings,
+  CheckCircle2
 } from "lucide-react";
 import { Link } from 'react-router-dom';
 import ReportUserButton from './ReportUserButton';
@@ -39,9 +40,12 @@ const ProfileHeader = ({ user, isOwnProfile, setEditing, toggleProfileSettings }
           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1">
             <h1 className="text-2xl font-bold text-gray-900">{user.username}</h1>
             {user.verified && (
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                Vérifié
-              </Badge>
+              <div className="flex items-center">
+                <CheckCircle2 className="h-5 w-5 text-blue-600" />
+                <Badge variant="outline" className="ml-1 bg-blue-50 text-blue-700 border-blue-200">
+                  Vérifié
+                </Badge>
+              </div>
             )}
             {user.premium && (
               <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">

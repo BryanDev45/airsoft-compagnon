@@ -36,7 +36,10 @@ const UserProfile = () => {
       // This would be replaced with actual API call in a real app
       setUser({
         ...mockUserData,
-        username: username || mockUserData.username
+        username: username || mockUserData.username,
+        firstname: "Jean", // Added first name
+        lastname: "Dupont", // Added last name
+        age: 28, // Added age
       });
       setIsLoading(false);
     }, 500);
@@ -108,6 +111,24 @@ const UserProfile = () => {
                       <p className="text-sm text-gray-500">Nom d'utilisateur</p>
                       <p className="font-medium">{user.username}</p>
                     </div>
+                    {user.firstname && (
+                      <div className="space-y-1">
+                        <p className="text-sm text-gray-500">Prénom</p>
+                        <p className="font-medium">{user.firstname}</p>
+                      </div>
+                    )}
+                    {user.lastname && (
+                      <div className="space-y-1">
+                        <p className="text-sm text-gray-500">Nom</p>
+                        <p className="font-medium">{user.lastname}</p>
+                      </div>
+                    )}
+                    {user.age && (
+                      <div className="space-y-1">
+                        <p className="text-sm text-gray-500">Âge</p>
+                        <p className="font-medium">{user.age} ans</p>
+                      </div>
+                    )}
                     {user.team && (
                       <div className="space-y-1">
                         <p className="text-sm text-gray-500">Équipe</p>
