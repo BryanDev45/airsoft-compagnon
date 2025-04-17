@@ -9,6 +9,10 @@ import { Label } from "@/components/ui/label";
 import { Calculator, Wrench, Gauge, Zap, ChevronRight, BarChart4, Settings, Ruler, Info } from 'lucide-react';
 import { toast } from "@/components/ui/use-toast";
 import FpsJouleCalculator from '../components/toolbox/FpsJouleCalculator';
+import BatteryCalculator from '../components/toolbox/BatteryCalculator';
+import AirsoftGlossary from '../components/toolbox/AirsoftGlossary';
+import AirsoftScenarios from '../components/toolbox/AirsoftScenarios';
+
 const Toolbox = () => {
   // États pour les calculateurs
   const [fps, setFps] = useState<string>('');
@@ -190,7 +194,7 @@ const Toolbox = () => {
             <TabsContent value="calculators">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FpsJouleCalculator />
-                
+                <BatteryCalculator />
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -292,6 +296,8 @@ const Toolbox = () => {
 
             <TabsContent value="guides">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <AirsoftGlossary />
+                <AirsoftScenarios />
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -339,4 +345,5 @@ const Toolbox = () => {
       <Footer />
     </div>;
 };
+
 export default Toolbox;

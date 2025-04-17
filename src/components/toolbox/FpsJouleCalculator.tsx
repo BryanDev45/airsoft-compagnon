@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -8,7 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Gauge } from 'lucide-react';
 
 const FpsJouleCalculator = () => {
-  const [bbWeight, setBbWeight] = useState(0.20);
   const [fps, setFps] = useState(0);
   const [joules, setJoules] = useState(0);
   const [mode, setMode] = useState<'fps' | 'joule'>('joule');
@@ -25,13 +23,22 @@ const FpsJouleCalculator = () => {
     return velocity / 0.3048;
   };
 
+  const getEffectiveRange = (fps: number, weight: number) => {
+    // Estimation basée sur des données empiriques
+    const baseRange = fps * 0.4; // Base de calcul
+    const weightMultiplier = weight * 2.5; // Plus la bille est lourde, plus elle garde sa trajectoire
+    const effectiveRange = Math.round(baseRange * weightMultiplier);
+    const maxRange = Math.round(effectiveRange * 1.5);
+    return { effectiveRange, maxRange };
+  };
+
   useEffect(() => {
     if (mode === 'fps' && fps > 0) {
-      setJoules(Number(calculateFpsToJoules(fps, bbWeight).toFixed(2)));
+      setJoules(Number(calculateFpsToJoules(fps, 0.20).toFixed(2)));
     } else if (mode === 'joule' && joules > 0) {
-      setFps(Math.round(calculateJoulesToFps(joules, bbWeight)));
+      setFps(Math.round(calculateJoulesToFps(joules, 0.20)));
     }
-  }, [fps, joules, bbWeight, mode]);
+  }, [fps, joules, mode]);
 
   const getReplicaType = (joules: number) => {
     if (joules <= 1.2) return { type: 'CQB', color: 'bg-gradient-to-r from-green-500 to-green-400' };
@@ -117,6 +124,34 @@ const FpsJouleCalculator = () => {
                   width: `${Math.min(joules / 4 * 100, 100)}%`
                 }} 
               />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Vitesse convertie:</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-muted p-2 rounded">
+                <span className="text-sm text-muted-foreground">Mètres/seconde:</span>
+                <p className="font-medium">{(fps * 0.3048).toFixed(2)} m/s</p>
+              </div>
+              <div className="bg-muted p-2 rounded">
+                <span className="text-sm text-muted-foreground">Pieds/seconde:</span>
+                <p className="font-medium">{fps} fps</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Estimation de la portée (avec bille de 0.20g):</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-muted p-2 rounded">
+                <span className="text-sm text-muted-foreground">Portée efficace:</span>
+                <p className="font-medium">{getEffectiveRange(fps, 0.20).effectiveRange}m</p>
+              </div>
+              <div className="bg-muted p-2 rounded">
+                <span className="text-sm text-muted-foreground">Portée maximale:</span>
+                <p className="font-medium">{getEffectiveRange(fps, 0.20).maxRange}m</p>
+              </div>
             </div>
           </div>
 
