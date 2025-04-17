@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,10 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Edit, Save, X } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-const ProfileInfo = ({ user, editing, setEditing, handleNavigateToTeam }) => {
-  return (
-    <Card>
+const ProfileInfo = ({
+  user,
+  editing,
+  setEditing,
+  handleNavigateToTeam
+}) => {
+  return <Card>
       <CardHeader>
         <CardTitle>Informations personnelles</CardTitle>
         <CardDescription>
@@ -28,8 +30,7 @@ const ProfileInfo = ({ user, editing, setEditing, handleNavigateToTeam }) => {
             <p className="font-medium">{user.lastname}</p>
           </div>
           
-          {editing ? (
-            <>
+          {editing ? <>
               <div className="space-y-1">
                 <Label htmlFor="username">Nom d'utilisateur</Label>
                 <Input id="username" type="text" defaultValue={user.username} />
@@ -38,91 +39,64 @@ const ProfileInfo = ({ user, editing, setEditing, handleNavigateToTeam }) => {
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" type="email" defaultValue={user.email} />
               </div>
-            </>
-          ) : (
-            <>
+            </> : <>
               <div className="space-y-1">
                 <p className="text-sm text-gray-500">Nom d'utilisateur</p>
                 <p className="font-medium">{user.username}</p>
               </div>
-              <div className="space-y-1">
-                <p className="text-sm text-gray-500">Email</p>
-                <p className="font-medium">{user.email}</p>
-              </div>
-            </>
-          )}
+              
+            </>}
           
           <div className="space-y-1">
             <p className="text-sm text-gray-500">Âge</p>
             <p className="font-medium">{user.age}</p>
           </div>
           
-          {editing ? (
-            <div className="space-y-1">
+          {editing ? <div className="space-y-1">
               <Label htmlFor="team">Équipe</Label>
               <Input id="team" type="text" defaultValue={user.team} />
-            </div>
-          ) : (
-            <div className="space-y-1">
+            </div> : <div className="space-y-1">
               <p className="text-sm text-gray-500">Équipe</p>
-              <p 
-                className="font-medium text-airsoft-red hover:underline cursor-pointer" 
-                onClick={handleNavigateToTeam}
-              >
+              <p className="font-medium text-airsoft-red hover:underline cursor-pointer" onClick={handleNavigateToTeam}>
                 {user.team}
               </p>
-            </div>
-          )}
+            </div>}
           
-          {editing ? (
-            <div className="space-y-1">
+          {editing ? <div className="space-y-1">
               <Label htmlFor="location">Localisation</Label>
               <Input id="location" type="text" defaultValue={user.location} />
-            </div>
-          ) : (
-            <div className="space-y-1">
+            </div> : <div className="space-y-1">
               <p className="text-sm text-gray-500">Localisation</p>
               <p className="font-medium">{user.location}</p>
-            </div>
-          )}
+            </div>}
           
           <div className="space-y-1">
             <p className="text-sm text-gray-500">Date d'inscription</p>
             <p className="font-medium">{user.joinDate}</p>
           </div>
           
-          {editing ? (
-            <div className="md:col-span-2 space-y-1">
+          {editing ? <div className="md:col-span-2 space-y-1">
               <Label htmlFor="bio">Biographie</Label>
               <Textarea id="bio" defaultValue={user.bio} className="min-h-[100px]" />
-            </div>
-          ) : (
-            <div className="md:col-span-2 space-y-1">
+            </div> : <div className="md:col-span-2 space-y-1">
               <p className="text-sm text-gray-500">Biographie</p>
               <p className="font-medium">{user.bio}</p>
-            </div>
-          )}
+            </div>}
         </div>
         
-        {editing ? (
-          <div className="flex justify-end mt-6 space-x-3">
+        {editing ? <div className="flex justify-end mt-6 space-x-3">
             <Button variant="outline" onClick={() => setEditing(false)}>
               <X className="h-4 w-4 mr-2" /> Annuler
             </Button>
             <Button className="bg-airsoft-red hover:bg-red-700 text-white">
               <Save className="h-4 w-4 mr-2" /> Enregistrer
             </Button>
-          </div>
-        ) : (
-          <div className="text-right mt-6">
+          </div> : <div className="text-right mt-6">
             <Button onClick={() => setEditing(true)} className="bg-airsoft-red hover:bg-red-700 text-white">
               <Edit className="h-4 w-4 mr-2" /> Modifier
             </Button>
-          </div>
-        )}
+          </div>}
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
-
 export default ProfileInfo;
