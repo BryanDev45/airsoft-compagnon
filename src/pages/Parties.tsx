@@ -32,7 +32,7 @@ const Parties = () => {
         <div className="py-8 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
             <div>
-              <h1 className="text-4xl font-bold mb-2">Parties d'airsoft</h1>
+              <h1 className="text-4xl font-bold mb-2">Recherche de parties</h1>
               <p className="text-gray-600">
                 Trouvez et rejoignez des parties d'airsoft près de chez vous
               </p>

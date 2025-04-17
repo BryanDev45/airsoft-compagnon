@@ -11,6 +11,7 @@ import Register from "./pages/Register";
 import ResetPassword from "./pages/ResetPassword";
 import NewPassword from "./pages/NewPassword";
 import Profile from "./pages/Profile";
+import UserProfile from "./pages/UserProfile";
 import Parties from "./pages/Parties";
 import CreateParty from "./pages/CreateParty";
 import GameDetails from "./pages/GameDetails";
@@ -21,6 +22,7 @@ import TermsOfUse from "./pages/TermsOfUse";
 import TermsOfSale from "./pages/TermsOfSale";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CookiesPolicy from "./pages/CookiesPolicy";
+import CookieConsent from "./components/CookieConsent";
 
 const queryClient = new QueryClient();
 
@@ -30,9 +32,10 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <CookieConsent />
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/parties" element={<Parties />} />
+          <Route path="/recherche" element={<Parties />} />
           <Route path="/parties/create" element={<CreateParty />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
@@ -40,6 +43,7 @@ const App = () => (
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/new-password" element={<NewPassword />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/user/:username" element={<UserProfile />} />
           <Route path="/game/:id" element={<GameDetails />} />
           <Route path="/team/:id" element={<Team />} />
           <Route path="/faq" element={<FAQ />} />

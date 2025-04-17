@@ -42,10 +42,8 @@ const Profile = () => {
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <ProfileHeader 
               user={user} 
-              editing={editing} 
+              isOwnProfile={true}
               setEditing={setEditing} 
-              handleLogout={handleLogout}
-              handleViewAllBadges={handleViewAllBadges}
             />
             
             <div className="p-6">
