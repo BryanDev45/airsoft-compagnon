@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,6 +11,8 @@ import ProfileStats from '../components/profile/ProfileStats';
 import ProfileEquipment from '../components/profile/ProfileEquipment';
 import ProfileBadges from '../components/profile/ProfileBadges';
 import ProfileDialogs from '../components/profile/ProfileDialogs';
+import ProfileSettingsDialog from '../components/profile/ProfileSettingsDialog';
+import ProfileEditMediaDialog from '../components/profile/ProfileEditMediaDialog';
 
 const Profile = () => {
   const {
@@ -34,6 +36,21 @@ const Profile = () => {
     handleLogout
   } = useProfileData();
 
+  const [showSettingsDialog, setShowSettingsDialog] = useState(false);
+  const [showEditMediaDialog, setShowEditMediaDialog] = useState(false);
+
+  const toggleProfileSettings = () => {
+    setShowSettingsDialog(true);
+  };
+
+  const handleEditProfile = () => {
+    // If we want to edit media directly
+    setShowEditMediaDialog(true);
+    
+    // If we want to edit profile info
+    // setEditing(true);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -43,7 +60,8 @@ const Profile = () => {
             <ProfileHeader 
               user={user} 
               isOwnProfile={true}
-              setEditing={setEditing} 
+              setEditing={handleEditProfile} 
+              toggleProfileSettings={toggleProfileSettings}
             />
             
             <div className="p-6">
@@ -107,6 +125,17 @@ const Profile = () => {
         setShowBadgesDialog={setShowBadgesDialog}
         handleNavigateToGame={handleNavigateToGame}
         user={user}
+      />
+
+      <ProfileSettingsDialog
+        open={showSettingsDialog}
+        onOpenChange={setShowSettingsDialog}
+        user={user}
+      />
+
+      <ProfileEditMediaDialog
+        open={showEditMediaDialog}
+        onOpenChange={setShowEditMediaDialog}
       />
     </div>
   );

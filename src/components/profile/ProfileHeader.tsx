@@ -10,7 +10,8 @@ import {
   UserPlus,
   MapPin,
   Calendar,
-  Shield
+  Shield,
+  Settings
 } from "lucide-react";
 import { Link } from 'react-router-dom';
 import ReportUserButton from './ReportUserButton';
@@ -19,9 +20,10 @@ interface ProfileHeaderProps {
   user: any;
   isOwnProfile: boolean;
   setEditing?: (value: boolean) => void;
+  toggleProfileSettings?: () => void;
 }
 
-const ProfileHeader = ({ user, isOwnProfile, setEditing }: ProfileHeaderProps) => {
+const ProfileHeader = ({ user, isOwnProfile, setEditing, toggleProfileSettings }: ProfileHeaderProps) => {
   return (
     <div className="bg-white shadow rounded-lg overflow-hidden">
       <div className="h-32 bg-gradient-to-r from-blue-600 to-airsoft-red"></div>
@@ -76,15 +78,26 @@ const ProfileHeader = ({ user, isOwnProfile, setEditing }: ProfileHeaderProps) =
         
         <div className="mt-4 sm:mt-0 flex flex-wrap justify-center sm:justify-end items-center gap-2">
           {isOwnProfile ? (
-            <Button 
-              onClick={() => setEditing?.(true)} 
-              variant="outline" 
-              size="sm" 
-              className="flex items-center gap-1"
-            >
-              <Edit size={16} />
-              Modifier profil
-            </Button>
+            <>
+              <Button 
+                onClick={() => setEditing?.(true)} 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center gap-1"
+              >
+                <Edit size={16} />
+                Modifier profil
+              </Button>
+              <Button 
+                onClick={toggleProfileSettings} 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center gap-1"
+              >
+                <Settings size={16} />
+                Paramètres
+              </Button>
+            </>
           ) : (
             <>
               <Button variant="outline" size="sm" className="flex items-center gap-1">

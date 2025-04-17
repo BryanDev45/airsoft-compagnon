@@ -12,7 +12,7 @@ import ResetPassword from "./pages/ResetPassword";
 import NewPassword from "./pages/NewPassword";
 import Profile from "./pages/Profile";
 import UserProfile from "./pages/UserProfile";
-import Parties from "./pages/Parties";
+import Recherche from "./pages/Parties";
 import CreateParty from "./pages/CreateParty";
 import GameDetails from "./pages/GameDetails";
 import Team from "./pages/Team";
@@ -35,7 +35,7 @@ const App = () => (
         <CookieConsent />
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/recherche" element={<Parties />} />
+          <Route path="/recherche" element={<Recherche />} />
           <Route path="/parties/create" element={<CreateParty />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />

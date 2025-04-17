@@ -12,9 +12,10 @@ import { toast } from "@/components/ui/use-toast";
 interface ProfileEquipmentProps {
   equipment: any[];
   equipmentTypes: string[];
+  readOnly?: boolean;
 }
 
-const ProfileEquipment = ({ equipment, equipmentTypes }: ProfileEquipmentProps) => {
+const ProfileEquipment = ({ equipment, equipmentTypes, readOnly = false }: ProfileEquipmentProps) => {
   const [addingEquipment, setAddingEquipment] = useState(false);
 
   const handleAddEquipment = (e: React.FormEvent) => {
@@ -35,16 +36,18 @@ const ProfileEquipment = ({ equipment, equipmentTypes }: ProfileEquipmentProps) 
             Répliques et matériel
           </CardDescription>
         </div>
-        <Button 
-          className="bg-airsoft-red hover:bg-red-700"
-          onClick={() => setAddingEquipment(true)}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Ajouter un équipement
-        </Button>
+        {!readOnly && (
+          <Button 
+            className="bg-airsoft-red hover:bg-red-700"
+            onClick={() => setAddingEquipment(true)}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Ajouter un équipement
+          </Button>
+        )}
       </CardHeader>
       <CardContent>
-        {addingEquipment ? (
+        {addingEquipment && !readOnly ? (
           <div className="border rounded-lg p-4 mb-4">
             <h3 className="font-semibold mb-4">Nouvel équipement</h3>
             <form onSubmit={handleAddEquipment} className="space-y-4">
@@ -140,21 +143,23 @@ const ProfileEquipment = ({ equipment, equipmentTypes }: ProfileEquipmentProps) 
                   </p>
                   <p className="text-sm text-gray-600">{item.description}</p>
                 </div>
-                <div className="flex sm:flex-col gap-2 mt-2 sm:mt-0">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white"
-                  >
-                    <Edit size={14} className="mr-1" /> Modifier
-                  </Button>
-                </div>
+                {!readOnly && (
+                  <div className="flex sm:flex-col gap-2 mt-2 sm:mt-0">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white"
+                    >
+                      <Edit size={14} className="mr-1" /> Modifier
+                    </Button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
         ) : (
           <p className="text-center py-12 text-gray-500">
-            Vous n'avez pas encore ajouté d'équipement.
+            {readOnly ? "Cet utilisateur n'a pas encore ajouté d'équipement." : "Vous n'avez pas encore ajouté d'équipement."}
           </p>
         )}
       </CardContent>

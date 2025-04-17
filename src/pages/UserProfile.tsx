@@ -151,8 +151,7 @@ const UserProfile = () => {
                 <TabsContent value="equipment">
                   <ProfileEquipment 
                     equipment={user.equipment} 
-                    equipmentTypes={user.equipmentTypes || []} 
-                    readOnly
+                    equipmentTypes={[]}
                   />
                 </TabsContent>
                 
