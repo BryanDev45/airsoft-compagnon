@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -19,6 +18,7 @@ import {
   Info
 } from 'lucide-react';
 import { toast } from "@/components/ui/use-toast";
+import FpsJouleCalculator from '../components/toolbox/FpsJouleCalculator';
 
 const Toolbox = () => {
   // États pour les calculateurs
@@ -188,7 +188,7 @@ const Toolbox = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-grow bg-gray-50 py-12">
+      <main className="flex-grow bg-gray-900 py-12">
         <div className="max-w-6xl mx-auto px-4">
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2 flex items-center gap-2">
@@ -214,34 +214,9 @@ const Toolbox = () => {
             </TabsList>
 
             <TabsContent value="calculators">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Gauge className="h-5 w-5 text-airsoft-red" />
-                      Calculateur de FPS/Joule
-                    </CardTitle>
-                    <CardDescription>
-                      Convertissez les FPS en Joules et vice-versa
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="fps">FPS (avec bille de 0.20g)</Label>
-                        <Input id="fps" placeholder="350" type="number" value={fps} onChange={(e) => setFps(e.target.value)} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="joules">Énergie (Joules)</Label>
-                        <Input id="joules" placeholder="1.14" type="number" value={joules} onChange={(e) => setJoules(e.target.value)} />
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Button className="w-full" onClick={handleFpsJouleCalculator}>Calculer</Button>
-                  </CardFooter>
-                </Card>
-
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FpsJouleCalculator />
+                
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">

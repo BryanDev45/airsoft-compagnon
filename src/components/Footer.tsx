@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Download, Wrench } from 'lucide-react';
@@ -40,11 +39,8 @@ const Footer = () => {
             <ul className="space-y-2">
               <li><Link to="/" className="text-gray-400 hover:text-white transition-colors">Accueil</Link></li>
               <li><Link to="/recherche" className="text-gray-400 hover:text-white transition-colors">Recherche</Link></li>
-              <li><Link to="/toolbox" className="text-gray-400 hover:text-white transition-colors flex items-center gap-2">
-                <Wrench size={16} /> ToolBox
-              </Link></li>
+              <li><Link to="/toolbox" className="text-gray-400 hover:text-white transition-colors">ToolBox</Link></li>
               <li><Link to="/faq" className="text-gray-400 hover:text-white transition-colors">FAQ</Link></li>
-              <li><Link to="/contact" className="text-gray-400 hover:text-white transition-colors">Contact</Link></li>
               <li><Link to="/login" className="text-gray-400 hover:text-white transition-colors">Se connecter</Link></li>
               <li><Link to="/register" className="text-gray-400 hover:text-white transition-colors">S'inscrire</Link></li>
             </ul>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, User as UserIcon, LogOut, Bell, BellOff, Settings, Users, Wrench } from 'lucide-react';
+import { Menu, X, User as UserIcon, LogOut, Bell, BellOff, Settings, Users, Wrench, Globe } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -134,10 +134,22 @@ const Header = () => {
         <nav className="hidden md:flex items-center gap-6">
           <Link to="/" className="hover:text-airsoft-red transition-colors">Accueil</Link>
           <Link to="/recherche" className="hover:text-airsoft-red transition-colors">Recherche</Link>
-          <Link to="/toolbox" className="hover:text-airsoft-red transition-colors flex items-center gap-1">
-            <Wrench size={18} />
-            <span>ToolBox</span>
-          </Link>
+          <Link to="/toolbox" className="hover:text-airsoft-red transition-colors">ToolBox</Link>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-white">
+                <Globe className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem>Français</DropdownMenuItem>
+              <DropdownMenuItem>English</DropdownMenuItem>
+              <DropdownMenuItem>Deutsch</DropdownMenuItem>
+              <DropdownMenuItem>Español</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <div className="flex items-center gap-4 ml-4">
             {isAuthenticated && (
               <Sheet>
