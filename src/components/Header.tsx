@@ -122,8 +122,8 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-gradient-to-r from-gray-700 to-gray-900 text-white sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
+    <header className="bg-gradient-to-r from-gray-600 to-gray-900 text-white sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto flex justify-between items-center py-4">
         <div className="flex items-center">
           <Link to="/" className="flex items-center gap-2">
             <img src="/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png" alt="Airsoft Compagnon Logo" className="h-12" />

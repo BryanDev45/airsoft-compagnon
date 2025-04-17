@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { Calendar, User } from 'lucide-react';
+import { Calendar, User, Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,10 +16,20 @@ const ProfileGames = ({ games, handleViewGameDetails, handleViewAllGames }: Prof
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Mes parties</CardTitle>
-        <CardDescription>
-          Historique et parties à venir
-        </CardDescription>
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle>Mes parties</CardTitle>
+            <CardDescription>
+              Historique et parties à venir
+            </CardDescription>
+          </div>
+          <Link to="/parties/create">
+            <Button className="bg-airsoft-red hover:bg-red-700">
+              <Plus className="h-4 w-4 mr-2" />
+              Créer une partie
+            </Button>
+          </Link>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
