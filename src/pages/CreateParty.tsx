@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -21,7 +20,6 @@ import { toast } from "@/components/ui/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 
-// Define the form schema with zod
 const partyFormSchema = z.object({
   title: z.string().min(5, "Le titre doit comporter au moins 5 caractères"),
   description: z.string().min(20, "La description doit comporter au moins 20 caractères"),
@@ -44,6 +42,7 @@ const partyFormSchema = z.object({
   terms: z.boolean().refine(val => val === true, {
     message: "Vous devez accepter les conditions",
   }),
+  isPrivate: z.boolean().default(false),
 });
 
 type PartyFormValues = z.infer<typeof partyFormSchema>;
@@ -80,16 +79,16 @@ const CreateParty = () => {
       hasParking: false,
       hasEquipmentRental: false,
       terms: false,
+      isPrivate: false,
     },
   });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const filesArray = Array.from(e.target.files);
-      const newImages = [...images, ...filesArray].slice(0, 5); // Limit to 5 images
+      const newImages = [...images, ...filesArray].slice(0, 5);
       setImages(newImages);
       
-      // Generate previews
       const newPreviews = newImages.map(file => URL.createObjectURL(file));
       setPreview(newPreviews);
     }
@@ -110,7 +109,6 @@ const CreateParty = () => {
     console.log("Creating party with data:", data);
     console.log("Images:", images);
     
-    // Simulated API call
     setTimeout(() => {
       toast({
         title: "Partie créée avec succès",
@@ -479,6 +477,27 @@ const CreateParty = () => {
                             <FormLabel className="text-base">Location de matériel</FormLabel>
                             <p className="text-sm text-muted-foreground">
                               Des répliques et équipements sont disponibles à la location
+                            </p>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="isPrivate"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base">Partie privée</FormLabel>
+                            <p className="text-sm text-muted-foreground">
+                              La partie sera visible uniquement via un lien d'invitation
                             </p>
                           </div>
                           <FormControl>

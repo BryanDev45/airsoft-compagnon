@@ -1,8 +1,5 @@
 
-import React from 'react';
-import { Calendar, MapPin } from 'lucide-react';
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Calendar, MapPin, Users, Euro } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface EventCardProps {
@@ -11,50 +8,38 @@ interface EventCardProps {
     title: string;
     date: string;
     location: string;
-    department: string;
-    type: string;
+    maxPlayers?: number;
+    price?: number;
   };
 }
 
-const EventCard: React.FC<EventCardProps> = ({ event }) => {
+const EventCard = ({ event }: EventCardProps) => {
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-md border border-gray-200 clip-card">
-      <div className="h-40 bg-gray-200 relative overflow-hidden">
-        <img src="/lovable-uploads/c242d3b0-8906-4f00-9b3b-fc251f703e4b.png" alt={event.title} className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-        <div className="absolute bottom-0 left-0 p-4">
-          <h3 className="text-xl font-bold text-white">{event.title}</h3>
-          <div className="flex items-center gap-2 text-white">
-            <Calendar size={16} />
+    <Link to={`/game/${event.id}`} className="block">
+      <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
+        <h3 className="text-xl font-semibold mb-2">{event.title}</h3>
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-gray-600">
+            <Calendar className="h-4 w-4" />
             <span>{event.date}</span>
+          </div>
+          <div className="flex items-center gap-2 text-gray-600">
+            <MapPin className="h-4 w-4" />
+            <span>{event.location}</span>
+          </div>
+          <div className="flex items-center gap-4 text-sm text-gray-600 mt-4">
+            <div className="flex items-center gap-1">
+              <Users className="h-4 w-4" />
+              <span>{event.maxPlayers || 20} places max</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Euro className="h-4 w-4" />
+              <span>PAF: {event.price || 0}€</span>
+            </div>
           </div>
         </div>
       </div>
-      <div className="p-4">
-        <div className="flex items-center gap-2 text-gray-600">
-          <MapPin size={16} />
-          <span>{event.location}</span>
-        </div>
-        <div className="mt-2">
-          <Badge variant="outline" className="mr-2">
-            {event.type === 'cqb' ? 'CQB' : 
-             event.type === 'milsim' ? 'Milsim' : 
-             event.type === 'woodland' ? 'Woodland' : 
-             event.type === 'speedsoft' ? 'Speedsoft' : 
-             event.type === 'tournament' ? 'Tournoi' : 
-             event.type}
-          </Badge>
-          <Badge variant="outline">
-            Dép. {event.department}
-          </Badge>
-        </div>
-        <Link to={`/game/${event.id}`}>
-          <Button className="w-full mt-4 bg-airsoft-red hover:bg-red-700">
-            Plus d'informations
-          </Button>
-        </Link>
-      </div>
-    </div>
+    </Link>
   );
 };
 

@@ -122,7 +122,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-gradient-to-r from-gray-900 to-airsoft-dark text-white py-3 px-4 relative">
+    <header className="bg-gradient-to-r from-gray-700 to-gray-900 text-white sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <div className="flex items-center">
           <Link to="/" className="flex items-center gap-2">
@@ -258,7 +258,7 @@ const Header = () => {
       </div>
 
       {isMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-airsoft-dark z-50 py-4 px-6 flex flex-col gap-4 shadow-lg">
+        <div className="md:hidden absolute top-full left-0 right-0 bg-gray-900 z-50 py-4 px-6 flex flex-col gap-4 shadow-lg">
           <Link to="/" className="hover:text-airsoft-red py-2 transition-colors">Accueil</Link>
           <Link to="/parties" className="hover:text-airsoft-red py-2 transition-colors">Recherche</Link>
           <Link to="/toolbox" className="hover:text-airsoft-red py-2 transition-colors flex items-center gap-2">

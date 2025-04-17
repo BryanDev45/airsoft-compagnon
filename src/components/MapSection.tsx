@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Calendar, Map as MapIcon, MapPin, Maximize, Navigation } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -43,7 +42,9 @@ const MapSection = () => {
     type: "cqb",
     country: "france",
     lat: 48.8566,
-    lng: 2.3522
+    lng: 2.3522,
+    maxPlayers: 20,
+    price: 15
   }, {
     id: 2,
     title: "Milsim Forest",
@@ -53,7 +54,9 @@ const MapSection = () => {
     type: "milsim",
     country: "france",
     lat: 45.7640,
-    lng: 4.8357
+    lng: 4.8357,
+    maxPlayers: 30,
+    price: 25
   }, {
     id: 3,
     title: "Partie nocturne",
@@ -63,7 +66,9 @@ const MapSection = () => {
     type: "woodland",
     country: "france",
     lat: 43.2965,
-    lng: 5.3698
+    lng: 5.3698,
+    maxPlayers: 15,
+    price: 10
   }, {
     id: 4,
     title: "Open day",
@@ -73,7 +78,9 @@ const MapSection = () => {
     type: "woodland",
     country: "france",
     lat: 44.8378,
-    lng: -0.5792
+    lng: -0.5792,
+    maxPlayers: 25,
+    price: 20
   }, {
     id: 5,
     title: "Tournoi 3v3",
@@ -83,7 +90,9 @@ const MapSection = () => {
     type: "tournament",
     country: "france",
     lat: 50.6292,
-    lng: 3.0573
+    lng: 3.0573,
+    maxPlayers: 10,
+    price: 30
   }]);
 
   // Filtrer les événements en fonction des critères de recherche
