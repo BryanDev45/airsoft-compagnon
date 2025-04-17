@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, User as UserIcon, LogOut, Bell, BellOff, Settings, Users, Wrench } from 'lucide-react';
@@ -21,14 +20,13 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
 
-  // État d'authentification basé sur localStorage
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<{
     username: string;
     avatar: string;
     teamId?: string;
   } | null>(null);
-  const [notificationCount, setNotificationCount] = useState(3); // Mock notification count
+  const [notificationCount, setNotificationCount] = useState(3);
   const [notifications, setNotifications] = useState([
     {
       id: 1,
@@ -56,7 +54,6 @@ const Header = () => {
     }
   ]);
 
-  // Vérifier l'état d'authentification au chargement du composant
   useEffect(() => {
     const authState = localStorage.getItem('isAuthenticated');
     const userState = localStorage.getItem('user');
@@ -68,32 +65,24 @@ const Header = () => {
       setUser(null);
     }
   }, []);
-  
+
   const handleLogout = () => {
-    // Effacer les données d'authentification
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('user');
-
-    // Mettre à jour l'état
     setIsAuthenticated(false);
     setUser(null);
-
-    // Afficher un message de confirmation
     toast({
       title: "Déconnexion réussie",
       description: "À bientôt sur Airsoft Compagnon"
     });
-
-    // Rediriger vers la page de connexion
     navigate('/login');
   };
-  
+
   const handleLogin = () => {
     navigate('/login');
   };
 
   const handleNavigateToTeam = () => {
-    // Navigate to the user's team page
     if (user?.teamId) {
       navigate(`/team/${user.teamId}`);
     } else {
@@ -109,36 +98,29 @@ const Header = () => {
   };
 
   const handleNotificationRead = (id: number) => {
-    // Marquer une notification comme lue
     setNotifications(prev => 
       prev.map(notif => 
         notif.id === id ? {...notif, read: true} : notif
       )
     );
-    
-    // Mettre à jour le compteur
     setNotificationCount(prev => Math.max(0, prev - 1));
   };
-  
+
   const handleReadAllNotifications = () => {
-    // Marquer toutes les notifications comme lues
     setNotifications(prev => 
       prev.map(notif => ({...notif, read: true}))
     );
-    
-    // Remettre le compteur à zéro
     setNotificationCount(0);
-    
     toast({
       title: "Notifications",
       description: "Toutes les notifications ont été marquées comme lues"
     });
   };
-  
+
   const handleNotificationClick = (link: string) => {
     navigate(link);
   };
-  
+
   return (
     <header className="bg-airsoft-dark text-white py-3 px-4 relative">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
@@ -149,13 +131,12 @@ const Header = () => {
           </Link>
         </div>
 
-        {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6">
           <Link to="/" className="hover:text-airsoft-red transition-colors">Accueil</Link>
           <Link to="/recherche" className="hover:text-airsoft-red transition-colors">Recherche</Link>
           <Link to="/contact" className="hover:text-airsoft-red transition-colors">Contact</Link>
           <Link to="/toolbox" className="hover:text-airsoft-red transition-colors flex items-center gap-1">
-            <Toolbox size={18} />
+            <Wrench size={18} />
             <span>ToolBox</span>
           </Link>
           <div className="flex items-center gap-4 ml-4">
@@ -260,20 +241,18 @@ const Header = () => {
           </div>
         </nav>
 
-        {/* Mobile Menu Button */}
         <Button variant="ghost" size="icon" className="md:hidden text-white" onClick={() => setIsMenuOpen(!isMenuOpen)}>
           {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </Button>
       </div>
 
-      {/* Mobile Navigation */}
       {isMenuOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-airsoft-dark z-50 py-4 px-6 flex flex-col gap-4 shadow-lg">
           <Link to="/" className="hover:text-airsoft-red py-2 transition-colors">Accueil</Link>
           <Link to="/recherche" className="hover:text-airsoft-red py-2 transition-colors">Recherche</Link>
           <Link to="/contact" className="hover:text-airsoft-red py-2 transition-colors">Contact</Link>
           <Link to="/toolbox" className="hover:text-airsoft-red py-2 transition-colors flex items-center gap-2">
-            <Toolbox size={18} />
+            <Wrench size={18} />
             <span>ToolBox</span>
           </Link>
           
