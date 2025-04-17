@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
@@ -11,10 +12,10 @@ const FpsJouleCalculator = () => {
   const [fps, setFps] = useState(0);
   const [joules, setJoules] = useState(0);
   const [mode, setMode] = useState<'fps' | 'joule'>('joule');
-  const commonBBWeights = [0.20, 0.25, 0.30, 0.36, 0.45];
+  const commonBBWeights = [0.20, 0.23, 0.25, 0.28, 0.30, 0.32, 0.36, 0.40, 0.43, 0.45];
 
   const calculateFpsToJoules = (fps: number, weight: number) => {
-    const velocity = fps * 0.3048; // conversion en m/s
+    const velocity = fps * 0.3048;
     const energy = 0.5 * (weight / 1000) * velocity * velocity;
     return energy;
   };
@@ -32,11 +33,11 @@ const FpsJouleCalculator = () => {
     }
   }, [fps, joules, bbWeight, mode]);
 
-  const getCQBStatus = (joules: number) => {
-    if (joules <= 1.0) return 'bg-green-500';
-    if (joules <= 1.5) return 'bg-yellow-500';
-    if (joules <= 2.0) return 'bg-orange-500';
-    return 'bg-red-500';
+  const getReplicaType = (joules: number) => {
+    if (joules <= 1.2) return { type: 'CQB', color: 'bg-gradient-to-r from-green-500 to-green-400' };
+    if (joules <= 1.9) return { type: 'Fusils d\'assaut', color: 'bg-gradient-to-r from-blue-500 to-blue-400' };
+    if (joules <= 2.9) return { type: 'DMR', color: 'bg-gradient-to-r from-orange-500 to-orange-400' };
+    return { type: 'Tireur d\'élite', color: 'bg-gradient-to-r from-red-500 to-red-400' };
   };
 
   return (
@@ -61,25 +62,6 @@ const FpsJouleCalculator = () => {
           </Tabs>
 
           <div className="space-y-4">
-            <div>
-              <Label>Poids de la bille BB</Label>
-              <div className="mt-2">
-                <Slider 
-                  value={[bbWeight * 100]} 
-                  min={20} 
-                  max={50} 
-                  step={1} 
-                  onValueChange={value => setBbWeight(value[0] / 100)} 
-                  className="py-4" 
-                />
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>0.20</span>
-                  <span>0.50</span>
-                </div>
-              </div>
-              <div className="mt-2 text-right text-airsoft-red">{bbWeight.toFixed(2)}g</div>
-            </div>
-
             {mode === 'fps' ? (
               <div>
                 <Label>Vitesse de la bille (FPS)</Label>
@@ -125,12 +107,12 @@ const FpsJouleCalculator = () => {
 
           <div>
             <div className="flex justify-between items-center mb-2">
-              <Label>CQB Status</Label>
-              <span className="text-airsoft-red">{joules.toFixed(2)}J</span>
+              <Label>Type de réplique</Label>
+              <span className="text-airsoft-red">{getReplicaType(joules).type}</span>
             </div>
             <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
               <div 
-                className={`h-full transition-all ${getCQBStatus(joules)}`} 
+                className={`h-full transition-all ${getReplicaType(joules).color}`}
                 style={{
                   width: `${Math.min(joules / 4 * 100, 100)}%`
                 }} 
@@ -142,7 +124,7 @@ const FpsJouleCalculator = () => {
             <Label>Vitesse par poids de bille:</Label>
             {commonBBWeights.map(weight => (
               <div key={weight} className="flex justify-between bg-muted p-2 rounded">
-                <span>{weight}g</span>
+                <span>{weight.toFixed(2)}g</span>
                 <span>{Math.round(calculateJoulesToFps(joules, weight))} fps</span>
               </div>
             ))}
