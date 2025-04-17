@@ -45,13 +45,15 @@ const Recherche = () => {
                   Trouvez des parties, des joueurs et des équipes
                 </p>
               </div>
-              <Button 
-                onClick={handleCreateParty} 
-                className="bg-airsoft-red hover:bg-red-700 text-white"
-              >
-                <PlusCircle className="mr-2 h-5 w-5" />
-                Créer une partie
-              </Button>
+              {activeTab === "parties" && (
+                <Button 
+                  onClick={handleCreateParty} 
+                  className="bg-airsoft-red hover:bg-red-700 text-white"
+                >
+                  <PlusCircle className="mr-2 h-5 w-5" />
+                  Créer une partie
+                </Button>
+              )}
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">

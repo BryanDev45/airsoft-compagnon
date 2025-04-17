@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Shield, MessageCircle, UserPlus } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 // Mock data for user search results
 const mockUsers = [
@@ -45,6 +45,8 @@ interface UserSearchResultsProps {
 }
 
 const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
+  const navigate = useNavigate();
+  
   // Filter users based on search query
   const filteredUsers = mockUsers.filter(user => 
     searchQuery.length === 0 || 
@@ -53,6 +55,10 @@ const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
     user.team.toLowerCase().includes(searchQuery.toLowerCase()) ||
     user.bio.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  
+  const handleNavigateToProfile = (username: string) => {
+    navigate(`/user/${username}`);
+  };
   
   if (filteredUsers.length === 0) {
     return (
@@ -67,18 +73,24 @@ const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
       {filteredUsers.map(user => (
         <div key={user.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
           <div className="flex flex-col sm:flex-row items-start gap-4">
-            <Link to={`/user/${user.username}`} className="flex-shrink-0">
+            <div 
+              className="flex-shrink-0 cursor-pointer" 
+              onClick={() => handleNavigateToProfile(user.username)}
+            >
               <Avatar className="h-16 w-16">
                 <AvatarImage src={user.avatar} alt={user.username} />
                 <AvatarFallback>{user.username.charAt(0)}</AvatarFallback>
               </Avatar>
-            </Link>
+            </div>
             
             <div className="flex-grow">
               <div className="flex flex-wrap items-center gap-2 mb-1">
-                <Link to={`/user/${user.username}`} className="font-semibold hover:text-airsoft-red transition-colors">
+                <span 
+                  className="font-semibold hover:text-airsoft-red transition-colors cursor-pointer"
+                  onClick={() => handleNavigateToProfile(user.username)}
+                >
                   {user.username}
-                </Link>
+                </span>
                 {user.verified && (
                   <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                     Vérifié

@@ -2,8 +2,8 @@
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Users, Mail } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { MapPin, Users, Mail, UserPlus } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 
 // Mock data for team search results
 const mockTeams = [
@@ -41,6 +41,8 @@ interface TeamSearchResultsProps {
 }
 
 const TeamSearchResults = ({ searchQuery }: TeamSearchResultsProps) => {
+  const navigate = useNavigate();
+  
   // Filter teams based on search query
   const filteredTeams = mockTeams.filter(team => 
     searchQuery.length === 0 || 
@@ -48,6 +50,10 @@ const TeamSearchResults = ({ searchQuery }: TeamSearchResultsProps) => {
     team.region.toLowerCase().includes(searchQuery.toLowerCase()) ||
     team.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  
+  const handleNavigateToTeam = (teamId: string) => {
+    navigate(`/team/${teamId}`);
+  };
   
   if (filteredTeams.length === 0) {
     return (
@@ -62,7 +68,10 @@ const TeamSearchResults = ({ searchQuery }: TeamSearchResultsProps) => {
       {filteredTeams.map(team => (
         <div key={team.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
           <div className="flex flex-col sm:flex-row items-start gap-4">
-            <Link to={`/team/${team.id}`} className="flex-shrink-0">
+            <div 
+              className="flex-shrink-0 cursor-pointer" 
+              onClick={() => handleNavigateToTeam(team.id)}
+            >
               <div className="h-16 w-16 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
                 <img 
                   src={team.logo} 
@@ -70,13 +79,16 @@ const TeamSearchResults = ({ searchQuery }: TeamSearchResultsProps) => {
                   className="w-full h-full object-cover"
                 />
               </div>
-            </Link>
+            </div>
             
             <div className="flex-grow">
               <div className="flex flex-wrap items-center gap-2 mb-1">
-                <Link to={`/team/${team.id}`} className="font-semibold hover:text-airsoft-red transition-colors">
+                <span 
+                  className="font-semibold hover:text-airsoft-red transition-colors cursor-pointer"
+                  onClick={() => handleNavigateToTeam(team.id)}
+                >
                   {team.name}
-                </Link>
+                </span>
                 {team.isAssociation && (
                   <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                     Association
@@ -103,6 +115,10 @@ const TeamSearchResults = ({ searchQuery }: TeamSearchResultsProps) => {
               <Button variant="outline" size="sm" className="flex items-center gap-1">
                 <Mail size={14} />
                 Contacter
+              </Button>
+              <Button variant="outline" size="sm" className="flex items-center gap-1">
+                <UserPlus size={14} />
+                Postuler
               </Button>
             </div>
           </div>
