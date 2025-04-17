@@ -19,7 +19,7 @@ const MapSection = () => {
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('france');
-  const [searchRadius, setSearchRadius] = useState([50]);
+  const [searchRadius, setSearchRadius] = useState([0]); // Changé de 50 à 0 comme demandé
   // Fix the type of searchCenter to be a tuple of two numbers
   const [searchCenter, setSearchCenter] = useState<[number, number]>([2.3522, 46.2276]); // Default to center of France
 

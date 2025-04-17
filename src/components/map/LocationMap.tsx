@@ -75,7 +75,7 @@ const LocationMap: React.FC<LocationMapProps> = ({ location, coordinates = [2.35
   return (
     <div ref={mapRef} className="w-full h-full rounded-lg overflow-hidden">
       {!map.current && (
-        <div className="absolute inset-0 flex items-center justify-center flex-col bg-gray-200">
+        <div className="absolute inset-0 flex items-center justify-center flex-col bg-gray-200 z-10" style={{ pointerEvents: 'none' }}>
           <MapPin size={24} className="text-gray-400 mb-2" />
           <p className="text-center text-gray-500">Chargement de la carte...</p>
         </div>

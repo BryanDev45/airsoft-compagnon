@@ -58,7 +58,7 @@ const TeamField = ({ field }: TeamFieldProps) => {
                 ))}
               </div>
             </div>
-            <div className="h-64 rounded-lg overflow-hidden border border-gray-200">
+            <div className="h-64 rounded-lg overflow-hidden border border-gray-200 relative">
               <LocationMap 
                 location={field.address} 
                 coordinates={field.coordinates}

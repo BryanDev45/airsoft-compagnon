@@ -41,14 +41,19 @@ const Hero = () => {
         </div>
       </div>
       
-      {/* V-shape with gradient border - Modification du bas en forme de V */}
-      <div className="absolute bottom-0 left-0 w-full overflow-hidden" style={{ height: '60px' }}>
-        <div className="absolute bottom-0 left-0 w-full h-full" 
-             style={{ 
-               clipPath: 'polygon(0 0, 100% 0, 100% 0, 50% 100%, 0 0)',
-               background: 'linear-gradient(to right, #ea384c, #ff6b6b)'
-             }}>
-        </div>
+      {/* Triangle en bas du hero */}
+      <div className="relative w-full h-[60px] overflow-hidden">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute bottom-0 w-full h-full">
+          <polygon points="0,0 100,0 50,100 0,0" fill="url(#gradient)" />
+        </svg>
+        <svg width="0" height="0">
+          <defs>
+            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#ea384c" />
+              <stop offset="100%" stopColor="#ff6b6b" />
+            </linearGradient>
+          </defs>
+        </svg>
       </div>
     </div>;
 };
