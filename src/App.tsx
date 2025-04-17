@@ -68,7 +68,7 @@ function App() {
       </Routes>
       
       {cookiesAccepted === null && (
-        <CookieConsent
+        <CookieConsent 
           onAccept={handleAcceptCookies}
           onDecline={handleDeclineCookies}
         />

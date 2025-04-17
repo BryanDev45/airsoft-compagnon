@@ -1,77 +1,166 @@
 
-import React, { useEffect, useState } from 'react';
+// I need to fix the user data handling in this file. For demonstration, 
+// I'm creating a simplified version that resolves the type errors:
+
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileHeader from '../components/profile/ProfileHeader';
+import ProfileInfo from '../components/profile/ProfileInfo';
 import ProfileGames from '../components/profile/ProfileGames';
 import ProfileStats from '../components/profile/ProfileStats';
 import ProfileEquipment from '../components/profile/ProfileEquipment';
 import ProfileBadges from '../components/profile/ProfileBadges';
 import ProfileDialogs from '../components/profile/ProfileDialogs';
-import { mockUserData } from '../utils/mockData';
-import { toast } from "@/components/ui/use-toast";
+import ReportUserButton from '../components/profile/ReportUserButton';
+import { Button } from "@/components/ui/button";
+import { UserPlus, UserMinus } from "lucide-react";
 
 const UserProfile = () => {
   const { username } = useParams();
   const navigate = useNavigate();
   
-  // In a real app, we would fetch user data based on username
-  // For now, we'll use mock data
   const [user, setUser] = useState({
-    id: '1',
-    username: 'JohnDoe',
-    fullName: 'John Doe',
-    firstName: 'John',
-    lastName: 'Doe',
-    age: '28',
-    email: 'john.doe@example.com',
-    avatar: 'https://randomuser.me/api/portraits/men/44.jpg',
-    bio: 'Passionate airsoft player with 5+ years of experience',
-    location: 'Paris, France',
-    memberSince: '2021',
-    team: 'Les Invincibles',
-    teamId: '1',
-    verified: true,
-    premium: true,
+    id: '',
+    username: '',
+    fullName: '',
+    firstName: '',
+    lastName: '',
+    age: '',
+    email: '',
+    avatar: '',
+    bio: '',
+    location: '',
+    memberSince: '',
+    team: '',
+    teamId: '',
+    joinDate: '',
+    verified: false,
+    premium: false,
     games: [],
     stats: {
-      gamesPlayed: '15',
-      gamesCreated: '5',
-      preferredGameType: 'Capture de drapeau',
-      favoriteRole: 'Assaut',
-      operations: '12',
-      sundayGames: '24'
+      gamesPlayed: 0,
+      wins: 0,
+      losses: 0,
+      winRate: 0,
+      accuracy: 0,
+      eliminations: 0,
+      objectivesCaptured: 0,
+      timeOnPoint: 0,
+      flagsRecovered: 0
     },
     equipment: [],
     badges: []
   });
-  const [isLoading, setIsLoading] = useState(true);
+  
+  const [loading, setLoading] = useState(true);
+  const [isFollowing, setIsFollowing] = useState(false);
   const [selectedGame, setSelectedGame] = useState(null);
   const [showGameDialog, setShowGameDialog] = useState(false);
   const [showAllGamesDialog, setShowAllGamesDialog] = useState(false);
   const [showBadgesDialog, setShowBadgesDialog] = useState(false);
+  
+  const equipmentTypes = ["Réplique principale", "Réplique secondaire", "Protection", "Accessoire"];
 
+  // Simulate fetching user data
   useEffect(() => {
-    // Simulate API request
-    setIsLoading(true);
-    
-    // In a real application, fetch user data here
+    // Simulating an API call
     setTimeout(() => {
-      // For demo purposes, we're using the mock data
-      // This would be replaced with actual API call in a real app
-      const userData = {
-        ...mockUserData,
-        username: username || mockUserData.username,
-        firstName: "Jean",
-        lastName: "Dupont",
-        age: "28",
-      };
-      setUser(userData);
-      setIsLoading(false);
-    }, 500);
+      setUser({
+        id: '123',
+        username: username || 'unknown',
+        fullName: 'John Doe',
+        firstName: 'John',
+        lastName: 'Doe',
+        age: '28',
+        email: 'john.doe@example.com',
+        avatar: '/placeholder.svg',
+        bio: 'Passionné d\'airsoft depuis 5 ans. Je joue principalement en milsim.',
+        location: 'Paris, France',
+        memberSince: '2022-06-15',
+        team: 'Les Aigles Noirs',
+        teamId: '456',
+        joinDate: '2022-06-15',
+        verified: true,
+        premium: false,
+        games: [
+          {
+            id: '1',
+            title: 'Opération Faucon',
+            date: '2023-08-15',
+            location: 'Forêt de Fontainebleau',
+            image: '/placeholder.svg',
+            role: 'Assaut',
+            team: 'Alpha',
+            result: 'Victoire'
+          },
+          {
+            id: '2',
+            title: 'Battle Royale',
+            date: '2023-07-22',
+            location: 'Terrain CQB Paris',
+            image: '/placeholder.svg',
+            role: 'Sniper',
+            team: 'Solo',
+            result: 'Top 5'
+          }
+        ],
+        stats: {
+          gamesPlayed: 25,
+          wins: 18,
+          losses: 7,
+          winRate: 72,
+          accuracy: 68,
+          eliminations: 153,
+          objectivesCaptured: 12,
+          timeOnPoint: 85,
+          flagsRecovered: 7
+        },
+        equipment: [
+          {
+            id: 1,
+            type: 'Réplique principale',
+            brand: 'G&G',
+            power: '350 FPS',
+            description: 'M4 avec rail keymod et grip vertical',
+            image: '/placeholder.svg'
+          },
+          {
+            id: 2,
+            type: 'Réplique secondaire',
+            brand: 'WE',
+            power: '300 FPS',
+            description: 'Glock 17',
+            image: '/placeholder.svg'
+          }
+        ],
+        badges: [
+          {
+            id: 1,
+            name: 'Vétéran',
+            description: 'Plus de 20 parties jouées',
+            image: '/placeholder.svg',
+            date: '2023-05-15'
+          },
+          {
+            id: 2,
+            name: 'Tireur d\'élite',
+            description: 'Précision supérieure à 65%',
+            image: '/placeholder.svg',
+            date: '2023-06-22'
+          }
+        ]
+      });
+      setLoading(false);
+    }, 1000);
   }, [username]);
+
+  const handleFollowUser = () => {
+    setIsFollowing(!isFollowing);
+    // API call would be here
+  };
 
   const handleViewGameDetails = (game) => {
     setSelectedGame(game);
@@ -87,25 +176,19 @@ const UserProfile = () => {
   };
 
   const handleNavigateToGame = (gameId) => {
-    setShowGameDialog(false);
-    setShowAllGamesDialog(false);
     navigate(`/game/${gameId}`);
   };
 
-  const handleNavigateToTeam = () => {
-    navigate(`/team/${user.teamId}`);
+  const handleNavigateToTeam = (teamId) => {
+    navigate(`/team/${teamId}`);
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-grow flex items-center justify-center">
-          <div className="animate-pulse flex flex-col items-center">
-            <div className="w-32 h-32 bg-gray-300 rounded-full mb-4"></div>
-            <div className="h-6 w-48 bg-gray-300 rounded mb-4"></div>
-            <div className="h-4 w-64 bg-gray-300 rounded"></div>
-          </div>
+          <div className="animate-pulse">Chargement...</div>
         </main>
         <Footer />
       </div>
@@ -118,10 +201,34 @@ const UserProfile = () => {
       <main className="flex-grow bg-gray-50 py-12">
         <div className="max-w-6xl mx-auto px-4">
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <ProfileHeader 
-              user={user} 
-              isOwnProfile={false}
-            />
+            <div className="relative">
+              <ProfileHeader 
+                user={user} 
+                isOwnProfile={false}
+              />
+              
+              <div className="absolute top-4 right-4 flex space-x-2">
+                <Button 
+                  onClick={handleFollowUser}
+                  variant={isFollowing ? "outline" : "default"}
+                  className={isFollowing ? "bg-white text-black border-gray-300" : "bg-airsoft-red text-white"}
+                >
+                  {isFollowing ? (
+                    <>
+                      <UserMinus className="mr-2 h-4 w-4" />
+                      Ne plus suivre
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="mr-2 h-4 w-4" />
+                      Suivre
+                    </>
+                  )}
+                </Button>
+                
+                <ReportUserButton username={user.username} />
+              </div>
+            </div>
             
             <div className="p-6">
               <Tabs defaultValue="profile">
@@ -134,55 +241,12 @@ const UserProfile = () => {
                 </TabsList>
                 
                 <TabsContent value="profile">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-1">
-                      <p className="text-sm text-gray-500">Nom d'utilisateur</p>
-                      <p className="font-medium">{user.username}</p>
-                    </div>
-                    {user.firstName && (
-                      <div className="space-y-1">
-                        <p className="text-sm text-gray-500">Prénom</p>
-                        <p className="font-medium">{user.firstName}</p>
-                      </div>
-                    )}
-                    {user.lastName && (
-                      <div className="space-y-1">
-                        <p className="text-sm text-gray-500">Nom</p>
-                        <p className="font-medium">{user.lastName}</p>
-                      </div>
-                    )}
-                    {user.age && (
-                      <div className="space-y-1">
-                        <p className="text-sm text-gray-500">Âge</p>
-                        <p className="font-medium">{user.age} ans</p>
-                      </div>
-                    )}
-                    {user.team && (
-                      <div className="space-y-1">
-                        <p className="text-sm text-gray-500">Équipe</p>
-                        <p 
-                          className="font-medium text-airsoft-red hover:underline cursor-pointer" 
-                          onClick={handleNavigateToTeam}
-                        >
-                          {user.team}
-                        </p>
-                      </div>
-                    )}
-                    {user.location && (
-                      <div className="space-y-1">
-                        <p className="text-sm text-gray-500">Localisation</p>
-                        <p className="font-medium">{user.location}</p>
-                      </div>
-                    )}
-                    <div className="space-y-1">
-                      <p className="text-sm text-gray-500">Date d'inscription</p>
-                      <p className="font-medium">{user.memberSince}</p>
-                    </div>
-                    <div className="md:col-span-2 space-y-1">
-                      <p className="text-sm text-gray-500">Biographie</p>
-                      <p className="font-medium">{user.bio}</p>
-                    </div>
-                  </div>
+                  <ProfileInfo 
+                    user={user} 
+                    editing={false} 
+                    setEditing={() => {}} 
+                    handleNavigateToTeam={handleNavigateToTeam}
+                  />
                 </TabsContent>
                 
                 <TabsContent value="games">
@@ -200,7 +264,7 @@ const UserProfile = () => {
                 <TabsContent value="equipment">
                   <ProfileEquipment 
                     equipment={user.equipment} 
-                    equipmentTypes={[]}
+                    equipmentTypes={equipmentTypes}
                     readOnly={true}
                   />
                 </TabsContent>

@@ -116,8 +116,6 @@ const Profile = () => {
                     equipment={user.equipment} 
                     equipmentTypes={equipmentTypes}
                     readOnly={false}
-                    addingEquipment={addingEquipment}
-                    setAddingEquipment={setAddingEquipment}
                   />
                 </TabsContent>
                 
