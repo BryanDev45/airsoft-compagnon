@@ -3,7 +3,7 @@ import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Shield, MessageCircle, UserPlus } from 'lucide-react';
+import { MapPin, Shield, MessageCircle, UserPlus, Star } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 // Mock data for user search results
@@ -16,7 +16,8 @@ const mockUsers = [
     team: "Les Rapaces",
     teamId: "1",
     bio: "Joueur d'airsoft depuis 5 ans, spécialiste en CQB",
-    verified: true
+    verified: true,
+    rating: 4.8
   },
   {
     id: 2,
@@ -26,7 +27,8 @@ const mockUsers = [
     team: "Ghost Team",
     teamId: "2",
     bio: "Sniper et tireur de précision, amateur de parties MilSim",
-    verified: false
+    verified: false,
+    rating: 4.2
   },
   {
     id: 3,
@@ -36,7 +38,8 @@ const mockUsers = [
     team: "Strike Force",
     teamId: "3",
     bio: "Équipement tactique et stratégies militaires",
-    verified: true
+    verified: true,
+    rating: 4.5
   }
 ];
 
@@ -58,6 +61,33 @@ const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
   
   const handleNavigateToProfile = (username: string) => {
     navigate(`/user/${username}`);
+  };
+
+  // Function to render rating stars
+  const renderRatingStars = (rating: number) => {
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+    const stars = [];
+    
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(<Star key={`full-${i}`} className="h-4 w-4 fill-yellow-400 text-yellow-400" />);
+    }
+    
+    if (hasHalfStar) {
+      stars.push(
+        <span key="half" className="relative">
+          <Star className="h-4 w-4 text-gray-300" />
+          <Star className="absolute top-0 left-0 h-4 w-4 text-yellow-400 overflow-hidden" style={{ clipPath: 'inset(0 50% 0 0)' }} />
+        </span>
+      );
+    }
+    
+    const emptyStars = 5 - stars.length;
+    for (let i = 0; i < emptyStars; i++) {
+      stars.push(<Star key={`empty-${i}`} className="h-4 w-4 text-gray-300" />);
+    }
+    
+    return stars;
   };
   
   if (filteredUsers.length === 0) {
@@ -96,6 +126,11 @@ const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
                     Vérifié
                   </Badge>
                 )}
+              </div>
+              
+              <div className="flex items-center mb-2">
+                {renderRatingStars(user.rating)}
+                <span className="ml-2 text-sm text-gray-600">{user.rating.toFixed(1)}</span>
               </div>
               
               <p className="text-sm text-gray-600 mb-2 line-clamp-2">{user.bio}</p>

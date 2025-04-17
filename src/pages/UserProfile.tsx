@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -24,7 +25,7 @@ const UserProfile = () => {
     fullName: 'John Doe',
     firstName: 'John',
     lastName: 'Doe',
-    age: '28', // Changed from number to string to fix the type error
+    age: '28',
     email: 'john.doe@example.com',
     avatar: 'https://randomuser.me/api/portraits/men/44.jpg',
     bio: 'Passionate airsoft player with 5+ years of experience',
@@ -34,7 +35,17 @@ const UserProfile = () => {
     teamId: '1',
     verified: true,
     premium: true,
-    // ... keep existing code (rest of user properties)
+    games: [],
+    stats: {
+      gamesPlayed: '15',
+      gamesCreated: '5',
+      preferredGameType: 'Capture de drapeau',
+      favoriteRole: 'Assaut',
+      operations: '12',
+      sundayGames: '24'
+    },
+    equipment: [],
+    badges: []
   });
   const [isLoading, setIsLoading] = useState(true);
   const [selectedGame, setSelectedGame] = useState(null);
@@ -53,9 +64,9 @@ const UserProfile = () => {
       setUser({
         ...mockUserData,
         username: username || mockUserData.username,
-        firstname: "Jean", // Added first name
-        lastname: "Dupont", // Added last name
-        age: 28, // Added age
+        firstName: "Jean",
+        lastName: "Dupont",
+        age: "28",
       });
       setIsLoading(false);
     }, 500);
@@ -127,16 +138,16 @@ const UserProfile = () => {
                       <p className="text-sm text-gray-500">Nom d'utilisateur</p>
                       <p className="font-medium">{user.username}</p>
                     </div>
-                    {user.firstname && (
+                    {user.firstName && (
                       <div className="space-y-1">
                         <p className="text-sm text-gray-500">Prénom</p>
-                        <p className="font-medium">{user.firstname}</p>
+                        <p className="font-medium">{user.firstName}</p>
                       </div>
                     )}
-                    {user.lastname && (
+                    {user.lastName && (
                       <div className="space-y-1">
                         <p className="text-sm text-gray-500">Nom</p>
-                        <p className="font-medium">{user.lastname}</p>
+                        <p className="font-medium">{user.lastName}</p>
                       </div>
                     )}
                     {user.age && (
@@ -164,7 +175,7 @@ const UserProfile = () => {
                     )}
                     <div className="space-y-1">
                       <p className="text-sm text-gray-500">Date d'inscription</p>
-                      <p className="font-medium">{user.joinDate}</p>
+                      <p className="font-medium">{user.memberSince}</p>
                     </div>
                     <div className="md:col-span-2 space-y-1">
                       <p className="text-sm text-gray-500">Biographie</p>
@@ -189,6 +200,7 @@ const UserProfile = () => {
                   <ProfileEquipment 
                     equipment={user.equipment} 
                     equipmentTypes={[]}
+                    readOnly={true}
                   />
                 </TabsContent>
                 

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Users, Mail, UserPlus } from 'lucide-react';
+import { MapPin, Users, Mail, UserPlus, Star } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 // Mock data for team search results
@@ -14,7 +14,8 @@ const mockTeams = [
     region: "Île-de-France",
     memberCount: 15,
     description: "Équipe d'airsoft basée à Paris, spécialisée dans les parties CQB et urbaines",
-    isAssociation: true
+    isAssociation: true,
+    rating: 4.7
   },
   {
     id: "2",
@@ -23,7 +24,8 @@ const mockTeams = [
     region: "Auvergne-Rhône-Alpes",
     memberCount: 20,
     description: "Équipe MilSim professionnelle avec focus sur les opérations tactiques",
-    isAssociation: false
+    isAssociation: false,
+    rating: 4.3
   },
   {
     id: "3",
@@ -32,7 +34,8 @@ const mockTeams = [
     region: "PACA",
     memberCount: 12,
     description: "Équipe amicale et inclusive, tous niveaux bienvenus",
-    isAssociation: true
+    isAssociation: true,
+    rating: 4.9
   }
 ];
 
@@ -53,6 +56,33 @@ const TeamSearchResults = ({ searchQuery }: TeamSearchResultsProps) => {
   
   const handleNavigateToTeam = (teamId: string) => {
     navigate(`/team/${teamId}`);
+  };
+
+  // Function to render rating stars
+  const renderRatingStars = (rating: number) => {
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+    const stars = [];
+    
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(<Star key={`full-${i}`} className="h-4 w-4 fill-yellow-400 text-yellow-400" />);
+    }
+    
+    if (hasHalfStar) {
+      stars.push(
+        <span key="half" className="relative">
+          <Star className="h-4 w-4 text-gray-300" />
+          <Star className="absolute top-0 left-0 h-4 w-4 text-yellow-400 overflow-hidden" style={{ clipPath: 'inset(0 50% 0 0)' }} />
+        </span>
+      );
+    }
+    
+    const emptyStars = 5 - stars.length;
+    for (let i = 0; i < emptyStars; i++) {
+      stars.push(<Star key={`empty-${i}`} className="h-4 w-4 text-gray-300" />);
+    }
+    
+    return stars;
   };
   
   if (filteredTeams.length === 0) {
@@ -94,6 +124,11 @@ const TeamSearchResults = ({ searchQuery }: TeamSearchResultsProps) => {
                     Association
                   </Badge>
                 )}
+              </div>
+              
+              <div className="flex items-center mb-2">
+                {renderRatingStars(team.rating)}
+                <span className="ml-2 text-sm text-gray-600">{team.rating.toFixed(1)}</span>
               </div>
               
               <p className="text-sm text-gray-600 mb-2 line-clamp-2">{team.description}</p>

@@ -1,22 +1,30 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Edit, Save, X, Gamepad, Plus, Star, Award, Zap, Calendar } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 interface ProfileStatsProps {
   stats: any;
+  readOnly?: boolean;
 }
+
 const ProfileStats = ({
-  stats
+  stats,
+  readOnly = true
 }: ProfileStatsProps) => {
   const [editing, setEditing] = useState(false);
   const [preferredGameType, setPreferredGameType] = useState(stats.preferredGameType);
   const [favoriteRole, setFavoriteRole] = useState(stats.favoriteRole);
+  
   const handleSave = () => {
     // In a real app, we would save to backend here
     setEditing(false);
   };
-  return <Card>
+  
+  return (
+    <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Statistiques détaillées</CardTitle>
@@ -24,16 +32,20 @@ const ProfileStats = ({
             Analyse de votre parcours d'airsofteur
           </CardDescription>
         </div>
-        {editing ? <div className="flex space-x-2">
+        {!readOnly && editing ? (
+          <div className="flex space-x-2">
             <Button variant="outline" onClick={() => setEditing(false)} size="sm">
               <X className="h-4 w-4 mr-2" /> Annuler
             </Button>
             <Button className="bg-airsoft-red hover:bg-red-700 text-white" size="sm" onClick={handleSave}>
               <Save className="h-4 w-4 mr-2" /> Enregistrer
             </Button>
-          </div> : <Button onClick={() => setEditing(true)} className="bg-airsoft-red hover:bg-red-700 text-white" size="sm">
+          </div>
+        ) : !readOnly ? (
+          <Button onClick={() => setEditing(true)} className="bg-airsoft-red hover:bg-red-700 text-white" size="sm">
             <Edit className="h-4 w-4 mr-2" /> Modifier
-          </Button>}
+          </Button>
+        ) : null}
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -58,7 +70,8 @@ const ProfileStats = ({
               <Star className="h-5 w-5 text-airsoft-red" />
               <div className="space-y-1">
                 <p className="text-sm text-gray-500">Mode de jeu préféré</p>
-                {editing ? <Select defaultValue={preferredGameType} onValueChange={setPreferredGameType}>
+                {editing && !readOnly ? (
+                  <Select defaultValue={preferredGameType} onValueChange={setPreferredGameType}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Sélectionner un mode de jeu" />
                     </SelectTrigger>
@@ -69,7 +82,10 @@ const ProfileStats = ({
                       <SelectItem value="Escort">Escort</SelectItem>
                       <SelectItem value="Rush">Rush</SelectItem>
                     </SelectContent>
-                  </Select> : <p className="font-medium">{preferredGameType}</p>}
+                  </Select>
+                ) : (
+                  <p className="font-medium">{preferredGameType}</p>
+                )}
               </div>
             </div>
           </div>
@@ -79,7 +95,8 @@ const ProfileStats = ({
               <Award className="h-5 w-5 text-airsoft-red" />
               <div className="space-y-1">
                 <p className="text-sm text-gray-500">Rôle préféré</p>
-                {editing ? <Select defaultValue={favoriteRole} onValueChange={setFavoriteRole}>
+                {editing && !readOnly ? (
+                  <Select defaultValue={favoriteRole} onValueChange={setFavoriteRole}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Sélectionner un rôle" />
                     </SelectTrigger>
@@ -90,7 +107,10 @@ const ProfileStats = ({
                       <SelectItem value="Médic">Médic</SelectItem>
                       <SelectItem value="Éclaireur">Éclaireur</SelectItem>
                     </SelectContent>
-                  </Select> : <p className="font-medium">{favoriteRole}</p>}
+                  </Select>
+                ) : (
+                  <p className="font-medium">{favoriteRole}</p>
+                )}
               </div>
             </div>
             
@@ -112,6 +132,8 @@ const ProfileStats = ({
           </div>
         </div>
       </CardContent>
-    </Card>;
+    </Card>
+  );
 };
+
 export default ProfileStats;

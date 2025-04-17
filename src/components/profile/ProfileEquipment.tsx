@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Plus, Edit, Upload, List, Zap, Tag, FileText } from 'lucide-react';
+import { Plus, Edit, Upload, List, Zap, Tag, FileText, Pencil, Trash } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,17 +8,21 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
+
 interface ProfileEquipmentProps {
   equipment: any[];
   equipmentTypes: string[];
   readOnly?: boolean;
 }
+
 const ProfileEquipment = ({
   equipment,
   equipmentTypes,
   readOnly = false
 }: ProfileEquipmentProps) => {
   const [addingEquipment, setAddingEquipment] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  
   const handleAddEquipment = (e: React.FormEvent) => {
     e.preventDefault();
     setAddingEquipment(false);
@@ -26,7 +31,17 @@ const ProfileEquipment = ({
       description: "Votre nouvel équipement a été ajouté avec succès"
     });
   };
-  return <Card>
+
+  const handleEditEquipment = (id: string) => {
+    setEditingId(id);
+    toast({
+      title: "Modification",
+      description: "Mode édition activé pour cet équipement"
+    });
+  };
+
+  return (
+    <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Mon équipement</CardTitle>
@@ -34,10 +49,19 @@ const ProfileEquipment = ({
             Répliques et matériel
           </CardDescription>
         </div>
-        {!readOnly}
+        {!readOnly && (
+          <Button 
+            onClick={() => setAddingEquipment(true)} 
+            className="bg-airsoft-red hover:bg-red-700 text-white"
+            size="sm"
+          >
+            <Plus className="h-4 w-4 mr-2" /> Ajouter
+          </Button>
+        )}
       </CardHeader>
       <CardContent>
-        {addingEquipment && !readOnly ? <div className="border rounded-lg p-4 mb-4">
+        {addingEquipment && !readOnly ? (
+          <div className="border rounded-lg p-4 mb-4">
             <h3 className="font-semibold mb-4">Nouvel équipement</h3>
             <form onSubmit={handleAddEquipment} className="space-y-4">
               <div className="flex flex-col items-center mb-4">
@@ -60,9 +84,11 @@ const ProfileEquipment = ({
                       <SelectValue placeholder="Sélectionner un type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {equipmentTypes.map(type => <SelectItem key={type} value={type}>
+                      {equipmentTypes.map(type => (
+                        <SelectItem key={type} value={type}>
                           {type}
-                        </SelectItem>)}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -98,8 +124,11 @@ const ProfileEquipment = ({
                 </Button>
               </div>
             </form>
-          </div> : equipment.length > 0 ? <div className="space-y-4">
-            {equipment.map(item => <div key={item.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow flex flex-col sm:flex-row gap-4">
+          </div>
+        ) : equipment.length > 0 ? (
+          <div className="space-y-4">
+            {equipment.map(item => (
+              <div key={item.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow flex flex-col sm:flex-row gap-4">
                 <div className="flex-shrink-0">
                   <img src={item.image} alt={item.description} className="w-24 h-24 object-cover rounded-lg" />
                 </div>
@@ -113,14 +142,27 @@ const ProfileEquipment = ({
                   </p>
                   <p className="text-sm text-gray-600">{item.description}</p>
                 </div>
-                {!readOnly && <div className="flex sm:flex-col gap-2 mt-2 sm:mt-0">
-                    
-                  </div>}
-              </div>)}
-          </div> : <p className="text-center py-12 text-gray-500">
+                {!readOnly && (
+                  <div className="flex sm:flex-col gap-2 mt-2 sm:mt-0">
+                    <Button variant="outline" size="sm" onClick={() => handleEditEquipment(item.id)}>
+                      <Pencil size={16} className="mr-1" /> Modifier
+                    </Button>
+                    <Button variant="outline" size="sm" className="text-red-500 hover:text-red-700">
+                      <Trash size={16} className="mr-1" /> Supprimer
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-center py-12 text-gray-500">
             {readOnly ? "Cet utilisateur n'a pas encore ajouté d'équipement." : "Vous n'avez pas encore ajouté d'équipement."}
-          </p>}
+          </p>
+        )}
       </CardContent>
-    </Card>;
+    </Card>
+  );
 };
+
 export default ProfileEquipment;
