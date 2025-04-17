@@ -2,12 +2,7 @@ import React, { useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Calculator, Wrench, Gauge, Zap, ChevronRight, BarChart4, Settings, Ruler, Info } from 'lucide-react';
-import { toast } from "@/components/ui/use-toast";
+import { Calculator, Wrench, Book, Target, Settings, Info } from 'lucide-react';
 import FpsJouleCalculator from '../components/toolbox/FpsJouleCalculator';
 import BatteryCalculator from '../components/toolbox/BatteryCalculator';
 import AirsoftGlossary from '../components/toolbox/AirsoftGlossary';
@@ -183,6 +178,12 @@ const Toolbox = () => {
               <TabsTrigger value="calculators" className="flex items-center gap-1">
                 <Calculator className="h-4 w-4" /> Calculateurs
               </TabsTrigger>
+              <TabsTrigger value="glossary" className="flex items-center gap-1">
+                <Book className="h-4 w-4" /> Glossaire
+              </TabsTrigger>
+              <TabsTrigger value="scenarios" className="flex items-center gap-1">
+                <Target className="h-4 w-4" /> Scénarios
+              </TabsTrigger>
               <TabsTrigger value="troubleshooting" className="flex items-center gap-1">
                 <Settings className="h-4 w-4" /> Dépannage
               </TabsTrigger>
@@ -258,6 +259,14 @@ const Toolbox = () => {
               </div>
             </TabsContent>
 
+            <TabsContent value="glossary">
+              <AirsoftGlossary />
+            </TabsContent>
+
+            <TabsContent value="scenarios">
+              <AirsoftScenarios />
+            </TabsContent>
+
             <TabsContent value="troubleshooting">
               <div className="bg-white p-6 rounded-lg shadow-md">
                 <h2 className="text-xl font-semibold mb-4">Guide de dépannage des répliques</h2>
@@ -296,8 +305,6 @@ const Toolbox = () => {
 
             <TabsContent value="guides">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <AirsoftGlossary />
-                <AirsoftScenarios />
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">

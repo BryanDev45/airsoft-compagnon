@@ -122,7 +122,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-gradient-to-r from-airsoft-dark to-gray-900 text-white py-3 px-4 relative">
+    <header className="bg-gradient-to-r from-gray-900 to-airsoft-dark text-white py-3 px-4 relative">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <div className="flex items-center">
           <Link to="/" className="flex items-center gap-2">
