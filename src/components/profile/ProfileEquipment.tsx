@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, Edit, Upload, List, Zap, Tag, FileText } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -8,27 +7,26 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
-
 interface ProfileEquipmentProps {
   equipment: any[];
   equipmentTypes: string[];
   readOnly?: boolean;
 }
-
-const ProfileEquipment = ({ equipment, equipmentTypes, readOnly = false }: ProfileEquipmentProps) => {
+const ProfileEquipment = ({
+  equipment,
+  equipmentTypes,
+  readOnly = false
+}: ProfileEquipmentProps) => {
   const [addingEquipment, setAddingEquipment] = useState(false);
-
   const handleAddEquipment = (e: React.FormEvent) => {
     e.preventDefault();
     setAddingEquipment(false);
     toast({
       title: "Équipement ajouté",
-      description: "Votre nouvel équipement a été ajouté avec succès",
+      description: "Votre nouvel équipement a été ajouté avec succès"
     });
   };
-
-  return (
-    <Card>
+  return <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Mon équipement</CardTitle>
@@ -36,19 +34,10 @@ const ProfileEquipment = ({ equipment, equipmentTypes, readOnly = false }: Profi
             Répliques et matériel
           </CardDescription>
         </div>
-        {!readOnly && (
-          <Button 
-            className="bg-airsoft-red hover:bg-red-700"
-            onClick={() => setAddingEquipment(true)}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Ajouter un équipement
-          </Button>
-        )}
+        {!readOnly}
       </CardHeader>
       <CardContent>
-        {addingEquipment && !readOnly ? (
-          <div className="border rounded-lg p-4 mb-4">
+        {addingEquipment && !readOnly ? <div className="border rounded-lg p-4 mb-4">
             <h3 className="font-semibold mb-4">Nouvel équipement</h3>
             <form onSubmit={handleAddEquipment} className="space-y-4">
               <div className="flex flex-col items-center mb-4">
@@ -71,11 +60,9 @@ const ProfileEquipment = ({ equipment, equipmentTypes, readOnly = false }: Profi
                       <SelectValue placeholder="Sélectionner un type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {equipmentTypes.map((type) => (
-                        <SelectItem key={type} value={type}>
+                      {equipmentTypes.map(type => <SelectItem key={type} value={type}>
                           {type}
-                        </SelectItem>
-                      ))}
+                        </SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
@@ -103,35 +90,18 @@ const ProfileEquipment = ({ equipment, equipmentTypes, readOnly = false }: Profi
               </div>
               
               <div className="flex justify-end gap-2">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setAddingEquipment(false)}
-                >
+                <Button type="button" variant="outline" onClick={() => setAddingEquipment(false)}>
                   Annuler
                 </Button>
-                <Button 
-                  type="submit" 
-                  className="bg-airsoft-red hover:bg-red-700"
-                >
+                <Button type="submit" className="bg-airsoft-red hover:bg-red-700">
                   Enregistrer
                 </Button>
               </div>
             </form>
-          </div>
-        ) : equipment.length > 0 ? (
-          <div className="space-y-4">
-            {equipment.map((item) => (
-              <div 
-                key={item.id} 
-                className="border rounded-lg p-4 hover:shadow-md transition-shadow flex flex-col sm:flex-row gap-4"
-              >
+          </div> : equipment.length > 0 ? <div className="space-y-4">
+            {equipment.map(item => <div key={item.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow flex flex-col sm:flex-row gap-4">
                 <div className="flex-shrink-0">
-                  <img 
-                    src={item.image} 
-                    alt={item.description} 
-                    className="w-24 h-24 object-cover rounded-lg"
-                  />
+                  <img src={item.image} alt={item.description} className="w-24 h-24 object-cover rounded-lg" />
                 </div>
                 <div className="flex-grow">
                   <div className="flex justify-between mb-2">
@@ -143,28 +113,14 @@ const ProfileEquipment = ({ equipment, equipmentTypes, readOnly = false }: Profi
                   </p>
                   <p className="text-sm text-gray-600">{item.description}</p>
                 </div>
-                {!readOnly && (
-                  <div className="flex sm:flex-col gap-2 mt-2 sm:mt-0">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white"
-                    >
-                      <Edit size={14} className="mr-1" /> Modifier
-                    </Button>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-center py-12 text-gray-500">
+                {!readOnly && <div className="flex sm:flex-col gap-2 mt-2 sm:mt-0">
+                    
+                  </div>}
+              </div>)}
+          </div> : <p className="text-center py-12 text-gray-500">
             {readOnly ? "Cet utilisateur n'a pas encore ajouté d'équipement." : "Vous n'avez pas encore ajouté d'équipement."}
-          </p>
-        )}
+          </p>}
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
-
 export default ProfileEquipment;
