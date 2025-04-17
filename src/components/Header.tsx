@@ -6,20 +6,10 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Sheet, 
-  SheetContent, 
-  SheetHeader, 
-  SheetTitle, 
-  SheetTrigger,
-  SheetClose,
-  SheetFooter
-} from "@/components/ui/sheet";
-
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose, SheetFooter } from "@/components/ui/sheet";
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
-
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<{
     username: string;
@@ -27,33 +17,28 @@ const Header = () => {
     teamId?: string;
   } | null>(null);
   const [notificationCount, setNotificationCount] = useState(3);
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      title: "Nouvelle partie disponible",
-      message: "Une nouvelle partie a été ajoutée près de chez vous",
-      date: "Aujourd'hui, 10:30",
-      read: false,
-      link: "/recherche"
-    },
-    {
-      id: 2,
-      title: "Demande d'ami",
-      message: "AirsoftMaster souhaite vous ajouter comme ami",
-      date: "Hier, 15:45",
-      read: false,
-      link: "/profile"
-    },
-    {
-      id: 3,
-      title: "Mise à jour du règlement",
-      message: "Le règlement de la partie 'Opération Forêt Noire' a été mis à jour",
-      date: "16/04/2025, 08:15",
-      read: false,
-      link: "/parties/1"
-    }
-  ]);
-
+  const [notifications, setNotifications] = useState([{
+    id: 1,
+    title: "Nouvelle partie disponible",
+    message: "Une nouvelle partie a été ajoutée près de chez vous",
+    date: "Aujourd'hui, 10:30",
+    read: false,
+    link: "/recherche"
+  }, {
+    id: 2,
+    title: "Demande d'ami",
+    message: "AirsoftMaster souhaite vous ajouter comme ami",
+    date: "Hier, 15:45",
+    read: false,
+    link: "/profile"
+  }, {
+    id: 3,
+    title: "Mise à jour du règlement",
+    message: "Le règlement de la partie 'Opération Forêt Noire' a été mis à jour",
+    date: "16/04/2025, 08:15",
+    read: false,
+    link: "/parties/1"
+  }]);
   useEffect(() => {
     const authState = localStorage.getItem('isAuthenticated');
     const userState = localStorage.getItem('user');
@@ -65,7 +50,6 @@ const Header = () => {
       setUser(null);
     }
   }, []);
-
   const handleLogout = () => {
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('user');
@@ -77,11 +61,9 @@ const Header = () => {
     });
     navigate('/login');
   };
-
   const handleLogin = () => {
     navigate('/login');
   };
-
   const handleNavigateToTeam = () => {
     if (user?.teamId) {
       navigate(`/team/${user.teamId}`);
@@ -92,37 +74,31 @@ const Header = () => {
       });
     }
   };
-
   const handleNavigateToToolbox = () => {
     navigate('/toolbox');
   };
-
   const handleNotificationRead = (id: number) => {
-    setNotifications(prev => 
-      prev.map(notif => 
-        notif.id === id ? {...notif, read: true} : notif
-      )
-    );
+    setNotifications(prev => prev.map(notif => notif.id === id ? {
+      ...notif,
+      read: true
+    } : notif));
     setNotificationCount(prev => Math.max(0, prev - 1));
   };
-
   const handleReadAllNotifications = () => {
-    setNotifications(prev => 
-      prev.map(notif => ({...notif, read: true}))
-    );
+    setNotifications(prev => prev.map(notif => ({
+      ...notif,
+      read: true
+    })));
     setNotificationCount(0);
     toast({
       title: "Notifications",
       description: "Toutes les notifications ont été marquées comme lues"
     });
   };
-
   const handleNotificationClick = (link: string) => {
     navigate(link);
   };
-
-  return (
-    <header className="bg-gradient-to-r from-airsoft-dark to-gray-900 text-white py-3 px-4 relative">
+  return <header className="bg-gradient-to-r from-airsoft-gray-900 to-dark text-white py-3 px-4 relative">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <div className="flex items-center">
           <Link to="/" className="flex items-center gap-2">
@@ -151,61 +127,38 @@ const Header = () => {
           </DropdownMenu>
 
           <div className="flex items-center gap-4 ml-4">
-            {isAuthenticated && (
-              <Sheet>
+            {isAuthenticated && <Sheet>
                 <SheetTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="relative"
-                  >
+                  <Button variant="ghost" size="icon" className="relative">
                     <Bell size={20} className="text-white hover:text-airsoft-red transition-colors" />
-                    {notificationCount > 0 && (
-                      <Badge 
-                        className="absolute -top-1 -right-1 h-5 w-5 text-xs p-0 flex items-center justify-center bg-airsoft-red"
-                      >
+                    {notificationCount > 0 && <Badge className="absolute -top-1 -right-1 h-5 w-5 text-xs p-0 flex items-center justify-center bg-airsoft-red">
                         {notificationCount}
-                      </Badge>
-                    )}
+                      </Badge>}
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="w-[400px] sm:w-[540px]">
                   <SheetHeader>
                     <SheetTitle className="text-xl flex items-center justify-between">
                       <span>Notifications</span>
-                      <Button 
-                        variant="ghost" 
-                        className="text-sm h-8 px-2"
-                        onClick={handleReadAllNotifications}
-                      >
+                      <Button variant="ghost" className="text-sm h-8 px-2" onClick={handleReadAllNotifications}>
                         Marquer tout comme lu
                       </Button>
                     </SheetTitle>
                   </SheetHeader>
                   <div className="mt-6 space-y-4 max-h-[calc(100vh-120px)] overflow-y-auto pr-2">
-                    {notifications.length > 0 ? (
-                      notifications.map(notification => (
-                        <div 
-                          key={notification.id} 
-                          className={`p-4 rounded-lg border ${notification.read ? 'bg-gray-50 border-gray-200' : 'bg-blue-50 border-blue-200'} cursor-pointer transition-colors hover:bg-gray-100`}
-                          onClick={() => {
-                            handleNotificationRead(notification.id);
-                            handleNotificationClick(notification.link);
-                          }}
-                        >
+                    {notifications.length > 0 ? notifications.map(notification => <div key={notification.id} className={`p-4 rounded-lg border ${notification.read ? 'bg-gray-50 border-gray-200' : 'bg-blue-50 border-blue-200'} cursor-pointer transition-colors hover:bg-gray-100`} onClick={() => {
+                  handleNotificationRead(notification.id);
+                  handleNotificationClick(notification.link);
+                }}>
                           <div className="flex justify-between items-start mb-1">
                             <h3 className="font-medium text-gray-900">{notification.title}</h3>
                             <p className="text-xs text-gray-500">{notification.date}</p>
                           </div>
                           <p className="text-sm text-gray-600">{notification.message}</p>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-center py-10">
+                        </div>) : <div className="text-center py-10">
                         <BellOff className="mx-auto h-12 w-12 text-gray-400 mb-3" />
                         <p className="text-gray-500">Vous n'avez aucune notification</p>
-                      </div>
-                    )}
+                      </div>}
                   </div>
                   <SheetFooter className="mt-4">
                     <SheetClose asChild>
@@ -213,11 +166,9 @@ const Header = () => {
                     </SheetClose>
                   </SheetFooter>
                 </SheetContent>
-              </Sheet>
-            )}
+              </Sheet>}
             
-            {isAuthenticated && user ? (
-              <DropdownMenu>
+            {isAuthenticated && user ? <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                     <Avatar>
@@ -243,12 +194,9 @@ const Header = () => {
                     <LogOut className="mr-2 h-4 w-4" /> Déconnexion
                   </DropdownMenuItem>
                 </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button variant="default" className="bg-airsoft-red hover:bg-red-700" onClick={handleLogin}>
+              </DropdownMenu> : <Button variant="default" className="bg-airsoft-red hover:bg-red-700" onClick={handleLogin}>
                 Se connecter
-              </Button>
-            )}
+              </Button>}
           </div>
         </nav>
 
@@ -257,8 +205,7 @@ const Header = () => {
         </Button>
       </div>
 
-      {isMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-airsoft-dark z-50 py-4 px-6 flex flex-col gap-4 shadow-lg">
+      {isMenuOpen && <div className="md:hidden absolute top-full left-0 right-0 bg-airsoft-dark z-50 py-4 px-6 flex flex-col gap-4 shadow-lg">
           <Link to="/" className="hover:text-airsoft-red py-2 transition-colors">Accueil</Link>
           <Link to="/recherche" className="hover:text-airsoft-red py-2 transition-colors">Recherche</Link>
           <Link to="/toolbox" className="hover:text-airsoft-red py-2 transition-colors flex items-center gap-2">
@@ -266,59 +213,38 @@ const Header = () => {
             <span>ToolBox</span>
           </Link>
           
-          {isAuthenticated && (
-            <div className="flex items-center py-2">
+          {isAuthenticated && <div className="flex items-center py-2">
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="flex items-center gap-2 text-white"
-                  >
+                  <Button variant="ghost" size="sm" className="flex items-center gap-2 text-white">
                     <Bell size={18} />
                     <span>Notifications</span>
-                    {notificationCount > 0 && (
-                      <Badge className="bg-airsoft-red">{notificationCount}</Badge>
-                    )}
+                    {notificationCount > 0 && <Badge className="bg-airsoft-red">{notificationCount}</Badge>}
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="w-full sm:max-w-md">
                   <SheetHeader>
                     <SheetTitle className="text-xl flex items-center justify-between">
                       <span>Notifications</span>
-                      <Button 
-                        variant="ghost" 
-                        className="text-sm h-8 px-2"
-                        onClick={handleReadAllNotifications}
-                      >
+                      <Button variant="ghost" className="text-sm h-8 px-2" onClick={handleReadAllNotifications}>
                         Tout lire
                       </Button>
                     </SheetTitle>
                   </SheetHeader>
                   <div className="mt-6 space-y-4 max-h-[calc(100vh-120px)] overflow-y-auto">
-                    {notifications.length > 0 ? (
-                      notifications.map(notification => (
-                        <div 
-                          key={notification.id} 
-                          className={`p-4 rounded-lg border ${notification.read ? 'bg-gray-50 border-gray-200' : 'bg-blue-50 border-blue-200'} cursor-pointer transition-colors hover:bg-gray-100`}
-                          onClick={() => {
-                            handleNotificationRead(notification.id);
-                            handleNotificationClick(notification.link);
-                          }}
-                        >
+                    {notifications.length > 0 ? notifications.map(notification => <div key={notification.id} className={`p-4 rounded-lg border ${notification.read ? 'bg-gray-50 border-gray-200' : 'bg-blue-50 border-blue-200'} cursor-pointer transition-colors hover:bg-gray-100`} onClick={() => {
+                handleNotificationRead(notification.id);
+                handleNotificationClick(notification.link);
+              }}>
                           <div className="flex justify-between items-start mb-1">
                             <h3 className="font-medium text-gray-900">{notification.title}</h3>
                             <p className="text-xs text-gray-500">{notification.date}</p>
                           </div>
                           <p className="text-sm text-gray-600">{notification.message}</p>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-center py-10">
+                        </div>) : <div className="text-center py-10">
                         <BellOff className="mx-auto h-12 w-12 text-gray-400 mb-3" />
                         <p className="text-gray-500">Vous n'avez aucune notification</p>
-                      </div>
-                    )}
+                      </div>}
                   </div>
                   <SheetFooter className="mt-4">
                     <SheetClose asChild>
@@ -327,11 +253,9 @@ const Header = () => {
                   </SheetFooter>
                 </SheetContent>
               </Sheet>
-            </div>
-          )}
+            </div>}
           
-          {isAuthenticated && user ? (
-            <>
+          {isAuthenticated && user ? <>
               <div className="flex items-center gap-3 py-2">
                 <Avatar>
                   <AvatarImage src={user.avatar} alt={user.username} />
@@ -348,16 +272,10 @@ const Header = () => {
               <Button variant="destructive" className="mt-2 bg-airsoft-red hover:bg-red-700" onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" /> Déconnexion
               </Button>
-            </>
-          ) : (
-            <Button variant="default" className="bg-airsoft-red hover:bg-red-700 w-full mt-2" onClick={handleLogin}>
+            </> : <Button variant="default" className="bg-airsoft-red hover:bg-red-700 w-full mt-2" onClick={handleLogin}>
               Se connecter
-            </Button>
-          )}
-        </div>
-      )}
-    </header>
-  );
+            </Button>}
+        </div>}
+    </header>;
 };
-
 export default Header;
