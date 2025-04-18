@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { MapPin } from 'lucide-react';
 import Map from 'ol/Map';
@@ -32,10 +31,9 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
   useEffect(() => {
     if (!mapRef.current || !popupRef.current) return;
 
-    // Create popup overlay
+    // Create popup overlay with correct autoPan config
     overlayRef.current = new Overlay({
       element: popupRef.current,
-      autoPan: true,
       autoPan: {
         animation: {
           duration: 250

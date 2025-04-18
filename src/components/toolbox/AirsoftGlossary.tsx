@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -30,8 +29,77 @@ const glossaryItems = [
     term: "DMR",
     definition: "Designated Marksman Rifle - Réplique de précision semi-automatique à puissance intermédiaire.",
     category: "Équipement"
+  },
+  {
+    term: "ROF",
+    definition: "Rate Of Fire - Cadence de tir d'une réplique, mesurée en billes par seconde ou par minute.",
+    category: "Mesure"
+  },
+  {
+    term: "LiPo",
+    definition: "Lithium Polymer - Type de batterie rechargeable couramment utilisée en airsoft.",
+    category: "Équipement"
+  },
+  {
+    term: "MED",
+    definition: "Minimum Engagement Distance - Distance minimale de tir requise pour des répliques puissantes.",
+    category: "Règles"
+  },
+  {
+    term: "CQB",
+    definition: "Close Quarters Battle - Combat rapproché, généralement en intérieur ou zones urbaines.",
+    category: "Tactique"
+  },
+  {
+    term: "Mosfet",
+    definition: "Composant électronique qui protège les contacts du sélecteur de tir et permet des fonctions avancées.",
+    category: "Technique"
+  },
+  {
+    term: "Milsim",
+    definition: "Military Simulation - Simulation militaire avec équipement et règles réalistes.",
+    category: "Type de jeu"
+  },
+  {
+    term: "Spring",
+    definition: "Réplique à ressort nécessitant un réarmement manuel entre chaque tir.",
+    category: "Équipement"
+  },
+  {
+    term: "Bucking",
+    definition: "Joint en caoutchouc du hop-up qui applique l'effet Magnus à la bille.",
+    category: "Technique"
+  },
+  {
+    term: "NPAS",
+    definition: "Negative Pressure Air System - Système permettant d'ajuster la puissance des répliques GBB.",
+    category: "Technique"
+  },
+  {
+    term: "Sear",
+    definition: "Pièce mécanique qui retient le piston avant le tir dans une gearbox.",
+    category: "Technique"
+  },
+  {
+    term: "Cut-off lever",
+    definition: "Levier qui arrête le cycle de la gearbox en mode semi-auto.",
+    category: "Technique"
+  },
+  {
+    term: "Anti-reversal latch",
+    definition: "Cliquet anti-retour qui empêche la gearbox de tourner en sens inverse.",
+    category: "Technique"
+  },
+  {
+    term: "Delayer chip",
+    definition: "Pièce qui retarde l'alimentation des billes pour éviter les bourages.",
+    category: "Technique"
+  },
+  {
+    term: "Tappet plate",
+    definition: "Plaque qui synchronise l'alimentation des billes avec le cycle de la gearbox.",
+    category: "Technique"
   }
-  // ... Plus de termes peuvent être ajoutés ici
 ];
 
 const AirsoftGlossary = () => {

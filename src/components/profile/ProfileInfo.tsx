@@ -1,102 +1,73 @@
 import React from 'react';
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Edit, Save, X } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-const ProfileInfo = ({
-  user,
-  editing,
-  setEditing,
-  handleNavigateToTeam
-}) => {
-  return <Card>
-      <CardHeader>
-        <CardTitle>Informations personnelles</CardTitle>
-        <CardDescription>
-          Vos informations de profil
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-1">
-            <p className="text-sm text-gray-500">Prénom</p>
-            <p className="font-medium">{user.firstname}</p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm text-gray-500">Nom</p>
-            <p className="font-medium">{user.lastname}</p>
-          </div>
-          
-          {editing ? <>
-              <div className="space-y-1">
-                <Label htmlFor="username">Nom d'utilisateur</Label>
-                <Input id="username" type="text" defaultValue={user.username} />
+import { LogOut } from 'lucide-react';
+import { toast } from "@/components/ui/use-toast";
+
+const ProfileInfo = ({ user, editing, setEditing, handleNavigateToTeam }) => {
+  const handleLeaveTeam = () => {
+    if (confirm("Êtes-vous sûr de vouloir quitter l'équipe ?")) {
+      toast({
+        title: "Équipe quittée",
+        description: "Vous avez quitté l'équipe avec succès"
+      });
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Profile content */}
+      <Card className="p-6">
+        <div className="space-y-4">
+          {/* Team info with leave button */}
+          {user.team && (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <span className="font-medium">Équipe:</span>
+                <Button 
+                  variant="link" 
+                  className="p-0 h-auto hover:text-airsoft-red"
+                  onClick={handleNavigateToTeam}
+                >
+                  {user.team}
+                </Button>
               </div>
-              <div className="space-y-1">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" defaultValue={user.email} />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                onClick={handleLeaveTeam}
+                title="Quitter l'équipe"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+          <div className="space-y-2">
+            <h2 className="text-xl font-semibold">Informations personnelles</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <span className="font-medium">Nom complet:</span>
+                <p>{user.fullName}</p>
               </div>
-            </> : <>
-              <div className="space-y-1">
-                <p className="text-sm text-gray-500">Nom d'utilisateur</p>
-                <p className="font-medium">{user.username}</p>
+              <div>
+                <span className="font-medium">Âge:</span>
+                <p>{user.age} ans</p>
               </div>
-              
-            </>}
-          
-          <div className="space-y-1">
-            <p className="text-sm text-gray-500">Âge</p>
-            <p className="font-medium">{user.age}</p>
+              <div>
+                <span className="font-medium">Email:</span>
+                <p>{user.email}</p>
+              </div>
+              <div>
+                <span className="font-medium">Localisation:</span>
+                <p>{user.location}</p>
+              </div>
+            </div>
           </div>
-          
-          {editing ? <div className="space-y-1">
-              <Label htmlFor="team">Équipe</Label>
-              <Input id="team" type="text" defaultValue={user.team} />
-            </div> : <div className="space-y-1">
-              <p className="text-sm text-gray-500">Équipe</p>
-              <p className="font-medium text-airsoft-red hover:underline cursor-pointer" onClick={handleNavigateToTeam}>
-                {user.team}
-              </p>
-            </div>}
-          
-          {editing ? <div className="space-y-1">
-              <Label htmlFor="location">Localisation</Label>
-              <Input id="location" type="text" defaultValue={user.location} />
-            </div> : <div className="space-y-1">
-              <p className="text-sm text-gray-500">Localisation</p>
-              <p className="font-medium">{user.location}</p>
-            </div>}
-          
-          <div className="space-y-1">
-            <p className="text-sm text-gray-500">Date d'inscription</p>
-            <p className="font-medium">{user.joinDate}</p>
-          </div>
-          
-          {editing ? <div className="md:col-span-2 space-y-1">
-              <Label htmlFor="bio">Biographie</Label>
-              <Textarea id="bio" defaultValue={user.bio} className="min-h-[100px]" />
-            </div> : <div className="md:col-span-2 space-y-1">
-              <p className="text-sm text-gray-500">Biographie</p>
-              <p className="font-medium">{user.bio}</p>
-            </div>}
         </div>
-        
-        {editing ? <div className="flex justify-end mt-6 space-x-3">
-            <Button variant="outline" onClick={() => setEditing(false)}>
-              <X className="h-4 w-4 mr-2" /> Annuler
-            </Button>
-            <Button className="bg-airsoft-red hover:bg-red-700 text-white">
-              <Save className="h-4 w-4 mr-2" /> Enregistrer
-            </Button>
-          </div> : <div className="text-right mt-6">
-            <Button onClick={() => setEditing(true)} className="bg-airsoft-red hover:bg-red-700 text-white">
-              <Edit className="h-4 w-4 mr-2" /> Modifier
-            </Button>
-          </div>}
-      </CardContent>
-    </Card>;
+      </Card>
+    </div>
+  );
 };
+
 export default ProfileInfo;
