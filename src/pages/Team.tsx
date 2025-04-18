@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Header from '../components/Header';
@@ -8,7 +7,6 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 
-// Composants refactorisés
 import TeamBanner from '../components/team/TeamBanner';
 import TeamAbout from '../components/team/TeamAbout';
 import TeamMembers from '../components/team/TeamMembers';
@@ -26,9 +24,10 @@ const Team = () => {
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [contactMessage, setContactMessage] = useState('');
   const [contactSubject, setContactSubject] = useState('');
+  const [isEditingField, setIsEditingField] = useState(false);
+  const [selectedField, setSelectedField] = useState<any>(null);
 
   useEffect(() => {
-    // Mock data fetch
     setTimeout(() => {
       setTeam({
         id: id || '1',
@@ -39,7 +38,7 @@ const Team = () => {
         slogan: "Ensemble, invincibles",
         location: "Paris, France",
         founded: "2019",
-        organizationType: "association", // 'association' ou 'team'
+        organizationType: "association",
         contactEmail: "contact@lesinvincibles.fr",
         members: [
           {
@@ -141,7 +140,7 @@ const Team = () => {
           name: "Terrain Les Invincibles",
           description: "Terrain forestier de 10 hectares avec zones CQB et bunkers",
           address: "Forêt de Fontainebleau, 77300",
-          coordinates: [2.6667, 48.4167], // Fontainebleau coordinates
+          coordinates: [2.6667, 48.4167],
           surface: "10 hectares",
           type: "Forestier avec structures CQB",
           hasBuildings: true,
@@ -171,7 +170,6 @@ const Team = () => {
       return;
     }
 
-    // Simulate sending a message to team.contactEmail
     toast({
       title: "Message envoyé",
       description: `Votre message a été envoyé à ${team.name} (${team.contactEmail})`
@@ -186,11 +184,9 @@ const Team = () => {
   };
 
   const handleShareVia = (method: string) => {
-    // Prepare share URL
     const shareUrl = window.location.href;
     const shareText = `Découvrez l'équipe ${team?.name} sur Airsoft Compagnon!`;
 
-    // Handle different sharing methods
     switch (method) {
       case 'facebook':
         window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank');
@@ -259,12 +255,10 @@ const Team = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow bg-gray-50">
-        {/* Team Banner */}
         <TeamBanner team={team} />
 
         <div className="max-w-6xl mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row md:items-start gap-8">
-            {/* Team Details */}
             <div className="md:w-1/3 space-y-6">
               <TeamAbout 
                 team={team} 
@@ -273,7 +267,6 @@ const Team = () => {
               />
             </div>
 
-            {/* Team Content */}
             <div className="md:w-2/3">
               <Tabs defaultValue="members">
                 <TabsList className="mb-6">
@@ -291,7 +284,41 @@ const Team = () => {
                 </TabsContent>
 
                 <TabsContent value="field">
-                  <TeamField field={team.field} />
+                  <TeamField 
+                    field={selectedField}
+                    isEditing={isEditingField}
+                    onEdit={(fieldId, updates) => {
+                      setSelectedField(updates);
+                      setIsEditingField(true);
+                    }}
+                    onSave={async (fieldId, updates) => {
+                      if (fieldId) {
+                        const { error } = await supabase
+                          .from('team_fields')
+                          .update(updates)
+                          .eq('id', fieldId);
+                        
+                        if (error) {
+                          console.error('Error updating field:', error);
+                          return;
+                        }
+                      } else {
+                        const { error } = await supabase
+                          .from('team_fields')
+                          .insert([{ ...updates, team_id: teamId }]);
+                        
+                        if (error) {
+                          console.error('Error creating field:', error);
+                          return;
+                        }
+                      }
+                      setIsEditingField(false);
+                    }}
+                    onCancel={() => {
+                      setIsEditingField(false);
+                      setSelectedField(null);
+                    }}
+                  />
                 </TabsContent>
               </Tabs>
             </div>
@@ -300,7 +327,6 @@ const Team = () => {
       </main>
       <Footer />
 
-      {/* Dialogs */}
       <TeamDialogs 
         team={team}
         selectedMember={selectedMember}

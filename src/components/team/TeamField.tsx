@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Plus, MapPin } from 'lucide-react';
 import LocationMap from '../map/LocationMap';
+import { supabase } from '@/integrations/supabase/client';
 
 interface TeamFieldProps {
   field: any;
@@ -16,7 +17,7 @@ interface TeamFieldProps {
   onCancel: () => void;
 }
 
-const TeamField = ({ field, isEditing, onEdit, onSave, onCancel }) => {
+const TeamField: React.FC<TeamFieldProps> = ({ field, isEditing, onEdit, onSave, onCancel }) => {
   const [showAddTerrainDialog, setShowAddTerrainDialog] = useState(false);
   const [editedField, setEditedField] = useState({
     name: field?.name || '',
@@ -83,8 +84,7 @@ const TeamField = ({ field, isEditing, onEdit, onSave, onCancel }) => {
 
   return (
     <Card>
-      {addTerrainButton}
-      {field ? (
+      {!field ? addTerrainButton : (
         <div className="space-y-4">
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
@@ -114,14 +114,14 @@ const TeamField = ({ field, isEditing, onEdit, onSave, onCancel }) => {
           </div>
           {isEditing ? (
             <div className="flex justify-end space-x-2">
-              <Button variant="ghost" onClick={handleCancelClick}>Annuler</Button>
-              <Button onClick={handleSave}>Sauvegarder</Button>
+              <Button variant="ghost" onClick={onCancel}>Annuler</Button>
+              <Button onClick={() => onSave(field?.id, editedField)}>Sauvegarder</Button>
             </div>
           ) : (
-            <Button onClick={handleEditClick}>Modifier</Button>
+            <Button onClick={() => onEdit(field?.id, editedField)}>Modifier</Button>
           )}
         </div>
-      ) : null}
+      )}
     </Card>
   );
 };

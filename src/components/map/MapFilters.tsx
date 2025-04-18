@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Calendar, Navigation } from 'lucide-react';
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,8 @@ interface MapFiltersProps {
   setSelectedDepartment: (value: string) => void;
   selectedDate: string;
   setSelectedDate: (value: string) => void;
+  selectedType: string;
+  setSelectedType: (value: string) => void;
   searchRadius: number[];
   setSearchRadius: (value: number[]) => void;
   getCurrentPosition: () => void;
@@ -24,12 +27,30 @@ const MapFilters: React.FC<MapFiltersProps> = ({
   setSelectedDepartment,
   selectedDate,
   setSelectedDate,
+  selectedType,
+  setSelectedType,
   searchRadius,
   setSearchRadius,
   getCurrentPosition
 }) => {
   return (
     <div className="space-y-4">
+      <div>
+        <label className="block text-sm mb-2">Type de partie</label>
+        <Select value={selectedType} onValueChange={setSelectedType}>
+          <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+            <SelectValue placeholder="Tous les types" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous les types</SelectItem>
+            <SelectItem value="cqb">CQB</SelectItem>
+            <SelectItem value="woodland">Woodland</SelectItem>
+            <SelectItem value="milsim">Milsim</SelectItem>
+            <SelectItem value="tournament">Tournoi</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       <div>
         <label className="block text-sm mb-2">Pays</label>
         <Select value={selectedCountry} onValueChange={setSelectedCountry}>

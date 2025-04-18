@@ -9,90 +9,434 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      Equipe: {
+      badges: {
         Row: {
-          Association: boolean | null
-          Contact: string | null
-          created_at: string
-          id: number
-          "Nb parties": number | null
-          Nom: string | null
-          Note: number | null
+          background_color: string | null
+          border_color: string | null
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
         }
         Insert: {
-          Association?: boolean | null
-          Contact?: string | null
-          created_at?: string
-          id?: number
-          "Nb parties"?: number | null
-          Nom?: string | null
-          Note?: number | null
+          background_color?: string | null
+          border_color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
         }
         Update: {
-          Association?: boolean | null
-          Contact?: string | null
-          created_at?: string
-          id?: number
-          "Nb parties"?: number | null
-          Nom?: string | null
-          Note?: number | null
+          background_color?: string | null
+          border_color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
         }
         Relationships: []
       }
-      Profil: {
+      equipment: {
         Row: {
-          created_at: string
-          "Date naissance": string | null
-          "Equipe ID": number | null
-          id: number
-          Localisation: string | null
-          "Mode jeu": string | null
-          "Nb dominicale": number | null
-          "Nb opé": number | null
-          Nom: string | null
-          Note: number | null
-          "Partie jouer": number | null
-          "Parties créées": number | null
-          Prenom: string | null
-          Pseudo: string | null
-          Role: string | null
-          Vérification: boolean | null
+          brand: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          image: string | null
+          power: string | null
+          type: string
+          user_id: string | null
         }
         Insert: {
-          created_at?: string
-          "Date naissance"?: string | null
-          "Equipe ID"?: number | null
-          id?: number
-          Localisation?: string | null
-          "Mode jeu"?: string | null
-          "Nb dominicale"?: number | null
-          "Nb opé"?: number | null
-          Nom?: string | null
-          Note?: number | null
-          "Partie jouer"?: number | null
-          "Parties créées"?: number | null
-          Prenom?: string | null
-          Pseudo?: string | null
-          Role?: string | null
-          Vérification?: boolean | null
+          brand?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image?: string | null
+          power?: string | null
+          type: string
+          user_id?: string | null
         }
         Update: {
-          created_at?: string
-          "Date naissance"?: string | null
-          "Equipe ID"?: number | null
-          id?: number
-          Localisation?: string | null
-          "Mode jeu"?: string | null
-          "Nb dominicale"?: number | null
-          "Nb opé"?: number | null
-          Nom?: string | null
-          Note?: number | null
-          "Partie jouer"?: number | null
-          "Parties créées"?: number | null
-          Prenom?: string | null
-          Pseudo?: string | null
-          Role?: string | null
-          Vérification?: boolean | null
+          brand?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image?: string | null
+          power?: string | null
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      game_participants: {
+        Row: {
+          created_at: string | null
+          game_id: string | null
+          id: string
+          role: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          game_id?: string | null
+          id?: string
+          role?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          game_id?: string | null
+          id?: string
+          role?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_participants_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      games: {
+        Row: {
+          country: string | null
+          created_at: string | null
+          date: string
+          department: string | null
+          description: string | null
+          duration: string | null
+          id: string
+          image: string | null
+          lat: number | null
+          lng: number | null
+          location: string | null
+          max_participants: number | null
+          organizer_id: string | null
+          participants: number | null
+          price: number | null
+          status: string | null
+          title: string
+          type: string | null
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string | null
+          date: string
+          department?: string | null
+          description?: string | null
+          duration?: string | null
+          id?: string
+          image?: string | null
+          lat?: number | null
+          lng?: number | null
+          location?: string | null
+          max_participants?: number | null
+          organizer_id?: string | null
+          participants?: number | null
+          price?: number | null
+          status?: string | null
+          title: string
+          type?: string | null
+        }
+        Update: {
+          country?: string | null
+          created_at?: string | null
+          date?: string
+          department?: string | null
+          description?: string | null
+          duration?: string | null
+          id?: string
+          image?: string | null
+          lat?: number | null
+          lng?: number | null
+          location?: string | null
+          max_participants?: number | null
+          organizer_id?: string | null
+          participants?: number | null
+          price?: number | null
+          status?: string | null
+          title?: string
+          type?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          age: number | null
+          avatar: string | null
+          bio: string | null
+          created_at: string | null
+          email: string | null
+          firstname: string | null
+          id: string
+          is_team_leader: boolean | null
+          is_verified: boolean | null
+          join_date: string | null
+          lastname: string | null
+          location: string | null
+          team: string | null
+          team_id: string | null
+          username: string | null
+        }
+        Insert: {
+          age?: number | null
+          avatar?: string | null
+          bio?: string | null
+          created_at?: string | null
+          email?: string | null
+          firstname?: string | null
+          id: string
+          is_team_leader?: boolean | null
+          is_verified?: boolean | null
+          join_date?: string | null
+          lastname?: string | null
+          location?: string | null
+          team?: string | null
+          team_id?: string | null
+          username?: string | null
+        }
+        Update: {
+          age?: number | null
+          avatar?: string | null
+          bio?: string | null
+          created_at?: string | null
+          email?: string | null
+          firstname?: string | null
+          id?: string
+          is_team_leader?: boolean | null
+          is_verified?: boolean | null
+          join_date?: string | null
+          lastname?: string | null
+          location?: string | null
+          team?: string | null
+          team_id?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
+      team_fields: {
+        Row: {
+          address: string | null
+          coordinates: Json | null
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          team_id: string | null
+        }
+        Insert: {
+          address?: string | null
+          coordinates?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          team_id?: string | null
+        }
+        Update: {
+          address?: string | null
+          coordinates?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          team_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_fields_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_members: {
+        Row: {
+          id: string
+          joined_at: string | null
+          role: string | null
+          team_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          id?: string
+          joined_at?: string | null
+          role?: string | null
+          team_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          id?: string
+          joined_at?: string | null
+          role?: string | null
+          team_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_members_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teams: {
+        Row: {
+          banner: string | null
+          contact: string | null
+          created_at: string | null
+          description: string | null
+          game_count: number | null
+          id: string
+          is_association: boolean | null
+          leader_id: string | null
+          location: string | null
+          logo: string | null
+          member_count: number | null
+          name: string
+          rating: number | null
+        }
+        Insert: {
+          banner?: string | null
+          contact?: string | null
+          created_at?: string | null
+          description?: string | null
+          game_count?: number | null
+          id?: string
+          is_association?: boolean | null
+          leader_id?: string | null
+          location?: string | null
+          logo?: string | null
+          member_count?: number | null
+          name: string
+          rating?: number | null
+        }
+        Update: {
+          banner?: string | null
+          contact?: string | null
+          created_at?: string | null
+          description?: string | null
+          game_count?: number | null
+          id?: string
+          is_association?: boolean | null
+          leader_id?: string | null
+          location?: string | null
+          logo?: string | null
+          member_count?: number | null
+          name?: string
+          rating?: number | null
+        }
+        Relationships: []
+      }
+      user_badges: {
+        Row: {
+          badge_id: string | null
+          created_at: string | null
+          date: string | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          badge_id?: string | null
+          created_at?: string | null
+          date?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          badge_id?: string | null
+          created_at?: string | null
+          date?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_stats: {
+        Row: {
+          accuracy: string | null
+          bomb_defusal: number | null
+          created_at: string | null
+          favorite_role: string | null
+          flags_captured: number | null
+          games_organized: number | null
+          games_played: number | null
+          hostage_rescue: number | null
+          level: string | null
+          objectives_completed: number | null
+          preferred_game_type: string | null
+          reputation: number | null
+          tactical_awareness: string | null
+          teamwork: string | null
+          time_played: string | null
+          updated_at: string | null
+          user_id: string
+          vip_protection: number | null
+          win_rate: string | null
+        }
+        Insert: {
+          accuracy?: string | null
+          bomb_defusal?: number | null
+          created_at?: string | null
+          favorite_role?: string | null
+          flags_captured?: number | null
+          games_organized?: number | null
+          games_played?: number | null
+          hostage_rescue?: number | null
+          level?: string | null
+          objectives_completed?: number | null
+          preferred_game_type?: string | null
+          reputation?: number | null
+          tactical_awareness?: string | null
+          teamwork?: string | null
+          time_played?: string | null
+          updated_at?: string | null
+          user_id: string
+          vip_protection?: number | null
+          win_rate?: string | null
+        }
+        Update: {
+          accuracy?: string | null
+          bomb_defusal?: number | null
+          created_at?: string | null
+          favorite_role?: string | null
+          flags_captured?: number | null
+          games_organized?: number | null
+          games_played?: number | null
+          hostage_rescue?: number | null
+          level?: string | null
+          objectives_completed?: number | null
+          preferred_game_type?: string | null
+          reputation?: number | null
+          tactical_awareness?: string | null
+          teamwork?: string | null
+          time_played?: string | null
+          updated_at?: string | null
+          user_id?: string
+          vip_protection?: number | null
+          win_rate?: string | null
         }
         Relationships: []
       }
