@@ -1,70 +1,106 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
-import { mockUserData, equipmentTypes } from '../utils/mockData';
 
-export const useProfileData = () => {
+export const useProfileData = (userId: string) => {
+  const [loading, setLoading] = useState(true);
+  const [profileData, setProfileData] = useState<any>(null);
+  const [userStats, setUserStats] = useState<any>(null);
   const navigate = useNavigate();
-  const [editing, setEditing] = useState(false);
-  const [selectedGame, setSelectedGame] = useState<any>(null);
-  const [showGameDialog, setShowGameDialog] = useState(false);
-  const [showAllGamesDialog, setShowAllGamesDialog] = useState(false);
-  const [showBadgesDialog, setShowBadgesDialog] = useState(false);
-  
-  // Use mock data
-  const user = mockUserData;
 
-  const handleViewGameDetails = (game: any) => {
-    setSelectedGame(game);
-    setShowGameDialog(true);
+  useEffect(() => {
+    if (userId) {
+      fetchProfileData();
+    }
+  }, [userId]);
+
+  const fetchProfileData = async () => {
+    try {
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (profileError) throw profileError;
+
+      const { data: stats, error: statsError } = await supabase
+        .from('user_stats')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (statsError) throw statsError;
+
+      setProfileData(profile);
+      setUserStats(stats);
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les données du profil",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleViewAllGames = () => {
-    setShowAllGamesDialog(true);
+  const updateLocation = async (location: string) => {
+    try {
+      const { error } = await supabase
+        .rpc('update_user_location', {
+          p_user_id: userId,
+          p_location: location,
+        });
+
+      if (error) throw error;
+
+      await fetchProfileData();
+      toast({
+        title: "Succès",
+        description: "Localisation mise à jour",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour la localisation",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleViewAllBadges = () => {
-    setShowBadgesDialog(true);
-  };
+  const updateUserStats = async (preferredGameType: string, favoriteRole: string) => {
+    try {
+      const { error } = await supabase
+        .rpc('update_user_stats', {
+          p_user_id: userId,
+          p_preferred_game_type: preferredGameType,
+          p_favorite_role: favoriteRole,
+        });
 
-  const handleNavigateToGame = (gameId: number) => {
-    setShowGameDialog(false);
-    setShowAllGamesDialog(false);
-    navigate(`/game/${gameId}`);
-  };
+      if (error) throw error;
 
-  const handleNavigateToTeam = () => {
-    navigate(`/team/${user.teamId}`);
-  };
-
-  const handleLogout = () => {
-    toast({
-      title: "Déconnexion réussie",
-      description: "Vous êtes maintenant déconnecté",
-    });
-    
-    navigate('/login');
+      await fetchProfileData();
+      toast({
+        title: "Succès",
+        description: "Préférences mises à jour",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour les préférences",
+        variant: "destructive",
+      });
+    }
   };
 
   return {
-    user,
-    editing,
-    setEditing,
-    selectedGame,
-    setSelectedGame,
-    showGameDialog,
-    setShowGameDialog,
-    showAllGamesDialog,
-    setShowAllGamesDialog,
-    showBadgesDialog,
-    setShowBadgesDialog,
-    equipmentTypes,
-    handleViewGameDetails,
-    handleViewAllGames,
-    handleViewAllBadges,
-    handleNavigateToGame,
-    handleNavigateToTeam,
-    handleLogout
+    loading,
+    profileData,
+    userStats,
+    updateLocation,
+    updateUserStats,
   };
 };

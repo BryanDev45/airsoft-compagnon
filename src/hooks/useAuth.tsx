@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
+import { UserResponse } from '@supabase/supabase-js';
 
 export const useAuth = () => {
   const [user, setUser] = useState(null);
@@ -47,6 +48,17 @@ export const useAuth = () => {
 
   const register = async (email: string, password: string, userData: any) => {
     try {
+      // Vérifie si l'email existe déjà
+      const { data: existingUser } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('email', email)
+        .single();
+
+      if (existingUser) {
+        throw new Error('Cette adresse email est déjà utilisée');
+      }
+
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -54,6 +66,7 @@ export const useAuth = () => {
           data: userData,
         },
       });
+      
       if (error) throw error;
       
       toast({

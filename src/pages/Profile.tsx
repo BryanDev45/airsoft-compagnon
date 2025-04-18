@@ -1,8 +1,9 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from '../hooks/useAuth';
 import { useProfileData } from '../hooks/useProfileData';
 import ProfileHeader from '../components/profile/ProfileHeader';
 import ProfileInfo from '../components/profile/ProfileInfo';
@@ -17,45 +18,39 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
 const Profile = () => {
+  const { user } = useAuth();
   const {
-    user,
-    editing,
-    setEditing,
-    selectedGame,
-    setSelectedGame,
-    showGameDialog,
-    setShowGameDialog,
-    showAllGamesDialog,
-    setShowAllGamesDialog,
-    showBadgesDialog,
-    setShowBadgesDialog,
-    equipmentTypes,
-    handleViewGameDetails,
-    handleViewAllGames,
-    handleViewAllBadges,
-    handleNavigateToGame,
-    handleNavigateToTeam,
-    handleLogout
-  } = useProfileData();
+    loading,
+    profileData,
+    userStats,
+    updateLocation,
+    updateUserStats
+  } = useProfileData(user?.id);
 
-  const [showSettingsDialog, setShowSettingsDialog] = useState(false);
-  const [showEditMediaDialog, setShowEditMediaDialog] = useState(false);
-  const [addingEquipment, setAddingEquipment] = useState(false);
+  const [showSettingsDialog, setShowSettingsDialog] = React.useState(false);
+  const [showEditMediaDialog, setShowEditMediaDialog] = React.useState(false);
+  const [addingEquipment, setAddingEquipment] = React.useState(false);
+  const [selectedGame, setSelectedGame] = React.useState(null);
+  const [showGameDialog, setShowGameDialog] = React.useState(false);
+  const [showAllGamesDialog, setShowAllGamesDialog] = React.useState(false);
+  const [showBadgesDialog, setShowBadgesDialog] = React.useState(false);
 
-  const toggleProfileSettings = () => {
-    setShowSettingsDialog(true);
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-grow flex items-center justify-center">
+          <div className="animate-pulse">Chargement...</div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
-  const handleEditProfile = () => {
-    // If we want to edit media directly
-    setShowEditMediaDialog(true);
-    
-    // If we want to edit profile info
-    // setEditing(true);
-  };
-
-  const handleAddEquipment = () => {
-    setAddingEquipment(true);
+  const handleNavigateToTeam = () => {
+    if (profileData?.team_id) {
+      navigate(`/team/${profileData.team_id}`);
+    }
   };
 
   return (
@@ -65,10 +60,10 @@ const Profile = () => {
         <div className="max-w-6xl mx-auto px-4">
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <ProfileHeader 
-              user={user} 
+              user={profileData}
               isOwnProfile={true}
-              setEditing={handleEditProfile} 
-              toggleProfileSettings={toggleProfileSettings}
+              setEditing={() => setShowEditMediaDialog(true)}
+              toggleProfileSettings={() => setShowSettingsDialog(true)}
             />
             
             <div className="p-6">
@@ -83,29 +78,35 @@ const Profile = () => {
                 
                 <TabsContent value="profile">
                   <ProfileInfo 
-                    user={user} 
-                    editing={editing} 
-                    setEditing={setEditing} 
+                    user={user}
+                    profileData={profileData}
+                    updateLocation={updateLocation}
                     handleNavigateToTeam={handleNavigateToTeam}
                   />
                 </TabsContent>
                 
                 <TabsContent value="games">
                   <ProfileGames 
-                    games={user.games} 
-                    handleViewGameDetails={handleViewGameDetails} 
-                    handleViewAllGames={handleViewAllGames} 
+                    games={profileData?.games || []} 
+                    handleViewGameDetails={(game) => {
+                      setSelectedGame(game);
+                      setShowGameDialog(true);
+                    }}
+                    handleViewAllGames={() => setShowAllGamesDialog(true)}
                   />
                 </TabsContent>
                 
                 <TabsContent value="stats">
-                  <ProfileStats stats={user.stats} />
+                  <ProfileStats 
+                    userStats={userStats}
+                    updateUserStats={updateUserStats}
+                  />
                 </TabsContent>
                 
                 <TabsContent value="equipment">
                   <div className="mb-4 flex justify-end">
                     <Button 
-                      onClick={handleAddEquipment} 
+                      onClick={() => setAddingEquipment(true)} 
                       className="bg-airsoft-red hover:bg-red-700 text-white"
                     >
                       <Plus className="h-4 w-4 mr-2" /> Ajouter un équipement
@@ -113,16 +114,15 @@ const Profile = () => {
                   </div>
                   
                   <ProfileEquipment 
-                    equipment={user.equipment} 
-                    equipmentTypes={equipmentTypes}
+                    equipment={profileData?.equipment || []}
                     readOnly={false}
                   />
                 </TabsContent>
                 
                 <TabsContent value="badges">
                   <ProfileBadges 
-                    badges={user.badges} 
-                    handleViewAllBadges={handleViewAllBadges} 
+                    badges={profileData?.badges || []}
+                    handleViewAllBadges={() => setShowBadgesDialog(true)}
                   />
                 </TabsContent>
               </Tabs>
@@ -140,14 +140,13 @@ const Profile = () => {
         setShowAllGamesDialog={setShowAllGamesDialog}
         showBadgesDialog={showBadgesDialog}
         setShowBadgesDialog={setShowBadgesDialog}
-        handleNavigateToGame={handleNavigateToGame}
-        user={user}
+        user={profileData}
       />
 
       <ProfileSettingsDialog
         open={showSettingsDialog}
         onOpenChange={setShowSettingsDialog}
-        user={user}
+        user={profileData}
       />
 
       <ProfileEditMediaDialog

@@ -448,7 +448,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      update_user_location: {
+        Args: { p_user_id: string; p_location: string }
+        Returns: undefined
+      }
+      update_user_stats: {
+        Args: {
+          p_user_id: string
+          p_preferred_game_type: string
+          p_favorite_role: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
