@@ -24,10 +24,23 @@ import {
   X,
   Check,
   Link as LinkIcon,
-  Copy
+  Copy,
+  Crosshair,
+  Eye,
+  Award,
+  AlertCircle
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import LocationMap from '../components/map/LocationMap';
+
+// Component to scroll to top on mount
+const ScrollToTop = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
+  return null;
+};
 
 const GameDetails = () => {
   const { id } = useParams();
@@ -43,6 +56,9 @@ const GameDetails = () => {
     // Check if user is authenticated
     const authState = localStorage.getItem('isAuthenticated');
     setIsAuthenticated(authState === 'true');
+    
+    // Scroll to top when component mounts
+    window.scrollTo(0, 0);
   }, []);
   
   // Mock game data (in a real app, would fetch this data based on the ID)
@@ -52,7 +68,7 @@ const GameDetails = () => {
     date: "15 Mai 2025",
     time: "09:00 - 17:00",
     location: "Terrain CQB Paris, 75012 Paris",
-    coordinates: [2.3522, 48.8566] as [number, number], // Paris coordinates - Fixed with type assertion
+    coordinates: [2.3522, 48.8566] as [number, number], // Paris coordinates
     organizer: {
       name: "Team Ghost",
       avatar: "https://randomuser.me/api/portraits/men/32.jpg",
@@ -98,7 +114,21 @@ const GameDetails = () => {
       avatar: `https://randomuser.me/api/portraits/${idx % 2 === 0 ? 'men' : 'women'}/${20 + (idx % 70)}.jpg`,
       status: idx < 5 ? "online" : "offline",
       role: idx % 5 === 0 ? "Organisateur" : "Joueur",
-    }))
+    })),
+    // Added equipment limitations based on checkboxes in create party form
+    equipmentLimitations: {
+      minFps: 280,
+      maxFps: 350,
+      maxFpsSniper: 450,
+      eyeProtectionRequired: true,
+      fullFaceRequired: true,
+      tracer: "allowed", // "allowed", "mandatory", "forbidden"
+      grenades: true,
+      smoke: false,
+      pyrotechnics: false,
+      hpa: true,
+      polarstar: true
+    }
   };
 
   const handleShareGame = () => {
@@ -155,6 +185,7 @@ const GameDetails = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <ScrollToTop />
       <Header />
       <main className="flex-grow bg-gray-50">
         <div className="bg-airsoft-dark text-white py-8">
@@ -299,7 +330,111 @@ const GameDetails = () => {
                   </TabsContent>
                   
                   <TabsContent value="equipment" className="p-6">
-                    <h2 className="text-xl font-semibold mb-4">Équipement requis</h2>
+                    <h2 className="text-xl font-semibold mb-4">Équipement et limitations</h2>
+                    
+                    <div className="grid md:grid-cols-2 gap-6 mb-8">
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <h3 className="text-lg font-semibold mb-3 flex items-center">
+                          <Crosshair className="text-airsoft-red mr-2" size={20} />
+                          Limites de puissance
+                        </h3>
+                        <div className="space-y-2 text-gray-700">
+                          <div className="flex items-center justify-between">
+                            <span>AEG / GBB:</span>
+                            <Badge className="bg-amber-500">{game.equipmentLimitations.minFps} - {game.equipmentLimitations.maxFps} FPS</Badge>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span>Sniper / DMR:</span>
+                            <Badge className="bg-amber-500">Max {game.equipmentLimitations.maxFpsSniper} FPS</Badge>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <h3 className="text-lg font-semibold mb-3 flex items-center">
+                          <Eye className="text-airsoft-red mr-2" size={20} />
+                          Protection
+                        </h3>
+                        <div className="space-y-2 text-gray-700">
+                          <div className="flex items-center justify-between">
+                            <span>Protection oculaire:</span>
+                            <Badge className={game.equipmentLimitations.eyeProtectionRequired ? "bg-green-500" : "bg-red-500"}>
+                              {game.equipmentLimitations.eyeProtectionRequired ? "Obligatoire" : "Facultative"}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span>Protection intégrale:</span>
+                            <Badge className={game.equipmentLimitations.fullFaceRequired ? "bg-green-500" : "bg-amber-500"}>
+                              {game.equipmentLimitations.fullFaceRequired ? "Obligatoire" : "Recommandée"}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="grid md:grid-cols-2 gap-6 mb-8">
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <h3 className="text-lg font-semibold mb-3 flex items-center">
+                          <Award className="text-airsoft-red mr-2" size={20} />
+                          Types de répliques
+                        </h3>
+                        <div className="space-y-2 text-gray-700">
+                          <div className="flex items-center justify-between">
+                            <span>HPA:</span>
+                            <Badge className={game.equipmentLimitations.hpa ? "bg-green-500" : "bg-red-500"}>
+                              {game.equipmentLimitations.hpa ? "Autorisé" : "Non autorisé"}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span>Polar Star:</span>
+                            <Badge className={game.equipmentLimitations.polarstar ? "bg-green-500" : "bg-red-500"}>
+                              {game.equipmentLimitations.polarstar ? "Autorisé" : "Non autorisé"}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span>Traceur:</span>
+                            <Badge className={
+                              game.equipmentLimitations.tracer === "allowed" ? "bg-green-500" : 
+                              game.equipmentLimitations.tracer === "mandatory" ? "bg-amber-600" : "bg-red-500"
+                            }>
+                              {
+                                game.equipmentLimitations.tracer === "allowed" ? "Autorisé" : 
+                                game.equipmentLimitations.tracer === "mandatory" ? "Obligatoire" : "Non autorisé"
+                              }
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <h3 className="text-lg font-semibold mb-3 flex items-center">
+                          <AlertCircle className="text-airsoft-red mr-2" size={20} />
+                          Consommables
+                        </h3>
+                        <div className="space-y-2 text-gray-700">
+                          <div className="flex items-center justify-between">
+                            <span>Grenades:</span>
+                            <Badge className={game.equipmentLimitations.grenades ? "bg-green-500" : "bg-red-500"}>
+                              {game.equipmentLimitations.grenades ? "Autorisées" : "Non autorisées"}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span>Fumigènes:</span>
+                            <Badge className={game.equipmentLimitations.smoke ? "bg-green-500" : "bg-red-500"}>
+                              {game.equipmentLimitations.smoke ? "Autorisés" : "Non autorisés"}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span>Pyrotechnie:</span>
+                            <Badge className={game.equipmentLimitations.pyrotechnics ? "bg-green-500" : "bg-red-500"}>
+                              {game.equipmentLimitations.pyrotechnics ? "Autorisée" : "Non autorisée"}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <h3 className="text-lg font-semibold mb-3">Équipement requis</h3>
                     <div className="whitespace-pre-line text-gray-700">
                       {game.requiredEquipment}
                     </div>

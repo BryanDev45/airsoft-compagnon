@@ -1,4 +1,6 @@
+
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import MapSection from '../components/MapSection';
 import Footer from '../components/Footer';
@@ -10,14 +12,24 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import UserSearchResults from '../components/search/UserSearchResults';
 import TeamSearchResults from '../components/search/TeamSearchResults';
+import MapComponent from '../components/map/MapComponent';
+
+// This component will automatically scroll to top on mount
+const ScrollToTop = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
+  return null;
+};
 
 const Recherche = () => {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeTab, setActiveTab] = useState("parties");
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchCenter, setSearchCenter] = useState({ lat: 0, lng: 0 });
-
+  const [searchCenter, setSearchCenter] = useState<[number, number]>([2.3522, 48.8566]); // Paris coordinates
+  
   useEffect(() => {
     const authState = localStorage.getItem('isAuthenticated');
     setIsAuthenticated(authState === 'true');
@@ -33,6 +45,7 @@ const Recherche = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <ScrollToTop />
       <Header />
       <main className="flex-grow">
         <div className="py-8 bg-gray-50">
