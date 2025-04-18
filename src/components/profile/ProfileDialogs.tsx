@@ -19,7 +19,7 @@ interface ProfileDialogsProps {
   setShowAllGamesDialog: (show: boolean) => void;
   showBadgesDialog: boolean;
   setShowBadgesDialog: (show: boolean) => void;
-  handleNavigateToGame: (gameId: number) => void;
+  handleNavigateToGame?: (gameId: number) => void;
   user: any;
 }
 
@@ -31,15 +31,20 @@ const ProfileDialogs = ({
   setShowAllGamesDialog, 
   showBadgesDialog, 
   setShowBadgesDialog, 
-  handleNavigateToGame, 
+  handleNavigateToGame = () => {}, 
   user 
 }: ProfileDialogsProps) => {
+  // Ajout d'une vérification pour s'assurer que user n'est pas null
+  if (!user) {
+    return null;
+  }
+
   return (
     <>
       <Dialog open={showGameDialog} onOpenChange={setShowGameDialog}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">{selectedGame?.title}</DialogTitle>
+            <DialogTitle className="text-xl font-bold">{selectedGame?.title || 'Détails de la partie'}</DialogTitle>
             <DialogDescription className="text-sm text-gray-500">
               Détails de la partie
             </DialogDescription>
@@ -57,33 +62,33 @@ const ProfileDialogs = ({
                       : "bg-green-500"
                   }
                 >
-                  {selectedGame.status}
+                  {selectedGame.status || 'Inconnu'}
                 </Badge>
-                <span className="text-sm font-medium">{selectedGame.role}</span>
+                <span className="text-sm font-medium">{selectedGame.role || '-'}</span>
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 <div className="flex items-center gap-2">
                   <CalendarIcon size={16} className="text-airsoft-red" />
-                  <span>{selectedGame.date}</span>
+                  <span>{selectedGame.date || 'Date non spécifiée'}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock size={16} className="text-airsoft-red" />
-                  <span>Durée: {selectedGame.duration}</span>
+                  <span>Durée: {selectedGame.duration || 'Non spécifiée'}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Map size={16} className="text-airsoft-red" />
-                  <span>{selectedGame.location.split(',')[0]}</span>
+                  <span>{selectedGame.location ? selectedGame.location.split(',')[0] : 'Lieu non spécifié'}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Users size={16} className="text-airsoft-red" />
-                  <span>{selectedGame.participants} participants</span>
+                  <span>{selectedGame.participants || 0} participants</span>
                 </div>
               </div>
               
               <div className="mt-2">
                 <h4 className="font-medium text-sm mb-1">Description:</h4>
-                <p className="text-sm text-gray-600">{selectedGame.description}</p>
+                <p className="text-sm text-gray-600">{selectedGame.description || 'Aucune description disponible'}</p>
               </div>
               
               <div className="flex justify-end mt-4">
@@ -110,7 +115,7 @@ const ProfileDialogs = ({
           
           <div className="mt-4 max-h-96 overflow-y-auto pr-2">
             <div className="space-y-4">
-              {/* Here is the fix: safely combining games and allGames arrays */}
+              {/* Utilisation d'une vérification pour les propriétés games et allGames */}
               {[...(user.games || []), ...(user.allGames || [])].map(game => (
                 <div 
                   key={game.id} 
@@ -127,7 +132,7 @@ const ProfileDialogs = ({
                           <Users size={14} /> {game.role}
                         </span>
                         <span className="flex items-center gap-1">
-                          <Map size={14} /> {game.location.split(',')[0]}
+                          <Map size={14} /> {game.location ? game.location.split(',')[0] : 'Lieu inconnu'}
                         </span>
                       </div>
                     </div>
@@ -141,7 +146,7 @@ const ProfileDialogs = ({
                             : "bg-green-500"
                         }
                       >
-                        {game.status}
+                        {game.status || 'Inconnu'}
                       </Badge>
                       <Button 
                         variant="outline" 
@@ -180,7 +185,7 @@ const ProfileDialogs = ({
           
           <div className="mt-4 max-h-96 overflow-y-auto pr-2">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {user.badges.map((badge) => (
+              {(user.badges || []).map((badge) => (
                 <div 
                   key={badge.id}
                   className="border rounded-lg p-4 flex items-center gap-3"

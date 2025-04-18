@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -19,6 +20,7 @@ import { Plus } from "lucide-react";
 
 const Profile = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const {
     loading,
     profileData,
@@ -34,6 +36,8 @@ const Profile = () => {
   const [showGameDialog, setShowGameDialog] = React.useState(false);
   const [showAllGamesDialog, setShowAllGamesDialog] = React.useState(false);
   const [showBadgesDialog, setShowBadgesDialog] = React.useState(false);
+
+  const equipmentTypes = ["Réplique principale", "Réplique secondaire", "Protection", "Accessoire"];
 
   if (loading) {
     return (
@@ -51,6 +55,10 @@ const Profile = () => {
     if (profileData?.team_id) {
       navigate(`/team/${profileData.team_id}`);
     }
+  };
+
+  const handleNavigateToGame = (gameId) => {
+    navigate(`/game/${gameId}`);
   };
 
   return (
@@ -116,6 +124,7 @@ const Profile = () => {
                   <ProfileEquipment 
                     equipment={profileData?.equipment || []}
                     readOnly={false}
+                    equipmentTypes={equipmentTypes}
                   />
                 </TabsContent>
                 
@@ -141,6 +150,7 @@ const Profile = () => {
         showBadgesDialog={showBadgesDialog}
         setShowBadgesDialog={setShowBadgesDialog}
         user={profileData}
+        handleNavigateToGame={handleNavigateToGame}
       />
 
       <ProfileSettingsDialog

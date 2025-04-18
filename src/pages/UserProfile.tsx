@@ -1,12 +1,11 @@
 
-// I need to fix the user data handling in this file. For demonstration, 
-// I'm creating a simplified version that resolves the type errors:
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from "@/components/ui/use-toast";
 import ProfileHeader from '../components/profile/ProfileHeader';
 import ProfileInfo from '../components/profile/ProfileInfo';
 import ProfileGames from '../components/profile/ProfileGames';
@@ -22,40 +21,9 @@ const UserProfile = () => {
   const { username } = useParams();
   const navigate = useNavigate();
   
-  const [user, setUser] = useState({
-    id: '',
-    username: '',
-    fullName: '',
-    firstName: '',
-    lastName: '',
-    age: '',
-    email: '',
-    avatar: '',
-    bio: '',
-    location: '',
-    memberSince: '',
-    team: '',
-    teamId: '',
-    joinDate: '',
-    verified: false,
-    premium: false,
-    games: [],
-    allGames: [], // Added empty allGames array to avoid "not iterable" error
-    stats: {
-      gamesPlayed: 0,
-      wins: 0,
-      losses: 0,
-      winRate: 0,
-      accuracy: 0,
-      eliminations: 0,
-      objectivesCaptured: 0,
-      timeOnPoint: 0,
-      flagsRecovered: 0
-    },
-    equipment: [],
-    badges: []
-  });
-  
+  const [userData, setUserData] = useState<any>(null);
+  const [profileData, setProfileData] = useState<any>(null);
+  const [userStats, setUserStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [selectedGame, setSelectedGame] = useState(null);
@@ -64,130 +32,151 @@ const UserProfile = () => {
   const [showBadgesDialog, setShowBadgesDialog] = useState(false);
   
   const equipmentTypes = ["Réplique principale", "Réplique secondaire", "Protection", "Accessoire"];
-
-  // Simulate fetching user data
+  
+  // Récupération des données de l'utilisateur
   useEffect(() => {
-    // Simulating an API call
-    setTimeout(() => {
-      setUser({
-        id: '123',
-        username: username || 'unknown',
-        fullName: 'John Doe',
-        firstName: 'John',
-        lastName: 'Doe',
-        age: '28',
-        email: 'john.doe@example.com',
-        avatar: '/placeholder.svg',
-        bio: 'Passionné d\'airsoft depuis 5 ans. Je joue principalement en milsim.',
-        location: 'Paris, France',
-        memberSince: '2022-06-15',
-        team: 'Les Aigles Noirs',
-        teamId: '456',
-        joinDate: '2022-06-15',
-        verified: true,
-        premium: false,
-        games: [
-          {
-            id: '1',
-            title: 'Opération Faucon',
-            date: '2023-08-15',
-            location: 'Forêt de Fontainebleau',
-            image: '/placeholder.svg',
-            role: 'Assaut',
-            team: 'Alpha',
-            result: 'Victoire'
-          },
-          {
-            id: '2',
-            title: 'Battle Royale',
-            date: '2023-07-22',
-            location: 'Terrain CQB Paris',
-            image: '/placeholder.svg',
-            role: 'Sniper',
-            team: 'Solo',
-            result: 'Top 5'
-          }
-        ],
-        // Added allGames array with sample data
-        allGames: [
-          {
-            id: '3',
-            title: 'Opération Tempête',
-            date: '2023-06-10',
-            location: 'Terrain militaire Lyon',
-            image: '/placeholder.svg',
-            role: 'Support',
-            team: 'Bravo',
-            status: 'Terminé',
-            result: 'Victoire'
-          }
-        ],
-        stats: {
-          gamesPlayed: 25,
-          wins: 18,
-          losses: 7,
-          winRate: 72,
-          accuracy: 68,
-          eliminations: 153,
-          objectivesCaptured: 12,
-          timeOnPoint: 85,
-          flagsRecovered: 7
-        },
-        equipment: [
-          {
-            id: 1,
-            type: 'Réplique principale',
-            brand: 'G&G',
-            power: '350 FPS',
-            description: 'M4 avec rail keymod et grip vertical',
-            image: '/placeholder.svg'
-          },
-          {
-            id: 2,
-            type: 'Réplique secondaire',
-            brand: 'WE',
-            power: '300 FPS',
-            description: 'Glock 17',
-            image: '/placeholder.svg'
-          }
-        ],
-        badges: [
-          {
-            id: 1,
-            name: 'Vétéran',
-            description: 'Plus de 20 parties jouées',
-            image: '/placeholder.svg',
-            date: '2023-05-15'
-          },
-          {
-            id: 2,
-            name: 'Tireur d\'élite',
-            description: 'Précision supérieure à 65%',
-            image: '/placeholder.svg',
-            date: '2023-06-22'
-          }
-        ]
-      });
-      setLoading(false);
-    }, 1000);
+    const fetchUserData = async () => {
+      try {
+        // Pour la démonstration, nous utilisons des données statiques
+        // Dans un cas réel, vous feriez une requête à Supabase ici
+        const mockUserData = {
+          id: '123',
+          username: username || 'unknown',
+          games: [
+            {
+              id: '1',
+              title: 'Opération Faucon',
+              date: '2023-08-15',
+              location: 'Forêt de Fontainebleau',
+              image: '/placeholder.svg',
+              role: 'Assaut',
+              team: 'Alpha',
+              result: 'Victoire',
+              status: 'Terminé'
+            },
+            {
+              id: '2',
+              title: 'Battle Royale',
+              date: '2023-07-22',
+              location: 'Terrain CQB Paris',
+              image: '/placeholder.svg',
+              role: 'Sniper',
+              team: 'Solo',
+              result: 'Top 5',
+              status: 'Terminé'
+            }
+          ],
+          allGames: [
+            {
+              id: '3',
+              title: 'Opération Tempête',
+              date: '2023-06-10',
+              location: 'Terrain militaire Lyon',
+              image: '/placeholder.svg',
+              role: 'Support',
+              team: 'Bravo',
+              status: 'Terminé',
+              result: 'Victoire'
+            }
+          ],
+          badges: [
+            {
+              id: 1,
+              name: 'Vétéran',
+              description: 'Plus de 20 parties jouées',
+              image: '/placeholder.svg',
+              icon: '/placeholder.svg',
+              date: '2023-05-15',
+              backgroundColor: '#f8f9fa',
+              borderColor: '#e9ecef'
+            },
+            {
+              id: 2,
+              name: 'Tireur d\'élite',
+              description: 'Précision supérieure à 65%',
+              image: '/placeholder.svg',
+              icon: '/placeholder.svg',
+              date: '2023-06-22',
+              backgroundColor: '#f8f9fa',
+              borderColor: '#e9ecef'
+            }
+          ],
+          equipment: [
+            {
+              id: 1,
+              type: 'Réplique principale',
+              brand: 'G&G',
+              power: '350 FPS',
+              description: 'M4 avec rail keymod et grip vertical',
+              image: '/placeholder.svg'
+            },
+            {
+              id: 2,
+              type: 'Réplique secondaire',
+              brand: 'WE',
+              power: '300 FPS',
+              description: 'Glock 17',
+              image: '/placeholder.svg'
+            }
+          ]
+        };
+
+        const mockProfileData = {
+          id: '123',
+          username: username || 'unknown',
+          avatar: '/placeholder.svg',
+          bio: 'Passionné d\'airsoft depuis 5 ans. Je joue principalement en milsim.',
+          location: 'Paris, France',
+          firstname: 'John',
+          lastname: 'Doe',
+          age: '28',
+          team: 'Les Aigles Noirs',
+          team_id: '456',
+          join_date: '2022-06-15',
+          verified: true,
+          premium: false,
+          badges: mockUserData.badges,
+          games: mockUserData.games,
+          allGames: mockUserData.allGames,
+          equipment: mockUserData.equipment
+        };
+
+        const mockUserStats = {
+          user_id: '123',
+          games_played: 25,
+          preferred_game_type: 'Milsim',
+          favorite_role: 'Sniper',
+          win_rate: '72%',
+          accuracy: '68%',
+          reputation: 8,
+          level: 'Confirmé',
+          time_played: '85h',
+          objectives_completed: 12,
+          flags_captured: 7,
+          tactical_awareness: 'Bon'
+        };
+
+        setUserData(mockUserData);
+        setProfileData(mockProfileData);
+        setUserStats(mockUserStats);
+        setLoading(false);
+      } catch (error) {
+        console.error("Erreur lors de la récupération des données:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les données de l'utilisateur",
+          variant: "destructive",
+        });
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
   }, [username]);
 
   const handleFollowUser = () => {
     setIsFollowing(!isFollowing);
-    // API call would be here
-  };
-
-  const handleViewGameDetails = (game) => {
-    setSelectedGame(game);
-    setShowGameDialog(true);
-  };
-
-  const handleViewAllGames = () => {
-    setShowAllGamesDialog(true);
-  };
-
-  const handleViewAllBadges = () => {
-    setShowBadgesDialog(true);
+    // Dans un cas réel, vous feriez une requête à Supabase ici
   };
 
   const handleNavigateToGame = (gameId) => {
@@ -195,7 +184,19 @@ const UserProfile = () => {
   };
 
   const handleNavigateToTeam = () => {
-    navigate(`/team/${user.teamId}`);
+    if (profileData?.team_id) {
+      navigate(`/team/${profileData.team_id}`);
+    }
+  };
+
+  const updateLocation = async () => {
+    // Cette fonction est un placeholder pour assurer la compatibilité avec ProfileInfo
+    // Dans le profil d'un autre utilisateur, nous ne permettons pas la modification
+  };
+
+  const updateUserStats = async () => {
+    // Cette fonction est un placeholder pour assurer la compatibilité avec ProfileStats
+    // Dans le profil d'un autre utilisateur, nous ne permettons pas la modification
   };
 
   if (loading) {
@@ -218,7 +219,7 @@ const UserProfile = () => {
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="relative">
               <ProfileHeader 
-                user={user} 
+                user={profileData} 
                 isOwnProfile={false}
               />
               
@@ -241,7 +242,7 @@ const UserProfile = () => {
                   )}
                 </Button>
                 
-                <ReportUserButton username={user.username} />
+                <ReportUserButton username={profileData.username} />
               </div>
             </div>
             
@@ -257,28 +258,34 @@ const UserProfile = () => {
                 
                 <TabsContent value="profile">
                   <ProfileInfo 
-                    user={user} 
-                    editing={false} 
-                    setEditing={() => {}} 
+                    user={userData} 
+                    profileData={profileData}
+                    updateLocation={updateLocation}
                     handleNavigateToTeam={handleNavigateToTeam}
                   />
                 </TabsContent>
                 
                 <TabsContent value="games">
                   <ProfileGames 
-                    games={user.games} 
-                    handleViewGameDetails={handleViewGameDetails} 
-                    handleViewAllGames={handleViewAllGames} 
+                    games={profileData.games} 
+                    handleViewGameDetails={(game) => {
+                      setSelectedGame(game);
+                      setShowGameDialog(true);
+                    }} 
+                    handleViewAllGames={() => setShowAllGamesDialog(true)} 
                   />
                 </TabsContent>
                 
                 <TabsContent value="stats">
-                  <ProfileStats stats={user.stats} />
+                  <ProfileStats 
+                    userStats={userStats}
+                    updateUserStats={updateUserStats}
+                  />
                 </TabsContent>
                 
                 <TabsContent value="equipment">
                   <ProfileEquipment 
-                    equipment={user.equipment} 
+                    equipment={profileData.equipment} 
                     equipmentTypes={equipmentTypes}
                     readOnly={true}
                   />
@@ -286,8 +293,8 @@ const UserProfile = () => {
                 
                 <TabsContent value="badges">
                   <ProfileBadges 
-                    badges={user.badges} 
-                    handleViewAllBadges={handleViewAllBadges} 
+                    badges={profileData.badges} 
+                    handleViewAllBadges={() => setShowBadgesDialog(true)} 
                   />
                 </TabsContent>
               </Tabs>
@@ -306,7 +313,7 @@ const UserProfile = () => {
         showBadgesDialog={showBadgesDialog}
         setShowBadgesDialog={setShowBadgesDialog}
         handleNavigateToGame={handleNavigateToGame}
-        user={user}
+        user={profileData}
       />
     </div>
   );

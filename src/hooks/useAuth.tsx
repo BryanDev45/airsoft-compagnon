@@ -101,5 +101,24 @@ export const useAuth = () => {
     }
   };
 
-  return { user, loading, login, register, logout };
+  const handleSocialLogin = async (provider: 'google' | 'facebook') => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: provider,
+        options: {
+          redirectTo: window.location.origin + '/profile',
+        },
+      });
+      
+      if (error) throw error;
+    } catch (error: any) {
+      toast({
+        title: `Erreur de connexion avec ${provider}`,
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  return { user, loading, login, register, logout, handleSocialLogin };
 };

@@ -115,7 +115,7 @@ const ProfileInfo = ({ user, profileData, updateLocation, handleNavigateToTeam }
               </div>
               <div className="space-y-1">
                 <span className="text-sm font-medium text-gray-500">Date de création du compte</span>
-                <p className="text-gray-900">{new Date(profileData?.join_date).toLocaleDateString('fr-FR') || '-'}</p>
+                <p className="text-gray-900">{profileData?.join_date ? new Date(profileData.join_date).toLocaleDateString('fr-FR') : '-'}</p>
               </div>
               {profileData?.rating && (
                 <div className="space-y-1">

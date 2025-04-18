@@ -8,11 +8,11 @@ import {
   Mail,
   MessageCircle,
   UserPlus,
+  Shield,
   MapPin,
   Calendar,
-  Shield,
-  Settings,
-  CheckCircle2
+  CheckCircle2,
+  Settings
 } from "lucide-react";
 import { Link } from 'react-router-dom';
 import ReportUserButton from './ReportUserButton';
@@ -25,20 +25,32 @@ interface ProfileHeaderProps {
 }
 
 const ProfileHeader = ({ user, isOwnProfile, setEditing, toggleProfileSettings }: ProfileHeaderProps) => {
+  // Ajout d'une vérification pour s'assurer que user n'est pas null
+  if (!user) {
+    return (
+      <div className="bg-white shadow rounded-lg overflow-hidden">
+        <div className="h-32 bg-gradient-to-r from-blue-600 to-airsoft-red"></div>
+        <div className="px-6 py-4 flex items-center justify-center">
+          <p>Chargement des données utilisateur...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white shadow rounded-lg overflow-hidden">
       <div className="h-32 bg-gradient-to-r from-blue-600 to-airsoft-red"></div>
       <div className="px-6 py-4 flex flex-col sm:flex-row items-center sm:items-start relative">
         <div className="w-24 h-24 sm:w-32 sm:h-32 -mt-12 sm:-mt-16 rounded-full overflow-hidden border-4 border-white bg-white">
           <Avatar className="w-full h-full">
-            <AvatarImage src={user.avatar} alt={user.username} />
-            <AvatarFallback>{user.username.charAt(0)}</AvatarFallback>
+            <AvatarImage src={user.avatar} alt={user.username || 'Utilisateur'} />
+            <AvatarFallback>{(user.username || 'U').charAt(0).toUpperCase()}</AvatarFallback>
           </Avatar>
         </div>
         
         <div className="flex-1 text-center sm:text-left sm:ml-4 mt-2 sm:mt-0">
           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1">
-            <h1 className="text-2xl font-bold text-gray-900">{user.username}</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{user.username || 'Utilisateur'}</h1>
             {user.verified && (
               <CheckCircle2 className="h-5 w-5 text-blue-600" />
             )}
@@ -49,7 +61,7 @@ const ProfileHeader = ({ user, isOwnProfile, setEditing, toggleProfileSettings }
             )}
           </div>
           
-          <p className="text-gray-600">{user.bio}</p>
+          <p className="text-gray-600">{user.bio || 'Aucune biographie'}</p>
           
           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-2 mt-3 text-sm text-gray-600">
             {user.location && (
@@ -62,7 +74,7 @@ const ProfileHeader = ({ user, isOwnProfile, setEditing, toggleProfileSettings }
             {user.team && (
               <div className="flex items-center gap-1">
                 <Shield size={16} />
-                <Link to={`/team/${user.teamId}`} className="hover:text-airsoft-red transition-colors">
+                <Link to={`/team/${user.team_id}`} className="hover:text-airsoft-red transition-colors">
                   {user.team}
                 </Link>
               </div>
@@ -70,7 +82,7 @@ const ProfileHeader = ({ user, isOwnProfile, setEditing, toggleProfileSettings }
             
             <div className="flex items-center gap-1">
               <Calendar size={16} />
-              Membre depuis {user.memberSince}
+              Membre depuis {user.join_date ? new Date(user.join_date).toLocaleDateString('fr-FR') : 'N/A'}
             </div>
           </div>
         </div>
@@ -107,7 +119,7 @@ const ProfileHeader = ({ user, isOwnProfile, setEditing, toggleProfileSettings }
                 <UserPlus size={16} />
                 Ajouter
               </Button>
-              <ReportUserButton username={user.username} />
+              <ReportUserButton username={user.username || 'Utilisateur'} />
             </>
           )}
         </div>
