@@ -348,7 +348,7 @@ const CreateParty = () => {
                     
                     <FormField control={form.control} name="dmr_fps_max" render={({
                     field
-                  }) => <FormItem>
+                  }) => <FormItem className="my-[45px]">
                           <FormLabel className="rounded-none">Sniper / DMR (FPS Max)</FormLabel>
                           <FormControl>
                             <Input type="number" min="0" max="600" className="my-[52px]" />
