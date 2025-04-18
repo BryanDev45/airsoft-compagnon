@@ -306,7 +306,7 @@ const Team = () => {
                       } else {
                         const { error } = await supabase
                           .from('team_fields')
-                          .insert([{ ...updates, team_id: teamId }]);
+                          .insert([{ ...updates, team_id: team?.id }]);
                         
                         if (error) {
                           console.error('Error creating field:', error);
