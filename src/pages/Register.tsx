@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { z } from 'zod';
@@ -13,6 +12,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '../hooks/useAuth';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{6,}$/;
 
 const registerSchema = z.object({
   username: z.string().min(3, {
@@ -43,9 +44,13 @@ const registerSchema = z.object({
   }, {
     message: 'Vous devez avoir au moins 18 ans pour vous inscrire.',
   }),
-  password: z.string().min(6, {
-    message: 'Le mot de passe doit contenir au moins 6 caractères.',
-  }),
+  password: z.string()
+    .min(6, {
+      message: 'Le mot de passe doit contenir au moins 6 caractères.',
+    })
+    .refine(value => passwordRegex.test(value), {
+      message: 'Le mot de passe doit contenir au moins une minuscule, une majuscule, un chiffre et un caractère spécial.',
+    }),
   confirm_password: z.string(),
   terms: z.boolean().refine(value => value === true, {
     message: 'Vous devez accepter les conditions d\'utilisation.',
@@ -210,6 +215,10 @@ export default function Register() {
                               />
                             </FormControl>
                             <FormMessage />
+                            <p className="text-xs text-gray-500 mt-1">
+                              Le mot de passe doit contenir au minimum une minuscule, une majuscule, 
+                              un chiffre et un caractère spécial.
+                            </p>
                           </FormItem>
                         )}
                       />
