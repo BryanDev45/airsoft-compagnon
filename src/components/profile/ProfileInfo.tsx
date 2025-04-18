@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { LogOut } from 'lucide-react';
+import { LogOut, Star } from 'lucide-react';
 import { toast } from "@/components/ui/use-toast";
 
 const ProfileInfo = ({ user, editing, setEditing, handleNavigateToTeam }) => {
@@ -16,14 +16,13 @@ const ProfileInfo = ({ user, editing, setEditing, handleNavigateToTeam }) => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <Card className="p-6">
-        <div className="space-y-4">
-          {/* Team info with leave button */}
+        <div className="space-y-6">
           {user.team && (
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between border-b pb-4">
               <div className="flex items-center space-x-2">
-                <span className="font-medium">Équipe:</span>
+                <span className="font-medium text-gray-700">Équipe:</span>
                 <Button 
                   variant="link" 
                   className="p-0 h-auto hover:text-airsoft-red"
@@ -43,28 +42,45 @@ const ProfileInfo = ({ user, editing, setEditing, handleNavigateToTeam }) => {
               </Button>
             </div>
           )}
-          <div className="space-y-2">
-            <h2 className="text-xl font-semibold">Informations personnelles</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <span className="font-medium">Nom:</span>
-                <p>{user.lastName}</p>
+          
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Informations personnelles</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="space-y-1">
+                <span className="text-sm font-medium text-gray-500">Nom</span>
+                <p className="text-gray-900">{user.lastName}</p>
               </div>
-              <div>
-                <span className="font-medium">Prénom:</span>
-                <p>{user.firstName}</p>
+              <div className="space-y-1">
+                <span className="text-sm font-medium text-gray-500">Prénom</span>
+                <p className="text-gray-900">{user.firstName}</p>
               </div>
-              <div>
-                <span className="font-medium">Âge:</span>
-                <p>{user.age} ans</p>
+              <div className="space-y-1">
+                <span className="text-sm font-medium text-gray-500">Âge</span>
+                <p className="text-gray-900">{user.age} ans</p>
               </div>
-              <div>
-                <span className="font-medium">Localisation:</span>
-                <p>{user.location}</p>
+              <div className="space-y-1">
+                <span className="text-sm font-medium text-gray-500">Localisation</span>
+                <p className="text-gray-900">{user.location}</p>
               </div>
-              <div>
-                <span className="font-medium">Date de création du compte:</span>
-                <p>{user.memberSince}</p>
+              <div className="space-y-1">
+                <span className="text-sm font-medium text-gray-500">Date de création du compte</span>
+                <p className="text-gray-900">{user.memberSince}</p>
+              </div>
+              <div className="space-y-1">
+                <span className="text-sm font-medium text-gray-500">Note moyenne</span>
+                <div className="flex items-center space-x-1">
+                  {[...Array(5)].map((_, index) => (
+                    <Star
+                      key={index}
+                      className={`h-5 w-5 ${
+                        index < Math.floor(user.rating || 0)
+                          ? "text-yellow-400 fill-current"
+                          : "text-gray-300"
+                      }`}
+                    />
+                  ))}
+                  <span className="ml-2 text-gray-600">({user.rating || 0}/5)</span>
+                </div>
               </div>
             </div>
           </div>

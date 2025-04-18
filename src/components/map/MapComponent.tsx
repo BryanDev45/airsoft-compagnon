@@ -13,7 +13,6 @@ import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import Circle from 'ol/geom/Circle';
 import Overlay from 'ol/Overlay';
 import MapMarker from './MapMarker';
-import { createRoot } from 'react-dom/client';
 
 interface MapComponentProps {
   searchCenter: [number, number];
@@ -27,11 +26,12 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const popupRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<Overlay | null>(null);
+  const [view, setView] = useState<View | null>(null);
 
   useEffect(() => {
     if (!mapRef.current || !popupRef.current) return;
 
-    // Create popup overlay with correct autoPan config
+    // Create popup overlay
     overlayRef.current = new Overlay({
       element: popupRef.current,
       autoPan: {
@@ -41,7 +41,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
       }
     });
 
-    // Create events markers
+    // Create event markers with custom style
     const features = filteredEvents.map(event => {
       const feature = new Feature({
         geometry: new Point(fromLonLat([event.lng, event.lat])),
@@ -50,13 +50,13 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
 
       feature.setStyle(new Style({
         image: new CircleStyle({
-          radius: 7,
+          radius: 8,
           fill: new Fill({
             color: '#ea384c'
           }),
           stroke: new Stroke({
             color: '#ffffff',
-            width: 2
+            width: 3
           })
         })
       }));
@@ -64,7 +64,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
       return feature;
     });
 
-    // Create search radius circle if radius > 0
+    // Create search radius circle
     if (searchRadius > 0) {
       const radiusFeature = new Feature({
         geometry: new Circle(fromLonLat(searchCenter), searchRadius * 1000)
@@ -93,6 +93,13 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
       source: vectorSource
     });
 
+    const newView = new View({
+      center: fromLonLat(searchCenter),
+      zoom: 6
+    });
+
+    setView(newView);
+
     // Initialize map
     map.current = new Map({
       target: mapRef.current,
@@ -102,16 +109,12 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
         }),
         vectorLayer
       ],
-      view: new View({
-        center: fromLonLat(searchCenter),
-        zoom: 6
-      })
+      view: newView
     });
 
-    // Add popup overlay to map
     map.current.addOverlay(overlayRef.current);
 
-    // Add click handler for markers
+    // Click handler for markers
     map.current.on('click', (event) => {
       const feature = map.current?.forEachFeatureAtPixel(event.pixel, (feature) => feature);
       
@@ -128,12 +131,21 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
     });
 
     return () => {
-      if (map.current) {
-        map.current.setTarget(undefined);
-        map.current = null;
-      }
+      map.current?.setTarget(undefined);
+      map.current = null;
     };
   }, [searchCenter, searchRadius, filteredEvents]);
+
+  // Update view when center changes
+  useEffect(() => {
+    if (view && map.current) {
+      view.animate({
+        center: fromLonLat(searchCenter),
+        duration: 1000,
+        zoom: searchRadius > 0 ? 12 : 6
+      });
+    }
+  }, [searchCenter, searchRadius]);
 
   return (
     <div ref={mapRef} className="w-full h-full rounded-lg overflow-hidden relative">

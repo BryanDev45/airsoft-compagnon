@@ -1,19 +1,16 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Hero = () => {
-  // Vérification si l'utilisateur est connecté
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
   
-  return <div className="relative bg-airsoft-dark text-white overflow-hidden">
+  return (
+    <div className="relative bg-airsoft-dark text-white overflow-hidden clip-bottom">
       <div className="absolute inset-0 z-0">
         <img src="/lovable-uploads/e3177716-6012-4386-a9b2-607ab6f838b0.png" alt="Airsoft background" className="w-full h-full object-cover" />
-        {/* Calque blanc semi-transparent par-dessus l'image */}
         <div className="absolute inset-0 bg-white opacity-50"></div>
-        {/* Dégradé noir */}
         <div className="absolute inset-0 bg-gradient-to-r from-black to-transparent opacity-50"></div>
       </div>
       
@@ -40,7 +37,8 @@ const Hero = () => {
           </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
 
 export default Hero;
