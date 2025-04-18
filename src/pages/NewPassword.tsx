@@ -63,11 +63,7 @@ const NewPassword = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow bg-gray-50 py-12">
-        <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-1"
-          style={{ 
-            background: 'linear-gradient(45deg, #ff0000, #ff6b6b, #ff0000)',
-            boxShadow: '0 4px 20px rgba(255, 0, 0, 0.2)'
-          }}>
+        <div className="max-w-md mx-auto p-1 rounded-lg auth-border-animation">
           <div className="bg-white p-7 rounded-lg">
             <div className="text-center mb-8">
               <div className="flex justify-center mb-4">

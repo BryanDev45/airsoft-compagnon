@@ -36,9 +36,11 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
     overlayRef.current = new Overlay({
       element: popupRef.current,
       autoPan: true,
-      autoPanAnimation: {
-        duration: 250,
-      },
+      autoPan: {
+        animation: {
+          duration: 250
+        }
+      }
     });
 
     // Create events markers

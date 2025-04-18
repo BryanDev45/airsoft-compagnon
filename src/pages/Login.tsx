@@ -77,11 +77,7 @@ const Login = () => {
       <Header />
       <main className="flex-grow flex items-center justify-center bg-gray-50 py-12 px-4">
         <div className="w-full max-w-md">
-          <div className="p-1 rounded-lg"
-            style={{ 
-              background: 'linear-gradient(45deg, #ff0000, #ff6b6b, #ff0000)',
-              boxShadow: '0 4px 20px rgba(255, 0, 0, 0.2)'
-            }}>
+          <div className="p-1 rounded-lg auth-border-animation">
             <div className="bg-white p-6 sm:p-8 rounded-lg">
               <div className="flex justify-center mb-6">
                 <img 
