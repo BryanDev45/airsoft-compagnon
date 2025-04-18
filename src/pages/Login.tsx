@@ -1,6 +1,5 @@
-
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -8,15 +7,21 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Mail, Lock, ArrowRight, Facebook, LucideIcon } from 'lucide-react';
-import { toast } from "@/components/ui/use-toast";
+import { Mail, Lock, ArrowRight, Facebook } from 'lucide-react';
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from '@/hooks/useAuth';
+
+type FormValues = {
+  email: string;
+  password: string;
+  remember: boolean;
+};
 
 const Login = () => {
-  const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
+  const [isLoading, setIsLoading] = React.useState(false);
   
-  const form = useForm({
+  const form = useForm<FormValues>({
     defaultValues: {
       email: '',
       password: '',
@@ -24,52 +29,10 @@ const Login = () => {
     },
   });
 
-  const onSubmit = (data: { email: string; password: string; remember: boolean }) => {
-    console.log('Login attempt with:', data);
+  const onSubmit = async (data: FormValues) => {
     setIsLoading(true);
-    
-    // Simulated API call for login
-    setTimeout(() => {
-      // Simuler la connexion réussie en stockant des informations utilisateur
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('user', JSON.stringify({
-        username: "AirsoftMaster",
-        avatar: "https://randomuser.me/api/portraits/men/44.jpg"
-      }));
-      
-      setIsLoading(false);
-      toast({
-        title: "Connexion réussie",
-        description: "Bienvenue sur Airsoft Compagnon",
-      });
-      
-      // Rediriger vers la page d'accueil
-      navigate('/');
-    }, 1500);
-  };
-
-  const handleSocialLogin = (provider: string) => {
-    console.log(`Login with ${provider}`);
-    setIsLoading(true);
-    
-    // Simulated social login
-    setTimeout(() => {
-      // Simuler la connexion réussie en stockant des informations utilisateur
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('user', JSON.stringify({
-        username: provider === 'Facebook' ? 'FacebookUser' : 'GoogleUser',
-        avatar: provider === 'Facebook' 
-          ? "https://randomuser.me/api/portraits/women/44.jpg"
-          : "https://randomuser.me/api/portraits/men/43.jpg"
-      }));
-      
-      setIsLoading(false);
-      toast({
-        title: "Connexion réussie",
-        description: `Connecté avec ${provider}`,
-      });
-      navigate('/');
-    }, 1500);
+    await login(data.email, data.password);
+    setIsLoading(false);
   };
 
   return (

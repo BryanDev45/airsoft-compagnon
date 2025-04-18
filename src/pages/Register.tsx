@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -13,12 +12,25 @@ import { toast } from "@/components/ui/use-toast";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from '@/hooks/useAuth';
+import { format } from 'date-fns';
 
 const registerSchema = z.object({
   firstname: z.string().min(2, "Le prénom doit contenir au moins 2 caractères"),
   lastname: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
   username: z.string().min(3, "Le nom d'utilisateur doit contenir au moins 3 caractères").optional(),
   email: z.string().email("L'adresse email n'est pas valide"),
+  birth_date: z.string().refine((date) => {
+    if (!date) return false;
+    const birthDate = new Date(date);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age >= 18;
+  }, "Vous devez avoir au moins 18 ans pour vous inscrire"),
   password: z.string()
     .min(8, "Le mot de passe doit contenir au moins 8 caractères")
     .regex(/[A-Z]/, "Le mot de passe doit contenir au moins une lettre majuscule")
@@ -39,7 +51,7 @@ type FormValues = z.infer<typeof registerSchema>;
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const navigate = useNavigate();
+  const { register: signUp } = useAuth();
   
   const form = useForm<FormValues>({
     resolver: zodResolver(registerSchema),
@@ -48,66 +60,20 @@ const Register = () => {
       lastname: '',
       username: '',
       email: '',
+      birth_date: '',
       password: '',
       confirmPassword: '',
       terms: false,
     },
   });
 
-  const onSubmit = (data: FormValues) => {
-    console.log('Register attempt with:', data);
-    
-    // Simulated API call for registration
-    setTimeout(() => {
-      // Create a user object to store in localStorage
-      const user = {
-        username: data.username || `${data.firstname.toLowerCase()}_${Math.floor(Math.random() * 1000)}`,
-        email: data.email,
-        firstName: data.firstname,
-        lastName: data.lastname,
-        avatar: 'https://i.pravatar.cc/150?u=' + data.email,
-      };
-      
-      // Set authentication state
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('user', JSON.stringify(user));
-      
-      toast({
-        title: "Inscription réussie",
-        description: "Bienvenue sur Airsoft Compagnon",
-      });
-      
-      // Redirect to profile page
-      navigate('/profile');
-    }, 1500);
-  };
-
-  const handleSocialLogin = (provider: string) => {
-    console.log(`Register with ${provider}`);
-    
-    // Simulated social registration
-    setTimeout(() => {
-      // Create a mock user based on the provider
-      const user = {
-        username: `user_${Math.floor(Math.random() * 1000)}`,
-        email: `user${Math.floor(Math.random() * 1000)}@${provider.toLowerCase()}.com`,
-        firstName: 'User',
-        lastName: provider,
-        avatar: `https://i.pravatar.cc/150?u=${Math.random()}`,
-      };
-      
-      // Set authentication state
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('user', JSON.stringify(user));
-      
-      toast({
-        title: "Inscription réussie",
-        description: `Inscrit avec ${provider}`,
-      });
-      
-      // Redirect to profile page
-      navigate('/profile');
-    }, 1500);
+  const onSubmit = async (data: FormValues) => {
+    await signUp(data.email, data.password, {
+      username: data.username || `${data.firstname.toLowerCase()}_${Math.floor(Math.random() * 1000)}`,
+      firstname: data.firstname,
+      lastname: data.lastname,
+      birth_date: format(new Date(data.birth_date), 'yyyy-MM-dd'),
+    });
   };
 
   return (
@@ -190,6 +156,24 @@ const Register = () => {
                               {...field} 
                             />
                           </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="birth_date"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Date de naissance</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="date" 
+                            {...field}
+                            required 
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
