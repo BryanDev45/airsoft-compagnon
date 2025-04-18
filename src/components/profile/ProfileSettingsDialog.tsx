@@ -63,6 +63,11 @@ const ProfileSettingsDialog = ({
     }
   };
 
+  // Vérifier si l'utilisateur est null ou non défini
+  if (!user) {
+    return null;
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
@@ -85,7 +90,7 @@ const ProfileSettingsDialog = ({
               <Label htmlFor="email" className="flex items-center gap-1">
                 <Mail size={16} /> Email
               </Label>
-              <Input id="email" value={user.email} readOnly className="bg-gray-50" />
+              <Input id="email" value={user.email || ''} readOnly className="bg-gray-50" />
               <p className="text-xs text-gray-500">
                 Cet email est utilisé pour la connexion et les notifications
               </p>

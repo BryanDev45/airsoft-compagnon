@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
 
-export const useProfileData = (userId: string) => {
+export const useProfileData = (userId: string | undefined) => {
   const [loading, setLoading] = useState(true);
   const [profileData, setProfileData] = useState<any>(null);
   const [userStats, setUserStats] = useState<any>(null);
@@ -13,10 +13,17 @@ export const useProfileData = (userId: string) => {
   useEffect(() => {
     if (userId) {
       fetchProfileData();
+    } else {
+      setLoading(false);
     }
   }, [userId]);
 
   const fetchProfileData = async () => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+    
     try {
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
@@ -32,11 +39,20 @@ export const useProfileData = (userId: string) => {
         .eq('user_id', userId)
         .single();
 
-      if (statsError) throw statsError;
+      if (statsError && statsError.code !== 'PGRST116') {
+        // PGRST116 est le code pour "aucun résultat trouvé"
+        throw statsError;
+      }
 
       setProfileData(profile);
-      setUserStats(stats);
+      setUserStats(stats || {
+        user_id: userId,
+        games_played: 0,
+        preferred_game_type: 'CQB',
+        favorite_role: 'Assaut',
+      });
     } catch (error: any) {
+      console.error("Erreur lors du chargement des données:", error);
       toast({
         title: "Erreur",
         description: "Impossible de charger les données du profil",
@@ -48,6 +64,8 @@ export const useProfileData = (userId: string) => {
   };
 
   const updateLocation = async (location: string) => {
+    if (!userId) return;
+    
     try {
       const { error } = await supabase
         .rpc('update_user_location', {
@@ -72,6 +90,8 @@ export const useProfileData = (userId: string) => {
   };
 
   const updateUserStats = async (preferredGameType: string, favoriteRole: string) => {
+    if (!userId) return;
+    
     try {
       const { error } = await supabase
         .rpc('update_user_stats', {

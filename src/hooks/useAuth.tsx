@@ -6,7 +6,7 @@ import { toast } from '@/components/ui/use-toast';
 import { UserResponse } from '@supabase/supabase-js';
 
 export const useAuth = () => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
