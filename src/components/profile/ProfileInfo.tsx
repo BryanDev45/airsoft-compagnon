@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { toast } from "@/components/ui/use-toast";
 const ProfileInfo = ({ user, profileData, updateLocation, handleNavigateToTeam }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [newLocation, setNewLocation] = useState(profileData?.location || '');
+  const [newTeam, setNewTeam] = useState(profileData?.team || '');
 
   const handleSave = async () => {
     await updateLocation(newLocation);
@@ -57,10 +57,10 @@ const ProfileInfo = ({ user, profileData, updateLocation, handleNavigateToTeam }
               <h2 className="text-xl font-semibold">Informations personnelles</h2>
               {!isEditing ? (
                 <Button
-                  variant="outline"
+                  variant="default"
                   size="sm"
                   onClick={() => setIsEditing(true)}
-                  className="flex items-center"
+                  className="bg-airsoft-red hover:bg-red-700 flex items-center"
                 >
                   <Edit className="h-4 w-4 mr-2" />
                   Modifier
@@ -135,6 +135,18 @@ const ProfileInfo = ({ user, profileData, updateLocation, handleNavigateToTeam }
                   </div>
                 </div>
               )}
+              <div className="space-y-1">
+                <span className="text-sm font-medium text-gray-500">Équipe</span>
+                {isEditing ? (
+                  <Input
+                    value={newTeam}
+                    onChange={(e) => setNewTeam(e.target.value)}
+                    placeholder="Entrez le nom de votre équipe"
+                  />
+                ) : (
+                  <p className="text-gray-900">{profileData?.team || '-'}</p>
+                )}
+              </div>
             </div>
           </div>
         </div>

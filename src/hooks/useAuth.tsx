@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -77,6 +78,24 @@ export const useAuth = () => {
 
       if (!data.user) {
         throw new Error("Erreur lors de la création du compte");
+      }
+      
+      // Explicitly insert into profiles table to ensure creation
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: data.user.id,
+          email: data.user.email,
+          username: userDataWithAvatar.username,
+          firstname: userDataWithAvatar.firstname,
+          lastname: userDataWithAvatar.lastname,
+          birth_date: userDataWithAvatar.birth_date,
+          avatar: userDataWithAvatar.avatar,
+          join_date: new Date().toISOString().split('T')[0]
+        });
+
+      if (profileError) {
+        throw new Error(`Erreur lors de la création du profil: ${profileError.message}`);
       }
       
       toast({
