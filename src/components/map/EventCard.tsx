@@ -1,4 +1,3 @@
-
 import { Calendar, MapPin, Users, Euro } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -16,8 +15,7 @@ interface EventCardProps {
 }
 
 const EventCard = ({ event }: EventCardProps) => {
-  // Default image if none is provided
-  const defaultImage = "/lovable-uploads/1cc60b94-2b6c-4e0e-9ab8-1bd1e8cb1098.png";
+  const defaultImage = "/lovable-uploads/ac74f9ee-bbed-4faf-8d9d-be1beda4fb04.png";
   
   return (
     <Link to={`/game/${event.id}`} className="block">

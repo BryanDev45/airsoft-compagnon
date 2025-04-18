@@ -23,6 +23,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 const partyFormSchema = z.object({
   title: z.string().min(5, "Le titre doit comporter au moins 5 caractères"),
   description: z.string().min(20, "La description doit comporter au moins 20 caractères"),
+  rules: z.string().min(10, "Les règles doivent comporter au moins 10 caractères"),
   date: z.date({
     required_error: "Une date est requise",
   }),
@@ -65,6 +66,7 @@ const CreateParty = () => {
     defaultValues: {
       title: "",
       description: "",
+      rules: "",
       startTime: "10:00",
       endTime: "17:00",
       address: "",
@@ -164,6 +166,24 @@ const CreateParty = () => {
                         <FormControl>
                           <Textarea 
                             placeholder="Décrivez votre partie, les règles spéciales, etc." 
+                            className="min-h-[120px]" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="rules"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Règles de la partie</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Décrivez les règles spécifiques de votre partie..." 
                             className="min-h-[120px]" 
                             {...field} 
                           />
