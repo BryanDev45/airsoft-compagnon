@@ -11,13 +11,13 @@ import { Calendar, Clock, MapPin, Users, Info, Shield, ChevronRight, Share2, Sta
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import LocationMap from '../components/map/LocationMap';
 
+// Component to scroll to top on mount
 const ScrollToTop = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
   return null;
 };
-
 const GameDetails = () => {
   const {
     id
@@ -31,13 +31,16 @@ const GameDetails = () => {
   const [isRegistered, setIsRegistered] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [registrationDialogOpen, setRegistrationDialogOpen] = useState(false);
-
   useEffect(() => {
+    // Check if user is authenticated
     const authState = localStorage.getItem('isAuthenticated');
     setIsAuthenticated(authState === 'true');
+
+    // Scroll to top when component mounts
     window.scrollTo(0, 0);
   }, []);
 
+  // Mock game data (in a real app, would fetch this data based on the ID)
   const game = {
     id: id || '1',
     title: "Opération Blackout",
@@ -45,6 +48,7 @@ const GameDetails = () => {
     time: "09:00 - 17:00",
     location: "Terrain CQB Paris, 75012 Paris",
     coordinates: [2.3522, 48.8566] as [number, number],
+    // Paris coordinates
     organizer: {
       name: "Team Ghost",
       avatar: "https://randomuser.me/api/portraits/men/32.jpg",
@@ -81,6 +85,7 @@ const GameDetails = () => {
       status: idx < 5 ? "online" : "offline",
       role: idx % 5 === 0 ? "Organisateur" : "Joueur"
     })),
+    // Added equipment limitations based on checkboxes in create party form
     equipmentLimitations: {
       minFps: 280,
       maxFps: 350,
@@ -88,6 +93,7 @@ const GameDetails = () => {
       eyeProtectionRequired: true,
       fullFaceRequired: true,
       tracer: "allowed",
+      // "allowed", "mandatory", "forbidden"
       grenades: true,
       smoke: false,
       pyrotechnics: false,
@@ -95,11 +101,9 @@ const GameDetails = () => {
       polarstar: true
     }
   };
-
   const handleShareGame = () => {
     setShareDialogOpen(true);
   };
-
   const copyToClipboard = (text: string, message: string) => {
     navigator.clipboard.writeText(text).then(() => {
       toast({
@@ -114,18 +118,19 @@ const GameDetails = () => {
       });
     });
   };
-
   const handleRegister = () => {
     if (!isAuthenticated) {
       navigate('/login');
       return;
     }
 
+    // If already registered, show confirmation to unregister
     if (isRegistered) {
       setRegistrationDialogOpen(true);
       return;
     }
 
+    // Mock registration logic
     setIsRegistered(true);
     toast({
       title: "Inscription confirmée !",
@@ -133,7 +138,6 @@ const GameDetails = () => {
       duration: 5000
     });
   };
-
   const handleUnregister = () => {
     setIsRegistered(false);
     setRegistrationDialogOpen(false);
@@ -143,7 +147,6 @@ const GameDetails = () => {
       duration: 5000
     });
   };
-
   return <div className="min-h-screen flex flex-col">
       <ScrollToTop />
       <Header />
@@ -268,30 +271,16 @@ const GameDetails = () => {
                       <div className="bg-gray-50 p-4 rounded-lg">
                         <h3 className="text-lg font-semibold mb-3 flex items-center">
                           <Crosshair className="text-airsoft-red mr-2" size={20} />
-                          Limitations principales
+                          Limites de puissance
                         </h3>
                         <div className="space-y-2 text-gray-700">
                           <div className="flex items-center justify-between">
-                            <span>Type de répliques:</span>
-                            <Badge className="bg-amber-500">AEG, GBB, HPA</Badge>
+                            <span>AEG / GBB:</span>
+                            <Badge className="bg-amber-500">{game.equipmentLimitations.minFps} - {game.equipmentLimitations.maxFps} FPS</Badge>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span>Traceurs:</span>
-                            <Badge className={game.equipmentLimitations.tracer === "allowed" ? "bg-green-500" : "bg-red-500"}>
-                              {game.equipmentLimitations.tracer === "allowed" ? "Autorisés" : "Non autorisés"}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span>HPA:</span>
-                            <Badge className={game.equipmentLimitations.hpa ? "bg-green-500" : "bg-red-500"}>
-                              {game.equipmentLimitations.hpa ? "Autorisé" : "Non autorisé"}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span>Polarstar:</span>
-                            <Badge className={game.equipmentLimitations.polarstar ? "bg-green-500" : "bg-red-500"}>
-                              {game.equipmentLimitations.polarstar ? "Autorisé" : "Non autorisé"}
-                            </Badge>
+                            <span>Sniper / DMR:</span>
+                            <Badge className="bg-amber-500">Max {game.equipmentLimitations.maxFpsSniper} FPS</Badge>
                           </div>
                         </div>
                       </div>
@@ -476,6 +465,7 @@ const GameDetails = () => {
       </main>
       <Footer />
 
+      {/* Participants Dialog - Modified to remove team system */}
       <Dialog open={participantsOpen} onOpenChange={setParticipantsOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
@@ -526,6 +516,7 @@ const GameDetails = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Share Dialog */}
       <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -556,6 +547,7 @@ const GameDetails = () => {
             </div>
             
             <div className="flex justify-center gap-4">
+              {/* These would usually link to actual share endpoints */}
               <Button variant="outline" size="icon" onClick={() => copyToClipboard(window.location.href, "Lien pour Facebook copié")}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" className="text-blue-600 h-5 w-5">
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
@@ -563,7 +555,7 @@ const GameDetails = () => {
               </Button>
               <Button variant="outline" size="icon" onClick={() => copyToClipboard(window.location.href, "Lien pour Twitter copié")}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" className="text-blue-400 h-5 w-5">
-                  <path d="M21.543 7.104c.015.211.015.423.015.636 0 6.507-4.954 14.01-14.01 14.01v-.003A13.94 13.94 0 01 0 19.539a9.88 9.88 0 0 0 7.287-2.041 4.93 4.93 0 0 1-4.6-3.42 4.916 4.916 0 0 0 2.223-.084A4.926 4.926 0 0 1 .96 9.167v-.062a4.887 4.887 0 0 0 2.235.616A4.928 4.928 0 0 1 1.67 3.148 13.98 13.98 0 0 0 11.82 8.292a4.929 4.929 0 0 1 8.39-4.49 9.868 9.868 0 0 0 3.128-1.196 4.941 4.941 0 0 1-2.165 2.724A9.828 9.828 0 0 0 24 4.555a10.019 10.019 0 0 1-2.457 2.549z" />
+                  <path d="M21.543 7.104c.015.211.015.423.015.636 0 6.507-4.954 14.01-14.01 14.01v-.003A13.94 13.94 0 0 1 0 19.539a9.88 9.88 0 0 0 7.287-2.041 4.93 4.93 0 0 1-4.6-3.42 4.916 4.916 0 0 0 2.223-.084A4.926 4.926 0 0 1 .96 9.167v-.062a4.887 4.887 0 0 0 2.235.616A4.928 4.928 0 0 1 1.67 3.148 13.98 13.98 0 0 0 11.82 8.292a4.929 4.929 0 0 1 8.39-4.49 9.868 9.868 0 0 0 3.128-1.196 4.941 4.941 0 0 1-2.165 2.724A9.828 9.828 0 0 0 24 4.555a10.019 10.019 0 0 1-2.457 2.549z" />
                 </svg>
               </Button>
               <Button variant="outline" size="icon" onClick={() => copyToClipboard(window.location.href, "Lien pour WhatsApp copié")}>
@@ -593,6 +585,7 @@ const GameDetails = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Registration Confirmation Dialog */}
       <Dialog open={registrationDialogOpen} onOpenChange={setRegistrationDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -624,5 +617,4 @@ const GameDetails = () => {
       </Dialog>
     </div>;
 };
-
 export default GameDetails;
