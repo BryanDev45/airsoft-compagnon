@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,7 +11,6 @@ export const useAuth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user || null);
@@ -20,7 +18,6 @@ export const useAuth = () => {
       }
     );
 
-    // Check current session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user || null);
       setLoading(false);
@@ -49,13 +46,11 @@ export const useAuth = () => {
 
   const register = async (email: string, password: string, userData: any) => {
     try {
-      // Ajouter un avatar aléatoire aux données utilisateur
       const userDataWithAvatar = {
         ...userData,
         avatar: getRandomAvatar()
       };
 
-      // Vérifier si l'email existe déjà
       const { data: existingUser, error: checkError } = await supabase
         .from('profiles')
         .select('email')
@@ -80,7 +75,6 @@ export const useAuth = () => {
       
       if (error) throw error;
 
-      // Si l'inscription est réussie mais qu'aucun utilisateur n'est créé
       if (!data.user) {
         throw new Error("Erreur lors de la création du compte");
       }
