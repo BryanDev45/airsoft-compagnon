@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,6 @@ const ProfileInfo = ({ user, editing, setEditing, handleNavigateToTeam }) => {
 
   return (
     <div className="space-y-4">
-      {/* Profile content */}
       <Card className="p-6">
         <div className="space-y-4">
           {/* Team info with leave button */}
@@ -47,20 +47,24 @@ const ProfileInfo = ({ user, editing, setEditing, handleNavigateToTeam }) => {
             <h2 className="text-xl font-semibold">Informations personnelles</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <span className="font-medium">Nom complet:</span>
-                <p>{user.fullName}</p>
+                <span className="font-medium">Nom:</span>
+                <p>{user.lastName}</p>
+              </div>
+              <div>
+                <span className="font-medium">Prénom:</span>
+                <p>{user.firstName}</p>
               </div>
               <div>
                 <span className="font-medium">Âge:</span>
                 <p>{user.age} ans</p>
               </div>
               <div>
-                <span className="font-medium">Email:</span>
-                <p>{user.email}</p>
-              </div>
-              <div>
                 <span className="font-medium">Localisation:</span>
                 <p>{user.location}</p>
+              </div>
+              <div>
+                <span className="font-medium">Date de création du compte:</span>
+                <p>{user.memberSince}</p>
               </div>
             </div>
           </div>

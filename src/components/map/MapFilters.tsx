@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Calendar, Navigation } from 'lucide-react';
 import { Input } from "@/components/ui/input";
@@ -11,8 +10,6 @@ interface MapFiltersProps {
   setSelectedCountry: (value: string) => void;
   selectedDepartment: string;
   setSelectedDepartment: (value: string) => void;
-  selectedType: string;
-  setSelectedType: (value: string) => void;
   selectedDate: string;
   setSelectedDate: (value: string) => void;
   searchRadius: number[];
@@ -25,8 +22,6 @@ const MapFilters: React.FC<MapFiltersProps> = ({
   setSelectedCountry,
   selectedDepartment,
   setSelectedDepartment,
-  selectedType,
-  setSelectedType,
   selectedDate,
   setSelectedDate,
   searchRadius,
@@ -88,23 +83,6 @@ const MapFilters: React.FC<MapFiltersProps> = ({
             <SelectItem value="33">Gironde (33)</SelectItem>
             <SelectItem value="59">Nord (59)</SelectItem>
             <SelectItem value="69">Rhône (69)</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      
-      <div>
-        <label className="block text-sm mb-2">Type de partie</label>
-        <Select value={selectedType} onValueChange={setSelectedType}>
-          <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-            <SelectValue placeholder="Sélectionner un type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tous les types</SelectItem>
-            <SelectItem value="cqb">CQB</SelectItem>
-            <SelectItem value="woodland">Woodland</SelectItem>
-            <SelectItem value="milsim">Milsim</SelectItem>
-            <SelectItem value="speedsoft">Speedsoft</SelectItem>
-            <SelectItem value="tournament">Tournoi</SelectItem>
           </SelectContent>
         </Select>
       </div>

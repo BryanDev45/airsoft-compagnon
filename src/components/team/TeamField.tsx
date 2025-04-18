@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { MapPin, Edit, Plus, Save, X } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
@@ -81,7 +80,6 @@ const TeamField = ({ field }: TeamFieldProps) => {
     }
   };
 
-  // Moved "Add terrain" button outside the conditional rendering to always show it
   const addTerrainButton = (
     <div className="mb-4">
       <Button onClick={() => setShowAddDialog(true)} className="bg-airsoft-red hover:bg-red-700">
@@ -241,10 +239,11 @@ const TeamField = ({ field }: TeamFieldProps) => {
                 </>
               )}
             </div>
-            <div className="h-64 rounded-lg overflow-hidden border border-gray-200 relative">
+            <div className="h-[400px] rounded-lg overflow-hidden border border-gray-200 relative">
               <LocationMap 
-                location={isEditing ? editedField.address : field.address} 
-                coordinates={isEditing ? editedField.coordinates : field.coordinates}
+                location={isEditing ? editedField.address : field?.address} 
+                coordinates={isEditing ? editedField.coordinates : field?.coordinates}
+                className="w-full h-full"
               />
             </div>
           </div>
