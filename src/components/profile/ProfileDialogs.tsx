@@ -110,7 +110,8 @@ const ProfileDialogs = ({
           
           <div className="mt-4 max-h-96 overflow-y-auto pr-2">
             <div className="space-y-4">
-              {[...user.games, ...user.allGames].map(game => (
+              {/* Here is the fix: safely combining games and allGames arrays */}
+              {[...(user.games || []), ...(user.allGames || [])].map(game => (
                 <div 
                   key={game.id} 
                   className="border rounded-lg p-4 hover:shadow-md transition-shadow"

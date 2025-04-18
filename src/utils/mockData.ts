@@ -81,6 +81,7 @@ export const mockUserData = {
       gameType: "Milsim"
     },
   ],
+  // Added allGames array to mockData
   allGames: [
     { 
       id: 4, 

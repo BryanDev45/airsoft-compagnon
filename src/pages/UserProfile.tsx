@@ -40,6 +40,7 @@ const UserProfile = () => {
     verified: false,
     premium: false,
     games: [],
+    allGames: [], // Added empty allGames array to avoid "not iterable" error
     stats: {
       gamesPlayed: 0,
       wins: 0,
@@ -105,6 +106,20 @@ const UserProfile = () => {
             role: 'Sniper',
             team: 'Solo',
             result: 'Top 5'
+          }
+        ],
+        // Added allGames array with sample data
+        allGames: [
+          {
+            id: '3',
+            title: 'Opération Tempête',
+            date: '2023-06-10',
+            location: 'Terrain militaire Lyon',
+            image: '/placeholder.svg',
+            role: 'Support',
+            team: 'Bravo',
+            status: 'Terminé',
+            result: 'Victoire'
           }
         ],
         stats: {
@@ -179,8 +194,8 @@ const UserProfile = () => {
     navigate(`/game/${gameId}`);
   };
 
-  const handleNavigateToTeam = (teamId) => {
-    navigate(`/team/${teamId}`);
+  const handleNavigateToTeam = () => {
+    navigate(`/team/${user.teamId}`);
   };
 
   if (loading) {
