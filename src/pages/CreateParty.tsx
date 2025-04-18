@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -22,13 +21,12 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { ScrollToTop } from "../components/ui/scroll-to-top";
-
 const partyFormSchema = z.object({
   title: z.string().min(5, "Le titre doit comporter au moins 5 caractères"),
   description: z.string().min(20, "La description doit comporter au moins 20 caractères"),
   rules: z.string().min(10, "Les règles doivent comporter au moins 10 caractères"),
   date: z.date({
-    required_error: "Une date est requise",
+    required_error: "Une date est requise"
   }),
   startTime: z.string().min(1, "L'heure de début est requise"),
   endTime: z.string().min(1, "L'heure de fin est requise"),
@@ -55,26 +53,31 @@ const partyFormSchema = z.object({
   smokesAllowed: z.boolean().default(false),
   pyroAllowed: z.boolean().default(false),
   terms: z.boolean().refine(val => val === true, {
-    message: "Vous devez accepter les conditions",
+    message: "Vous devez accepter les conditions"
   }),
-  isPrivate: z.boolean().default(false),
+  isPrivate: z.boolean().default(false)
 });
-
 type PartyFormValues = z.infer<typeof partyFormSchema>;
-
-const gameTypes = [
-  { value: "cqb", label: "CQB" },
-  { value: "woodland", label: "Woodland" },
-  { value: "milsim", label: "Milsim" },
-  { value: "speedsoft", label: "Speedsoft" },
-  { value: "scenario", label: "Scénario" },
-];
-
+const gameTypes = [{
+  value: "cqb",
+  label: "CQB"
+}, {
+  value: "woodland",
+  label: "Woodland"
+}, {
+  value: "milsim",
+  label: "Milsim"
+}, {
+  value: "speedsoft",
+  label: "Speedsoft"
+}, {
+  value: "scenario",
+  label: "Scénario"
+}];
 const CreateParty = () => {
   const [images, setImages] = useState<File[]>([]);
   const [preview, setPreview] = useState<string[]>([]);
   const navigate = useNavigate();
-
   const form = useForm<PartyFormValues>({
     resolver: zodResolver(partyFormSchema),
     defaultValues: {
@@ -106,40 +109,34 @@ const CreateParty = () => {
       smokesAllowed: false,
       pyroAllowed: false,
       terms: false,
-      isPrivate: false,
-    },
+      isPrivate: false
+    }
   });
-
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const filesArray = Array.from(e.target.files);
       const newImages = [...images, ...filesArray].slice(0, 5);
       setImages(newImages);
-      
       const newPreviews = newImages.map(file => URL.createObjectURL(file));
       setPreview(newPreviews);
     }
   };
-
   const removeImage = (index: number) => {
     const newImages = [...images];
     newImages.splice(index, 1);
     setImages(newImages);
-    
     const newPreviews = [...preview];
     URL.revokeObjectURL(newPreviews[index]);
     newPreviews.splice(index, 1);
     setPreview(newPreviews);
   };
-
   const onSubmit = (data: PartyFormValues) => {
     console.log("Creating party with data:", data);
     console.log("Images:", images);
-    
     setTimeout(() => {
       toast({
         title: "Partie créée avec succès",
-        description: "Votre partie a été publiée et est maintenant visible par les autres joueurs",
+        description: "Votre partie a été publiée et est maintenant visible par les autres joueurs"
       });
       navigate('/parties');
     }, 1500);
@@ -149,9 +146,7 @@ const CreateParty = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-
-  return (
-    <div className="min-h-screen flex flex-col">
+  return <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow bg-gray-50 py-12">
         <div className="max-w-4xl mx-auto px-4">
@@ -173,130 +168,85 @@ const CreateParty = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem>
+                  <FormField control={form.control} name="title" render={({
+                  field
+                }) => <FormItem>
                         <FormLabel>Titre de la partie</FormLabel>
                         <FormControl>
                           <Input placeholder="Ex: Partie CQB au Bunker" {...field} />
                         </FormControl>
                         <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      </FormItem>} />
                   
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
+                  <FormField control={form.control} name="description" render={({
+                  field
+                }) => <FormItem>
                         <FormLabel>Description</FormLabel>
                         <FormControl>
-                          <Textarea 
-                            placeholder="Décrivez votre partie, les règles spéciales, etc." 
-                            className="min-h-[120px]" 
-                            {...field} 
-                          />
+                          <Textarea placeholder="Décrivez votre partie, les règles spéciales, etc." className="min-h-[120px]" {...field} />
                         </FormControl>
                         <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      </FormItem>} />
                   
-                  <FormField
-                    control={form.control}
-                    name="rules"
-                    render={({ field }) => (
-                      <FormItem>
+                  <FormField control={form.control} name="rules" render={({
+                  field
+                }) => <FormItem>
                         <FormLabel>Règles de la partie</FormLabel>
                         <FormControl>
-                          <Textarea 
-                            placeholder="Décrivez les règles spécifiques de votre partie..." 
-                            className="min-h-[120px]" 
-                            {...field} 
-                          />
+                          <Textarea placeholder="Décrivez les règles spécifiques de votre partie..." className="min-h-[120px]" {...field} />
                         </FormControl>
                         <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      </FormItem>} />
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="date"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel>Date</FormLabel>
+                    <FormField control={form.control} name="date" render={({
+                    field
+                  }) => <FormItem className="flex flex-col my-[10px]">
+                          <FormLabel className="my-0">Date</FormLabel>
                           <Popover>
                             <PopoverTrigger asChild>
                               <FormControl>
-                                <Button
-                                  variant={"outline"}
-                                  className={`w-full pl-3 text-left font-normal ${!field.value ? "text-muted-foreground" : ""}`}
-                                >
+                                <Button variant={"outline"} className={`w-full pl-3 text-left font-normal ${!field.value ? "text-muted-foreground" : ""}`}>
                                   <CalendarIcon className="mr-2 h-4 w-4" />
-                                  {field.value ? (
-                                    format(field.value, "PPP", { locale: fr })
-                                  ) : (
-                                    <span>Sélectionnez une date</span>
-                                  )}
+                                  {field.value ? format(field.value, "PPP", {
+                              locale: fr
+                            }) : <span>Sélectionnez une date</span>}
                                 </Button>
                               </FormControl>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                disabled={(date) => date < new Date()}
-                                initialFocus
-                              />
+                              <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={date => date < new Date()} initialFocus />
                             </PopoverContent>
                           </Popover>
                           <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                        </FormItem>} />
                     
                     <div className="grid grid-cols-2 gap-3">
-                      <FormField
-                        control={form.control}
-                        name="startTime"
-                        render={({ field }) => (
-                          <FormItem>
+                      <FormField control={form.control} name="startTime" render={({
+                      field
+                    }) => <FormItem>
                             <FormLabel>Heure de début</FormLabel>
                             <FormControl>
                               <Input type="time" {...field} />
                             </FormControl>
                             <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                          </FormItem>} />
                       
-                      <FormField
-                        control={form.control}
-                        name="endTime"
-                        render={({ field }) => (
-                          <FormItem>
+                      <FormField control={form.control} name="endTime" render={({
+                      field
+                    }) => <FormItem>
                             <FormLabel>Heure de fin</FormLabel>
                             <FormControl>
                               <Input type="time" {...field} />
                             </FormControl>
                             <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                          </FormItem>} />
                     </div>
                   </div>
                   
-                  <FormField
-                    control={form.control}
-                    name="gameType"
-                    render={({ field }) => (
-                      <FormItem>
+                  <FormField control={form.control} name="gameType" render={({
+                  field
+                }) => <FormItem>
                         <FormLabel>Type de jeu</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
@@ -305,17 +255,13 @@ const CreateParty = () => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {gameTypes.map((type) => (
-                              <SelectItem key={type.value} value={type.value}>
+                            {gameTypes.map(type => <SelectItem key={type.value} value={type.value}>
                                 {type.label}
-                              </SelectItem>
-                            ))}
+                              </SelectItem>)}
                           </SelectContent>
                         </Select>
                         <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      </FormItem>} />
                 </CardContent>
               </Card>
               
@@ -330,48 +276,36 @@ const CreateParty = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="address"
-                    render={({ field }) => (
-                      <FormItem>
+                  <FormField control={form.control} name="address" render={({
+                  field
+                }) => <FormItem>
                         <FormLabel>Adresse</FormLabel>
                         <FormControl>
                           <Input placeholder="Adresse du terrain" {...field} />
                         </FormControl>
                         <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      </FormItem>} />
                   
                   <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="city"
-                      render={({ field }) => (
-                        <FormItem>
+                    <FormField control={form.control} name="city" render={({
+                    field
+                  }) => <FormItem>
                           <FormLabel>Ville</FormLabel>
                           <FormControl>
                             <Input placeholder="Ville" {...field} />
                           </FormControl>
                           <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                        </FormItem>} />
                     
-                    <FormField
-                      control={form.control}
-                      name="zipCode"
-                      render={({ field }) => (
-                        <FormItem>
+                    <FormField control={form.control} name="zipCode" render={({
+                    field
+                  }) => <FormItem>
                           <FormLabel>Code postal</FormLabel>
                           <FormControl>
                             <Input placeholder="Code postal" {...field} />
                           </FormControl>
                           <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                        </FormItem>} />
                   </div>
                 </CardContent>
               </Card>
@@ -391,48 +325,36 @@ const CreateParty = () => {
                     <div className="space-y-4">
                       <h3 className="text-lg font-medium">AEG / GBB</h3>
                       <div className="flex space-x-4">
-                        <FormField
-                          control={form.control}
-                          name="aeg_fps_min"
-                          render={({ field }) => (
-                            <FormItem className="flex-1">
+                        <FormField control={form.control} name="aeg_fps_min" render={({
+                        field
+                      }) => <FormItem className="flex-1">
                               <FormLabel>FPS Min</FormLabel>
                               <FormControl>
                                 <Input type="number" {...field} min="0" max="500" />
                               </FormControl>
                               <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="aeg_fps_max"
-                          render={({ field }) => (
-                            <FormItem className="flex-1">
+                            </FormItem>} />
+                        <FormField control={form.control} name="aeg_fps_max" render={({
+                        field
+                      }) => <FormItem className="flex-1">
                               <FormLabel>FPS Max</FormLabel>
                               <FormControl>
                                 <Input type="number" {...field} min="0" max="500" />
                               </FormControl>
                               <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                            </FormItem>} />
                       </div>
                     </div>
                     
-                    <FormField
-                      control={form.control}
-                      name="dmr_fps_max"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Sniper / DMR (FPS Max)</FormLabel>
+                    <FormField control={form.control} name="dmr_fps_max" render={({
+                    field
+                  }) => <FormItem>
+                          <FormLabel className="rounded-none">Sniper / DMR (FPS Max)</FormLabel>
                           <FormControl>
-                            <Input type="number" {...field} min="0" max="600" />
+                            <Input type="number" min="0" max="600" className="my-[52px]" />
                           </FormControl>
                           <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                        </FormItem>} />
                   </div>
                 </CardContent>
               </Card>
@@ -449,11 +371,9 @@ const CreateParty = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="eyeProtectionRequired"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <FormField control={form.control} name="eyeProtectionRequired" render={({
+                    field
+                  }) => <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                           <div className="space-y-0.5">
                             <FormLabel className="text-base">Protection oculaire</FormLabel>
                             <p className="text-sm text-muted-foreground">
@@ -461,20 +381,13 @@ const CreateParty = () => {
                             </p>
                           </div>
                           <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
                           </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                        </FormItem>} />
                     
-                    <FormField
-                      control={form.control}
-                      name="fullFaceProtectionRequired"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <FormField control={form.control} name="fullFaceProtectionRequired" render={({
+                    field
+                  }) => <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                           <div className="space-y-0.5">
                             <FormLabel className="text-base">Protection intégrale</FormLabel>
                             <p className="text-sm text-muted-foreground">
@@ -482,80 +395,14 @@ const CreateParty = () => {
                             </p>
                           </div>
                           <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
                           </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                        </FormItem>} />
                   </div>
                 </CardContent>
               </Card>
               
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Award className="h-5 w-5 text-airsoft-red" />
-                    Types de répliques
-                  </CardTitle>
-                  <CardDescription>
-                    Définissez les types de répliques autorisés
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="hpaAllowed"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                          <FormLabel className="text-base">HPA</FormLabel>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="polarStarAllowed"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                          <FormLabel className="text-base">Polar Star</FormLabel>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="tracersAllowed"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                          <FormLabel className="text-base">Traceurs</FormLabel>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
+              
               
               <Card>
                 <CardHeader>
@@ -569,53 +416,32 @@ const CreateParty = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="grenadesAllowed"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <FormField control={form.control} name="grenadesAllowed" render={({
+                    field
+                  }) => <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                           <FormLabel className="text-base">Grenades</FormLabel>
                           <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
                           </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                        </FormItem>} />
                     
-                    <FormField
-                      control={form.control}
-                      name="smokesAllowed"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <FormField control={form.control} name="smokesAllowed" render={({
+                    field
+                  }) => <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                           <FormLabel className="text-base">Fumigènes</FormLabel>
                           <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
                           </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                        </FormItem>} />
                     
-                    <FormField
-                      control={form.control}
-                      name="pyroAllowed"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <FormField control={form.control} name="pyroAllowed" render={({
+                    field
+                  }) => <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                           <FormLabel className="text-base">Pyrotechnie</FormLabel>
                           <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
                           </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                        </FormItem>} />
                   </div>
                 </CardContent>
               </Card>
@@ -631,58 +457,37 @@ const CreateParty = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="maxPlayers"
-                    render={({ field }) => (
-                      <FormItem>
+                  <FormField control={form.control} name="maxPlayers" render={({
+                  field
+                }) => <FormItem>
                         <FormLabel>Nombre maximum de joueurs</FormLabel>
                         <FormControl>
                           <div className="flex items-center">
-                            <Input 
-                              type="number" 
-                              min="2"
-                              className="w-full" 
-                              {...field} 
-                            />
+                            <Input type="number" min="2" className="w-full" {...field} />
                             <Users className="ml-2 h-5 w-5 text-gray-400" />
                           </div>
                         </FormControl>
                         <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      </FormItem>} />
                   
-                  <FormField
-                    control={form.control}
-                    name="price"
-                    render={({ field }) => (
-                      <FormItem>
+                  <FormField control={form.control} name="price" render={({
+                  field
+                }) => <FormItem>
                         <FormLabel>Prix par joueur (€)</FormLabel>
                         <FormControl>
                           <div className="flex items-center">
-                            <Input 
-                              type="number" 
-                              min="0" 
-                              step="0.5" 
-                              className="w-full" 
-                              {...field} 
-                            />
+                            <Input type="number" min="0" step="0.5" className="w-full" {...field} />
                             <Euro className="ml-2 h-5 w-5 text-gray-400" />
                           </div>
                         </FormControl>
                         <FormMessage />
                         <p className="text-sm text-gray-500 mt-1">Laissez 0 si l'entrée est gratuite</p>
-                      </FormItem>
-                    )}
-                  />
+                      </FormItem>} />
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="manualValidation"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <FormField control={form.control} name="manualValidation" render={({
+                    field
+                  }) => <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                           <div className="space-y-0.5">
                             <FormLabel className="text-base">Validation manuelle</FormLabel>
                             <p className="text-sm text-muted-foreground">
@@ -690,20 +495,13 @@ const CreateParty = () => {
                             </p>
                           </div>
                           <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
                           </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                        </FormItem>} />
                     
-                    <FormField
-                      control={form.control}
-                      name="requiresReplica"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <FormField control={form.control} name="requiresReplica" render={({
+                    field
+                  }) => <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                           <div className="space-y-0.5">
                             <FormLabel className="text-base">Réplique requise</FormLabel>
                             <p className="text-sm text-muted-foreground">
@@ -711,20 +509,13 @@ const CreateParty = () => {
                             </p>
                           </div>
                           <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
                           </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                        </FormItem>} />
                     
-                    <FormField
-                      control={form.control}
-                      name="hasToilets"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <FormField control={form.control} name="hasToilets" render={({
+                    field
+                  }) => <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                           <div className="space-y-0.5">
                             <FormLabel className="text-base">Toilettes</FormLabel>
                             <p className="text-sm text-muted-foreground">
@@ -732,20 +523,13 @@ const CreateParty = () => {
                             </p>
                           </div>
                           <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
                           </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                        </FormItem>} />
                     
-                    <FormField
-                      control={form.control}
-                      name="hasParking"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <FormField control={form.control} name="hasParking" render={({
+                    field
+                  }) => <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                           <div className="space-y-0.5">
                             <FormLabel className="text-base">Parking</FormLabel>
                             <p className="text-sm text-muted-foreground">
@@ -753,20 +537,13 @@ const CreateParty = () => {
                             </p>
                           </div>
                           <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
                           </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                        </FormItem>} />
                     
-                    <FormField
-                      control={form.control}
-                      name="hasEquipmentRental"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <FormField control={form.control} name="hasEquipmentRental" render={({
+                    field
+                  }) => <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                           <div className="space-y-0.5">
                             <FormLabel className="text-base">Location de matériel</FormLabel>
                             <p className="text-sm text-muted-foreground">
@@ -774,20 +551,13 @@ const CreateParty = () => {
                             </p>
                           </div>
                           <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
                           </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                        </FormItem>} />
                     
-                    <FormField
-                      control={form.control}
-                      name="isPrivate"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <FormField control={form.control} name="isPrivate" render={({
+                    field
+                  }) => <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                           <div className="space-y-0.5">
                             <FormLabel className="text-base">Partie privée</FormLabel>
                             <p className="text-sm text-muted-foreground">
@@ -795,14 +565,9 @@ const CreateParty = () => {
                             </p>
                           </div>
                           <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
                           </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                        </FormItem>} />
                   </div>
                 </CardContent>
               </Card>
@@ -819,58 +584,31 @@ const CreateParty = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="mb-4">
-                    <Input
-                      type="file"
-                      id="images"
-                      accept="image/*"
-                      multiple
-                      onChange={handleImageChange}
-                      className="hidden"
-                    />
-                    <label
-                      htmlFor="images"
-                      className="flex items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-airsoft-red transition-colors"
-                    >
+                    <Input type="file" id="images" accept="image/*" multiple onChange={handleImageChange} className="hidden" />
+                    <label htmlFor="images" className="flex items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-airsoft-red transition-colors">
                       <ImageIcon className="h-5 w-5 text-gray-400" />
                       <span className="text-gray-500">Cliquez pour sélectionner des images</span>
                     </label>
                   </div>
                   
-                  {preview.length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-4">
-                      {preview.map((src, index) => (
-                        <div key={index} className="relative h-24 group">
-                          <img
-                            src={src}
-                            alt={`Preview ${index + 1}`}
-                            className="h-full w-full object-cover rounded-md"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeImage(index)}
-                            className="absolute top-1 right-1 bg-black/70 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
+                  {preview.length > 0 && <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-4">
+                      {preview.map((src, index) => <div key={index} className="relative h-24 group">
+                          <img src={src} alt={`Preview ${index + 1}`} className="h-full w-full object-cover rounded-md" />
+                          <button type="button" onClick={() => removeImage(index)} className="absolute top-1 right-1 bg-black/70 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                           </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                        </div>)}
+                    </div>}
                 </CardContent>
               </Card>
               
-              <FormField
-                control={form.control}
-                name="terms"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+              <FormField control={form.control} name="terms" render={({
+              field
+            }) => <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                     <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
+                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel>
@@ -878,22 +616,13 @@ const CreateParty = () => {
                       </FormLabel>
                       <FormMessage />
                     </div>
-                  </FormItem>
-                )}
-              />
+                  </FormItem>} />
               
               <div className="flex justify-end gap-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => navigate('/parties')}
-                >
+                <Button type="button" variant="outline" onClick={() => navigate('/parties')}>
                   Annuler
                 </Button>
-                <Button
-                  type="submit"
-                  className="bg-airsoft-red hover:bg-red-700"
-                >
+                <Button type="submit" className="bg-airsoft-red hover:bg-red-700">
                   <Save className="mr-2 h-4 w-4" />
                   Créer la partie
                 </Button>
@@ -903,8 +632,6 @@ const CreateParty = () => {
         </div>
       </main>
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default CreateParty;
