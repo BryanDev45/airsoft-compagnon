@@ -1,34 +1,27 @@
-
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Mail, Lock, Eye, EyeOff, Facebook } from 'lucide-react';
-import { toast } from "@/components/ui/use-toast";
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import { Mail, Lock, ArrowRight, Facebook } from 'lucide-react';
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from '@/hooks/useAuth';
 
-const loginSchema = z.object({
-  email: z.string().email("L'adresse email n'est pas valide"),
-  password: z.string().min(1, "Veuillez entrer votre mot de passe"),
-  remember: z.boolean().default(false),
-});
-
-type FormValues = z.infer<typeof loginSchema>;
+type FormValues = {
+  email: string;
+  password: string;
+  remember: boolean;
+};
 
 const Login = () => {
-  const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
-
+  const [isLoading, setIsLoading] = React.useState(false);
+  
   const form = useForm<FormValues>({
-    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',
       password: '',
@@ -37,22 +30,16 @@ const Login = () => {
   });
 
   const onSubmit = async (data: FormValues) => {
+    setIsLoading(true);
     await login(data.email, data.password);
-  };
-
-  // Fonction pour gérer les connexions sociales
-  const handleSocialLogin = (provider: string) => {
-    toast({
-      title: "Fonctionnalité en développement",
-      description: `La connexion avec ${provider} sera bientôt disponible.`,
-    });
+    setIsLoading(false);
   };
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-grow bg-gray-50 py-12 px-4">
-        <div className="max-w-md mx-auto">
+      <main className="flex-grow flex items-center justify-center bg-gray-50 py-12 px-4">
+        <div className="w-full max-w-md">
           <div className="p-1 rounded-lg auth-border-animation">
             <div className="bg-white p-6 sm:p-8 rounded-lg">
               <div className="flex justify-center mb-6">
@@ -81,6 +68,7 @@ const Login = () => {
                               className="pl-10" 
                               type="email" 
                               {...field} 
+                              required 
                             />
                           </div>
                         </FormControl>
@@ -94,29 +82,22 @@ const Login = () => {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Mot de passe</FormLabel>
+                        <div className="flex items-center justify-between">
+                          <FormLabel>Mot de passe</FormLabel>
+                          <Link to="/reset-password" className="text-xs text-airsoft-red hover:underline">
+                            Mot de passe oublié?
+                          </Link>
+                        </div>
                         <FormControl>
                           <div className="relative">
                             <Lock className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                             <Input 
                               placeholder="Votre mot de passe" 
-                              className="pl-10 pr-10" 
-                              type={showPassword ? "text" : "password"} 
+                              className="pl-10" 
+                              type="password" 
                               {...field} 
+                              required 
                             />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                              onClick={() => setShowPassword(!showPassword)}
-                            >
-                              {showPassword ? (
-                                <EyeOff className="h-4 w-4 text-gray-400" />
-                              ) : (
-                                <Eye className="h-4 w-4 text-gray-400" />
-                              )}
-                            </Button>
                           </div>
                         </FormControl>
                         <FormMessage />
@@ -124,32 +105,31 @@ const Login = () => {
                     )}
                   />
                   
-                  <div className="flex items-center justify-between">
-                    <FormField
-                      control={form.control}
-                      name="remember"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center space-x-2 space-y-0">
-                          <FormControl>
-                            <Checkbox 
-                              checked={field.value} 
-                              onCheckedChange={field.onChange} 
-                            />
-                          </FormControl>
-                          <FormLabel className="text-sm font-normal cursor-pointer">
-                            Se souvenir de moi
-                          </FormLabel>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <Link to="/reset-password" className="text-sm text-airsoft-red hover:underline">
-                      Mot de passe oublié ?
-                    </Link>
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="remember"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox 
+                            checked={field.value} 
+                            onCheckedChange={field.onChange} 
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Se souvenir de moi</FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
                   
-                  <Button type="submit" className="w-full bg-airsoft-red hover:bg-red-700 mt-2">
-                    Se connecter
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-airsoft-red hover:bg-red-700"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? 'Connexion en cours...' : 'Se connecter'} 
+                    {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}
                   </Button>
                 </form>
               </Form>
@@ -169,9 +149,10 @@ const Login = () => {
                   variant="outline" 
                   className="w-full flex items-center justify-center gap-2"
                   onClick={() => handleSocialLogin('Facebook')}
+                  disabled={isLoading}
                 >
                   <Facebook className="h-5 w-5 text-blue-600" />
-                  <span>Se connecter avec Facebook</span>
+                  <span>Continuer avec Facebook</span>
                 </Button>
                 
                 <Button 
@@ -179,6 +160,7 @@ const Login = () => {
                   variant="outline" 
                   className="w-full flex items-center justify-center gap-2"
                   onClick={() => handleSocialLogin('Google')}
+                  disabled={isLoading}
                 >
                   <svg viewBox="0 0 24 24" width="20" height="20" className="mr-1">
                     <path
@@ -198,7 +180,7 @@ const Login = () => {
                       d="M5.27698177,14.2678769 C5.03832634,13.556323 4.90909091,12.7937589 4.90909091,12 C4.90909091,11.2182781 5.03443647,10.4668121 5.26620003,9.76452941 L1.23999023,6.65002441 C0.43658717,8.26043162 0,10.0753848 0,12 C0,13.9195484 0.444780743,15.7301709 1.23746264,17.3349879 L5.27698177,14.2678769 Z"
                     />
                   </svg>
-                  <span>Se connecter avec Google</span>
+                  <span>Continuer avec Google</span>
                 </Button>
               </div>
               

@@ -3,11 +3,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { User, Session } from '@supabase/supabase-js';
 
 export const useAuth = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -16,7 +14,6 @@ export const useAuth = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user || null);
-        setSession(session);
         setLoading(false);
       }
     );
@@ -24,7 +21,6 @@ export const useAuth = () => {
     // Check current session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user || null);
-      setSession(session);
       setLoading(false);
     });
 
@@ -51,41 +47,13 @@ export const useAuth = () => {
 
   const register = async (email: string, password: string, userData: any) => {
     try {
-      // Vérifier si l'email existe déjà
-      const { data: existingUsers } = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('email', email)
-        .single();
-
-      if (existingUsers) {
-        throw new Error("Un compte avec cette adresse email existe déjà");
-      }
-
-      // Calcul de l'âge à partir de la date de naissance
-      const birthDate = new Date(userData.birth_date);
-      const today = new Date();
-      let age = today.getFullYear() - birthDate.getFullYear();
-      const monthDiff = today.getMonth() - birthDate.getMonth();
-      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-      }
-
-      // Ajouter l'âge et la date d'inscription aux données utilisateur
-      const joinDate = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
-      
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: {
-            ...userData,
-            age,
-            join_date: joinDate
-          },
+          data: userData,
         },
       });
-      
       if (error) throw error;
       
       toast({
@@ -120,5 +88,5 @@ export const useAuth = () => {
     }
   };
 
-  return { user, session, loading, login, register, logout };
+  return { user, loading, login, register, logout };
 };
