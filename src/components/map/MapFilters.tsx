@@ -106,7 +106,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({
           <Button 
             variant="outline" 
             size="sm"
-            className="text-xs border-gray-600 text-white hover:bg-gray-700"
+            className="text-xs bg-airsoft-red hover:bg-red-700 text-white border-none"
             onClick={getCurrentPosition}
           >
             <Navigation className="w-3 h-3 mr-1" />

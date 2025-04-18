@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { useNavigate } from 'react-router-dom';
@@ -11,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, MapPin, Users, Info, Shield, Clock, Euro, Image as ImageIcon, Save } from 'lucide-react';
+import { Calendar as CalendarIcon, MapPin, Users, Info, Shield, Clock, Euro, Image as ImageIcon, Save, Timer, Eye, Award, AlertCircle } from 'lucide-react';
 import { fr } from "date-fns/locale";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,6 +20,8 @@ import * as z from "zod";
 import { toast } from "@/components/ui/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { ScrollToTop } from "../components/ui/scroll-to-top";
 
 const partyFormSchema = z.object({
   title: z.string().min(5, "Le titre doit comporter au moins 5 caractères"),
@@ -40,6 +43,17 @@ const partyFormSchema = z.object({
   hasToilets: z.boolean().default(false),
   hasParking: z.boolean().default(false),
   hasEquipmentRental: z.boolean().default(false),
+  aeg_fps_min: z.string().default("280"),
+  aeg_fps_max: z.string().default("350"),
+  dmr_fps_max: z.string().default("450"),
+  eyeProtectionRequired: z.boolean().default(true),
+  fullFaceProtectionRequired: z.boolean().default(false),
+  hpaAllowed: z.boolean().default(true),
+  polarStarAllowed: z.boolean().default(true),
+  tracersAllowed: z.boolean().default(true),
+  grenadesAllowed: z.boolean().default(true),
+  smokesAllowed: z.boolean().default(false),
+  pyroAllowed: z.boolean().default(false),
   terms: z.boolean().refine(val => val === true, {
     message: "Vous devez accepter les conditions",
   }),
@@ -80,6 +94,17 @@ const CreateParty = () => {
       hasToilets: false,
       hasParking: false,
       hasEquipmentRental: false,
+      aeg_fps_min: "280",
+      aeg_fps_max: "350",
+      dmr_fps_max: "450",
+      eyeProtectionRequired: true,
+      fullFaceProtectionRequired: false,
+      hpaAllowed: true,
+      polarStarAllowed: true,
+      tracersAllowed: true,
+      grenadesAllowed: true,
+      smokesAllowed: false,
+      pyroAllowed: false,
       terms: false,
       isPrivate: false,
     },
@@ -119,6 +144,11 @@ const CreateParty = () => {
       navigate('/parties');
     }, 1500);
   };
+
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -339,6 +369,250 @@ const CreateParty = () => {
                             <Input placeholder="Code postal" {...field} />
                           </FormControl>
                           <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Timer className="h-5 w-5 text-airsoft-red" />
+                    Limites de puissance
+                  </CardTitle>
+                  <CardDescription>
+                    Définissez les limites de FPS pour votre partie
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium">AEG / GBB</h3>
+                      <div className="flex space-x-4">
+                        <FormField
+                          control={form.control}
+                          name="aeg_fps_min"
+                          render={({ field }) => (
+                            <FormItem className="flex-1">
+                              <FormLabel>FPS Min</FormLabel>
+                              <FormControl>
+                                <Input type="number" {...field} min="0" max="500" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="aeg_fps_max"
+                          render={({ field }) => (
+                            <FormItem className="flex-1">
+                              <FormLabel>FPS Max</FormLabel>
+                              <FormControl>
+                                <Input type="number" {...field} min="0" max="500" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                    
+                    <FormField
+                      control={form.control}
+                      name="dmr_fps_max"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Sniper / DMR (FPS Max)</FormLabel>
+                          <FormControl>
+                            <Input type="number" {...field} min="0" max="600" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Eye className="h-5 w-5 text-airsoft-red" />
+                    Protection
+                  </CardTitle>
+                  <CardDescription>
+                    Exigences de protection pour les joueurs
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="eyeProtectionRequired"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base">Protection oculaire</FormLabel>
+                            <p className="text-sm text-muted-foreground">
+                              Obligatoire pour tous les joueurs
+                            </p>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="fullFaceProtectionRequired"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base">Protection intégrale</FormLabel>
+                            <p className="text-sm text-muted-foreground">
+                              Obligatoire pour tous les joueurs (masque complet)
+                            </p>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Award className="h-5 w-5 text-airsoft-red" />
+                    Types de répliques
+                  </CardTitle>
+                  <CardDescription>
+                    Définissez les types de répliques autorisés
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="hpaAllowed"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <FormLabel className="text-base">HPA</FormLabel>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="polarStarAllowed"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <FormLabel className="text-base">Polar Star</FormLabel>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="tracersAllowed"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <FormLabel className="text-base">Traceurs</FormLabel>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <AlertCircle className="h-5 w-5 text-airsoft-red" />
+                    Consommables
+                  </CardTitle>
+                  <CardDescription>
+                    Définissez les consommables autorisés sur le terrain
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="grenadesAllowed"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <FormLabel className="text-base">Grenades</FormLabel>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="smokesAllowed"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <FormLabel className="text-base">Fumigènes</FormLabel>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="pyroAllowed"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <FormLabel className="text-base">Pyrotechnie</FormLabel>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
                         </FormItem>
                       )}
                     />

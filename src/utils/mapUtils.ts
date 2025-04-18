@@ -1,4 +1,5 @@
 
+// Calculate distance between two coordinates in kilometers (haversine formula)
 export const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
   const R = 6371; // Radius of the earth in km
   const dLat = deg2rad(lat2 - lat1);
@@ -8,7 +9,8 @@ export const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2
     Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
     Math.sin(dLon / 2) * Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c; // Distance in km
+  const d = R * c; // Distance in km
+  return d;
 };
 
 const deg2rad = (deg: number): number => {
