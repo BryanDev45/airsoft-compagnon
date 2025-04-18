@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { UserResponse } from '@supabase/supabase-js';
+import { getRandomAvatar } from '@/utils/avatarUtils';
 
 export const useAuth = () => {
   const [user, setUser] = useState<any>(null);
@@ -48,26 +49,41 @@ export const useAuth = () => {
 
   const register = async (email: string, password: string, userData: any) => {
     try {
-      // Vérifie si l'email existe déjà
-      const { data: existingUser } = await supabase
+      // Ajouter un avatar aléatoire aux données utilisateur
+      const userDataWithAvatar = {
+        ...userData,
+        avatar: getRandomAvatar()
+      };
+
+      // Vérifier si l'email existe déjà
+      const { data: existingUser, error: checkError } = await supabase
         .from('profiles')
         .select('email')
         .eq('email', email)
-        .single();
+        .maybeSingle();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw new Error(`Erreur lors de la vérification de l'email: ${checkError.message}`);
+      }
 
       if (existingUser) {
         throw new Error('Cette adresse email est déjà utilisée');
       }
 
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: userData,
+          data: userDataWithAvatar,
         },
       });
       
       if (error) throw error;
+
+      // Si l'inscription est réussie mais qu'aucun utilisateur n'est créé
+      if (!data.user) {
+        throw new Error("Erreur lors de la création du compte");
+      }
       
       toast({
         title: "Inscription réussie",
@@ -75,6 +91,7 @@ export const useAuth = () => {
       });
       navigate('/profile');
     } catch (error: any) {
+      console.error("Erreur d'inscription:", error);
       toast({
         title: "Erreur d'inscription",
         description: error.message,
