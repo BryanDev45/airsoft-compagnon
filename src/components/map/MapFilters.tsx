@@ -116,14 +116,14 @@ const MapFilters: React.FC<MapFiltersProps> = ({
         <Slider 
           value={searchRadius} 
           onValueChange={setSearchRadius} 
-          max={100} 
+          max={200} 
           step={1}
           className="my-4"
         />
         <div className="flex justify-between text-xs text-gray-400">
           <span>0 km</span>
-          <span>50 km</span>
           <span>100 km</span>
+          <span>200 km</span>
         </div>
       </div>
     </div>
