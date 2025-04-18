@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
@@ -19,22 +18,19 @@ const ScrollToTop = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-  
   return null;
 };
-
 const Recherche = () => {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeTab, setActiveTab] = useState("parties");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchCenter, setSearchCenter] = useState<[number, number]>([2.3522, 48.8566]); // Paris coordinates
-  
+
   useEffect(() => {
     const authState = localStorage.getItem('isAuthenticated');
     setIsAuthenticated(authState === 'true');
   }, []);
-
   const handleCreateParty = () => {
     if (isAuthenticated) {
       navigate('/parties/create');
@@ -42,9 +38,7 @@ const Recherche = () => {
       navigate('/login');
     }
   };
-
-  return (
-    <div className="min-h-screen flex flex-col">
+  return <div className="min-h-screen flex flex-col">
       <ScrollToTop />
       <Header />
       <main className="flex-grow">
@@ -58,10 +52,7 @@ const Recherche = () => {
                 </p>
               </div>
               <Link to="/parties/create">
-                <Button className="bg-airsoft-red hover:bg-red-700">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Créer une partie
-                </Button>
+                
               </Link>
             </div>
 
@@ -130,11 +121,7 @@ const Recherche = () => {
                     </div>
                     
                     <div className="h-[600px] rounded-lg overflow-hidden">
-                      <MapComponent 
-                        searchCenter={searchCenter}
-                        searchRadius={0}
-                        filteredEvents={[]}
-                      />
+                      <MapComponent searchCenter={searchCenter} searchRadius={0} filteredEvents={[]} />
                     </div>
                   </CardContent>
                 </Card>
@@ -144,8 +131,6 @@ const Recherche = () => {
         </div>
       </main>
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default Recherche;
