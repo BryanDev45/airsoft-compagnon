@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Edit, Save, X, Gamepad, Plus, Star, Award, Zap, Calendar } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 interface ProfileStatsProps {
   stats: any;
@@ -14,13 +15,20 @@ const ProfileStats = ({
   stats,
   readOnly = true
 }: ProfileStatsProps) => {
+  const { updateStats } = useUserProfile();
   const [editing, setEditing] = useState(false);
-  const [preferredGameType, setPreferredGameType] = useState(stats.preferredGameType);
-  const [favoriteRole, setFavoriteRole] = useState(stats.favoriteRole);
+  const [preferredGameType, setPreferredGameType] = useState(stats?.preferred_game_type || stats?.preferredGameType || 'CQB');
+  const [favoriteRole, setFavoriteRole] = useState(stats?.favorite_role || stats?.favoriteRole || 'Assaut');
   
-  const handleSave = () => {
-    // In a real app, we would save to backend here
-    setEditing(false);
+  const handleSave = async () => {
+    const updated = await updateStats({
+      preferred_game_type: preferredGameType,
+      favorite_role: favoriteRole
+    });
+    
+    if (updated) {
+      setEditing(false);
+    }
   };
   
   return (
@@ -54,7 +62,7 @@ const ProfileStats = ({
               <Gamepad className="h-5 w-5 text-airsoft-red" />
               <div className="space-y-1">
                 <p className="text-sm text-gray-500">Parties jouées</p>
-                <p className="font-medium">{stats.gamesPlayed || stats.timePlayed}</p>
+                <p className="font-medium">{stats?.games_played || stats?.gamesPlayed || stats?.time_played || stats?.timePlayed || '0'}</p>
               </div>
             </div>
             
@@ -62,7 +70,7 @@ const ProfileStats = ({
               <Plus className="h-5 w-5 text-airsoft-red" />
               <div className="space-y-1">
                 <p className="text-sm text-gray-500">Parties créées</p>
-                <p className="font-medium">{stats.gamesCreated || '5'}</p>
+                <p className="font-medium">{stats?.games_organized || stats?.gamesCreated || '0'}</p>
               </div>
             </div>
             
@@ -81,6 +89,7 @@ const ProfileStats = ({
                       <SelectItem value="Domination">Domination</SelectItem>
                       <SelectItem value="Escort">Escort</SelectItem>
                       <SelectItem value="Rush">Rush</SelectItem>
+                      <SelectItem value="CQB">CQB</SelectItem>
                     </SelectContent>
                   </Select>
                 ) : (
@@ -118,7 +127,7 @@ const ProfileStats = ({
               <Zap className="h-5 w-5 text-airsoft-red" />
               <div className="space-y-1">
                 <p className="text-sm text-gray-500">Nombre d'opérations</p>
-                <p className="font-medium">{stats.operations || '12'}</p>
+                <p className="font-medium">{stats?.operations || '0'}</p>
               </div>
             </div>
             
@@ -126,7 +135,7 @@ const ProfileStats = ({
               <Calendar className="h-5 w-5 text-airsoft-red" />
               <div className="space-y-1">
                 <p className="text-sm text-gray-500">Nombre de dominicales</p>
-                <p className="font-medium">{stats.sundayGames || '24'}</p>
+                <p className="font-medium">{stats?.sunday_games || stats?.sundayGames || '0'}</p>
               </div>
             </div>
           </div>

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,10 +15,12 @@ import ProfileSettingsDialog from '../components/profile/ProfileSettingsDialog';
 import ProfileEditMediaDialog from '../components/profile/ProfileEditMediaDialog';
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { Skeleton } from '@/components/ui/skeleton';
 
 const Profile = () => {
   const {
     user,
+    loading,
     editing,
     setEditing,
     selectedGame,
@@ -58,6 +60,51 @@ const Profile = () => {
     setAddingEquipment(true);
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-grow bg-gray-50 py-12">
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div className="h-32 bg-gradient-to-r from-blue-600 to-airsoft-red"></div>
+              <div className="px-6 py-4 flex flex-col sm:flex-row items-center sm:items-start relative">
+                <Skeleton className="w-24 h-24 sm:w-32 sm:h-32 -mt-12 sm:-mt-16 rounded-full" />
+                <div className="flex-1 text-center sm:text-left sm:ml-4 mt-2 sm:mt-0">
+                  <Skeleton className="h-8 w-48 mb-2" />
+                  <Skeleton className="h-4 w-64 mb-2" />
+                  <Skeleton className="h-4 w-32" />
+                </div>
+              </div>
+              <div className="p-6">
+                <Skeleton className="h-10 w-full mb-6" />
+                <div className="space-y-4">
+                  <Skeleton className="h-48 w-full" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-grow bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-2">Chargement du profil...</h2>
+            <p>Veuillez patienter</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -92,14 +139,14 @@ const Profile = () => {
                 
                 <TabsContent value="games">
                   <ProfileGames 
-                    games={user.games} 
+                    games={user.games || []} 
                     handleViewGameDetails={handleViewGameDetails} 
                     handleViewAllGames={handleViewAllGames} 
                   />
                 </TabsContent>
                 
                 <TabsContent value="stats">
-                  <ProfileStats stats={user.stats} />
+                  <ProfileStats stats={user.stats} readOnly={false} />
                 </TabsContent>
                 
                 <TabsContent value="equipment">
@@ -113,7 +160,7 @@ const Profile = () => {
                   </div>
                   
                   <ProfileEquipment 
-                    equipment={user.equipment} 
+                    equipment={user.equipment || []} 
                     equipmentTypes={equipmentTypes}
                     readOnly={false}
                   />
@@ -121,7 +168,7 @@ const Profile = () => {
                 
                 <TabsContent value="badges">
                   <ProfileBadges 
-                    badges={user.badges} 
+                    badges={user.badges || []} 
                     handleViewAllBadges={handleViewAllBadges} 
                   />
                 </TabsContent>

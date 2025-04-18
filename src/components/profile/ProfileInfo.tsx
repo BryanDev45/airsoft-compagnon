@@ -1,17 +1,30 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { LogOut, Star } from 'lucide-react';
+import { LogOut, Star, Edit, Save, X, MapPin } from 'lucide-react';
 import { toast } from "@/components/ui/use-toast";
+import { Input } from "@/components/ui/input";
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 const ProfileInfo = ({ user, editing, setEditing, handleNavigateToTeam }) => {
+  const { updateProfile } = useUserProfile();
+  const [isEditingLocation, setIsEditingLocation] = useState(false);
+  const [location, setLocation] = useState(user?.location || '');
+
   const handleLeaveTeam = () => {
     if (confirm("Êtes-vous sûr de vouloir quitter l'équipe ?")) {
       toast({
         title: "Équipe quittée",
         description: "Vous avez quitté l'équipe avec succès"
       });
+    }
+  };
+
+  const handleSaveLocation = async () => {
+    const updated = await updateProfile({ location });
+    if (updated) {
+      setIsEditingLocation(false);
     }
   };
 
@@ -60,11 +73,51 @@ const ProfileInfo = ({ user, editing, setEditing, handleNavigateToTeam }) => {
               </div>
               <div className="space-y-1">
                 <span className="text-sm font-medium text-gray-500">Localisation</span>
-                <p className="text-gray-900">{user.location}</p>
+                {isEditingLocation ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="relative flex-grow">
+                      <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                      <Input
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                        placeholder="Votre localisation"
+                        className="pl-9"
+                      />
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => setIsEditingLocation(false)}
+                      className="h-9 w-9"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={handleSaveLocation} 
+                      className="h-9 w-9 bg-airsoft-red text-white hover:bg-red-700"
+                    >
+                      <Save className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <p className="text-gray-900">{user.location || 'Non spécifié'}</p>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-gray-500 hover:text-airsoft-red"
+                      onClick={() => setIsEditingLocation(true)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
               <div className="space-y-1">
                 <span className="text-sm font-medium text-gray-500">Date de création du compte</span>
-                <p className="text-gray-900">{user.memberSince}</p>
+                <p className="text-gray-900">{user.memberSince || user.join_date}</p>
               </div>
               <div className="space-y-1">
                 <span className="text-sm font-medium text-gray-500">Note moyenne</span>
