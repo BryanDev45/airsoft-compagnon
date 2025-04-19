@@ -13,7 +13,7 @@ const ProfileHeader = ({
 }) => {
   return (
     <div className="relative">
-      <div className="w-full h-56 md:h-64 bg-gray-200 overflow-hidden">
+      <div className="w-full h-64 md:h-72 bg-gray-200 overflow-hidden">
         {user?.banner ? (
           <img 
             src={user.banner} 

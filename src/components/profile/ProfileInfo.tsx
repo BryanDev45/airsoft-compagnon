@@ -133,7 +133,9 @@ const ProfileInfo = ({ user, profileData, updateLocation, handleNavigateToTeam }
               {isEditing ? (
                 <div className="mt-1">
                   <ComboboxDemo 
-                    onSelect={(city) => setSelectedCity(city)}
+                    onSelect={(city) => {
+                      setSelectedCity(city);
+                    }}
                     defaultValue={location}
                   />
                 </div>
