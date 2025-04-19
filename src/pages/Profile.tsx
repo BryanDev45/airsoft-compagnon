@@ -15,8 +15,11 @@ import ProfileBadges from '../components/profile/ProfileBadges';
 import ProfileDialogs from '../components/profile/ProfileDialogs';
 import ProfileSettingsDialog from '../components/profile/ProfileSettingsDialog';
 import ProfileEditMediaDialog from '../components/profile/ProfileEditMediaDialog';
+import ProfileEditBioDialog from '../components/profile/ProfileEditBioDialog';
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/components/ui/use-toast';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -31,6 +34,7 @@ const Profile = () => {
 
   const [showSettingsDialog, setShowSettingsDialog] = React.useState(false);
   const [showEditMediaDialog, setShowEditMediaDialog] = React.useState(false);
+  const [showEditBioDialog, setShowEditBioDialog] = React.useState(false);
   const [addingEquipment, setAddingEquipment] = React.useState(false);
   const [selectedGame, setSelectedGame] = React.useState(null);
   const [showGameDialog, setShowGameDialog] = React.useState(false);
@@ -72,6 +76,7 @@ const Profile = () => {
               isOwnProfile={true}
               setEditing={() => setShowEditMediaDialog(true)}
               toggleProfileSettings={() => setShowSettingsDialog(true)}
+              onEditBio={() => setShowEditBioDialog(true)}
             />
             
             <div className="p-6">
@@ -162,6 +167,12 @@ const Profile = () => {
       <ProfileEditMediaDialog
         open={showEditMediaDialog}
         onOpenChange={setShowEditMediaDialog}
+      />
+      
+      <ProfileEditBioDialog
+        open={showEditBioDialog}
+        onOpenChange={setShowEditBioDialog}
+        currentBio={profileData?.bio || ''}
       />
     </div>
   );

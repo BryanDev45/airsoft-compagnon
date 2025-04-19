@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -48,10 +49,20 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
     
     setLoading(true);
     try {
+      const updates = {};
+      
       if (avatarPreview) {
+        updates['avatar'] = avatarPreview;
+      }
+      
+      if (bannerPreview) {
+        updates['banner'] = bannerPreview;
+      }
+      
+      if (Object.keys(updates).length > 0) {
         const { error: updateError } = await supabase
           .from('profiles')
-          .update({ avatar: avatarPreview })
+          .update(updates)
           .eq('id', user.id);
 
         if (updateError) throw updateError;

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, Pencil, Upload, List, Zap, Tag, FileText, Trash2, Wrench } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
   DialogContent,
@@ -41,39 +42,157 @@ const ProfileEquipment = ({
   const [addingEquipment, setAddingEquipment] = useState(false);
   const [editingEquipment, setEditingEquipment] = useState<any>(null);
   const [deletingEquipmentId, setDeletingEquipmentId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
   
-  const handleAddEquipment = (e: React.FormEvent) => {
-    e.preventDefault();
-    setAddingEquipment(false);
-    toast({
-      title: "Équipement ajouté",
-      description: "Votre nouvel équipement a été ajouté avec succès"
+  const [newEquipment, setNewEquipment] = useState({
+    type: '',
+    brand: '',
+    power: '',
+    description: '',
+    image: '/placeholder.svg'
+  });
+  
+  const resetNewEquipment = () => {
+    setNewEquipment({
+      type: '',
+      brand: '',
+      power: '',
+      description: '',
+      image: '/placeholder.svg'
     });
+  };
+  
+  const handleAddEquipment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!user?.id) {
+      toast({
+        title: "Erreur",
+        description: "Vous devez être connecté pour ajouter un équipement",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!newEquipment.type) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez sélectionner un type d'équipement",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      const { data, error } = await supabase
+        .from('equipment')
+        .insert({
+          ...newEquipment,
+          user_id: user.id
+        })
+        .select();
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Équipement ajouté",
+        description: "Votre nouvel équipement a été ajouté avec succès"
+      });
+      
+      window.location.reload();
+      
+      setAddingEquipment(false);
+      resetNewEquipment();
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible d'ajouter l'équipement",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEditEquipment = (item: any) => {
     setEditingEquipment(item);
   };
 
-  const handleSaveEdit = (e: React.FormEvent) => {
+  const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setEditingEquipment(null);
-    toast({
-      title: "Équipement modifié",
-      description: "Votre équipement a été modifié avec succès"
-    });
+    
+    if (!editingEquipment?.id || !user?.id) return;
+    
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('equipment')
+        .update({
+          type: editingEquipment.type,
+          brand: editingEquipment.brand,
+          power: editingEquipment.power,
+          description: editingEquipment.description,
+          image: editingEquipment.image
+        })
+        .eq('id', editingEquipment.id)
+        .eq('user_id', user.id);
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Équipement modifié",
+        description: "Votre équipement a été modifié avec succès"
+      });
+      
+      setEditingEquipment(null);
+      window.location.reload();
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de modifier l'équipement",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDeleteEquipment = (id: string) => {
     setDeletingEquipmentId(id);
   };
 
-  const confirmDelete = () => {
-    toast({
-      title: "Équipement supprimé",
-      description: "Votre équipement a été supprimé avec succès"
-    });
-    setDeletingEquipmentId(null);
+  const confirmDelete = async () => {
+    if (!deletingEquipmentId || !user?.id) return;
+    
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('equipment')
+        .delete()
+        .eq('id', deletingEquipmentId)
+        .eq('user_id', user.id);
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Équipement supprimé",
+        description: "Votre équipement a été supprimé avec succès"
+      });
+      
+      window.location.reload();
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de supprimer l'équipement",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+      setDeletingEquipmentId(null);
+    }
   };
 
   return (

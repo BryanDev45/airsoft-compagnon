@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Edit, Save, X, Trophy, Users, Timer, Target, Flag, Crosshair } from 'lucide-react';
+import { Edit, Save, X, Trophy, Users } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -15,10 +15,40 @@ const ProfileStats = ({ userStats, updateUserStats }: ProfileStatsProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [preferredGameType, setPreferredGameType] = useState(userStats?.preferred_game_type || 'CQB');
   const [favoriteRole, setFavoriteRole] = useState(userStats?.favorite_role || 'Assaut');
+  const [selectedLevel, setSelectedLevel] = useState(userStats?.level || 'Débutant');
+  
+  const levels = ['Débutant', 'Intermédiaire', 'Confirmé', 'Expert', 'Élite'];
 
   const handleSave = async () => {
-    await updateUserStats(preferredGameType, favoriteRole);
-    setIsEditing(false);
+    try {
+      // Mise à jour du niveau dans la base de données
+      const { error } = await supabase
+        .from('user_stats')
+        .update({ 
+          preferred_game_type: preferredGameType,
+          favorite_role: favoriteRole,
+          level: selectedLevel 
+        })
+        .eq('user_id', userStats.user_id);
+
+      if (error) throw error;
+      
+      // Appel de la fonction existante pour mettre à jour les autres statistiques
+      await updateUserStats(preferredGameType, favoriteRole);
+      
+      setIsEditing(false);
+      
+      toast({
+        title: "Statistiques mises à jour",
+        description: "Vos préférences et votre niveau ont été mis à jour.",
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour les statistiques",
+        variant: "destructive",
+      });
+    }
   };
 
   if (!userStats) {
@@ -127,15 +157,23 @@ const ProfileStats = ({ userStats, updateUserStats }: ProfileStatsProps) => {
               
               <div className="space-y-2">
                 <label className="text-sm font-medium">Niveau</label>
-                <p className="text-gray-800">{userStats.level}</p>
-              </div>
-              
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Réputation</label>
-                <div className="flex items-center gap-2">
-                  <Progress value={userStats.reputation * 10} className="h-2" />
-                  <span className="text-sm">{userStats.reputation}/10</span>
-                </div>
+                {isEditing ? (
+                  <Select 
+                    value={selectedLevel} 
+                    onValueChange={setSelectedLevel}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionnez un niveau" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {levels.map(level => (
+                        <SelectItem key={level} value={level}>{level}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="text-gray-800">{userStats.level}</p>
+                )}
               </div>
             </div>
             
@@ -150,49 +188,9 @@ const ProfileStats = ({ userStats, updateUserStats }: ProfileStatsProps) => {
                 </div>
                 
                 <div className="flex flex-col items-center border rounded-lg p-3">
-                  <Crosshair className="h-5 w-5 text-green-500 mb-1" />
-                  <span className="text-2xl font-bold">{userStats.accuracy}</span>
-                  <span className="text-xs text-gray-500">Précision</span>
-                </div>
-                
-                <div className="flex flex-col items-center border rounded-lg p-3">
                   <Users className="h-5 w-5 text-blue-500 mb-1" />
-                  <span className="text-2xl font-bold">{userStats.win_rate}</span>
-                  <span className="text-xs text-gray-500">Taux de victoire</span>
-                </div>
-                
-                <div className="flex flex-col items-center border rounded-lg p-3">
-                  <Timer className="h-5 w-5 text-orange-500 mb-1" />
-                  <span className="text-2xl font-bold">{userStats.time_played}</span>
-                  <span className="text-xs text-gray-500">Temps de jeu</span>
-                </div>
-              </div>
-              
-              <h3 className="font-medium text-lg mt-2">Objectifs</h3>
-              
-              <div className="space-y-3">
-                <div className="space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span>Objectifs complétés</span>
-                    <span>{userStats.objectives_completed}</span>
-                  </div>
-                  <Progress value={Math.min(userStats.objectives_completed, 100)} className="h-1.5" />
-                </div>
-                
-                <div className="space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span>Drapeaux capturés</span>
-                    <span>{userStats.flags_captured}</span>
-                  </div>
-                  <Progress value={Math.min(userStats.flags_captured, 100)} className="h-1.5" />
-                </div>
-                
-                <div className="space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span>Sens tactique</span>
-                    <span>{userStats.tactical_awareness}</span>
-                  </div>
-                  <Progress value={userStats.tactical_awareness === 'Excellent' ? 100 : userStats.tactical_awareness === 'Bon' ? 75 : userStats.tactical_awareness === 'Moyen' ? 50 : 25} className="h-1.5" />
+                  <span className="text-2xl font-bold">{userStats.games_organized || 0}</span>
+                  <span className="text-xs text-gray-500">Parties créées</span>
                 </div>
               </div>
             </div>

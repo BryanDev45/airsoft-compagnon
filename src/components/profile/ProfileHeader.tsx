@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { 
   Edit,
-  Mail,
+  Image,
   MessageCircle,
   UserPlus,
   Shield,
@@ -22,9 +22,10 @@ interface ProfileHeaderProps {
   isOwnProfile: boolean;
   setEditing?: (value: boolean) => void;
   toggleProfileSettings?: () => void;
+  onEditBio?: () => void;
 }
 
-const ProfileHeader = ({ user, isOwnProfile, setEditing, toggleProfileSettings }: ProfileHeaderProps) => {
+const ProfileHeader = ({ user, isOwnProfile, setEditing, toggleProfileSettings, onEditBio }: ProfileHeaderProps) => {
   // Ajout d'une vérification pour s'assurer que user n'est pas null
   if (!user) {
     return (
@@ -39,13 +40,30 @@ const ProfileHeader = ({ user, isOwnProfile, setEditing, toggleProfileSettings }
 
   return (
     <div className="bg-white shadow rounded-lg overflow-hidden">
-      <div className="h-32 bg-gradient-to-r from-blue-600 to-airsoft-red"></div>
+      <div className="h-32 bg-gradient-to-r from-blue-600 to-airsoft-red">
+        {user.banner && (
+          <img 
+            src={user.banner} 
+            alt="Bannière de profil" 
+            className="w-full h-full object-cover"
+          />
+        )}
+      </div>
       <div className="px-6 py-4 flex flex-col sm:flex-row items-center sm:items-start relative">
-        <div className="w-24 h-24 sm:w-32 sm:h-32 -mt-12 sm:-mt-16 rounded-full overflow-hidden border-4 border-white bg-white">
+        <div className="w-24 h-24 sm:w-32 sm:h-32 -mt-12 sm:-mt-16 rounded-full overflow-hidden border-4 border-white bg-white relative group">
           <Avatar className="w-full h-full">
             <AvatarImage src={user.avatar} alt={user.username || 'Utilisateur'} />
             <AvatarFallback>{(user.username || 'U').charAt(0).toUpperCase()}</AvatarFallback>
           </Avatar>
+          
+          {isOwnProfile && (
+            <div 
+              className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 flex items-center justify-center transition-all cursor-pointer"
+              onClick={() => setEditing?.(true)}
+            >
+              <Image className="text-white opacity-0 group-hover:opacity-100 h-8 w-8" />
+            </div>
+          )}
         </div>
         
         <div className="flex-1 text-center sm:text-left sm:ml-4 mt-2 sm:mt-0">
@@ -61,7 +79,19 @@ const ProfileHeader = ({ user, isOwnProfile, setEditing, toggleProfileSettings }
             )}
           </div>
           
-          <p className="text-gray-600">{user.bio || 'Aucune biographie'}</p>
+          <div className="relative group">
+            <p className="text-gray-600 pr-6">{user.bio || 'Aucune biographie'}</p>
+            {isOwnProfile && (
+              <Button 
+                onClick={onEditBio} 
+                variant="ghost" 
+                size="sm" 
+                className="absolute right-0 top-0 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
           
           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-2 mt-3 text-sm text-gray-600">
             {user.location && (
