@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -173,6 +172,7 @@ const Profile = () => {
         open={showEditBioDialog}
         onOpenChange={setShowEditBioDialog}
         currentBio={profileData?.bio || ''}
+        currentUsername={profileData?.username || ''}
       />
     </div>
   );

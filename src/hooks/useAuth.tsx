@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -32,8 +33,7 @@ export const useAuth = () => {
         email, 
         password,
         options: {
-          // Pour "Remember me", il faut utiliser les options correctes
-          // qui sont compatibles avec l'API Supabase
+          // Les options disponibles selon la doc de Supabase
         }
       });
       if (error) throw error;

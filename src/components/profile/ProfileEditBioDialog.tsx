@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,28 +13,33 @@ interface ProfileEditBioDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   currentBio: string;
+  currentUsername: string;
 }
 
-const ProfileEditBioDialog = ({ open, onOpenChange, currentBio }: ProfileEditBioDialogProps) => {
+const ProfileEditBioDialog = ({ open, onOpenChange, currentBio, currentUsername }: ProfileEditBioDialogProps) => {
   const [bio, setBio] = useState(currentBio || '');
+  const [username, setUsername] = useState(currentUsername || '');
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
-  const handleSaveBio = async () => {
+  const handleSave = async () => {
     if (!user?.id) return;
     
     setLoading(true);
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ bio })
+        .update({ 
+          bio,
+          username 
+        })
         .eq('id', user.id);
 
       if (error) throw error;
 
       toast({
-        title: "Bio mise à jour",
-        description: "Votre biographie a été mise à jour avec succès."
+        title: "Profil mis à jour",
+        description: "Votre bio et votre nom d'utilisateur ont été mis à jour avec succès."
       });
       
       onOpenChange(false);
@@ -42,7 +48,7 @@ const ProfileEditBioDialog = ({ open, onOpenChange, currentBio }: ProfileEditBio
     } catch (error: any) {
       toast({
         title: "Erreur",
-        description: "Impossible de mettre à jour votre biographie",
+        description: "Impossible de mettre à jour votre profil",
         variant: "destructive"
       });
     } finally {
@@ -54,13 +60,23 @@ const ProfileEditBioDialog = ({ open, onOpenChange, currentBio }: ProfileEditBio
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Modifier votre biographie</DialogTitle>
+          <DialogTitle>Modifier votre profil</DialogTitle>
           <DialogDescription>
-            Partagez quelques informations sur vous avec la communauté
+            Personnalisez votre profil pour la communauté
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="username">Nom d'utilisateur</Label>
+            <Input
+              id="username"
+              placeholder="Votre nom d'utilisateur"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+          </div>
+          
           <div className="space-y-2">
             <Label htmlFor="bio">Biographie</Label>
             <Textarea
@@ -82,7 +98,7 @@ const ProfileEditBioDialog = ({ open, onOpenChange, currentBio }: ProfileEditBio
             Annuler
           </Button>
           <Button 
-            onClick={handleSaveBio} 
+            onClick={handleSave} 
             className="bg-airsoft-red hover:bg-red-700"
             disabled={loading}
           >

@@ -1,19 +1,22 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from '@/components/ui/use-toast';
-import { Checkbox } from '@/components/ui/checkbox';
-import { useAuth } from '../hooks/useAuth';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 const loginSchema = z.object({
   email: z.string().email({

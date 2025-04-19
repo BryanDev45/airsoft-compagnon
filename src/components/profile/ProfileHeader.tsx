@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -12,7 +11,8 @@ import {
   MapPin,
   Calendar,
   CheckCircle2,
-  Settings
+  Settings,
+  Star
 } from "lucide-react";
 import { Link } from 'react-router-dom';
 import ReportUserButton from './ReportUserButton';
@@ -69,6 +69,13 @@ const ProfileHeader = ({ user, isOwnProfile, setEditing, toggleProfileSettings, 
         <div className="flex-1 text-center sm:text-left sm:ml-4 mt-2 sm:mt-0">
           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1">
             <h1 className="text-2xl font-bold text-gray-900">{user.username || 'Utilisateur'}</h1>
+            
+            {/* Rating display */}
+            <div className="flex items-center text-yellow-500">
+              <Star className="h-4 w-4 fill-current" />
+              <span className="ml-1 text-sm">{user.rating || 4.5}</span>
+            </div>
+            
             {user.verified && (
               <CheckCircle2 className="h-5 w-5 text-blue-600" />
             )}

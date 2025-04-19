@@ -49,7 +49,7 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
     
     setLoading(true);
     try {
-      const updates = {};
+      const updates: Record<string, any> = {};
       
       if (avatarPreview) {
         updates['avatar'] = avatarPreview;
@@ -73,7 +73,7 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
         description: "Vos images de profil ont été mises à jour avec succès."
       });
       
-      // Forcer le rechargement de la page pour voir les changements
+      // Recharge la page pour afficher les changements
       window.location.reload();
       onOpenChange(false);
     } catch (error: any) {
