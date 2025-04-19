@@ -91,7 +91,9 @@ export function ComboboxDemo({ onSelect, defaultValue = "" }) {
                   if (selectedCity) {
                     setValue(currentValue);
                     setDisplayValue(`${selectedCity.city}, ${selectedCity.country}`);
-                    onSelect && onSelect(selectedCity);
+                    if (onSelect) {
+                      onSelect(selectedCity);
+                    }
                   }
                   setOpen(false);
                 }}

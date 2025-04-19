@@ -4,15 +4,17 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { MapPin, Calendar, User, Edit, Save, X, Users } from 'lucide-react';
+import { MapPin, Calendar, User, Edit, Save, X, Users, UserPlus, UserMinus } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { ComboboxDemo } from "./CityCombobox";
+import { useNavigate } from 'react-router-dom';
 
 const ProfileInfo = ({ user, profileData, updateLocation, handleNavigateToTeam }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [location, setLocation] = useState(profileData?.location || '');
   const [selectedCity, setSelectedCity] = useState(null);
+  const navigate = useNavigate();
 
   const handleSave = async () => {
     try {
@@ -28,6 +30,37 @@ const ProfileInfo = ({ user, profileData, updateLocation, handleNavigateToTeam }
       toast({
         title: "Erreur",
         description: "Impossible de mettre à jour votre localisation",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleLeaveTeam = async () => {
+    if (!user?.id) return;
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ 
+          team: null,
+          team_id: null
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Succès",
+        description: "Vous avez quitté votre équipe"
+      });
+      
+      // Rafraîchir la page pour mettre à jour les données
+      window.location.reload();
+    } catch (error) {
+      console.error("Erreur lors de la sortie de l'équipe:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de quitter l'équipe",
         variant: "destructive"
       });
     }
@@ -109,18 +142,42 @@ const ProfileInfo = ({ user, profileData, updateLocation, handleNavigateToTeam }
           
           <div className="flex items-start">
             <Users className="h-5 w-5 text-gray-500 mt-0.5 mr-2" />
-            <div>
+            <div className="flex items-center">
               <h3 className="text-sm font-medium text-gray-500">Équipe</h3>
-              {profileData?.team ? (
-                <button 
-                  onClick={handleNavigateToTeam} 
-                  className="text-lg text-airsoft-red hover:underline"
-                >
-                  {profileData.team}
-                </button>
-              ) : (
-                <p className="text-lg">Aucune équipe</p>
-              )}
+              <div className="flex items-center mt-1">
+                {profileData?.team ? (
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={handleNavigateToTeam} 
+                      className="text-lg text-airsoft-red hover:underline"
+                    >
+                      {profileData.team}
+                    </button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="ml-2 text-red-500 hover:text-red-700 hover:bg-red-50"
+                      onClick={handleLeaveTeam}
+                      title="Quitter l'équipe"
+                    >
+                      <UserMinus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="text-lg">Aucune équipe</p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="ml-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                      onClick={() => navigate('/teams')}
+                      title="Rechercher une équipe"
+                    >
+                      <UserPlus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

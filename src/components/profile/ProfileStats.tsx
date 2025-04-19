@@ -18,6 +18,7 @@ const ProfileStats = ({ userStats, updateUserStats }) => {
   const [gameType, setGameType] = useState('');
   const [role, setRole] = useState('');
   const [level, setLevel] = useState('');
+  const [localStats, setLocalStats] = useState(null);
 
   // Mise à jour des états locaux lorsque les props changent
   useEffect(() => {
@@ -25,18 +26,31 @@ const ProfileStats = ({ userStats, updateUserStats }) => {
       setGameType(userStats.preferred_game_type || 'CQB');
       setRole(userStats.favorite_role || 'Assaut');
       setLevel(userStats.level || 'Débutant');
+      setLocalStats(userStats);
     }
   }, [userStats]);
 
   const handleSave = async () => {
     try {
-      await updateUserStats(gameType, role, level);
-      setIsEditing(false);
-      toast({
-        title: "Statistiques mises à jour",
-        description: "Vos préférences ont été enregistrées avec succès"
-      });
+      const success = await updateUserStats(gameType, role, level);
+      
+      if (success) {
+        // Mettre à jour les stats localement pour un feedback immédiat
+        setLocalStats({
+          ...localStats,
+          preferred_game_type: gameType,
+          favorite_role: role,
+          level: level
+        });
+        setIsEditing(false);
+        
+        toast({
+          title: "Statistiques mises à jour",
+          description: "Vos préférences ont été enregistrées avec succès"
+        });
+      }
     } catch (error) {
+      console.error("Erreur lors de la mise à jour:", error);
       toast({
         title: "Erreur",
         description: "Impossible de mettre à jour vos statistiques",
@@ -56,6 +70,9 @@ const ProfileStats = ({ userStats, updateUserStats }) => {
     };
     return colors[level] || 'bg-gray-100 text-gray-800';
   };
+
+  // Utiliser localStats au lieu de userStats pour le rendu
+  const stats = localStats || userStats;
 
   return (
     <Card className="p-6 shadow-md bg-gradient-to-br from-white to-gray-50">
@@ -102,7 +119,7 @@ const ProfileStats = ({ userStats, updateUserStats }) => {
           <Trophy className="text-amber-500 w-10 h-10 mr-4" />
           <div>
             <span className="text-sm font-medium text-amber-700">Parties jouées</span>
-            <p className="text-amber-900 text-2xl font-bold">{userStats?.games_played || 0}</p>
+            <p className="text-amber-900 text-2xl font-bold">{stats?.games_played || 0}</p>
           </div>
         </div>
 
@@ -110,7 +127,7 @@ const ProfileStats = ({ userStats, updateUserStats }) => {
           <Calendar className="text-blue-500 w-10 h-10 mr-4" />
           <div>
             <span className="text-sm font-medium text-blue-700">Parties créées</span>
-            <p className="text-blue-900 text-2xl font-bold">{userStats?.games_organized || 0}</p>
+            <p className="text-blue-900 text-2xl font-bold">{stats?.games_organized || 0}</p>
           </div>
         </div>
 
@@ -118,7 +135,7 @@ const ProfileStats = ({ userStats, updateUserStats }) => {
           <Star className="text-purple-500 w-10 h-10 mr-4" />
           <div>
             <span className="text-sm font-medium text-purple-700">Réputation</span>
-            <p className="text-purple-900 text-2xl font-bold">{userStats?.reputation || '0'}</p>
+            <p className="text-purple-900 text-2xl font-bold">{stats?.reputation || '0'}</p>
           </div>
         </div>
       </div>
@@ -140,7 +157,7 @@ const ProfileStats = ({ userStats, updateUserStats }) => {
           ) : (
             <div className="flex items-center mt-2">
               <Target className="text-indigo-500 w-5 h-5 mr-2" />
-              <p className="text-indigo-900 font-medium text-lg">{gameType || 'Non spécifié'}</p>
+              <p className="text-indigo-900 font-medium text-lg">{stats?.preferred_game_type || 'Non spécifié'}</p>
             </div>
           )}
         </div>
@@ -161,7 +178,7 @@ const ProfileStats = ({ userStats, updateUserStats }) => {
           ) : (
             <div className="flex items-center mt-2">
               <Users className="text-green-500 w-5 h-5 mr-2" />
-              <p className="text-green-900 font-medium text-lg">{role || 'Non spécifié'}</p>
+              <p className="text-green-900 font-medium text-lg">{stats?.favorite_role || 'Non spécifié'}</p>
             </div>
           )}
         </div>
@@ -183,15 +200,15 @@ const ProfileStats = ({ userStats, updateUserStats }) => {
             <div className="flex items-center justify-between mt-2">
               <div className="flex items-center">
                 <Award className="text-gray-500 w-5 h-5 mr-2" />
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getLevelColor(level || 'Débutant')}`}>
-                  {level || 'Débutant'}
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getLevelColor(stats?.level || 'Débutant')}`}>
+                  {stats?.level || 'Débutant'}
                 </span>
               </div>
               <div className="w-2/3 bg-gray-200 rounded-full h-2.5">
                 <div 
                   className="bg-gradient-to-r from-green-400 to-airsoft-red h-2.5 rounded-full" 
                   style={{ 
-                    width: `${(levelOptions.indexOf(level || 'Débutant') + 1) * (100 / levelOptions.length)}%` 
+                    width: `${(levelOptions.indexOf(stats?.level || 'Débutant') + 1) * (100 / levelOptions.length)}%` 
                   }}
                 ></div>
               </div>

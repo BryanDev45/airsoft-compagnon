@@ -122,22 +122,23 @@ export const useProfileData = (userId: string | undefined) => {
 
       if (error) throw error;
 
-      await fetchProfileData();
-      toast({
-        title: "Succès",
-        description: "Localisation mise à jour",
-      });
+      // Mettre à jour les données locales
+      setProfileData(prev => ({ ...prev, location }));
+      
+      return true;
     } catch (error: any) {
+      console.error("Erreur lors de la mise à jour de la localisation:", error);
       toast({
         title: "Erreur",
         description: "Impossible de mettre à jour la localisation",
         variant: "destructive",
       });
+      return false;
     }
   };
 
   const updateUserStats = async (preferredGameType: string, favoriteRole: string, level: string) => {
-    if (!userId) return;
+    if (!userId) return false;
     
     try {
       const { error } = await supabase
@@ -152,12 +153,19 @@ export const useProfileData = (userId: string | undefined) => {
 
       if (error) throw error;
 
-      await fetchProfileData();
+      // Mettre à jour les données locales sans refetch complet
+      setUserStats(prev => ({
+        ...prev,
+        preferred_game_type: preferredGameType,
+        favorite_role: favoriteRole,
+        level: level,
+        updated_at: new Date().toISOString()
+      }));
       
       return true;
     } catch (error: any) {
       console.error("Erreur lors de la mise à jour des stats:", error);
-      throw error;
+      return false;
     }
   };
 

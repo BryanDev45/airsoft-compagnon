@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -33,12 +32,9 @@ const UserProfile = () => {
   
   const equipmentTypes = ["Réplique principale", "Réplique secondaire", "Protection", "Accessoire"];
   
-  // Récupération des données de l'utilisateur
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // Pour la démonstration, nous utilisons des données statiques
-        // Dans un cas réel, vous feriez une requête à Supabase ici
         const mockUserData = {
           id: '123',
           username: username || 'unknown',
@@ -177,7 +173,6 @@ const UserProfile = () => {
 
   const handleFollowUser = () => {
     setIsFollowing(!isFollowing);
-    // Dans un cas réel, vous feriez une requête à Supabase ici
   };
 
   const handleNavigateToGame = (gameId) => {
@@ -190,7 +185,6 @@ const UserProfile = () => {
     }
   };
 
-  // Placeholder functions for ProfileHeader props
   const setEditing = () => {
     toast({
       title: "Information",
@@ -213,13 +207,11 @@ const UserProfile = () => {
   };
 
   const updateLocation = async () => {
-    // Cette fonction est un placeholder pour assurer la compatibilité avec ProfileInfo
-    // Dans le profil d'un autre utilisateur, nous ne permettons pas la modification
+    return false;
   };
 
   const updateUserStats = async () => {
-    // Cette fonction est un placeholder pour assurer la compatibilité avec ProfileStats
-    // Dans le profil d'un autre utilisateur, nous ne permettons pas la modification
+    return false;
   };
 
   if (loading) {
