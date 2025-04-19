@@ -78,12 +78,12 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
       }
       
       if (Object.keys(updates).length > 0) {
-        const { error: updateError } = await supabase
+        const { error } = await supabase
           .from('profiles')
           .update(updates)
           .eq('id', user.id);
 
-        if (updateError) throw updateError;
+        if (error) throw error;
       }
 
       toast({
@@ -91,9 +91,12 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
         description: "Vos images de profil ont été mises à jour avec succès."
       });
       
-      // Recharge la page pour afficher les changements
-      window.location.reload();
+      // Close the dialog first, then reload
       onOpenChange(false);
+      // Add a small delay before reloading to ensure the dialog closes properly
+      setTimeout(() => {
+        window.location.reload();
+      }, 300);
     } catch (error: any) {
       console.error("Erreur de mise à jour:", error);
       toast({

@@ -100,7 +100,7 @@ const ProfileAddEquipmentDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Ajouter un équipement</DialogTitle>
           <DialogDescription>
@@ -108,7 +108,7 @@ const ProfileAddEquipmentDialog = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-4 py-2">
           <div className="space-y-2">
             <Label htmlFor="type">Type d'équipement</Label>
             <Select value={type} onValueChange={setType}>
@@ -150,14 +150,14 @@ const ProfileAddEquipmentDialog = ({
               placeholder="Décrivez votre équipement..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              rows={3}
+              rows={2}
             />
           </div>
           
           <div className="space-y-2">
             <Label>Image</Label>
             <div className="flex flex-col items-center">
-              <div className="mb-4 w-full h-40 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
+              <div className="mb-2 w-full h-32 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
                 {imagePreview ? (
                   <img 
                     src={imagePreview} 
@@ -165,11 +165,11 @@ const ProfileAddEquipmentDialog = ({
                     className="w-full h-full object-contain"
                   />
                 ) : (
-                  <ImageIcon className="h-10 w-10 text-gray-400" />
+                  <ImageIcon className="h-8 w-8 text-gray-400" />
                 )}
               </div>
               
-              <div className="flex gap-3 mb-2">
+              <div className="flex gap-3 mb-1">
                 <Label 
                   htmlFor="equipment-image" 
                   className="flex items-center gap-1 bg-airsoft-red hover:bg-red-700 text-white px-3 py-2 rounded-md cursor-pointer text-sm"
@@ -201,7 +201,7 @@ const ProfileAddEquipmentDialog = ({
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="mt-2">
           <Button 
             variant="outline" 
             onClick={handleClose} 

@@ -34,7 +34,10 @@ export const useAuth = () => {
         password
       });
       if (error) throw error;
+      
+      // Using navigate to redirect to the profile page after successful login
       navigate('/profile');
+      
       toast({
         title: "Connexion réussie",
         description: "Bienvenue sur Airsoft Compagnon",
