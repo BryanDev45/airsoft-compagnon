@@ -77,7 +77,7 @@ const FpsJouleCalculator = () => {
                   <Slider 
                     value={[fps]} 
                     min={0} 
-                    max={750} 
+                    max={570} 
                     step={1} 
                     onValueChange={value => setFps(value[0])} 
                     className="py-4" 
