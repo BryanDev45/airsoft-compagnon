@@ -58,11 +58,24 @@ export function ComboboxDemo({ onSelect, defaultValue = "" }) {
           setValue(matchedCity.value);
           setDisplayValue(`${matchedCity.city}, ${matchedCity.country}`);
         } else {
+          // Si la ville n'est pas dans notre liste, afficher quand même la valeur
           setDisplayValue(defaultValue);
         }
       }
     }
   }, [defaultValue]);
+
+  const handleSelectCity = (currentValue: string) => {
+    const selectedCity = cities.find(c => c.value === currentValue);
+    if (selectedCity) {
+      setValue(currentValue);
+      setDisplayValue(`${selectedCity.city}, ${selectedCity.country}`);
+      if (onSelect) {
+        onSelect(selectedCity);
+      }
+    }
+    setOpen(false);
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -86,17 +99,7 @@ export function ComboboxDemo({ onSelect, defaultValue = "" }) {
               <CommandItem
                 key={city.value}
                 value={city.value}
-                onSelect={(currentValue) => {
-                  const selectedCity = cities.find(c => c.value === currentValue);
-                  if (selectedCity) {
-                    setValue(currentValue);
-                    setDisplayValue(`${selectedCity.city}, ${selectedCity.country}`);
-                    if (onSelect) {
-                      onSelect(selectedCity);
-                    }
-                  }
-                  setOpen(false);
-                }}
+                onSelect={handleSelectCity}
               >
                 <Check
                   className={cn(

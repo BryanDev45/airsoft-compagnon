@@ -19,13 +19,16 @@ const ProfileInfo = ({ user, profileData, updateLocation, handleNavigateToTeam }
   const handleSave = async () => {
     try {
       const updatedLocation = selectedCity ? `${selectedCity.city}, ${selectedCity.country}` : location;
-      await updateLocation(updatedLocation);
-      setLocation(updatedLocation);
-      setIsEditing(false);
-      toast({
-        title: "Localisation mise à jour",
-        description: "Votre localisation a été mise à jour avec succès"
-      });
+      const success = await updateLocation(updatedLocation);
+      
+      if (success) {
+        setLocation(updatedLocation);
+        setIsEditing(false);
+        toast({
+          title: "Localisation mise à jour",
+          description: "Votre localisation a été mise à jour avec succès"
+        });
+      }
     } catch (error) {
       toast({
         title: "Erreur",
@@ -170,7 +173,7 @@ const ProfileInfo = ({ user, profileData, updateLocation, handleNavigateToTeam }
                       variant="ghost"
                       size="sm"
                       className="ml-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-                      onClick={() => navigate('/teams')}
+                      onClick={() => navigate('/profile')}
                       title="Rechercher une équipe"
                     >
                       <UserPlus className="h-4 w-4" />

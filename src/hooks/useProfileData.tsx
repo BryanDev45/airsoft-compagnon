@@ -112,7 +112,7 @@ export const useProfileData = (userId: string | undefined) => {
   };
 
   const updateLocation = async (location: string) => {
-    if (!userId) return;
+    if (!userId) return false;
     
     try {
       const { error } = await supabase
@@ -141,6 +141,7 @@ export const useProfileData = (userId: string | undefined) => {
     if (!userId) return false;
     
     try {
+      // Mise à jour dans la base de données
       const { error } = await supabase
         .from('user_stats')
         .update({
@@ -153,7 +154,7 @@ export const useProfileData = (userId: string | undefined) => {
 
       if (error) throw error;
 
-      // Mettre à jour les données locales sans refetch complet
+      // Mettre à jour les données locales
       setUserStats(prev => ({
         ...prev,
         preferred_game_type: preferredGameType,

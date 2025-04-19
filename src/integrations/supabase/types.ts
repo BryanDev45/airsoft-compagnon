@@ -46,6 +46,7 @@ export type Database = {
           description: string | null
           id: string
           image: string | null
+          name: string | null
           power: string | null
           type: string
           user_id: string | null
@@ -56,6 +57,7 @@ export type Database = {
           description?: string | null
           id?: string
           image?: string | null
+          name?: string | null
           power?: string | null
           type: string
           user_id?: string | null
@@ -66,6 +68,7 @@ export type Database = {
           description?: string | null
           id?: string
           image?: string | null
+          name?: string | null
           power?: string | null
           type?: string
           user_id?: string | null
@@ -382,67 +385,37 @@ export type Database = {
       }
       user_stats: {
         Row: {
-          accuracy: string | null
-          bomb_defusal: number | null
           created_at: string | null
           favorite_role: string | null
-          flags_captured: number | null
           games_organized: number | null
           games_played: number | null
-          hostage_rescue: number | null
           level: string | null
-          objectives_completed: number | null
           preferred_game_type: string | null
           reputation: number | null
-          tactical_awareness: string | null
-          teamwork: string | null
-          time_played: string | null
           updated_at: string | null
           user_id: string
-          vip_protection: number | null
-          win_rate: string | null
         }
         Insert: {
-          accuracy?: string | null
-          bomb_defusal?: number | null
           created_at?: string | null
           favorite_role?: string | null
-          flags_captured?: number | null
           games_organized?: number | null
           games_played?: number | null
-          hostage_rescue?: number | null
           level?: string | null
-          objectives_completed?: number | null
           preferred_game_type?: string | null
           reputation?: number | null
-          tactical_awareness?: string | null
-          teamwork?: string | null
-          time_played?: string | null
           updated_at?: string | null
           user_id: string
-          vip_protection?: number | null
-          win_rate?: string | null
         }
         Update: {
-          accuracy?: string | null
-          bomb_defusal?: number | null
           created_at?: string | null
           favorite_role?: string | null
-          flags_captured?: number | null
           games_organized?: number | null
           games_played?: number | null
-          hostage_rescue?: number | null
           level?: string | null
-          objectives_completed?: number | null
           preferred_game_type?: string | null
           reputation?: number | null
-          tactical_awareness?: string | null
-          teamwork?: string | null
-          time_played?: string | null
           updated_at?: string | null
           user_id?: string
-          vip_protection?: number | null
-          win_rate?: string | null
         }
         Relationships: []
       }

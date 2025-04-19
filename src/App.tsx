@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import Index from './pages/Index';
@@ -77,6 +78,7 @@ function App() {
         <Route path="/cookies-policy" element={<CookiesPolicy />} />
         <Route path="/faq" element={<FAQ />} />
         <Route path="/team/:id" element={<AuthGuard><Team /></AuthGuard>} />
+        <Route path="/teams" element={<AuthGuard><Parties /></AuthGuard>} />
         <Route path="/toolbox" element={<Toolbox />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

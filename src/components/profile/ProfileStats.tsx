@@ -32,22 +32,20 @@ const ProfileStats = ({ userStats, updateUserStats }) => {
 
   const handleSave = async () => {
     try {
+      // Appel de la fonction de mise à jour fournie par le parent
       const success = await updateUserStats(gameType, role, level);
       
       if (success) {
-        // Mettre à jour les stats localement pour un feedback immédiat
-        setLocalStats({
-          ...localStats,
+        // Mise à jour locale des statistiques
+        setLocalStats(prev => ({
+          ...prev,
           preferred_game_type: gameType,
           favorite_role: role,
-          level: level
-        });
-        setIsEditing(false);
+          level: level,
+          updated_at: new Date().toISOString()
+        }));
         
-        toast({
-          title: "Statistiques mises à jour",
-          description: "Vos préférences ont été enregistrées avec succès"
-        });
+        setIsEditing(false);
       }
     } catch (error) {
       console.error("Erreur lors de la mise à jour:", error);
