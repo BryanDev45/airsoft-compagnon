@@ -41,10 +41,11 @@ const FpsJouleCalculator = () => {
   }, [fps, joules, mode]);
 
   const getReplicaType = (joules: number) => {
-    if (joules <= 1.2) return { type: 'CQB', color: 'bg-gradient-to-r from-green-500 to-green-400' };
-    if (joules <= 1.9) return { type: 'Fusils d\'assaut', color: 'bg-gradient-to-r from-blue-500 to-blue-400' };
-    if (joules <= 2.9) return { type: 'DMR', color: 'bg-gradient-to-r from-orange-500 to-orange-400' };
-    return { type: 'Tireur d\'élite', color: 'bg-gradient-to-r from-red-500 to-red-400' };
+    if (joules <= 1.0) return { type: 'CQB', color: 'bg-gradient-to-r from-green-400 to-green-550' };
+    if (joules <= 1.14) return { type: 'Fusils d\'assaut', color: 'bg-gradient-to-r from-blue-400 to-blue-550' };
+    if (joules <= 1.6) return { type: 'DMR', color: 'bg-gradient-to-r from-orange-400 to-orange-550' };
+    if (joules <= 1.8) return { type: 'Tireur d\'élite', color: 'bg-gradient-to-r from-red-400 to-red-550' };
+    return { type: 'Tireur d\'élite', color: 'bg-gradient-to-r from-red-600 to-red-850' };
   };
 
   return (
