@@ -16,6 +16,11 @@ export const useAuth = () => {
       (event, session) => {
         setUser(session?.user || null);
         setLoading(false);
+        
+        // Redirect to profile page if user logs in
+        if (event === 'SIGNED_IN') {
+          navigate('/profile');
+        }
       }
     );
 
@@ -25,7 +30,7 @@ export const useAuth = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate]);
 
   const login = async (email: string, password: string, rememberMe: boolean = false) => {
     try {
@@ -35,8 +40,7 @@ export const useAuth = () => {
       });
       if (error) throw error;
       
-      // Using navigate to redirect to the profile page after successful login
-      navigate('/profile');
+      // This will be handled by the auth state change listener
       
       toast({
         title: "Connexion réussie",

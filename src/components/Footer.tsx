@@ -1,9 +1,12 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Download, Wrench } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 
 const Footer = () => {
+  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+
   return (
     <footer className="bg-airsoft-dark text-white">
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -41,8 +44,17 @@ const Footer = () => {
               <li><Link to="/parties" className="text-gray-400 hover:text-white transition-colors">Recherche</Link></li>
               <li><Link to="/toolbox" className="text-gray-400 hover:text-white transition-colors">ToolBox</Link></li>
               <li><Link to="/faq" className="text-gray-400 hover:text-white transition-colors">FAQ</Link></li>
-              <li><Link to="/login" className="text-gray-400 hover:text-white transition-colors">Se connecter</Link></li>
-              <li><Link to="/register" className="text-gray-400 hover:text-white transition-colors">S'inscrire</Link></li>
+              {isAuthenticated ? (
+                <>
+                  <li><Link to="/profile" className="text-gray-400 hover:text-white transition-colors">Mon profil</Link></li>
+                  <li><Link to="/team" className="text-gray-400 hover:text-white transition-colors">Mon équipe</Link></li>
+                </>
+              ) : (
+                <>
+                  <li><Link to="/login" className="text-gray-400 hover:text-white transition-colors">Se connecter</Link></li>
+                  <li><Link to="/register" className="text-gray-400 hover:text-white transition-colors">S'inscrire</Link></li>
+                </>
+              )}
             </ul>
           </div>
           
