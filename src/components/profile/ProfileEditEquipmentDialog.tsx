@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import { Upload, Image as ImageIcon, RefreshCw } from 'lucide-react';
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProfileEditEquipmentDialogProps {
   open: boolean;
@@ -18,19 +18,34 @@ interface ProfileEditEquipmentDialogProps {
   onSave: () => void;
 }
 
-const ProfileEditEquipmentDialog = ({
-  open,
-  onOpenChange,
+const ProfileEditEquipmentDialog = ({ 
+  open, 
+  onOpenChange, 
   equipment,
   equipmentTypes,
-  onSave,
+  onSave 
 }: ProfileEditEquipmentDialogProps) => {
-  const [type, setType] = useState(equipment.type);
-  const [brand, setBrand] = useState(equipment.brand);
-  const [power, setPower] = useState(equipment.power);
-  const [description, setDescription] = useState(equipment.description);
-  const [imagePreview, setImagePreview] = useState<string | null>(equipment.image);
+  const [type, setType] = useState(equipment?.type || '');
+  const [name, setName] = useState(equipment?.name || '');
+  const [brand, setBrand] = useState(equipment?.brand || '');
+  const [power, setPower] = useState(equipment?.power || '');
+  const [description, setDescription] = useState(equipment?.description || '');
+  const [image, setImage] = useState(equipment?.image || null);
+  const [newImage, setNewImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(equipment?.image || null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (equipment) {
+      setType(equipment.type || '');
+      setName(equipment.name || '');
+      setBrand(equipment.brand || '');
+      setPower(equipment.power || '');
+      setDescription(equipment.description || '');
+      setImage(equipment.image || null);
+      setImagePreview(equipment.image || null);
+    }
+  }, [equipment]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -44,6 +59,7 @@ const ProfileEditEquipmentDialog = ({
         return;
       }
 
+      setNewImage(file);
       const reader = new FileReader();
       reader.onload = () => {
         setImagePreview(reader.result as string);
@@ -64,10 +80,12 @@ const ProfileEditEquipmentDialog = ({
 
     setLoading(true);
     try {
+      // Mettre à jour les données dans la base de données
       const { error } = await supabase
         .from('equipment')
         .update({
           type,
+          name,
           brand,
           power,
           description,
@@ -78,14 +96,14 @@ const ProfileEditEquipmentDialog = ({
       if (error) throw error;
 
       toast({
-        title: "Succès",
-        description: "L'équipement a été mis à jour"
+        title: "Équipement mis à jour",
+        description: "Votre équipement a été mis à jour avec succès"
       });
-      
+
       onSave();
       onOpenChange(false);
     } catch (error) {
-      console.error("Erreur lors de la mise à jour:", error);
+      console.error("Erreur lors de la mise à jour de l'équipement:", error);
       toast({
         title: "Erreur",
         description: "Impossible de mettre à jour l'équipement",
@@ -102,7 +120,7 @@ const ProfileEditEquipmentDialog = ({
         <DialogHeader>
           <DialogTitle>Modifier l'équipement</DialogTitle>
           <DialogDescription>
-            Modifiez les informations de votre équipement
+            Modifiez les détails de votre équipement
           </DialogDescription>
         </DialogHeader>
 
@@ -119,6 +137,16 @@ const ProfileEditEquipmentDialog = ({
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="name">Nom</Label>
+            <Input
+              id="name"
+              placeholder="Nom de l'équipement"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
           </div>
           
           <div className="space-y-2">
@@ -159,7 +187,7 @@ const ProfileEditEquipmentDialog = ({
                 {imagePreview ? (
                   <img 
                     src={imagePreview} 
-                    alt="Equipment preview" 
+                    alt="Aperçu de l'équipement" 
                     className="w-full h-full object-contain"
                   />
                 ) : (
@@ -169,14 +197,14 @@ const ProfileEditEquipmentDialog = ({
               
               <div className="flex gap-3 mb-1">
                 <Label 
-                  htmlFor="equipment-image" 
+                  htmlFor="edit-equipment-image" 
                   className="flex items-center gap-1 bg-airsoft-red hover:bg-red-700 text-white px-3 py-2 rounded-md cursor-pointer text-sm"
                 >
                   <Upload size={16} />
                   Télécharger
                 </Label>
                 <input 
-                  id="equipment-image" 
+                  id="edit-equipment-image" 
                   type="file" 
                   accept="image/*" 
                   onChange={handleImageChange} 
@@ -208,7 +236,7 @@ const ProfileEditEquipmentDialog = ({
             Annuler
           </Button>
           <Button 
-            onClick={handleSave}
+            onClick={handleSave} 
             className="bg-airsoft-red hover:bg-red-700"
             disabled={loading}
           >

@@ -76,7 +76,7 @@ const ProfileEquipment = ({ equipment, readOnly, equipmentTypes, fetchEquipment 
                     {item.image ? (
                       <img 
                         src={item.image} 
-                        alt={item.brand || 'Équipement'} 
+                        alt={item.name || item.brand || 'Équipement'} 
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -102,7 +102,10 @@ const ProfileEquipment = ({ equipment, readOnly, equipmentTypes, fetchEquipment 
                   <div className="p-4">
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <h4 className="font-medium text-lg">{item.brand || 'Non spécifié'}</h4>
+                        {item.name && (
+                          <h4 className="font-medium text-lg text-airsoft-red">{item.name}</h4>
+                        )}
+                        <h5 className="font-medium text-base">{item.brand || 'Non spécifié'}</h5>
                         <div className="flex flex-wrap gap-1 mt-1">
                           {item.power && (
                             <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">

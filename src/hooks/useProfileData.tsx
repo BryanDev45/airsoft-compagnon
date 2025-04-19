@@ -162,9 +162,19 @@ export const useProfileData = (userId: string | undefined) => {
         updated_at: new Date().toISOString()
       }));
       
+      toast({
+        title: "Succès",
+        description: "Vos statistiques ont été mises à jour avec succès",
+      });
+      
       return true;
     } catch (error: any) {
       console.error("Erreur lors de la mise à jour des stats:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour vos statistiques",
+        variant: "destructive",
+      });
       return false;
     }
   };
@@ -175,5 +185,6 @@ export const useProfileData = (userId: string | undefined) => {
     userStats,
     updateLocation,
     updateUserStats,
+    fetchProfileData,
   };
 };

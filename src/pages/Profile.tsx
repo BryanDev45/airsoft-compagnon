@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -30,7 +29,8 @@ const Profile = () => {
     profileData,
     userStats,
     updateLocation,
-    updateUserStats
+    updateUserStats,
+    fetchProfileData
   } = useProfileData(user?.id);
 
   const [showSettingsDialog, setShowSettingsDialog] = React.useState(false);
@@ -119,6 +119,11 @@ const Profile = () => {
     navigate(`/game/${gameId}`);
   };
 
+  const handleStatsUpdate = async (preferredGameType, favoriteRole, level) => {
+    const success = await updateUserStats(preferredGameType, favoriteRole, level);
+    // Pas besoin de refetch complet, la mise à jour est faite dans useProfileData
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -166,7 +171,7 @@ const Profile = () => {
                 <TabsContent value="stats">
                   <ProfileStats 
                     userStats={userStats}
-                    updateUserStats={updateUserStats}
+                    updateUserStats={handleStatsUpdate}
                   />
                 </TabsContent>
                 

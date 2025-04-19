@@ -23,6 +23,7 @@ const ProfileAddEquipmentDialog = ({
   equipmentTypes 
 }: ProfileAddEquipmentDialogProps) => {
   const [type, setType] = useState('');
+  const [name, setName] = useState('');
   const [brand, setBrand] = useState('');
   const [power, setPower] = useState('');
   const [description, setDescription] = useState('');
@@ -31,6 +32,7 @@ const ProfileAddEquipmentDialog = ({
 
   const resetForm = () => {
     setType('');
+    setName('');
     setBrand('');
     setPower('');
     setDescription('');
@@ -76,6 +78,7 @@ const ProfileAddEquipmentDialog = ({
     try {
       const newEquipment = {
         type,
+        name,
         brand,
         power,
         description,
@@ -121,6 +124,16 @@ const ProfileAddEquipmentDialog = ({
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="name">Nom</Label>
+            <Input
+              id="name"
+              placeholder="Nom de l'équipement"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
           </div>
           
           <div className="space-y-2">
