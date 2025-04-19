@@ -48,15 +48,16 @@ const FpsJouleCalculator = () => {
     };
     if (joules <= 1.6) return {
       type: 'DMR',
-      color: 'bg-gradient-to-r from-orange-400 to-orange-550'
+      color: 'bg-airsoft-orange hover:bg-orange-700'
     };
     if (joules <= 1.8) return {
       type: 'Tireur d\'élite',
       color: 'bg-gradient-to-r from-red-400 to-red-550'
     };
+    "bg-airsoft-red hover:bg-red-700"
     return {
       type: 'Tireur d\'élite',
-      color: 'bg-gradient-to-r from-red-600 to-red-850'
+      color: 'bg-airsoft-red hover:bg-red-700'
     };
   };
   return <Card>
