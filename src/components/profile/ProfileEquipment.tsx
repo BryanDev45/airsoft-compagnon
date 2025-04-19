@@ -1,9 +1,8 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trash2 } from "lucide-react";
+import { Trash2, Edit } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import {
   AlertDialog,
@@ -26,6 +25,8 @@ interface ProfileEquipmentProps {
 }
 
 const ProfileEquipment = ({ equipment, readOnly, equipmentTypes, fetchEquipment }: ProfileEquipmentProps) => {
+  const [editingEquipment, setEditingEquipment] = useState<any>(null);
+
   const deleteEquipment = async (id: string) => {
     try {
       const { error } = await supabase
@@ -92,34 +93,45 @@ const ProfileEquipment = ({ equipment, readOnly, equipmentTypes, fetchEquipment 
                       </div>
                       
                       {!readOnly && (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button 
-                              variant="ghost" 
-                              size="icon"
-                              className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Supprimer cet équipement ?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Cette action est irréversible. Cet équipement sera définitivement supprimé de votre profil.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Annuler</AlertDialogCancel>
-                              <AlertDialogAction 
-                                onClick={() => deleteEquipment(item.id)}
-                                className="bg-red-500 hover:bg-red-600"
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setEditingEquipment(item)}
+                            className="text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                className="text-red-500 hover:text-red-700 hover:bg-red-50"
                               >
-                                Supprimer
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Supprimer cet équipement ?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Cette action est irréversible. Cet équipement sera définitivement supprimé de votre profil.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => deleteEquipment(item.id)}
+                                  className="bg-red-500 hover:bg-red-600"
+                                >
+                                  Supprimer
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       )}
                     </div>
                     
@@ -140,6 +152,16 @@ const ProfileEquipment = ({ equipment, readOnly, equipmentTypes, fetchEquipment 
         <div className="text-center p-8 bg-gray-50 rounded-lg">
           <p className="text-gray-500">Aucun équipement ajouté pour le moment.</p>
         </div>
+      )}
+
+      {editingEquipment && (
+        <ProfileEditEquipmentDialog
+          open={!!editingEquipment}
+          onOpenChange={() => setEditingEquipment(null)}
+          equipment={editingEquipment}
+          equipmentTypes={equipmentTypes}
+          onSave={fetchEquipment}
+        />
       )}
     </div>
   );

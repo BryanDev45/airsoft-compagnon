@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -74,24 +73,21 @@ const ProfileStats = ({ userStats, updateUserStats }) => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        {/* Parties jouées */}
-        <div className="space-y-1">
+        <div className="space-y-1 bg-gray-50 p-4 rounded-lg">
           <span className="text-sm font-medium text-gray-500">Parties jouées</span>
-          <p className="text-gray-900 text-lg font-medium">{userStats?.games_played || 0}</p>
+          <p className="text-gray-900 text-lg font-semibold">{userStats?.games_played || 0}</p>
         </div>
 
-        {/* Parties créées */}
-        <div className="space-y-1">
+        <div className="space-y-1 bg-gray-50 p-4 rounded-lg">
           <span className="text-sm font-medium text-gray-500">Parties créées</span>
-          <p className="text-gray-900 text-lg font-medium">{userStats?.games_organized || 0}</p>
+          <p className="text-gray-900 text-lg font-semibold">{userStats?.games_organized || 0}</p>
         </div>
 
-        {/* Type de partie préféré */}
-        <div className="space-y-1">
+        <div className="space-y-1 bg-gray-50 p-4 rounded-lg">
           <span className="text-sm font-medium text-gray-500">Type de partie préféré</span>
           {isEditing ? (
             <Select value={gameType} onValueChange={setGameType}>
-              <SelectTrigger>
+              <SelectTrigger className="mt-2 bg-white">
                 <SelectValue placeholder="Sélectionnez un type" />
               </SelectTrigger>
               <SelectContent>
@@ -101,16 +97,15 @@ const ProfileStats = ({ userStats, updateUserStats }) => {
               </SelectContent>
             </Select>
           ) : (
-            <p className="text-gray-900">{userStats?.preferred_game_type || 'Non spécifié'}</p>
+            <p className="text-gray-900 font-medium">{userStats?.preferred_game_type || 'Non spécifié'}</p>
           )}
         </div>
 
-        {/* Rôle préféré */}
-        <div className="space-y-1">
+        <div className="space-y-1 bg-gray-50 p-4 rounded-lg">
           <span className="text-sm font-medium text-gray-500">Rôle préféré</span>
           {isEditing ? (
             <Select value={role} onValueChange={setRole}>
-              <SelectTrigger>
+              <SelectTrigger className="mt-2 bg-white">
                 <SelectValue placeholder="Sélectionnez un rôle" />
               </SelectTrigger>
               <SelectContent>
@@ -120,16 +115,15 @@ const ProfileStats = ({ userStats, updateUserStats }) => {
               </SelectContent>
             </Select>
           ) : (
-            <p className="text-gray-900">{userStats?.favorite_role || 'Non spécifié'}</p>
+            <p className="text-gray-900 font-medium">{userStats?.favorite_role || 'Non spécifié'}</p>
           )}
         </div>
 
-        {/* Niveau */}
-        <div className="space-y-1">
+        <div className="space-y-1 bg-gray-50 p-4 rounded-lg">
           <span className="text-sm font-medium text-gray-500">Niveau</span>
           {isEditing ? (
             <Select value={level} onValueChange={setLevel}>
-              <SelectTrigger>
+              <SelectTrigger className="mt-2 bg-white">
                 <SelectValue placeholder="Sélectionnez un niveau" />
               </SelectTrigger>
               <SelectContent>
@@ -139,7 +133,7 @@ const ProfileStats = ({ userStats, updateUserStats }) => {
               </SelectContent>
             </Select>
           ) : (
-            <p className="text-gray-900">{userStats?.level || 'Débutant'}</p>
+            <p className="text-gray-900 font-medium">{userStats?.level || 'Débutant'}</p>
           )}
         </div>
       </div>

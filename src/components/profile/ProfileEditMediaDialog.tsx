@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -21,6 +20,27 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
+
+  useEffect(() => {
+    const fetchCurrentImages = async () => {
+      if (user?.id) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('avatar, banner')
+          .eq('id', user.id)
+          .single();
+          
+        if (data) {
+          setAvatarPreview(data.avatar);
+          setBannerPreview(data.banner);
+        }
+      }
+    };
+
+    if (open) {
+      fetchCurrentImages();
+    }
+  }, [open, user?.id]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -91,9 +111,7 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
         description: "Vos images de profil ont été mises à jour avec succès."
       });
       
-      // Close the dialog first, then reload
       onOpenChange(false);
-      // Add a small delay before reloading to ensure the dialog closes properly
       setTimeout(() => {
         window.location.reload();
       }, 300);
