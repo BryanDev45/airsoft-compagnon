@@ -96,7 +96,7 @@ const FpsJouleCalculator = () => {
                   <Slider 
                     value={[joules * 100]} 
                     min={0} 
-                    max={400} 
+                    max={300} 
                     step={1} 
                     onValueChange={value => setJoules(value[0] / 100)} 
                     className="py-4" 
@@ -122,7 +122,7 @@ const FpsJouleCalculator = () => {
               <div 
                 className={`h-full transition-all ${getReplicaType(joules).color}`}
                 style={{
-                  width: `${Math.min(joules / 4 * 100, 100)}%`
+                  width: `${Math.min(joules / 3 * 100, 100)}%`
                 }} 
               />
             </div>
