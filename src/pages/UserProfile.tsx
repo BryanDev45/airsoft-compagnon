@@ -135,6 +135,7 @@ const UserProfile = () => {
           join_date: '2022-06-15',
           verified: true,
           premium: false,
+          reputation: 4.5,
           badges: mockUserData.badges,
           games: mockUserData.games,
           allGames: mockUserData.allGames,
@@ -189,6 +190,28 @@ const UserProfile = () => {
     }
   };
 
+  // Placeholder functions for ProfileHeader props
+  const setEditing = () => {
+    toast({
+      title: "Information",
+      description: "Cette fonction n'est pas disponible sur les profils des autres utilisateurs.",
+    });
+  };
+
+  const toggleProfileSettings = () => {
+    toast({
+      title: "Information",
+      description: "Cette fonction n'est pas disponible sur les profils des autres utilisateurs.",
+    });
+  };
+
+  const onEditBio = () => {
+    toast({
+      title: "Information",
+      description: "Cette fonction n'est pas disponible sur les profils des autres utilisateurs.",
+    });
+  };
+
   const updateLocation = async () => {
     // Cette fonction est un placeholder pour assurer la compatibilité avec ProfileInfo
     // Dans le profil d'un autre utilisateur, nous ne permettons pas la modification
@@ -221,6 +244,9 @@ const UserProfile = () => {
               <ProfileHeader 
                 user={profileData} 
                 isOwnProfile={false}
+                setEditing={setEditing}
+                toggleProfileSettings={toggleProfileSettings}
+                onEditBio={onEditBio}
               />
               
               <div className="absolute top-4 right-4 flex space-x-2">

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Edit } from "lucide-react";
+import { Trash2, Edit, Package, Info } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import {
   AlertDialog,
@@ -57,19 +57,22 @@ const ProfileEquipment = ({ equipment, readOnly, equipmentTypes, fetchEquipment 
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {equipmentTypes.map(type => {
         const items = equipment.filter(item => item.type === type);
         
         if (items.length === 0) return null;
         
         return (
-          <div key={type}>
-            <h3 className="text-lg font-medium mb-3">{type}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div key={type} className="bg-gray-50 p-6 rounded-lg border border-gray-100 shadow-sm">
+            <div className="flex items-center mb-4">
+              <Package className="h-5 w-5 text-airsoft-red mr-2" />
+              <h3 className="text-lg font-medium">{type}</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {items.map(item => (
-                <Card key={item.id} className="overflow-hidden">
-                  <div className="h-48 bg-gray-100 flex items-center justify-center">
+                <Card key={item.id} className="overflow-hidden transition-all duration-200 hover:shadow-md">
+                  <div className="h-48 bg-gray-100 flex items-center justify-center relative">
                     {item.image ? (
                       <img 
                         src={item.image} 
@@ -77,34 +80,40 @@ const ProfileEquipment = ({ equipment, readOnly, equipmentTypes, fetchEquipment 
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="text-gray-400 text-center p-4">
+                      <div className="text-gray-400 text-center p-4 flex flex-col items-center">
+                        <Package className="h-10 w-10 mb-2 opacity-30" />
                         <span className="block text-sm">Pas d'image</span>
                       </div>
+                    )}
+                    
+                    {!readOnly && (
+                      <Button 
+                        variant="secondary" 
+                        size="sm" 
+                        className="absolute top-2 right-2 bg-white opacity-80 hover:opacity-100"
+                        onClick={() => setEditingEquipment(item)}
+                      >
+                        <Edit className="h-4 w-4 mr-1" />
+                        Éditer
+                      </Button>
                     )}
                   </div>
                   
                   <div className="p-4">
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <h4 className="font-medium">{item.brand || 'Non spécifié'}</h4>
-                        {item.power && (
-                          <Badge variant="outline" className="mt-1">
-                            {item.power}
-                          </Badge>
-                        )}
+                        <h4 className="font-medium text-lg">{item.brand || 'Non spécifié'}</h4>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {item.power && (
+                            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                              {item.power}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                       
                       {!readOnly && (
                         <div className="flex gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setEditingEquipment(item)}
-                            className="text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button 
@@ -138,9 +147,14 @@ const ProfileEquipment = ({ equipment, readOnly, equipmentTypes, fetchEquipment 
                     </div>
                     
                     {item.description && (
-                      <p className="text-sm text-gray-600 mt-2">
-                        {item.description}
-                      </p>
+                      <div className="mt-3 p-3 bg-gray-50 rounded-md border border-gray-100">
+                        <div className="flex items-start">
+                          <Info className="h-4 w-4 text-gray-500 mr-2 mt-0.5" />
+                          <p className="text-sm text-gray-600">
+                            {item.description}
+                          </p>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </Card>
@@ -151,7 +165,8 @@ const ProfileEquipment = ({ equipment, readOnly, equipmentTypes, fetchEquipment 
       })}
       
       {equipment.length === 0 && (
-        <div className="text-center p-8 bg-gray-50 rounded-lg">
+        <div className="text-center p-8 bg-gray-50 rounded-lg border border-gray-200">
+          <Package className="h-12 w-12 mx-auto mb-3 text-gray-300" />
           <p className="text-gray-500">Aucun équipement ajouté pour le moment.</p>
         </div>
       )}

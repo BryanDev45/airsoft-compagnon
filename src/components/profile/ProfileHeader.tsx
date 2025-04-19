@@ -2,7 +2,7 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Settings, Edit, Camera } from 'lucide-react';
+import { Settings, Edit, Camera, Star } from 'lucide-react';
 
 const ProfileHeader = ({ 
   user, 
@@ -13,7 +13,7 @@ const ProfileHeader = ({
 }) => {
   return (
     <div className="relative">
-      <div className="w-full h-48 md:h-56 bg-gray-200 overflow-hidden">
+      <div className="w-full h-56 md:h-64 bg-gray-200 overflow-hidden">
         {user?.banner ? (
           <img 
             src={user.banner} 
@@ -46,7 +46,15 @@ const ProfileHeader = ({
         
         <div className="flex flex-col md:flex-row md:items-end justify-between">
           <div>
-            <h1 className="text-2xl font-bold">{user?.username || 'Utilisateur'}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold">{user?.username || 'Utilisateur'}</h1>
+              {user?.reputation && (
+                <div className="flex items-center bg-amber-50 px-2 py-1 rounded-full">
+                  <Star className="h-4 w-4 text-amber-500 fill-amber-500 mr-1" />
+                  <span className="text-sm font-medium text-amber-700">{user.reputation.toFixed(1)}</span>
+                </div>
+              )}
+            </div>
             <p className="text-gray-600 mt-1">{user?.bio || 'Aucune bio pour le moment'}</p>
           </div>
           
