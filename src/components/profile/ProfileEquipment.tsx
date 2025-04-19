@@ -90,7 +90,7 @@ const ProfileEquipment = ({ equipment, readOnly, equipmentTypes, fetchEquipment 
                       <Button 
                         variant="secondary" 
                         size="sm" 
-                        className="absolute top-2 right-2 bg-white opacity-80 hover:opacity-100"
+                        className="absolute top-2 right-2 bg-red opacity-80 hover:opacity-100"
                         onClick={() => setEditingEquipment(item)}
                       >
                         <Edit className="h-4 w-4 mr-1" />
