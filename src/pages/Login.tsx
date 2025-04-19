@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { z } from 'zod';
@@ -21,6 +20,7 @@ const loginSchema = z.object({
   password: z.string().min(6, {
     message: 'Le mot de passe doit contenir au moins 6 caractères.',
   }),
+  rememberMe: z.boolean().optional()
 });
 
 export default function Login() {
@@ -32,13 +32,14 @@ export default function Login() {
     defaultValues: {
       email: '',
       password: '',
+      rememberMe: false
     },
   });
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     setLoading(true);
     try {
-      await login(values.email, values.password);
+      await login(values.email, values.password, values.rememberMe);
     } catch (error) {
       console.error('Erreur de connexion:', error);
     } finally {
@@ -111,6 +112,24 @@ export default function Login() {
                               />
                             </FormControl>
                             <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="rememberMe"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel>Rester connecté</FormLabel>
+                            </div>
                           </FormItem>
                         )}
                       />

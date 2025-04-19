@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
 import { Upload, Image as ImageIcon, RefreshCw } from 'lucide-react';
+import { useAuth } from "@/context/auth";
+import { supabase } from "@/lib/supabase";
 
 interface ProfileEditMediaDialogProps {
   open: boolean;
@@ -17,6 +18,8 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
   const [currentTab, setCurrentTab] = useState("avatar");
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -40,12 +43,37 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
     }
   };
 
-  const handleSaveChanges = () => {
-    toast({
-      title: "Médias mis à jour",
-      description: "Vos images de profil ont été mises à jour avec succès."
-    });
-    onOpenChange(false);
+  const handleSaveChanges = async () => {
+    if (!user?.id) return;
+    
+    setLoading(true);
+    try {
+      if (avatarPreview) {
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ avatar: avatarPreview })
+          .eq('id', user.id);
+
+        if (updateError) throw updateError;
+      }
+
+      toast({
+        title: "Médias mis à jour",
+        description: "Vos images de profil ont été mises à jour avec succès."
+      });
+      
+      // Forcer le rechargement de la page pour voir les changements
+      window.location.reload();
+      onOpenChange(false);
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour les images",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

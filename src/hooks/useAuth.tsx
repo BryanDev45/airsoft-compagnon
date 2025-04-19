@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -27,9 +26,15 @@ export const useAuth = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, rememberMe: boolean = false) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({ 
+        email, 
+        password,
+        options: {
+          persistSession: rememberMe
+        }
+      });
       if (error) throw error;
       navigate('/profile');
       toast({
@@ -104,9 +109,9 @@ export const useAuth = () => {
       
       toast({
         title: "Inscription réussie",
-        description: "Bienvenue sur Airsoft Compagnon",
+        description: "Votre compte a été créé avec succès",
       });
-      navigate('/profile');
+      navigate('/login');
     } catch (error: any) {
       console.error("Erreur d'inscription:", error);
       toast({

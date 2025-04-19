@@ -1,9 +1,11 @@
 
 // Tableau d'avatars par défaut
 const defaultAvatars = [
-  '/lovable-uploads/270b167a-f6b5-4054-bdd3-4f8ddbb5b24c.png',
-  '/lovable-uploads/f18a2322-4236-4191-8b1a-d9aebbcc7814.png',
-  '/lovable-uploads/87eb202b-9864-4e57-b5db-0ff75c403e06.png'
+  '/lovable-uploads/7d364374-717c-463c-b2b8-4c2766f8bd3d.png',
+  '/lovable-uploads/a3e0e155-b74b-4c63-988b-ccf905611682.png',
+  '/lovable-uploads/0aa43fed-e08e-44be-b49f-9897b6c76c2d.png',
+  '/lovable-uploads/b29cdac5-4c87-4826-bb55-0a2c65161cc8.png',
+  '/lovable-uploads/fefc072c-6098-4ae9-ab76-71e88b50e671.png'
 ];
 
 /**

@@ -15,6 +15,7 @@ import {
   SheetClose,
   SheetFooter
 } from "@/components/ui/sheet";
+import { supabase } from "@/lib/supabase";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -55,15 +56,38 @@ const Header = () => {
   ]);
 
   useEffect(() => {
-    const authState = localStorage.getItem('isAuthenticated');
-    const userState = localStorage.getItem('user');
-    if (authState === 'true' && userState) {
-      setIsAuthenticated(true);
-      setUser(JSON.parse(userState));
-    } else {
-      setIsAuthenticated(false);
-      setUser(null);
-    }
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+      if (session?.user) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('username, avatar, team_id')
+          .eq('id', session.user.id)
+          .single();
+          
+        setUser(profileData);
+      }
+    };
+    
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setIsAuthenticated(!!session);
+      if (session?.user) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('username, avatar, team_id')
+          .eq('id', session.user.id)
+          .single();
+          
+        setUser(profileData);
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleLogout = () => {
