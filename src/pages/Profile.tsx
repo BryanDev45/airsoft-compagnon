@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -15,6 +16,7 @@ import ProfileDialogs from '../components/profile/ProfileDialogs';
 import ProfileSettingsDialog from '../components/profile/ProfileSettingsDialog';
 import ProfileEditMediaDialog from '../components/profile/ProfileEditMediaDialog';
 import ProfileEditBioDialog from '../components/profile/ProfileEditBioDialog';
+import ProfileAddEquipmentDialog from '../components/profile/ProfileAddEquipmentDialog';
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
@@ -34,13 +36,66 @@ const Profile = () => {
   const [showSettingsDialog, setShowSettingsDialog] = React.useState(false);
   const [showEditMediaDialog, setShowEditMediaDialog] = React.useState(false);
   const [showEditBioDialog, setShowEditBioDialog] = React.useState(false);
-  const [addingEquipment, setAddingEquipment] = React.useState(false);
+  const [showAddEquipmentDialog, setShowAddEquipmentDialog] = React.useState(false);
   const [selectedGame, setSelectedGame] = React.useState(null);
   const [showGameDialog, setShowGameDialog] = React.useState(false);
   const [showAllGamesDialog, setShowAllGamesDialog] = React.useState(false);
   const [showBadgesDialog, setShowBadgesDialog] = React.useState(false);
+  const [equipment, setEquipment] = useState<any[]>([]);
 
   const equipmentTypes = ["Réplique principale", "Réplique secondaire", "Protection", "Accessoire"];
+
+  React.useEffect(() => {
+    if (user?.id) {
+      fetchEquipment();
+    }
+  }, [user?.id]);
+
+  const fetchEquipment = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('equipment')
+        .select('*')
+        .eq('user_id', user?.id);
+
+      if (error) {
+        throw error;
+      }
+
+      setEquipment(data || []);
+    } catch (error) {
+      console.error("Erreur lors de la récupération de l'équipement:", error);
+    }
+  };
+
+  const handleAddEquipment = async (newEquipment) => {
+    try {
+      const { error } = await supabase
+        .from('equipment')
+        .insert({
+          ...newEquipment,
+          user_id: user?.id
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Équipement ajouté",
+        description: "Votre équipement a été ajouté avec succès"
+      });
+
+      await fetchEquipment();
+      return true;
+    } catch (error) {
+      console.error("Erreur lors de l'ajout de l'équipement:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'ajouter l'équipement",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
 
   if (loading) {
     return (
@@ -118,7 +173,7 @@ const Profile = () => {
                 <TabsContent value="equipment">
                   <div className="mb-4 flex justify-end">
                     <Button 
-                      onClick={() => setAddingEquipment(true)} 
+                      onClick={() => setShowAddEquipmentDialog(true)} 
                       className="bg-airsoft-red hover:bg-red-700 text-white"
                     >
                       <Plus className="h-4 w-4 mr-2" /> Ajouter un équipement
@@ -126,9 +181,10 @@ const Profile = () => {
                   </div>
                   
                   <ProfileEquipment 
-                    equipment={profileData?.equipment || []}
+                    equipment={equipment}
                     readOnly={false}
                     equipmentTypes={equipmentTypes}
+                    fetchEquipment={fetchEquipment}
                   />
                 </TabsContent>
                 
@@ -173,6 +229,13 @@ const Profile = () => {
         onOpenChange={setShowEditBioDialog}
         currentBio={profileData?.bio || ''}
         currentUsername={profileData?.username || ''}
+      />
+      
+      <ProfileAddEquipmentDialog
+        open={showAddEquipmentDialog}
+        onOpenChange={setShowAddEquipmentDialog}
+        onAddEquipment={handleAddEquipment}
+        equipmentTypes={equipmentTypes}
       />
     </div>
   );

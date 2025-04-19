@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -17,10 +17,18 @@ interface ProfileEditBioDialogProps {
 }
 
 const ProfileEditBioDialog = ({ open, onOpenChange, currentBio, currentUsername }: ProfileEditBioDialogProps) => {
-  const [bio, setBio] = useState(currentBio || '');
-  const [username, setUsername] = useState(currentUsername || '');
+  const [bio, setBio] = useState('');
+  const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
+
+  // Set default values when the dialog opens
+  useEffect(() => {
+    if (open) {
+      setBio(currentBio || '');
+      setUsername(currentUsername || '');
+    }
+  }, [open, currentBio, currentUsername]);
 
   const handleSave = async () => {
     if (!user?.id) return;

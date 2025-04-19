@@ -31,10 +31,7 @@ export const useAuth = () => {
     try {
       const { error } = await supabase.auth.signInWithPassword({ 
         email, 
-        password,
-        options: {
-          // Les options disponibles selon la doc de Supabase
-        }
+        password
       });
       if (error) throw error;
       navigate('/profile');

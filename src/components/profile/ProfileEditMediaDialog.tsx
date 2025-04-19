@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -25,6 +25,15 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast({
+          title: "Erreur",
+          description: "La taille de l'image ne doit pas dépasser 2MB",
+          variant: "destructive"
+        });
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = () => {
         setAvatarPreview(reader.result as string);
@@ -36,6 +45,15 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
   const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Erreur",
+          description: "La taille de l'image ne doit pas dépasser 5MB",
+          variant: "destructive"
+        });
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = () => {
         setBannerPreview(reader.result as string);
@@ -77,9 +95,10 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
       window.location.reload();
       onOpenChange(false);
     } catch (error: any) {
+      console.error("Erreur de mise à jour:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de mettre à jour les images",
+        description: "Impossible de mettre à jour les images: " + error.message,
         variant: "destructive"
       });
     } finally {

@@ -86,6 +86,7 @@ export const useProfileData = (userId: string | undefined) => {
           games_played: 0,
           preferred_game_type: 'CQB',
           favorite_role: 'Assaut',
+          level: 'Débutant'
         };
         
         const { error: insertStatsError } = await supabase
@@ -115,10 +116,9 @@ export const useProfileData = (userId: string | undefined) => {
     
     try {
       const { error } = await supabase
-        .rpc('update_user_location', {
-          p_user_id: userId,
-          p_location: location,
-        });
+        .from('profiles')
+        .update({ location })
+        .eq('id', userId);
 
       if (error) throw error;
 
@@ -136,30 +136,28 @@ export const useProfileData = (userId: string | undefined) => {
     }
   };
 
-  const updateUserStats = async (preferredGameType: string, favoriteRole: string) => {
+  const updateUserStats = async (preferredGameType: string, favoriteRole: string, level: string) => {
     if (!userId) return;
     
     try {
       const { error } = await supabase
-        .rpc('update_user_stats', {
-          p_user_id: userId,
-          p_preferred_game_type: preferredGameType,
-          p_favorite_role: favoriteRole,
-        });
+        .from('user_stats')
+        .update({
+          preferred_game_type: preferredGameType,
+          favorite_role: favoriteRole,
+          level: level,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', userId);
 
       if (error) throw error;
 
       await fetchProfileData();
-      toast({
-        title: "Succès",
-        description: "Préférences mises à jour",
-      });
+      
+      return true;
     } catch (error: any) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour les préférences",
-        variant: "destructive",
-      });
+      console.error("Erreur lors de la mise à jour des stats:", error);
+      throw error;
     }
   };
 
