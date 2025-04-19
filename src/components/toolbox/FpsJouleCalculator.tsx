@@ -83,7 +83,7 @@ const FpsJouleCalculator = () => {
             {mode === 'fps' ? <div>
                 <Label>Vitesse de la bille (FPS)</Label>
                 <div className="mt-2">
-                  <Slider value={[fps]} min={0} max={570} step={1} onValueChange={value => setFps(value[0])} className="py-4" />
+                  <Slider value={[fps]} min={0} max={568} step={1} onValueChange={value => setFps(value[0])} className="py-4" />
                   <div className="flex justify-between text-sm text-muted-foreground">
                     <span>0</span>
                     <span>750</span>
