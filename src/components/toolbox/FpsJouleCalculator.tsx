@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -5,20 +6,24 @@ import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Gauge } from 'lucide-react';
+
 const FpsJouleCalculator = () => {
   const [fps, setFps] = useState(0);
   const [joules, setJoules] = useState(0);
   const [mode, setMode] = useState<'fps' | 'joule'>('joule');
   const commonBBWeights = [0.20, 0.23, 0.25, 0.28, 0.30, 0.32, 0.36, 0.40, 0.43, 0.45];
+
   const calculateFpsToJoules = (fps: number, weight: number) => {
     const velocity = fps * 0.3048;
     const energy = 0.5 * (weight / 1000) * velocity * velocity;
     return energy;
   };
+
   const calculateJoulesToFps = (joules: number, weight: number) => {
     const velocity = Math.sqrt(2 * joules / (weight / 1000));
     return velocity / 0.3048;
   };
+
   const getEffectiveRange = (fps: number, weight: number) => {
     // Estimation basée sur des données empiriques
     const baseRange = fps * 0.4; // Base de calcul
@@ -30,6 +35,7 @@ const FpsJouleCalculator = () => {
       maxRange
     };
   };
+
   useEffect(() => {
     if (mode === 'fps' && fps > 0) {
       setJoules(Number(calculateFpsToJoules(fps, 0.20).toFixed(2)));
@@ -37,28 +43,30 @@ const FpsJouleCalculator = () => {
       setFps(Math.round(calculateJoulesToFps(joules, 0.20)));
     }
   }, [fps, joules, mode]);
+
   const getReplicaType = (joules: number) => {
     if (joules <= 1.0) return {
       type: 'CQB',
-      color: 'bg-gradient-to-r from-green-400 to-green-550'
+      color: 'bg-gradient-to-r from-green-200 to-green-500'
     };
     if (joules <= 1.34) return {
       type: 'Fusils d\'assaut',
-      color: 'bg-gradient-to-r from-blue-400 to-blue-550'
+      color: 'bg-gradient-to-r from-blue-200 to-blue-500'
     };
     if (joules <= 1.6) return {
       type: 'DMR',
-      color: 'bg-gradient-to-r from-orange-400 to-orange-550'
+      color: 'bg-gradient-to-r from-orange-200 to-orange-500'
     };
     if (joules <= 1.8) return {
       type: 'Tireur d\'élite',
-      color: 'bg-gradient-to-r from-red-400 to-red-550'
+      color: 'bg-gradient-to-r from-red-200 to-red-500'
     };
     return {
       type: 'Tireur d\'élite',
-      color: 'bg-gradient-to-r from-red-600 to-red-850'
+      color: 'bg-gradient-to-r from-red-300 to-red-700'
     };
   };
+
   return <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
@@ -156,4 +164,5 @@ const FpsJouleCalculator = () => {
       </CardContent>
     </Card>;
 };
+
 export default FpsJouleCalculator;

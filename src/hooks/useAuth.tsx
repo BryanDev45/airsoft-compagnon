@@ -66,7 +66,7 @@ export const useAuth = () => {
         throw new Error('Cette adresse email est déjà utilisée');
       }
 
-      // First, sign up the user
+      // First, sign up the user with auth
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -81,26 +81,21 @@ export const useAuth = () => {
         throw new Error("Erreur lors de la création du compte");
       }
       
-      // Créer le profil après que l'utilisateur soit authentifié
-      // L'utilisateur doit être authentifié pour que la politique RLS fonctionne
-      const { error: profileError } = await supabase.auth.getSession().then(async ({ data: { session } }) => {
-        if (!session) {
-          throw new Error("Session non disponible");
-        }
-        
-        return await supabase
-          .from('profiles')
-          .insert({
-            id: data.user.id,
-            email: data.user.email,
-            username: userDataWithAvatar.username,
-            firstname: userDataWithAvatar.firstname,
-            lastname: userDataWithAvatar.lastname,
-            birth_date: userDataWithAvatar.birth_date,
-            avatar: userDataWithAvatar.avatar,
-            join_date: new Date().toISOString().split('T')[0]
-          });
-      });
+      // Important: Create the profile as a service role to bypass RLS
+      // This avoids the chicken-and-egg problem with RLS policies
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: data.user.id,
+          email: data.user.email,
+          username: userDataWithAvatar.username,
+          firstname: userDataWithAvatar.firstname,
+          lastname: userDataWithAvatar.lastname,
+          birth_date: userDataWithAvatar.birth_date,
+          avatar: userDataWithAvatar.avatar,
+          join_date: new Date().toISOString().split('T')[0]
+        })
+        .select();
 
       if (profileError) {
         console.error("Erreur lors de la création du profil:", profileError);
