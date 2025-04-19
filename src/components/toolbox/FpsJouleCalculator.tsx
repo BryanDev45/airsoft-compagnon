@@ -42,7 +42,7 @@ const FpsJouleCalculator = () => {
       type: 'CQB',
       color: 'bg-gradient-to-r from-green-400 to-green-550'
     };
-    if (joules <= 1.14) return {
+    if (joules <= 1.34) return {
       type: 'Fusils d\'assaut',
       color: 'bg-gradient-to-r from-blue-400 to-blue-550'
     };
