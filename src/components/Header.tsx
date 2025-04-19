@@ -15,7 +15,7 @@ import {
   SheetClose,
   SheetFooter
 } from "@/components/ui/sheet";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

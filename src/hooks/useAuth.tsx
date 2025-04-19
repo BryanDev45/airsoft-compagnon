@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -32,7 +33,9 @@ export const useAuth = () => {
         email, 
         password,
         options: {
-          persistSession: rememberMe
+          // Use localStorage for longer lasting sessions when "remember me" is checked
+          // autoRefreshToken is used instead of persistSession
+          autoRefreshToken: rememberMe
         }
       });
       if (error) throw error;
