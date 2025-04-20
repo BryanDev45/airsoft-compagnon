@@ -1,4 +1,3 @@
-
 import * as React from "react"
 import { Check, ChevronsUpDown } from "lucide-react"
 
@@ -17,7 +16,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 
-// Simplified list of major French cities for demo purposes
+// Liste simplifiée des grandes villes
 const cities = [
   { city: "Paris", country: "France", value: "paris" },
   { city: "Lyon", country: "France", value: "lyon" },
@@ -39,43 +38,39 @@ const cities = [
   { city: "Luxembourg", country: "Luxembourg", value: "luxembourg" },
 ];
 
-export function ComboboxDemo({ onSelect, defaultValue = "" }) {
-  const [open, setOpen] = React.useState(false)
-  const [value, setValue] = React.useState("")
-  const [displayValue, setDisplayValue] = React.useState("")
+type ComboboxDemoProps = {
+  onSelect?: (location: string) => void;
+  defaultValue?: string;
+};
+
+export function ComboboxDemo({ onSelect, defaultValue = "" }: ComboboxDemoProps) {
+  const [open, setOpen] = React.useState(false);
+  const [value, setValue] = React.useState("");
+  const [displayValue, setDisplayValue] = React.useState("");
 
   React.useEffect(() => {
-    // Parse default value (e.g., "Paris, France")
-    if (defaultValue) {
-      const parts = defaultValue.split(',').map(part => part.trim());
-      if (parts.length >= 1) {
-        const cityName = parts[0];
-        const matchedCity = cities.find(city => 
-          city.city.toLowerCase() === cityName.toLowerCase()
-        );
-        
-        if (matchedCity) {
-          setValue(matchedCity.value);
-          setDisplayValue(`${matchedCity.city}, ${matchedCity.country}`);
-        } else {
-          // Si la ville n'est pas dans notre liste, afficher quand même la valeur
-          setDisplayValue(defaultValue);
-        }
-      }
+    if (!defaultValue) return;
+
+    const [cityNameRaw] = defaultValue.split(",").map(str => str.trim().toLowerCase());
+    const matched = cities.find(({ city }) => city.toLowerCase() === cityNameRaw);
+
+    if (matched) {
+      setValue(matched.value);
+      setDisplayValue(`${matched.city}, ${matched.country}`);
+    } else {
+      setDisplayValue(defaultValue);
     }
   }, [defaultValue]);
 
-  const handleSelectCity = (currentValue) => {
-    const selectedCity = cities.find(c => c.value === currentValue);
-    if (selectedCity) {
-      setValue(currentValue);
-      setDisplayValue(`${selectedCity.city}, ${selectedCity.country}`);
-      setOpen(false);
-      if (onSelect) {
-        const locationString = `${selectedCity.city}, ${selectedCity.country}`;
-        onSelect(locationString);
-      }
-    }
+  const handleSelectCity = (selectedValue: string) => {
+    const selectedCity = cities.find(c => c.value === selectedValue);
+    if (!selectedCity) return;
+
+    setValue(selectedValue);
+    setDisplayValue(`${selectedCity.city}, ${selectedCity.country}`);
+    setOpen(false);
+
+    onSelect?.(`${selectedCity.city}, ${selectedCity.country}`);
   };
 
   return (
@@ -96,24 +91,24 @@ export function ComboboxDemo({ onSelect, defaultValue = "" }) {
           <CommandInput placeholder="Rechercher une ville..." />
           <CommandEmpty>Aucune ville trouvée.</CommandEmpty>
           <CommandGroup>
-            {cities && cities.map((city) => (
+            {cities.map(({ city, country, value: cityValue }) => (
               <CommandItem
-                key={city.value}
-                value={city.value}
+                key={cityValue}
+                value={cityValue}
                 onSelect={handleSelectCity}
               >
                 <Check
                   className={cn(
                     "mr-2 h-4 w-4",
-                    value === city.value ? "opacity-100" : "opacity-0"
+                    value === cityValue ? "opacity-100" : "opacity-0"
                   )}
                 />
-                {city.city}, {city.country}
+                {city}, {country}
               </CommandItem>
             ))}
           </CommandGroup>
         </Command>
       </PopoverContent>
     </Popover>
-  )
+  );
 }
