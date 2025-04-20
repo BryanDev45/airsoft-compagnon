@@ -40,23 +40,13 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData }) => {
       const success = await updateUserStats(gameType, role, level);
       
       if (success) {
-        // Mise à jour locale des statistiques
-        setLocalStats(prev => ({
-          ...prev,
-          preferred_game_type: gameType,
-          favorite_role: role,
-          level: level,
-          updated_at: new Date().toISOString()
-        }));
-        
-        // Quitter le mode édition
-        setIsEditing(false);
-        
-        toast({
-          title: "Succès",
-          description: "Vos statistiques ont été mises à jour avec succès",
-        });
-      }
+  toast({
+    title: "Succès",
+    description: "Vos préférences ont été mises à jour.",
+  });
+  setIsEditing(false);
+  await fetchProfileData(); // ✅ récupère les données à jour depuis Supabase
+}
     } catch (error) {
       console.error("Erreur lors de la mise à jour:", error);
       toast({
