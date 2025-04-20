@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -112,6 +113,8 @@ const Profile = () => {
   const handleNavigateToTeam = () => {
     if (profileData?.team_id) {
       navigate(`/team/${profileData.team_id}`);
+    } else {
+      navigate('/team/create');
     }
   };
 
@@ -120,8 +123,7 @@ const Profile = () => {
   };
 
   const handleStatsUpdate = async (preferredGameType, favoriteRole, level) => {
-    const success = await updateUserStats(preferredGameType, favoriteRole, level);
-    // Pas besoin de refetch complet, la mise à jour est faite dans useProfileData
+    return await updateUserStats(preferredGameType, favoriteRole, level);
   };
 
   return (
@@ -172,6 +174,7 @@ const Profile = () => {
                   <ProfileStats 
                     userStats={userStats}
                     updateUserStats={handleStatsUpdate}
+                    fetchProfileData={fetchProfileData}
                   />
                 </TabsContent>
                 

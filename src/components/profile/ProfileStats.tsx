@@ -2,11 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Edit, Save, X, Trophy, Target, Users, Calendar, Star, Award, Medal } from 'lucide-react';
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 
 const levelOptions = ['Débutant', 'Novice', 'Intermédiaire', 'Confirmé', 'Expert', 'Vétéran'];
@@ -32,6 +29,16 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData }) => {
   }, [userStats]);
 
   const handleSave = async () => {
+    if (!updateUserStats) {
+      console.error("updateUserStats function is not provided");
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour les statistiques: fonction de mise à jour manquante",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       console.log("Sauvegarde des statistiques:", gameType, role, level);
       setIsSaving(true);
@@ -40,13 +47,17 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData }) => {
       const success = await updateUserStats(gameType, role, level);
       
       if (success) {
-  toast({
-    title: "Succès",
-    description: "Vos préférences ont été mises à jour.",
-  });
-  setIsEditing(false);
-  await fetchProfileData(); // ✅ récupère les données à jour depuis Supabase
-}
+        toast({
+          title: "Succès",
+          description: "Vos préférences ont été mises à jour.",
+        });
+        setIsEditing(false);
+        
+        // Récupérer les données à jour depuis Supabase si fetchProfileData est disponible
+        if (typeof fetchProfileData === 'function') {
+          await fetchProfileData();
+        }
+      }
     } catch (error) {
       console.error("Erreur lors de la mise à jour:", error);
       toast({

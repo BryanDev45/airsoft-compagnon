@@ -139,7 +139,7 @@ const CreateTeam = () => {
                     className={errors.name ? "border-red-500" : ""}
                   />
                   {errors.name && (
-                    <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>
+                    <p className="text-red-500 text-xs mt-1">{errors.name.message?.toString()}</p>
                   )}
                 </div>
                 
@@ -152,7 +152,7 @@ const CreateTeam = () => {
                     rows={4}
                   />
                   {errors.description && (
-                    <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>
+                    <p className="text-red-500 text-xs mt-1">{errors.description.message?.toString()}</p>
                   )}
                 </div>
                 
@@ -169,8 +169,8 @@ const CreateTeam = () => {
                     {...register('contact')}
                     className={errors.contact ? "border-red-500" : ""}
                   />
-                  {errors.contact?.message && typeof errors.contact.message === 'string' && (
-                    <p className="text-red-500 text-xs mt-1">{errors.contact.message}</p>
+                  {errors.contact && (
+                    <p className="text-red-500 text-xs mt-1">{errors.contact.message?.toString()}</p>
                   )}
                 </div>
                 

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
@@ -12,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import UserSearchResults from '../components/search/UserSearchResults';
 import TeamSearchResults from '../components/search/TeamSearchResults';
 import MapComponent from '../components/map/MapComponent';
+import { useAuth } from '../hooks/useAuth';
 
 // This component will automatically scroll to top on mount
 const ScrollToTop = () => {
@@ -20,25 +22,32 @@ const ScrollToTop = () => {
   }, []);
   return null;
 };
+
 const Recherche = () => {
   const navigate = useNavigate();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { user, initialLoading } = useAuth();
   const [activeTab, setActiveTab] = useState("parties");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchCenter, setSearchCenter] = useState<[number, number]>([2.3522, 48.8566]); // Paris coordinates
 
-  useEffect(() => {
-    const authState = localStorage.getItem('isAuthenticated');
-    setIsAuthenticated(authState === 'true');
-  }, []);
   const handleCreateParty = () => {
-    if (isAuthenticated) {
+    if (user) {
       navigate('/parties/create');
     } else {
       navigate('/login');
     }
   };
-  return <div className="min-h-screen flex flex-col">
+
+  const handleCreateTeam = () => {
+    if (user) {
+      navigate('/team/create');
+    } else {
+      navigate('/login');
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col">
       <ScrollToTop />
       <Header />
       <main className="flex-grow">
@@ -51,9 +60,14 @@ const Recherche = () => {
                   Trouvez des parties, des joueurs, des équipes et des magasins
                 </p>
               </div>
-              <Link to="/parties/create">
-                
-              </Link>
+              {activeTab === "parties" && (
+                <Button 
+                  onClick={handleCreateParty}
+                  className="bg-airsoft-red hover:bg-red-700 text-white"
+                >
+                  <Plus className="h-4 w-4 mr-2" /> Créer une partie
+                </Button>
+              )}
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
@@ -98,11 +112,22 @@ const Recherche = () => {
               <TabsContent value="equipes">
                 <Card>
                   <CardContent className="pt-6">
-                    <div className="flex items-center border rounded-md overflow-hidden mb-6">
-                      <Input placeholder="Rechercher une équipe par nom, région..." className="border-0 focus-visible:ring-0 flex-1" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
-                      <Button variant="ghost" className="rounded-l-none">
-                        <Search className="h-5 w-5" />
-                      </Button>
+                    <div className="flex justify-between items-center mb-6">
+                      <div className="flex items-center border rounded-md overflow-hidden w-full max-w-md">
+                        <Input placeholder="Rechercher une équipe par nom, région..." className="border-0 focus-visible:ring-0 flex-1" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+                        <Button variant="ghost" className="rounded-l-none">
+                          <Search className="h-5 w-5" />
+                        </Button>
+                      </div>
+                      
+                      {(!user?.team_id && !initialLoading) && (
+                        <Button 
+                          onClick={handleCreateTeam}
+                          className="bg-airsoft-red hover:bg-red-700 text-white ml-4"
+                        >
+                          <Plus className="h-4 w-4 mr-2" /> Créer une équipe
+                        </Button>
+                      )}
                     </div>
                     
                     <TeamSearchResults searchQuery={searchQuery} />
@@ -131,6 +156,8 @@ const Recherche = () => {
         </div>
       </main>
       <Footer />
-    </div>;
+    </div>
+  );
 };
+
 export default Recherche;

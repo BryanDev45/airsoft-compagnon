@@ -68,6 +68,7 @@ export const useProfileData = (userId: string | undefined) => {
         setProfileData(profile);
       }
 
+      // Récupérer les statistiques utilisateur
       const { data: stats, error: statsError } = await supabase
         .from('user_stats')
         .select('*')
@@ -75,7 +76,6 @@ export const useProfileData = (userId: string | undefined) => {
         .maybeSingle();
 
       if (statsError && statsError.code !== 'PGRST116') {
-        // PGRST116 est le code pour "aucun résultat trouvé"
         throw statsError;
       }
 
@@ -84,6 +84,8 @@ export const useProfileData = (userId: string | undefined) => {
         const defaultStats = {
           user_id: userId,
           games_played: 0,
+          games_organized: 0,
+          reputation: 0,
           preferred_game_type: 'CQB',
           favorite_role: 'Assaut',
           level: 'Débutant'
