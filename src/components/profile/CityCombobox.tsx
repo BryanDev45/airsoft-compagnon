@@ -96,7 +96,7 @@ export function ComboboxDemo({ onSelect, defaultValue = "" }) {
           <CommandInput placeholder="Rechercher une ville..." />
           <CommandEmpty>Aucune ville trouvée.</CommandEmpty>
           <CommandGroup>
-            {cities.map((city) => (
+            {cities && cities.map((city) => (
               <CommandItem
                 key={city.value}
                 value={city.value}

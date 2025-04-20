@@ -48,6 +48,11 @@ const ProfileStats = ({ userStats, updateUserStats }) => {
         
         // Quitter le mode édition
         setIsEditing(false);
+        
+        toast({
+          title: "Succès",
+          description: "Vos statistiques ont été mises à jour avec succès",
+        });
       }
     } catch (error) {
       console.error("Erreur lors de la mise à jour:", error);

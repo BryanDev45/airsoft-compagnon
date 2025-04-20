@@ -13,7 +13,6 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/components/ui/use-toast";
-import { FaGoogle, FaFacebook } from 'react-icons/fa';
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Email invalide" }),
@@ -67,7 +66,7 @@ const Login = () => {
           </div>
           
           <form 
-            className="mt-8 space-y-6 animate-[pulse_1s_ease-in-out_infinite] border-2 border-airsoft-red rounded-lg p-8 shadow-md transition-all hover:shadow-lg"
+            className="mt-8 space-y-6 border-2 border-airsoft-red rounded-lg p-8 shadow-md transition-all hover:shadow-lg"
             onSubmit={handleSubmit(onSubmit)}
           >
             <div className="space-y-4">
@@ -136,7 +135,7 @@ const Login = () => {
                 disabled={loading}
                 className="flex items-center justify-center"
               >
-                <FaGoogle className="mr-2" />
+                <img src="/lovable-uploads/24d6452d-2439-4baf-b334-41863a1077c5.png" alt="Google" className="w-4 h-4 mr-2" />
                 Google
               </Button>
               
@@ -147,7 +146,7 @@ const Login = () => {
                 disabled={loading}
                 className="flex items-center justify-center"
               >
-                <FaFacebook className="mr-2" />
+                <img src="/lovable-uploads/c242d3b0-8906-4f00-9b3b-fc251f703e4b.png" alt="Facebook" className="w-4 h-4 mr-2" />
                 Facebook
               </Button>
             </div>

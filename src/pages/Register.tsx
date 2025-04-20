@@ -110,7 +110,7 @@ export default function Register() {
           </div>
 
           <div className="mt-8">
-            <div className="bg-white py-8 px-6 shadow rounded-lg">
+            <div className="bg-white py-8 px-6 shadow rounded-lg border-2 border-airsoft-red">
               <Tabs defaultValue="email" className="w-full">
                 <TabsList className="grid w-full grid-cols-2 mb-8">
                   <TabsTrigger value="email">Email</TabsTrigger>
