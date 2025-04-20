@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -107,7 +108,7 @@ const Login = () => {
                 <Checkbox
                   id="remember-me"
                   checked={rememberMe}
-                  onCheckedChange={setRememberMe}
+                  onCheckedChange={(checked) => setRememberMe(!!checked)}
                 />
                 <Label htmlFor="remember-me" className="ml-2 text-sm text-gray-600">
                   Se souvenir de moi
