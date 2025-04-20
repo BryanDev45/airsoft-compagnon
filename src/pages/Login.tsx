@@ -1,4 +1,4 @@
-
+import { useEffect } from 'react';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -21,9 +21,16 @@ const loginSchema = z.object({
 });
 
 const Login = () => {
-  const { login, handleSocialLogin, loading, initialLoading } = useAuth();
+  const { login, handleSocialLogin, loading, user } = useAuth();
   const navigate = useNavigate();
   const [rememberMe, setRememberMe] = useState(false);
+
+  // ✅ Redirige si connecté
+  useEffect(() => {
+    if (user) {
+      navigate('/profile');
+    }
+  }, [user, navigate]);
   
   const {
     register,
