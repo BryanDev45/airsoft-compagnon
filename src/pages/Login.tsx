@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -34,8 +34,16 @@ const loginSchema = z.object({
 });
 
 export default function Login() {
-  const { login, handleSocialLogin } = useAuth();
+  const { login, handleSocialLogin, user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // If user is already logged in, redirect to profile
+    if (user) {
+      navigate('/profile');
+    }
+  }, [user, navigate]);
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -47,13 +55,10 @@ export default function Login() {
   });
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
-    setLoading(true);
     try {
       await login(values.email, values.password, values.rememberMe);
     } catch (error) {
       console.error('Erreur de connexion:', error);
-    } finally {
-      setLoading(false);
     }
   }
 

@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { UserResponse } from '@supabase/supabase-js';
 import { getRandomAvatar } from '@/utils/avatarUtils';
 
 export const useAuth = () => {
@@ -12,6 +11,7 @@ export const useAuth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user || null);
@@ -24,6 +24,7 @@ export const useAuth = () => {
       }
     );
 
+    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user || null);
       setLoading(false);
@@ -34,10 +35,16 @@ export const useAuth = () => {
 
   const login = async (email: string, password: string, rememberMe: boolean = false) => {
     try {
+      setLoading(true);
       const { error } = await supabase.auth.signInWithPassword({ 
         email, 
-        password
+        password,
+        options: {
+          // Set persistent storage option based on rememberMe
+          persistSession: rememberMe
+        }
       });
+      
       if (error) throw error;
       
       // This will be handled by the auth state change listener
@@ -52,6 +59,8 @@ export const useAuth = () => {
         description: error.message,
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 

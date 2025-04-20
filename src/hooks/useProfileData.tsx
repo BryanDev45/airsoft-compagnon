@@ -125,6 +125,11 @@ export const useProfileData = (userId: string | undefined) => {
       // Mettre à jour les données locales
       setProfileData(prev => ({ ...prev, location }));
       
+      toast({
+        title: "Succès",
+        description: "Votre localisation a été mise à jour avec succès",
+      });
+      
       return true;
     } catch (error: any) {
       console.error("Erreur lors de la mise à jour de la localisation:", error);

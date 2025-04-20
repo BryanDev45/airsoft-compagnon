@@ -65,13 +65,14 @@ export function ComboboxDemo({ onSelect, defaultValue = "" }) {
     }
   }, [defaultValue]);
 
-  const handleSelectCity = (currentValue: string) => {
+  const handleSelectCity = (currentValue) => {
     const selectedCity = cities.find(c => c.value === currentValue);
     if (selectedCity) {
       setValue(currentValue);
       setDisplayValue(`${selectedCity.city}, ${selectedCity.country}`);
       if (onSelect) {
-        onSelect(selectedCity);
+        const locationString = `${selectedCity.city}, ${selectedCity.country}`;
+        onSelect(locationString);
       }
     }
     setOpen(false);

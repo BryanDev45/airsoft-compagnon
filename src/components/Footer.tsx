@@ -1,11 +1,35 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Download, Wrench } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { supabase } from '@/integrations/supabase/client';
 
 const Footer = () => {
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    // Check authentication status
+    const checkAuth = async () => {
+      const { data } = await supabase.auth.getSession();
+      setIsAuthenticated(!!data.session);
+    };
+
+    checkAuth();
+
+    // Subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN') {
+        setIsAuthenticated(true);
+      } else if (event === 'SIGNED_OUT') {
+        setIsAuthenticated(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   return (
     <footer className="bg-airsoft-dark text-white">
@@ -47,7 +71,7 @@ const Footer = () => {
               {isAuthenticated ? (
                 <>
                   <li><Link to="/profile" className="text-gray-400 hover:text-white transition-colors">Mon profil</Link></li>
-                  <li><Link to="/team" className="text-gray-400 hover:text-white transition-colors">Mon équipe</Link></li>
+                  <li><Link to="/teams" className="text-gray-400 hover:text-white transition-colors">Mon équipe</Link></li>
                 </>
               ) : (
                 <>
