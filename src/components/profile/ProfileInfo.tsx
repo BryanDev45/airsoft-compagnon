@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
@@ -5,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { ComboboxDemo as CityCombobox } from './CityCombobox';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { MapPin, Cake, Calendar, User, Users, Building2, Award, Edit, Save, X, Search, Minus } from 'lucide-react';
+import { MapPin, Calendar, User, Users, Building2, Award, Edit, Save, X, Search, Minus } from 'lucide-react';
+
 const ProfileInfo = ({
   user,
   profileData,
@@ -13,6 +15,7 @@ const ProfileInfo = ({
   handleNavigateToTeam
 }) => {
   const [isEditingLocation, setIsEditingLocation] = useState(false);
+  
   const formatDate = dateString => {
     if (!dateString) return '';
     try {
@@ -25,6 +28,7 @@ const ProfileInfo = ({
       return dateString;
     }
   };
+  
   const handleLocationUpdate = async location => {
     if (updateLocation) {
       const success = await updateLocation(location);
@@ -33,6 +37,7 @@ const ProfileInfo = ({
       }
     }
   };
+  
   return <Card className="p-6 shadow-md">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="space-y-6">
@@ -57,11 +62,11 @@ const ProfileInfo = ({
               </div>
             </div>
             
-            {profileData?.birth_date && <div className="flex items-center">
-                <Cake className="h-5 w-5 text-gray-500 mr-3" />
+            {profileData?.age && <div className="flex items-center">
+                <User className="h-5 w-5 text-gray-500 mr-3" />
                 <div>
-                  <span className="text-sm text-gray-500">Date de naissance</span>
-                  <p className="font-medium">{formatDate(profileData.birth_date)}</p>
+                  <span className="text-sm text-gray-500">Âge</span>
+                  <p className="font-medium">{profileData.age} ans</p>
                 </div>
               </div>}
             

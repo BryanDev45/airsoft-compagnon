@@ -33,6 +33,7 @@ const ProfileStats = ({ userStats, updateUserStats }) => {
   const handleSave = async () => {
     try {
       // Appel de la fonction de mise à jour fournie par le parent
+      console.log("Sauvegarde des statistiques:", gameType, role, level);
       const success = await updateUserStats(gameType, role, level);
       
       if (success) {
@@ -45,6 +46,7 @@ const ProfileStats = ({ userStats, updateUserStats }) => {
           updated_at: new Date().toISOString()
         }));
         
+        // Quitter le mode édition
         setIsEditing(false);
       }
     } catch (error) {

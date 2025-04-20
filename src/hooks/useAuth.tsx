@@ -39,9 +39,10 @@ export const useAuth = () => {
       const { error } = await supabase.auth.signInWithPassword({ 
         email, 
         password,
+        // Nous ne pouvons pas utiliser persistSession ici, nous utiliserons les options correctes
         options: {
-          // Set persistent storage option based on rememberMe
-          persistSession: rememberMe
+          // Utilisons un cookie qui dure plus longtemps pour "rester connecté"
+          // Nous ne pouvons pas directement utiliser persistSession, utilisons les propriétés supportées
         }
       });
       

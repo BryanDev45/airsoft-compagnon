@@ -146,6 +146,8 @@ export const useProfileData = (userId: string | undefined) => {
     if (!userId) return false;
     
     try {
+      console.log("Mise à jour des statistiques:", preferredGameType, favoriteRole, level);
+      
       // Mise à jour dans la base de données
       const { error } = await supabase
         .from('user_stats')
@@ -157,9 +159,12 @@ export const useProfileData = (userId: string | undefined) => {
         })
         .eq('user_id', userId);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Erreur Supabase:", error);
+        throw error;
+      }
 
-      // Mettre à jour les données locales
+      // Mise à jour du state
       setUserStats(prev => ({
         ...prev,
         preferred_game_type: preferredGameType,
@@ -178,7 +183,7 @@ export const useProfileData = (userId: string | undefined) => {
       console.error("Erreur lors de la mise à jour des stats:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de mettre à jour vos statistiques",
+        description: "Impossible de mettre à jour vos statistiques: " + error.message,
         variant: "destructive",
       });
       return false;

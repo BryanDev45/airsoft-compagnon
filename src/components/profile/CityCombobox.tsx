@@ -70,12 +70,12 @@ export function ComboboxDemo({ onSelect, defaultValue = "" }) {
     if (selectedCity) {
       setValue(currentValue);
       setDisplayValue(`${selectedCity.city}, ${selectedCity.country}`);
+      setOpen(false);
       if (onSelect) {
         const locationString = `${selectedCity.city}, ${selectedCity.country}`;
         onSelect(locationString);
       }
     }
-    setOpen(false);
   };
 
   return (
