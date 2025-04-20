@@ -21,7 +21,7 @@ const loginSchema = z.object({
 });
 
 const Login = () => {
-  const { login, handleSocialLogin, loading } = useAuth();
+  const { login, handleSocialLogin, loading, initialLoading } = useAuth();
   const navigate = useNavigate();
   const [rememberMe, setRememberMe] = useState(false);
   
