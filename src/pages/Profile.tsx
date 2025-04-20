@@ -3,22 +3,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '../hooks/useAuth';
 import { useProfileData } from '../hooks/useProfileData';
 import ProfileHeader from '../components/profile/ProfileHeader';
-import ProfileInfo from '../components/profile/ProfileInfo';
-import ProfileGames from '../components/profile/ProfileGames';
-import ProfileStats from '../components/profile/ProfileStats';
-import ProfileEquipment from '../components/profile/ProfileEquipment';
-import ProfileBadges from '../components/profile/ProfileBadges';
+import ProfileContainer from '../components/profile/ProfileContainer';
 import ProfileDialogs from '../components/profile/ProfileDialogs';
 import ProfileSettingsDialog from '../components/profile/ProfileSettingsDialog';
 import ProfileEditMediaDialog from '../components/profile/ProfileEditMediaDialog';
 import ProfileEditBioDialog from '../components/profile/ProfileEditBioDialog';
 import ProfileAddEquipmentDialog from '../components/profile/ProfileAddEquipmentDialog';
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 
@@ -122,10 +115,6 @@ const Profile = () => {
     navigate(`/game/${gameId}`);
   };
 
-  const handleStatsUpdate = async (preferredGameType, favoriteRole, level) => {
-    return await updateUserStats(preferredGameType, favoriteRole, level);
-  };
-
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -140,70 +129,24 @@ const Profile = () => {
               onEditBio={() => setShowEditBioDialog(true)}
             />
             
-            <div className="p-6">
-              <Tabs defaultValue="profile">
-                <TabsList className="mb-6">
-                  <TabsTrigger value="profile">Profil</TabsTrigger>
-                  <TabsTrigger value="games">Mes parties</TabsTrigger>
-                  <TabsTrigger value="stats">Statistiques</TabsTrigger>
-                  <TabsTrigger value="equipment">Équipement</TabsTrigger>
-                  <TabsTrigger value="badges">Badges</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="profile">
-                  <ProfileInfo 
-                    user={user}
-                    profileData={profileData}
-                    updateLocation={updateLocation}
-                    handleNavigateToTeam={handleNavigateToTeam}
-                  />
-                </TabsContent>
-                
-                <TabsContent value="games">
-                  <ProfileGames 
-                    games={profileData?.games || []} 
-                    handleViewGameDetails={(game) => {
-                      setSelectedGame(game);
-                      setShowGameDialog(true);
-                    }}
-                    handleViewAllGames={() => setShowAllGamesDialog(true)}
-                  />
-                </TabsContent>
-                
-                <TabsContent value="stats">
-                  <ProfileStats 
-                    userStats={userStats}
-                    updateUserStats={handleStatsUpdate}
-                    fetchProfileData={fetchProfileData}
-                  />
-                </TabsContent>
-                
-                <TabsContent value="equipment">
-                  <div className="mb-4 flex justify-end">
-                    <Button 
-                      onClick={() => setShowAddEquipmentDialog(true)} 
-                      className="bg-airsoft-red hover:bg-red-700 text-white"
-                    >
-                      <Plus className="h-4 w-4 mr-2" /> Ajouter un équipement
-                    </Button>
-                  </div>
-                  
-                  <ProfileEquipment 
-                    equipment={equipment}
-                    readOnly={false}
-                    equipmentTypes={equipmentTypes}
-                    fetchEquipment={fetchEquipment}
-                  />
-                </TabsContent>
-                
-                <TabsContent value="badges">
-                  <ProfileBadges 
-                    badges={profileData?.badges || []}
-                    handleViewAllBadges={() => setShowBadgesDialog(true)}
-                  />
-                </TabsContent>
-              </Tabs>
-            </div>
+            <ProfileContainer
+              user={user}
+              profileData={profileData}
+              userStats={userStats}
+              equipment={equipment}
+              updateLocation={updateLocation}
+              updateUserStats={updateUserStats}
+              fetchProfileData={fetchProfileData}
+              fetchEquipment={fetchEquipment}
+              handleNavigateToTeam={handleNavigateToTeam}
+              setSelectedGame={setSelectedGame}
+              setShowGameDialog={setShowGameDialog}
+              setShowAllGamesDialog={setShowAllGamesDialog}
+              setShowBadgesDialog={setShowBadgesDialog}
+              setShowAddEquipmentDialog={setShowAddEquipmentDialog}
+              isOwnProfile={true}
+              equipmentTypes={equipmentTypes}
+            />
           </div>
         </div>
       </main>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -35,6 +36,7 @@ const UserProfile = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
+        // In a real implementation, this would fetch data from Supabase
         const mockUserData = {
           id: '123',
           username: username || 'unknown',
@@ -213,6 +215,14 @@ const UserProfile = () => {
   const updateUserStats = async () => {
     return false;
   };
+  
+  // Add the missing fetchProfileData function
+  const fetchProfileData = async () => {
+    // This is a mock implementation since we're using mock data
+    // In a real implementation, this would fetch fresh data from Supabase
+    console.log("Fetching profile data for user ID:", profileData?.id);
+    return true;
+  };
 
   if (loading) {
     return (
@@ -298,6 +308,7 @@ const UserProfile = () => {
                   <ProfileStats 
                     userStats={userStats}
                     updateUserStats={updateUserStats}
+                    fetchProfileData={fetchProfileData}
                   />
                 </TabsContent>
                 
