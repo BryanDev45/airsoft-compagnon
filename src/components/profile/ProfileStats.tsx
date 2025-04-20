@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,38 +11,22 @@ const roleOptions = ['Assaut', 'Support', 'Sniper', 'Démolition', 'Médic', 'É
 
 const ProfileStats = ({ userStats, updateUserStats, fetchProfileData }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [gameType, setGameType] = useState('');
-  const [role, setRole] = useState('');
-  const [level, setLevel] = useState('');
-  const [localStats, setLocalStats] = useState(null);
+  const [gameType, setGameType] = useState(userStats?.preferred_game_type || 'CQB');
+  const [role, setRole] = useState(userStats?.favorite_role || 'Assaut');
+  const [level, setLevel] = useState(userStats?.level || 'Débutant');
   const [isSaving, setIsSaving] = useState(false);
 
-  // Mise à jour des états locaux lorsque les props changent
   useEffect(() => {
     if (userStats) {
-      setGameType(userStats.preferred_game_type || 'CQB');
-      setRole(userStats.favorite_role || 'Assaut');
-      setLevel(userStats.level || 'Débutant');
-      setLocalStats(userStats);
+      setGameType(userStats.preferred_game_type);
+      setRole(userStats.favorite_role);
+      setLevel(userStats.level);
     }
   }, [userStats]);
 
   const handleSave = async () => {
-    if (!updateUserStats) {
-      console.error("updateUserStats function is not provided");
-      toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour les statistiques: fonction de mise à jour manquante",
-        variant: "destructive"
-      });
-      return;
-    }
-
     try {
-      console.log("Sauvegarde des statistiques:", gameType, role, level);
       setIsSaving(true);
-      
-      // Appel de la fonction de mise à jour fournie par le parent
       const success = await updateUserStats(gameType, role, level);
       
       if (success) {
@@ -52,11 +35,7 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData }) => {
           description: "Vos préférences ont été mises à jour.",
         });
         setIsEditing(false);
-        
-        // Récupérer les données à jour depuis Supabase si fetchProfileData est disponible
-        if (typeof fetchProfileData === 'function') {
-          await fetchProfileData();
-        }
+        await fetchProfileData();
       }
     } catch (error) {
       console.error("Erreur lors de la mise à jour:", error);
@@ -82,7 +61,6 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData }) => {
     return colors[level] || 'bg-gray-100 text-gray-800';
   };
 
-  // Utiliser localStats au lieu de userStats pour le rendu
   const stats = localStats || userStats;
 
   return (

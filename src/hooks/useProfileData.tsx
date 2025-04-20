@@ -118,13 +118,13 @@ export const useProfileData = (userId: string | undefined) => {
     
     try {
       const { error } = await supabase
-        .from('profiles')
-        .update({ location })
-        .eq('id', userId);
+        .rpc('update_user_location', {
+          p_user_id: userId,
+          p_location: location
+        });
 
       if (error) throw error;
 
-      // Mettre à jour les données locales
       setProfileData(prev => ({ ...prev, location }));
       
       toast({

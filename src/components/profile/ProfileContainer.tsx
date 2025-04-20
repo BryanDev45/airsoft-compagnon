@@ -6,6 +6,7 @@ import ProfileGames from './ProfileGames';
 import ProfileStats from './ProfileStats';
 import ProfileEquipment from './ProfileEquipment';
 import ProfileBadges from './ProfileBadges';
+import ProfileFriends from './ProfileFriends';
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
@@ -55,6 +56,7 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
           <TabsTrigger value="stats">Statistiques</TabsTrigger>
           <TabsTrigger value="equipment">Équipement</TabsTrigger>
           <TabsTrigger value="badges">Badges</TabsTrigger>
+          <TabsTrigger value="friends">Amis</TabsTrigger>
         </TabsList>
         
         <TabsContent value="profile">
@@ -97,18 +99,27 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
             </div>
           )}
           
-          <ProfileEquipment 
-            equipment={equipment}
-            readOnly={!isOwnProfile}
-            equipmentTypes={equipmentTypes}
-            fetchEquipment={fetchEquipment}
-          />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <ProfileEquipment 
+              equipment={equipment}
+              readOnly={!isOwnProfile}
+              equipmentTypes={equipmentTypes}
+              fetchEquipment={fetchEquipment}
+            />
+          </div>
         </TabsContent>
         
         <TabsContent value="badges">
           <ProfileBadges 
             badges={profileData?.badges || []}
             handleViewAllBadges={() => setShowBadgesDialog(true)}
+          />
+        </TabsContent>
+
+        <TabsContent value="friends">
+          <ProfileFriends 
+            userId={user?.id}
+            isOwnProfile={isOwnProfile}
           />
         </TabsContent>
       </Tabs>
