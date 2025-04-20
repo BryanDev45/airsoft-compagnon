@@ -33,31 +33,34 @@ export const useAuth = () => {
   }, [navigate]);
 
   const login = async (email: string, password: string, rememberMe: boolean = false) => {
-    try {
-      setLoading(true);
-      const { error } = await supabase.auth.signInWithPassword({ 
-        email, 
-        password,
-      });
-      
-      if (error) throw error;
-      
-      // AuthStateChange se charge de rediriger
-      toast({
-        title: "Connexion réussie",
-        description: "Bienvenue sur Airsoft Compagnon",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Erreur de connexion",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({ 
+      email, 
+      password
+    });
 
+    if (error) throw error;
+
+    toast({
+      title: "Connexion réussie",
+      description: "Bienvenue sur Airsoft Compagnon",
+    });
+
+    // ✅ Redirection directe ici
+    navigate('/profile');
+
+  } catch (error: any) {
+    toast({
+      title: "Erreur de connexion",
+      description: error.message,
+      variant: "destructive",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
+  
   const register = async (email: string, password: string, userData: any) => {
     try {
       const userDataWithAvatar = {
