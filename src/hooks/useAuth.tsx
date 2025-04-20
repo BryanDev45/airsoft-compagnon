@@ -6,30 +6,27 @@ import { getRandomAvatar } from '@/utils/avatarUtils';
 
 export const useAuth = () => {
   const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true); // pour la vérification de session
+  const [loading, setLoading] = useState(false); // pour les actions utilisateur
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Définir loading à true seulement pendant la vérification de session
-    setLoading(true);
-    
-    // Set up auth state listener FIRST
+    // Écouteur d'état d'auth
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user || null);
-        setLoading(false);
-        
-        // Redirect to profile page if user logs in
+
+        // Redirection après connexion
         if (event === 'SIGNED_IN') {
           navigate('/profile');
         }
       }
     );
 
-    // THEN check for existing session
+    // Vérification de session existante
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user || null);
-      setLoading(false);
+      setInitialLoading(false); // fin du chargement initial
     });
 
     return () => subscription.unsubscribe();
@@ -41,13 +38,11 @@ export const useAuth = () => {
       const { error } = await supabase.auth.signInWithPassword({ 
         email, 
         password,
-        // Options dépendant de "se souvenir de moi"
       });
       
       if (error) throw error;
       
-      // This will be handled by the auth state change listener
-      
+      // AuthStateChange se charge de rediriger
       toast({
         title: "Connexion réussie",
         description: "Bienvenue sur Airsoft Compagnon",
@@ -172,5 +167,5 @@ export const useAuth = () => {
     }
   };
 
-  return { user, loading, login, register, logout, handleSocialLogin };
+  return { user, loading, initialLoading, login, register, logout, handleSocialLogin };
 };
