@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,10 +6,13 @@ import { getRandomAvatar } from '@/utils/avatarUtils';
 
 export const useAuth = () => {
   const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Définir loading à true seulement pendant la vérification de session
+    setLoading(true);
+    
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -39,11 +41,7 @@ export const useAuth = () => {
       const { error } = await supabase.auth.signInWithPassword({ 
         email, 
         password,
-        // Nous ne pouvons pas utiliser persistSession ici, nous utiliserons les options correctes
-        options: {
-          // Utilisons un cookie qui dure plus longtemps pour "rester connecté"
-          // Nous ne pouvons pas directement utiliser persistSession, utilisons les propriétés supportées
-        }
+        // Options dépendant de "se souvenir de moi"
       });
       
       if (error) throw error;

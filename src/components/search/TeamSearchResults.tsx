@@ -1,9 +1,9 @@
-
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Users, Mail, UserPlus, Star } from 'lucide-react';
+import { MapPin, Users, Mail, UserPlus, Star, Plus } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 
 // Mock data for team search results
 const mockTeams = [
@@ -45,6 +45,7 @@ interface TeamSearchResultsProps {
 
 const TeamSearchResults = ({ searchQuery }: TeamSearchResultsProps) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   // Filter teams based on search query
   const filteredTeams = mockTeams.filter(team => 
@@ -56,6 +57,14 @@ const TeamSearchResults = ({ searchQuery }: TeamSearchResultsProps) => {
   
   const handleNavigateToTeam = (teamId: string) => {
     navigate(`/team/${teamId}`);
+  };
+
+  const handleCreateTeam = () => {
+    if (user) {
+      navigate('/team/create');
+    } else {
+      navigate('/login');
+    }
   };
 
   // Function to render rating stars
@@ -85,80 +94,96 @@ const TeamSearchResults = ({ searchQuery }: TeamSearchResultsProps) => {
     return stars;
   };
   
-  if (filteredTeams.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-gray-500">Aucune équipe trouvée</p>
-      </div>
-    );
-  }
-  
   return (
     <div className="space-y-4">
-      {filteredTeams.map(team => (
-        <div key={team.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-          <div className="flex flex-col sm:flex-row items-start gap-4">
-            <div 
-              className="flex-shrink-0 cursor-pointer" 
-              onClick={() => handleNavigateToTeam(team.id)}
-            >
-              <div className="h-16 w-16 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
-                <img 
-                  src={team.logo} 
-                  alt={team.name} 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-            
-            <div className="flex-grow">
-              <div className="flex flex-wrap items-center gap-2 mb-1">
-                <span 
-                  className="font-semibold hover:text-airsoft-red transition-colors cursor-pointer"
-                  onClick={() => handleNavigateToTeam(team.id)}
-                >
-                  {team.name}
-                </span>
-                {team.isAssociation && (
-                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                    Association
-                  </Badge>
-                )}
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-lg font-medium">{filteredTeams.length} équipes trouvées</h3>
+        <Button 
+          onClick={handleCreateTeam}
+          className="bg-airsoft-red hover:bg-red-700"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Créer une équipe
+        </Button>
+      </div>
+      
+      {filteredTeams.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-gray-500">Aucune équipe trouvée</p>
+          <Button 
+            onClick={handleCreateTeam}
+            className="bg-airsoft-red hover:bg-red-700 mt-4"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Créer votre équipe maintenant
+          </Button>
+        </div>
+      ) : (
+        filteredTeams.map(team => (
+          <div key={team.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+            <div className="flex flex-col sm:flex-row items-start gap-4">
+              <div 
+                className="flex-shrink-0 cursor-pointer" 
+                onClick={() => handleNavigateToTeam(team.id)}
+              >
+                <div className="h-16 w-16 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                  <img 
+                    src={team.logo} 
+                    alt={team.name} 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
               </div>
               
-              <div className="flex items-center mb-2">
-                {renderRatingStars(team.rating)}
-                <span className="ml-2 text-sm text-gray-600">{team.rating.toFixed(1)}</span>
-              </div>
-              
-              <p className="text-sm text-gray-600 mb-2 line-clamp-2">{team.description}</p>
-              
-              <div className="flex flex-wrap items-center text-sm text-gray-500 gap-x-4 gap-y-1">
-                <div className="flex items-center gap-1">
-                  <MapPin size={14} />
-                  {team.region}
+              <div className="flex-grow">
+                <div className="flex flex-wrap items-center gap-2 mb-1">
+                  <span 
+                    className="font-semibold hover:text-airsoft-red transition-colors cursor-pointer"
+                    onClick={() => handleNavigateToTeam(team.id)}
+                  >
+                    {team.name}
+                  </span>
+                  {team.isAssociation && (
+                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                      Association
+                    </Badge>
+                  )}
                 </div>
                 
-                <div className="flex items-center gap-1">
-                  <Users size={14} />
-                  {team.memberCount} membres
+                <div className="flex items-center mb-2">
+                  {renderRatingStars(team.rating)}
+                  <span className="ml-2 text-sm text-gray-600">{team.rating.toFixed(1)}</span>
+                </div>
+                
+                <p className="text-sm text-gray-600 mb-2 line-clamp-2">{team.description}</p>
+                
+                <div className="flex flex-wrap items-center text-sm text-gray-500 gap-x-4 gap-y-1">
+                  <div className="flex items-center gap-1">
+                    <MapPin size={14} />
+                    {team.region}
+                  </div>
+                  
+                  <div className="flex items-center gap-1">
+                    <Users size={14} />
+                    {team.memberCount} membres
+                  </div>
                 </div>
               </div>
-            </div>
-            
-            <div className="flex flex-col gap-2 mt-3 sm:mt-0">
-              <Button variant="outline" size="sm" className="flex items-center gap-1">
-                <Mail size={14} />
-                Contacter
-              </Button>
-              <Button variant="outline" size="sm" className="flex items-center gap-1">
-                <UserPlus size={14} />
-                Postuler
-              </Button>
+              
+              <div className="flex flex-col gap-2 mt-3 sm:mt-0">
+                <Button variant="outline" size="sm" className="flex items-center gap-1">
+                  <Mail size={14} />
+                  Contacter
+                </Button>
+                <Button variant="outline" size="sm" className="flex items-center gap-1">
+                  <UserPlus size={14} />
+                  Postuler
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))
+      )}
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import Index from './pages/Index';
@@ -21,7 +20,7 @@ import CreateParty from './pages/CreateParty';
 import Team from './pages/Team';
 import Toolbox from './pages/Toolbox';
 import AuthGuard from './components/auth/AuthGuard';
-
+import CreateTeam from './pages/CreateTeam';
 import { useState, useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import CookieConsent from './components/CookieConsent';
@@ -61,25 +60,31 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Index />} />
+        <Route path="/parties" element={<Parties />} />
+        <Route path="/parties/create" element={<CreateParty />} />
+        <Route path="/contact" element={<Contact />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/new-password" element={<NewPassword />} />
-        <Route path="/profile" element={<AuthGuard><Profile /></AuthGuard>} />
-        <Route path="/user/:username" element={<AuthGuard><UserProfile /></AuthGuard>} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/parties" element={<Parties />} />
-        <Route path="/create-party" element={<AuthGuard><CreateParty /></AuthGuard>} />
-        <Route path="/parties/create" element={<AuthGuard><CreateParty /></AuthGuard>} />
-        <Route path="/game/:id" element={<GameDetails />} />
+        <Route path="/faq" element={<FAQ />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-of-use" element={<TermsOfUse />} />
         <Route path="/terms-of-sale" element={<TermsOfSale />} />
         <Route path="/cookies-policy" element={<CookiesPolicy />} />
-        <Route path="/faq" element={<FAQ />} />
-        <Route path="/team/:id" element={<AuthGuard><Team /></AuthGuard>} />
-        <Route path="/teams" element={<AuthGuard><Parties /></AuthGuard>} />
         <Route path="/toolbox" element={<Toolbox />} />
+        <Route path="/game/:id" element={<GameDetails />} />
+        <Route path="/team/:id" element={<Team />} />
+        <Route path="/team/create" element={<CreateTeam />} />
+        <Route path="/user/:username" element={<UserProfile />} />
+        <Route 
+          path="/profile" 
+          element={
+            <AuthGuard>
+              <Profile />
+            </AuthGuard>
+          } 
+        />
         <Route path="*" element={<NotFound />} />
       </Routes>
       

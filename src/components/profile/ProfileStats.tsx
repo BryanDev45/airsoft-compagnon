@@ -19,6 +19,7 @@ const ProfileStats = ({ userStats, updateUserStats }) => {
   const [role, setRole] = useState('');
   const [level, setLevel] = useState('');
   const [localStats, setLocalStats] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Mise à jour des états locaux lorsque les props changent
   useEffect(() => {
@@ -32,8 +33,10 @@ const ProfileStats = ({ userStats, updateUserStats }) => {
 
   const handleSave = async () => {
     try {
-      // Appel de la fonction de mise à jour fournie par le parent
       console.log("Sauvegarde des statistiques:", gameType, role, level);
+      setIsSaving(true);
+      
+      // Appel de la fonction de mise à jour fournie par le parent
       const success = await updateUserStats(gameType, role, level);
       
       if (success) {
@@ -61,6 +64,8 @@ const ProfileStats = ({ userStats, updateUserStats }) => {
         description: "Impossible de mettre à jour vos statistiques",
         variant: "destructive"
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -111,9 +116,10 @@ const ProfileStats = ({ userStats, updateUserStats }) => {
               size="sm"
               onClick={handleSave}
               className="bg-airsoft-red hover:bg-red-700"
+              disabled={isSaving}
             >
               <Save className="h-4 w-4 mr-2" />
-              Enregistrer
+              {isSaving ? "Enregistrement..." : "Enregistrer"}
             </Button>
           </div>
         )}
