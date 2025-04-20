@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -25,7 +26,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [rememberMe, setRememberMe] = useState(false);
 
-  // ✅ Redirige si connecté
+  // Redirection si déjà connecté
   useEffect(() => {
     if (user) {
       navigate('/profile');
@@ -46,7 +47,12 @@ const Login = () => {
   });
 
   const onSubmit = async (data) => {
-    await login(data.email, data.password, rememberMe);
+    try {
+      await login(data.email, data.password, rememberMe);
+      // La redirection est gérée dans le useEffect et dans le hook useAuth
+    } catch (error) {
+      console.error("Erreur de connexion:", error);
+    }
   };
 
   const handleGoogleLogin = async () => {

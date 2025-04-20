@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -33,33 +34,40 @@ export const useAuth = () => {
   }, [navigate]);
 
   const login = async (email: string, password: string, rememberMe: boolean = false) => {
-  try {
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ 
-      email, 
-      password
-    });
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.auth.signInWithPassword({ 
+        email, 
+        password
+      });
 
-    if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
-    toast({
-      title: "Connexion réussie",
-      description: "Bienvenue sur Airsoft Compagnon",
-    });
-
-    // ✅ Redirection directe ici
-    navigate('/profile');
-
-  } catch (error: any) {
-    toast({
-      title: "Erreur de connexion",
-      description: error.message,
-      variant: "destructive",
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+      if (data && data.user) {
+        setUser(data.user);
+        toast({
+          title: "Connexion réussie",
+          description: "Bienvenue sur Airsoft Compagnon",
+        });
+        
+        // La redirection est gérée par l'écouteur onAuthStateChange
+        return true;
+      } else {
+        throw new Error("Aucune donnée utilisateur retournée");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Erreur de connexion",
+        description: error.message,
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
   
   const register = async (email: string, password: string, userData: any) => {
     try {
@@ -137,6 +145,7 @@ export const useAuth = () => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      setUser(null);
       navigate('/login');
       toast({
         title: "Déconnexion réussie",
