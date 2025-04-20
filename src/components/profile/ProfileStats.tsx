@@ -13,7 +13,7 @@ const levelOptions = ['Débutant', 'Novice', 'Intermédiaire', 'Confirmé', 'Exp
 const gameTypeOptions = ['CQB', 'Milsim', 'Woodland', 'Scénario', 'Speedsoft', 'Tournoi'];
 const roleOptions = ['Assaut', 'Support', 'Sniper', 'Démolition', 'Médic', 'Éclaireur'];
 
-const ProfileStats = ({ userStats, updateUserStats }) => {
+const ProfileStats = ({ userStats, updateUserStats, fetchProfileData }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [gameType, setGameType] = useState('');
   const [role, setRole] = useState('');
