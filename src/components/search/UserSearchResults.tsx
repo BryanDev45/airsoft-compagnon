@@ -5,6 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Shield, MessageCircle, UserPlus, Star } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
+import { useAuth } from '@/hooks/useAuth';
 
 // Mock data for user search results
 const mockUsers = [
@@ -49,6 +52,7 @@ interface UserSearchResultsProps {
 
 const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   // Filter users based on search query
   const filteredUsers = mockUsers.filter(user => 
@@ -61,6 +65,65 @@ const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
   
   const handleNavigateToProfile = (username: string) => {
     navigate(`/user/${username}`);
+  };
+
+  const handleSendMessage = (userId: number) => {
+    if (!user) {
+      toast({
+        title: "Connexion requise",
+        description: "Vous devez être connecté pour envoyer un message",
+        variant: "destructive"
+      });
+      navigate('/login');
+      return;
+    }
+    
+    toast({
+      title: "Message",
+      description: `Envoi d'un message à ${mockUsers.find(u => u.id === userId)?.username}`,
+    });
+    
+    // Dans une implémentation réelle, rediriger vers la messagerie avec ce contact
+    navigate('/messages');
+  };
+
+  const handleAddFriend = async (userId: number) => {
+    if (!user) {
+      toast({
+        title: "Connexion requise",
+        description: "Vous devez être connecté pour ajouter un ami",
+        variant: "destructive"
+      });
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const targetUser = mockUsers.find(u => u.id === userId);
+      
+      // En production, ce serait l'ID réel de l'utilisateur
+      const { error } = await supabase
+        .from('friendships')
+        .insert({
+          user_id: user.id,
+          friend_id: targetUser?.id.toString(),
+          status: 'pending'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Demande envoyée",
+        description: `Demande d'ami envoyée à ${targetUser?.username}`,
+      });
+    } catch (error: any) {
+      console.error("Erreur lors de l'envoi de la demande d'ami:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'envoyer la demande d'ami",
+        variant: "destructive"
+      });
+    }
   };
 
   // Function to render rating stars
@@ -155,11 +218,21 @@ const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
             </div>
             
             <div className="flex flex-col gap-2 mt-3 sm:mt-0">
-              <Button variant="outline" size="sm" className="flex items-center gap-1">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center gap-1"
+                onClick={() => handleSendMessage(user.id)}
+              >
                 <MessageCircle size={14} />
                 Message
               </Button>
-              <Button variant="outline" size="sm" className="flex items-center gap-1">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center gap-1"
+                onClick={() => handleAddFriend(user.id)}
+              >
                 <UserPlus size={14} />
                 Ajouter
               </Button>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -61,8 +62,6 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData }) => {
     return colors[level] || 'bg-gray-100 text-gray-800';
   };
 
-  const stats = localStats || userStats;
-
   return (
     <Card className="p-6 shadow-md bg-gradient-to-br from-white to-gray-50">
       <div className="flex items-center justify-between mb-6">
@@ -109,7 +108,7 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData }) => {
           <Trophy className="text-amber-500 w-10 h-10 mr-4" />
           <div>
             <span className="text-sm font-medium text-amber-700">Parties jouées</span>
-            <p className="text-amber-900 text-2xl font-bold">{stats?.games_played || 0}</p>
+            <p className="text-amber-900 text-2xl font-bold">{userStats?.games_played || 0}</p>
           </div>
         </div>
 
@@ -117,7 +116,7 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData }) => {
           <Calendar className="text-blue-500 w-10 h-10 mr-4" />
           <div>
             <span className="text-sm font-medium text-blue-700">Parties créées</span>
-            <p className="text-blue-900 text-2xl font-bold">{stats?.games_organized || 0}</p>
+            <p className="text-blue-900 text-2xl font-bold">{userStats?.games_organized || 0}</p>
           </div>
         </div>
 
@@ -125,7 +124,7 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData }) => {
           <Star className="text-purple-500 w-10 h-10 mr-4" />
           <div>
             <span className="text-sm font-medium text-purple-700">Réputation</span>
-            <p className="text-purple-900 text-2xl font-bold">{stats?.reputation || '0'}</p>
+            <p className="text-purple-900 text-2xl font-bold">{userStats?.reputation || '0'}</p>
           </div>
         </div>
       </div>
@@ -147,7 +146,7 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData }) => {
           ) : (
             <div className="flex items-center mt-2">
               <Target className="text-indigo-500 w-5 h-5 mr-2" />
-              <p className="text-indigo-900 font-medium text-lg">{stats?.preferred_game_type || 'Non spécifié'}</p>
+              <p className="text-indigo-900 font-medium text-lg">{userStats?.preferred_game_type || 'Non spécifié'}</p>
             </div>
           )}
         </div>
@@ -168,7 +167,7 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData }) => {
           ) : (
             <div className="flex items-center mt-2">
               <Users className="text-green-500 w-5 h-5 mr-2" />
-              <p className="text-green-900 font-medium text-lg">{stats?.favorite_role || 'Non spécifié'}</p>
+              <p className="text-green-900 font-medium text-lg">{userStats?.favorite_role || 'Non spécifié'}</p>
             </div>
           )}
         </div>
@@ -190,15 +189,15 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData }) => {
             <div className="flex items-center justify-between mt-2">
               <div className="flex items-center">
                 <Award className="text-gray-500 w-5 h-5 mr-2" />
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getLevelColor(stats?.level || 'Débutant')}`}>
-                  {stats?.level || 'Débutant'}
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getLevelColor(userStats?.level || 'Débutant')}`}>
+                  {userStats?.level || 'Débutant'}
                 </span>
               </div>
               <div className="w-2/3 bg-gray-200 rounded-full h-2.5">
                 <div 
                   className="bg-gradient-to-r from-green-400 to-airsoft-red h-2.5 rounded-full" 
                   style={{ 
-                    width: `${(levelOptions.indexOf(stats?.level || 'Débutant') + 1) * (100 / levelOptions.length)}%` 
+                    width: `${(levelOptions.indexOf(userStats?.level || 'Débutant') + 1) * (100 / levelOptions.length)}%` 
                   }}
                 ></div>
               </div>

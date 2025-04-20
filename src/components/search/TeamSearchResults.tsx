@@ -1,9 +1,11 @@
+
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Users, Mail, UserPlus, Star, Plus } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { toast } from '@/components/ui/use-toast';
 
 // Mock data for team search results
 const mockTeams = [{
@@ -41,21 +43,62 @@ const TeamSearchResults = ({
   searchQuery
 }: TeamSearchResultsProps) => {
   const navigate = useNavigate();
-  const {
-    user
-  } = useAuth();
+  const { user } = useAuth();
 
   // Filter teams based on search query
   const filteredTeams = mockTeams.filter(team => searchQuery.length === 0 || team.name.toLowerCase().includes(searchQuery.toLowerCase()) || team.region.toLowerCase().includes(searchQuery.toLowerCase()) || team.description.toLowerCase().includes(searchQuery.toLowerCase()));
+  
   const handleNavigateToTeam = (teamId: string) => {
     navigate(`/team/${teamId}`);
   };
+  
   const handleCreateTeam = () => {
     if (user) {
       navigate('/team/create');
     } else {
       navigate('/login');
     }
+  };
+
+  const handleContactTeam = (teamId: string) => {
+    if (!user) {
+      toast({
+        title: "Connexion requise",
+        description: "Vous devez être connecté pour contacter une équipe",
+        variant: "destructive"
+      });
+      navigate('/login');
+      return;
+    }
+    
+    const team = mockTeams.find(t => t.id === teamId);
+    toast({
+      title: "Contact",
+      description: `Envoi d'un message à l'équipe ${team?.name}`,
+    });
+    
+    // Dans une implémentation réelle, rediriger vers la messagerie
+    navigate('/messages');
+  };
+
+  const handleApplyToTeam = (teamId: string) => {
+    if (!user) {
+      toast({
+        title: "Connexion requise",
+        description: "Vous devez être connecté pour postuler à une équipe",
+        variant: "destructive"
+      });
+      navigate('/login');
+      return;
+    }
+    
+    const team = mockTeams.find(t => t.id === teamId);
+    toast({
+      title: "Candidature envoyée",
+      description: `Votre candidature a été envoyée à l'équipe ${team?.name}`,
+    });
+    
+    // Dans une implémentation réelle, créer une candidature dans la base de données
   };
 
   // Function to render rating stars
@@ -131,11 +174,21 @@ const TeamSearchResults = ({
               </div>
               
               <div className="flex flex-col gap-2 mt-3 sm:mt-0">
-                <Button variant="outline" size="sm" className="flex items-center gap-1">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex items-center gap-1"
+                  onClick={() => handleContactTeam(team.id)}
+                >
                   <Mail size={14} />
                   Contacter
                 </Button>
-                <Button variant="outline" size="sm" className="flex items-center gap-1">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex items-center gap-1"
+                  onClick={() => handleApplyToTeam(team.id)}
+                >
                   <UserPlus size={14} />
                   Postuler
                 </Button>

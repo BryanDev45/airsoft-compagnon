@@ -2,13 +2,15 @@
 import React from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { UserPlus, UserMinus, UserCheck } from "lucide-react";
+import { UserPlus, UserMinus, UserCheck, Search } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from 'react-router-dom';
 
 const ProfileFriends = ({ userId, isOwnProfile }) => {
   const [friends, setFriends] = React.useState([]);
   const [pendingRequests, setPendingRequests] = React.useState([]);
+  const navigate = useNavigate();
 
   const fetchFriends = async () => {
     const { data: acceptedFriends, error: friendsError } = await supabase
@@ -95,12 +97,29 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
     }
   };
 
+  const navigateToSearch = () => {
+    navigate('/search?tab=players');
+  };
+
   React.useEffect(() => {
     fetchFriends();
   }, [userId]);
 
   return (
     <div className="space-y-6">
+      {isOwnProfile && (
+        <div className="flex justify-end mb-4">
+          <Button 
+            variant="default"
+            onClick={navigateToSearch}
+            className="bg-airsoft-red hover:bg-red-700 text-white"
+          >
+            <Search className="h-4 w-4 mr-2" />
+            Rechercher des joueurs
+          </Button>
+        </div>
+      )}
+
       {isOwnProfile && pendingRequests.length > 0 && (
         <Card className="p-6">
           <h3 className="text-lg font-medium mb-4">Demandes d'amitié en attente</h3>
