@@ -169,7 +169,7 @@ const CreateTeam = () => {
                     {...register('contact')}
                     className={errors.contact ? "border-red-500" : ""}
                   />
-                  {errors.contact && (
+                  {errors.contact?.message && typeof errors.contact.message === 'string' && (
                     <p className="text-red-500 text-xs mt-1">{errors.contact.message}</p>
                   )}
                 </div>
