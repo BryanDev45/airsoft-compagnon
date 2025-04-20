@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
@@ -22,10 +21,12 @@ const ScrollToTop = () => {
   }, []);
   return null;
 };
-
 const Recherche = () => {
   const navigate = useNavigate();
-  const { user, initialLoading } = useAuth();
+  const {
+    user,
+    initialLoading
+  } = useAuth();
   const [activeTab, setActiveTab] = useState("parties");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchCenter, setSearchCenter] = useState<[number, number]>([2.3522, 48.8566]); // Paris coordinates
@@ -37,7 +38,6 @@ const Recherche = () => {
       navigate('/login');
     }
   };
-
   const handleCreateTeam = () => {
     if (user) {
       navigate('/team/create');
@@ -45,9 +45,7 @@ const Recherche = () => {
       navigate('/login');
     }
   };
-
-  return (
-    <div className="min-h-screen flex flex-col">
+  return <div className="min-h-screen flex flex-col">
       <ScrollToTop />
       <Header />
       <main className="flex-grow">
@@ -60,14 +58,7 @@ const Recherche = () => {
                   Trouvez des parties, des joueurs, des équipes et des magasins
                 </p>
               </div>
-              {activeTab === "parties" && (
-                <Button 
-                  onClick={handleCreateParty}
-                  className="bg-airsoft-red hover:bg-red-700 text-white"
-                >
-                  <Plus className="h-4 w-4 mr-2" /> Créer une partie
-                </Button>
-              )}
+              {activeTab === "parties"}
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
@@ -120,14 +111,9 @@ const Recherche = () => {
                         </Button>
                       </div>
                       
-                      {(!user?.team_id && !initialLoading) && (
-                        <Button 
-                          onClick={handleCreateTeam}
-                          className="bg-airsoft-red hover:bg-red-700 text-white ml-4"
-                        >
+                      {!user?.team_id && !initialLoading && <Button onClick={handleCreateTeam} className="bg-airsoft-red hover:bg-red-700 text-white ml-4">
                           <Plus className="h-4 w-4 mr-2" /> Créer une équipe
-                        </Button>
-                      )}
+                        </Button>}
                     </div>
                     
                     <TeamSearchResults searchQuery={searchQuery} />
@@ -156,8 +142,6 @@ const Recherche = () => {
         </div>
       </main>
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default Recherche;
