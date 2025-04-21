@@ -33,6 +33,7 @@ export const useAuth = () => {
         
         // Redirection après déconnexion
         if (event === 'SIGNED_OUT') {
+          setUser(null); // Make sure user state is cleared
           setTimeout(() => {
             navigate('/login');
           }, 0);
@@ -117,35 +118,8 @@ export const useAuth = () => {
         throw new Error("Erreur lors de la création du compte");
       }
       
-      // Create the profile immediately
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: data.user.id,
-          email: data.user.email,
-          username: userDataWithAvatar.username,
-          firstname: userDataWithAvatar.firstname,
-          lastname: userDataWithAvatar.lastname,
-          birth_date: userDataWithAvatar.birth_date,
-          avatar: userDataWithAvatar.avatar,
-          join_date: new Date().toISOString().split('T')[0]
-        });
-
-      if (profileError) {
-        console.error("Erreur lors de la création du profil:", profileError);
-        throw new Error(`Erreur lors de la création du profil: ${profileError.message}`);
-      }
-
-      // Also create stats for the new user
-      const { error: statsError } = await supabase
-        .from('user_stats')
-        .insert({
-          user_id: data.user.id
-        });
-
-      if (statsError) {
-        console.error("Erreur lors de la création des statistiques:", statsError);
-      }
+      // Now that the user is created in auth, instead of manually inserting into profiles,
+      // rely on the database trigger to handle this automatically
       
       toast({
         title: "Inscription réussie",
@@ -172,7 +146,12 @@ export const useAuth = () => {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
-      // Nous ne naviguons plus ici car c'est maintenant géré par l'écouteur onAuthStateChange
+      // Force clear the user state
+      setUser(null);
+      
+      // Force navigate to login - don't rely only on the auth listener
+      navigate('/login');
+      
       toast({
         title: "Déconnexion réussie",
         description: "À bientôt !",

@@ -78,7 +78,7 @@ function App() {
         <Route path="/team/:id" element={<Team />} />
         <Route path="/team/create" element={<CreateTeam />} />
         <Route path="/user/:username" element={<UserProfile />} />
-        <Route path="/search" element={<Parties />} /> {/* Ajout de cette redirection */}
+        <Route path="/search" element={<Parties />} />
         <Route 
           path="/profile" 
           element={
