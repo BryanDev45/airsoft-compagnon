@@ -14,6 +14,7 @@ const defaultAvatars = [
   '/lovable-uploads/11b1f0a2-300c-458c-9c0a-1d601765963a.png',
   '/lovable-uploads/7ccff25b-48f3-4bfe-b83d-6680ad3b43e7.png',
   '/lovable-uploads/d45d9470-0a9c-4fa4-9673-c69fe27088ea.png',
+  '/lovable-uploads/a3db3849-6ac6-4d39-9e49-9d581c2d2a53.png',
 ];
 
 /**

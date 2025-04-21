@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,17 +12,20 @@ export const useAuth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // First, set up the auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user || null);
 
         if (event === 'SIGNED_IN') {
+          // Using setTimeout to avoid potential deadlocks with Supabase auth
           setTimeout(() => {
             navigate('/profile');
           }, 0);
         }
         if (event === 'SIGNED_OUT') {
           setUser(null);
+          // Using setTimeout to avoid potential deadlocks with Supabase auth
           setTimeout(() => {
             navigate('/login');
           }, 0);
@@ -29,6 +33,7 @@ export const useAuth = () => {
       }
     );
 
+    // Then check for an existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user || null);
       setInitialLoading(false);
@@ -94,52 +99,20 @@ export const useAuth = () => {
         throw new Error('Cette adresse email est déjà utilisée.');
       }
 
+      // Create the user in the auth system with metadata
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: userDataWithAvatar,
+          data: userDataWithAvatar, // This metadata will be used by the trigger to create the profile
         },
       });
 
       if (error) throw error;
       if (!data.user) throw new Error("Erreur lors de la création du compte");
 
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: data.user.id,
-          email: data.user.email,
-          username: userDataWithAvatar.username,
-          firstname: userDataWithAvatar.firstname,
-          lastname: userDataWithAvatar.lastname,
-          birth_date: userDataWithAvatar.birth_date,
-          avatar: userDataWithAvatar.avatar,
-          join_date: new Date().toISOString().split('T')[0]
-        });
-
-      if (profileError) {
-        console.error("Erreur lors de la création du profil:", profileError);
-        if (
-          profileError.message &&
-          profileError.message.includes("new row violates row-level security policy")
-        ) {
-          throw new Error(
-            "Erreur RLS lors de l'inscription : veuillez vérifier la politique de sécurité (RLS) pour la table 'profiles' dans Supabase. Donnez accès à l'utilisateur connecté pour INSERT."
-          );
-        }
-        throw new Error(`Erreur lors de la création du profil: ${profileError.message}`);
-      }
-
-      const { error: statsError } = await supabase
-        .from('user_stats')
-        .insert({
-          user_id: data.user.id,
-        });
-
-      if (statsError) {
-        console.error("Erreur lors de la création des statistiques:", statsError);
-      }
+      // No need to manually insert into profiles table - it's handled by the database trigger
+      // The handle_new_user function will create the profile entry automatically
 
       toast({
         title: "Inscription réussie",
@@ -164,8 +137,11 @@ export const useAuth = () => {
       setLoading(true);
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      
       setUser(null);
+      // Navigate to login page after successful logout
       navigate('/login');
+      
       toast({
         title: "Déconnexion réussie",
         description: "À bientôt !",

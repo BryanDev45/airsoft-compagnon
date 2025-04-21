@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -139,7 +140,7 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
             <div className="flex flex-col items-center">
               <div className="mb-4">
                 <Avatar className="w-32 h-32">
-                  <AvatarImage src={avatarPreview || "/placeholder.svg"} />
+                  <AvatarImage src={avatarPreview || "/placeholder.svg"} alt="Avatar preview" />
                   <AvatarFallback>
                     <ImageIcon className="h-10 w-10 text-gray-400" />
                   </AvatarFallback>

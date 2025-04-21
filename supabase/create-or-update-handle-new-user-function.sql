@@ -8,12 +8,17 @@ DECLARE
     calculated_age INTEGER;
     avatar_url TEXT;
 BEGIN
-    -- Calcul de l'âge
-    calculated_age := DATE_PART('year', AGE(CURRENT_DATE, (NEW.raw_user_meta_data->>'birth_date')::date));
+    -- Calcul de l'âge si la date de naissance est disponible
+    IF (NEW.raw_user_meta_data->>'birth_date') IS NOT NULL THEN
+        calculated_age := DATE_PART('year', AGE(CURRENT_DATE, (NEW.raw_user_meta_data->>'birth_date')::date));
+    ELSE
+        calculated_age := NULL;
+    END IF;
     
     -- Récupération de l'avatar aléatoire depuis les métadonnées
     avatar_url := NEW.raw_user_meta_data->>'avatar';
     
+    -- Create profile with secure defaults if data is missing
     INSERT INTO public.profiles (
         id, 
         username, 
@@ -31,13 +36,18 @@ BEGIN
         NEW.email,
         NEW.raw_user_meta_data->>'firstname',
         NEW.raw_user_meta_data->>'lastname',
-        (NEW.raw_user_meta_data->>'birth_date')::date,
+        (CASE WHEN (NEW.raw_user_meta_data->>'birth_date') IS NOT NULL 
+            THEN (NEW.raw_user_meta_data->>'birth_date')::date 
+            ELSE NULL 
+        END),
         calculated_age,
         CURRENT_DATE,
         avatar_url
     );
     
+    -- Create user stats
     INSERT INTO public.user_stats (user_id) VALUES (NEW.id);
+    
     RETURN NEW;
 END;
 $function$;
