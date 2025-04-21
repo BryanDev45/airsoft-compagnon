@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,43 +9,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { useAuth } from '@/hooks/useAuth';
 
-// Mock data for user search results
-const mockUsers = [
-  {
-    id: 1,
-    username: "AirsoftMaster",
-    avatar: "/placeholder.svg",
-    location: "Paris, France",
-    team: "Les Rapaces",
-    teamId: "1",
-    bio: "Joueur d'airsoft depuis 5 ans, spécialiste en CQB",
-    verified: true,
-    rating: 4.8
-  },
-  {
-    id: 2,
-    username: "SniperElite",
-    avatar: "/placeholder.svg",
-    location: "Lyon, France",
-    team: "Ghost Team",
-    teamId: "2",
-    bio: "Sniper et tireur de précision, amateur de parties MilSim",
-    verified: false,
-    rating: 4.2
-  },
-  {
-    id: 3,
-    username: "TacticCool",
-    avatar: "/placeholder.svg",
-    location: "Marseille, France",
-    team: "Strike Force",
-    teamId: "3",
-    bio: "Équipement tactique et stratégies militaires",
-    verified: true,
-    rating: 4.5
-  }
-];
-
 interface UserSearchResultsProps {
   searchQuery: string;
 }
@@ -53,21 +16,55 @@ interface UserSearchResultsProps {
 const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState<any[]>([]);
   
-  // Filter users based on search query
-  const filteredUsers = mockUsers.filter(user => 
-    searchQuery.length === 0 || 
-    user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.team.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.bio.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      try {
+        let query = supabase
+          .from('profiles')
+          .select('id, username, avatar, location, team, team_id, bio, is_verified, join_date');
+        
+        // Ignore current user
+        if (user?.id) {
+          query = query.neq('id', user.id);
+        }
+        
+        // Apply search filter if query exists
+        if (searchQuery.length > 0) {
+          query = query.or(`username.ilike.%${searchQuery}%,location.ilike.%${searchQuery}%,team.ilike.%${searchQuery}%,bio.ilike.%${searchQuery}%`);
+        }
+        
+        // Limit results
+        query = query.limit(20);
+        
+        const { data, error } = await query;
+        
+        if (error) throw error;
+        
+        setUsers(data || []);
+      } catch (error: any) {
+        console.error("Erreur lors de la récupération des utilisateurs:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les utilisateurs",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchUsers();
+  }, [searchQuery, user?.id]);
   
   const handleNavigateToProfile = (username: string) => {
     navigate(`/user/${username}`);
   };
 
-  const handleSendMessage = (userId: number) => {
+  const handleSendMessage = (userId: string) => {
     if (!user) {
       toast({
         title: "Connexion requise",
@@ -80,14 +77,14 @@ const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
     
     toast({
       title: "Message",
-      description: `Envoi d'un message à ${mockUsers.find(u => u.id === userId)?.username}`,
+      description: `Envoi d'un message à ${users.find(u => u.id === userId)?.username}`,
     });
     
     // Dans une implémentation réelle, rediriger vers la messagerie avec ce contact
     navigate('/messages');
   };
 
-  const handleAddFriend = async (userId: number) => {
+  const handleAddFriend = async (userId: string) => {
     if (!user) {
       toast({
         title: "Connexion requise",
@@ -99,14 +96,30 @@ const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
     }
 
     try {
-      const targetUser = mockUsers.find(u => u.id === userId);
+      // Vérifier si une demande existe déjà
+      const { data: existingRequest, error: checkError } = await supabase
+        .from('friendships')
+        .select('*')
+        .or(`and(user_id.eq.${user.id},friend_id.eq.${userId}),and(user_id.eq.${userId},friend_id.eq.${user.id})`)
+        .maybeSingle();
       
-      // En production, ce serait l'ID réel de l'utilisateur
+      if (checkError) throw checkError;
+      
+      if (existingRequest) {
+        toast({
+          title: "Information",
+          description: "Une demande d'ami existe déjà avec cet utilisateur",
+        });
+        return;
+      }
+      
+      const targetUser = users.find(u => u.id === userId);
+      
       const { error } = await supabase
         .from('friendships')
         .insert({
           user_id: user.id,
-          friend_id: targetUser?.id.toString(),
+          friend_id: userId,
           status: 'pending'
         });
 
@@ -127,7 +140,7 @@ const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
   };
 
   // Function to render rating stars
-  const renderRatingStars = (rating: number) => {
+  const renderRatingStars = (rating: number = 0) => {
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 >= 0.5;
     const stars = [];
@@ -153,7 +166,15 @@ const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
     return stars;
   };
   
-  if (filteredUsers.length === 0) {
+  if (loading) {
+    return (
+      <div className="flex justify-center py-12">
+        <div className="animate-pulse text-gray-500">Chargement des joueurs...</div>
+      </div>
+    );
+  }
+  
+  if (users.length === 0) {
     return (
       <div className="text-center py-12">
         <p className="text-gray-500">Aucun joueur trouvé</p>
@@ -163,7 +184,7 @@ const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
   
   return (
     <div className="space-y-4">
-      {filteredUsers.map(user => (
+      {users.map(user => (
         <div key={user.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
           <div className="flex flex-col sm:flex-row items-start gap-4">
             <div 
@@ -171,8 +192,8 @@ const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
               onClick={() => handleNavigateToProfile(user.username)}
             >
               <Avatar className="h-16 w-16">
-                <AvatarImage src={user.avatar} alt={user.username} />
-                <AvatarFallback>{user.username.charAt(0)}</AvatarFallback>
+                <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.username} />
+                <AvatarFallback>{user.username?.charAt(0).toUpperCase() || "U"}</AvatarFallback>
               </Avatar>
             </div>
             
@@ -182,9 +203,9 @@ const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
                   className="font-semibold hover:text-airsoft-red transition-colors cursor-pointer"
                   onClick={() => handleNavigateToProfile(user.username)}
                 >
-                  {user.username}
+                  {user.username || "Anonyme"}
                 </span>
-                {user.verified && (
+                {user.is_verified && (
                   <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                     Vérifié
                   </Badge>
@@ -192,11 +213,11 @@ const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
               </div>
               
               <div className="flex items-center mb-2">
-                {renderRatingStars(user.rating)}
-                <span className="ml-2 text-sm text-gray-600">{user.rating.toFixed(1)}</span>
+                {renderRatingStars(0)}
+                <span className="ml-2 text-sm text-gray-600">0.0</span>
               </div>
               
-              <p className="text-sm text-gray-600 mb-2 line-clamp-2">{user.bio}</p>
+              <p className="text-sm text-gray-600 mb-2 line-clamp-2">{user.bio || "Aucune bio"}</p>
               
               <div className="flex flex-wrap items-center text-sm text-gray-500 gap-x-4 gap-y-1">
                 {user.location && (
@@ -209,9 +230,15 @@ const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
                 {user.team && (
                   <div className="flex items-center gap-1">
                     <Shield size={14} />
-                    <Link to={`/team/${user.teamId}`} className="hover:text-airsoft-red transition-colors">
+                    <Link to={`/team/${user.team_id}`} className="hover:text-airsoft-red transition-colors">
                       {user.team}
                     </Link>
+                  </div>
+                )}
+                
+                {user.join_date && (
+                  <div className="text-xs text-gray-400">
+                    Membre depuis {new Date(user.join_date).toLocaleDateString()}
                   </div>
                 )}
               </div>

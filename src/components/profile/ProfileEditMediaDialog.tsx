@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -60,7 +59,6 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
     }
   };
 
-  // Ajout sélection d'un avatar par défaut
   const handleSelectDefaultAvatar = (src: string) => {
     setAvatarPreview(src);
   };
@@ -119,7 +117,6 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
     }
   };
 
-  // Récupération avatars par défaut (nouvelle feature)
   const defaultAvatars = getAllDefaultAvatars();
 
   return (
@@ -182,20 +179,23 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
               </p>
               <div className="w-full mt-4">
                 <p className="text-xs text-gray-400 mb-2">Ou choisissez un avatar de base</p>
-                <div className="flex flex-wrap gap-3 justify-center">
+                <div className="grid grid-cols-4 gap-3 mt-2 max-h-48 overflow-y-auto p-2">
                   {defaultAvatars.map((src) => (
                     <button
                       key={src}
                       type="button"
-                      className={`p-0.5 rounded-full border-2 ${avatarPreview === src ? 'border-airsoft-red' : 'border-transparent'} bg-white focus:outline-airsoft-red`}
+                      className={`p-0.5 rounded-full border-2 ${avatarPreview === src ? 'border-airsoft-red' : 'border-transparent'} hover:border-gray-300 transition-colors focus:outline-none`}
                       onClick={() => handleSelectDefaultAvatar(src)}
                       title="Choisir cet avatar"
                     >
-                      <img
-                        src={src}
-                        alt="Avatar airsoft"
-                        className="w-12 h-12 rounded-full object-cover"
-                      />
+                      <div className="w-12 h-12 rounded-full overflow-hidden">
+                        <img
+                          src={src}
+                          alt="Avatar airsoft"
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      </div>
                     </button>
                   ))}
                 </div>
