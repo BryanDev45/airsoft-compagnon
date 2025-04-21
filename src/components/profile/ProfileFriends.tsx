@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -181,11 +182,10 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
             {friends.map((friend) => (
               <Card key={friend.id} className="p-4 flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <img 
-                    src={friend.avatar || '/placeholder.svg'} 
-                    alt={friend.username} 
-                    className="w-10 h-10 rounded-full"
-                  />
+                  <Avatar>
+                    <AvatarImage src={friend.avatar || '/placeholder.svg'} alt={friend.username} />
+                    <AvatarFallback>{friend.username?.[0]?.toUpperCase()}</AvatarFallback>
+                  </Avatar>
                   <span>{friend.username}</span>
                 </div>
                 {isOwnProfile && (

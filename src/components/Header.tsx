@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, User as UserIcon, LogOut, Bell, BellOff, Settings, Users, Wrench, Globe } from 'lucide-react';
@@ -21,33 +22,6 @@ const Header = () => {
     avatar: string;
     teamId?: string;
   } | null>(null);
-  const [localNotificationCount, setLocalNotificationCount] = useState(3);
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      title: "Nouvelle partie disponible",
-      message: "Une nouvelle partie a été ajoutée près de chez vous",
-      date: "Aujourd'hui, 10:30",
-      read: false,
-      link: "/recherche"
-    },
-    {
-      id: 2,
-      title: "Demande d'ami",
-      message: "AirsoftMaster souhaite vous ajouter comme ami",
-      date: "Hier, 15:45",
-      read: false,
-      link: "/profile"
-    },
-    {
-      id: 3,
-      title: "Mise à jour du règlement",
-      message: "Le règlement de la partie 'Opération Forêt Noire' a été mis à jour",
-      date: "16/04/2025, 08:15",
-      read: false,
-      link: "/parties/1"
-    }
-  ]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -115,42 +89,19 @@ const Header = () => {
     navigate('/toolbox');
   };
 
-  const handleNotificationRead = (id: number) => {
-    setNotifications(prev =>
-      prev.map(notif =>
-        notif.id === id ? { ...notif, read: true } : notif
-      )
-    );
-    setLocalNotificationCount(prev => Math.max(0, prev - 1));
-  };
-
-  const handleReadAllNotifications = () => {
-    setNotifications(prev =>
-      prev.map(notif => ({ ...notif, read: true }))
-    );
-    setLocalNotificationCount(0);
-    toast({
-      title: "Notifications",
-      description: "Toutes les notifications ont été marquées comme lues"
-    });
-  };
-
-  const handleNotificationClick = (link: string) => {
-    navigate(link);
-  };
-
-  const { data: notificationCount = 0 } = useQuery({
+  const { data: notificationCount = 0, isLoading: isLoadingNotifications } = useQuery({
     queryKey: ['unreadNotifications'],
     queryFn: async () => {
       const { count, error } = await supabase
         .from('notifications')
         .select('id', { count: 'exact', head: true })
+        .eq('user_id', user?.id)
         .eq('read', false);
 
       if (error) throw error;
       return count || 0;
     },
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && !!user?.id,
   });
 
   return (
@@ -192,11 +143,11 @@ const Header = () => {
                     className="relative"
                   >
                     <Bell size={20} className="text-white hover:text-airsoft-red transition-colors" />
-                    {localNotificationCount > 0 && (
+                    {notificationCount > 0 && (
                       <Badge
                         className="absolute -top-1 -right-1 h-5 w-5 text-xs p-0 flex items-center justify-center bg-airsoft-red"
                       >
-                        {localNotificationCount}
+                        {notificationCount}
                       </Badge>
                     )}
                   </Button>
@@ -276,49 +227,16 @@ const Header = () => {
                   >
                     <Bell size={18} />
                     <span>Notifications</span>
-                    {localNotificationCount > 0 && (
-                      <Badge className="bg-airsoft-red">{localNotificationCount}</Badge>
+                    {notificationCount > 0 && (
+                      <Badge className="bg-airsoft-red">{notificationCount}</Badge>
                     )}
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="w-full sm:max-w-md">
                   <SheetHeader>
-                    <SheetTitle className="text-xl flex items-center justify-between">
-                      <span>Notifications</span>
-                      <Button
-                        variant="ghost"
-                        className="text-sm h-8 px-2"
-                        onClick={handleReadAllNotifications}
-                      >
-                        Tout lire
-                      </Button>
-                    </SheetTitle>
+                    <SheetTitle className="text-xl">Notifications</SheetTitle>
                   </SheetHeader>
-                  <div className="mt-6 space-y-4 max-h-[calc(100vh-120px)] overflow-y-auto">
-                    {notifications.length > 0 ? (
-                      notifications.map(notification => (
-                        <div
-                          key={notification.id}
-                          className={`p-4 rounded-lg border ${notification.read ? 'bg-gray-50 border-gray-200' : 'bg-blue-50 border-blue-200'} cursor-pointer transition-colors hover:bg-gray-100`}
-                          onClick={() => {
-                            handleNotificationRead(notification.id);
-                            handleNotificationClick(notification.link);
-                          }}
-                        >
-                          <div className="flex justify-between items-start mb-1">
-                            <h3 className="font-medium text-gray-900">{notification.title}</h3>
-                            <p className="text-xs text-gray-500">{notification.date}</p>
-                          </div>
-                          <p className="text-sm text-gray-600">{notification.message}</p>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-center py-10">
-                        <BellOff className="mx-auto h-12 w-12 text-gray-400 mb-3" />
-                        <p className="text-gray-500">Vous n'avez aucune notification</p>
-                      </div>
-                    )}
-                  </div>
+                  <NotificationList />
                   <SheetFooter className="mt-4">
                     <SheetClose asChild>
                       <Button variant="outline" className="w-full">Fermer</Button>

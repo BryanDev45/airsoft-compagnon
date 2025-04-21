@@ -21,8 +21,14 @@ const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
   
   useEffect(() => {
     const fetchUsers = async () => {
-      setLoading(true);
       try {
+        if (!user) {
+          // Attendre que l'authentification soit initialisée
+          return;
+        }
+        
+        setLoading(true);
+        
         let query = supabase
           .from('profiles')
           .select('id, username, avatar, location, team, team_id, bio, is_verified, join_date');
@@ -45,6 +51,7 @@ const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
         if (error) throw error;
         
         setUsers(data || []);
+        setLoading(false);
       } catch (error: any) {
         console.error("Erreur lors de la récupération des utilisateurs:", error);
         toast({
@@ -52,13 +59,12 @@ const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
           description: "Impossible de charger les utilisateurs",
           variant: "destructive"
         });
-      } finally {
         setLoading(false);
       }
     };
     
     fetchUsers();
-  }, [searchQuery, user?.id]);
+  }, [searchQuery, user?.id, user]);
   
   const handleNavigateToProfile = (username: string) => {
     navigate(`/user/${username}`);
