@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -18,26 +17,6 @@ import { toast } from '@/components/ui/use-toast';
 const Profile = () => {
   const { user, initialLoading } = useAuth();
   const navigate = useNavigate();
-  if (initialLoading || !user?.id) {
-  return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-grow flex items-center justify-center">
-        <div className="animate-pulse">Chargement...</div>
-      </main>
-      <Footer />
-    </div>
-  );
-}
-
-const {
-  loading,
-  profileData,
-  userStats,
-  updateLocation,
-  updateUserStats,
-  fetchProfileData
-} = useProfileData(user.id);
 
   const [showSettingsDialog, setShowSettingsDialog] = React.useState(false);
   const [showEditMediaDialog, setShowEditMediaDialog] = React.useState(false);
@@ -51,18 +30,39 @@ const {
 
   const equipmentTypes = ["Réplique principale", "Réplique secondaire", "Protection", "Accessoire"];
 
-  React.useEffect(() => {
-    if (user?.id) {
-      fetchEquipment();
-    }
-  }, [user?.id]);
+  // 💡 Empêche le hook useProfileData de s'exécuter si user n'est pas prêt
+  if (initialLoading || !user?.id) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-grow flex items-center justify-center">
+          <div className="animate-pulse">Chargement...</div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // ✅ Ce hook s’exécute maintenant uniquement quand user est défini
+  const {
+    loading,
+    profileData,
+    userStats,
+    updateLocation,
+    updateUserStats,
+    fetchProfileData
+  } = useProfileData(user.id);
+
+  useEffect(() => {
+    fetchEquipment();
+  }, [user.id]);
 
   const fetchEquipment = async () => {
     try {
       const { data, error } = await supabase
         .from('equipment')
         .select('*')
-        .eq('user_id', user?.id);
+        .eq('user_id', user.id);
 
       if (error) {
         throw error;
@@ -80,7 +80,7 @@ const {
         .from('equipment')
         .insert({
           ...newEquipment,
-          user_id: user?.id
+          user_id: user.id
         });
 
       if (error) throw error;
@@ -102,18 +102,6 @@ const {
       return false;
     }
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-grow flex items-center justify-center">
-          <div className="animate-pulse">Chargement...</div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
 
   const handleNavigateToTeam = () => {
     if (profileData?.team_id) {
