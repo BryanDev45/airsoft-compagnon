@@ -16,16 +16,28 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, initialLoading } = useAuth();
   const navigate = useNavigate();
-  const {
-    loading,
-    profileData,
-    userStats,
-    updateLocation,
-    updateUserStats,
-    fetchProfileData
-  } = useProfileData(user?.id);
+  if (initialLoading || !user?.id) {
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <main className="flex-grow flex items-center justify-center">
+        <div className="animate-pulse">Chargement...</div>
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+const {
+  loading,
+  profileData,
+  userStats,
+  updateLocation,
+  updateUserStats,
+  fetchProfileData
+} = useProfileData(user.id);
 
   const [showSettingsDialog, setShowSettingsDialog] = React.useState(false);
   const [showEditMediaDialog, setShowEditMediaDialog] = React.useState(false);
