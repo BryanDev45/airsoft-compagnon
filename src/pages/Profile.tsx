@@ -17,33 +17,10 @@ import { toast } from '@/components/ui/use-toast';
 const Profile = () => {
   const { user, initialLoading } = useAuth();
   const navigate = useNavigate();
-
-  const [showSettingsDialog, setShowSettingsDialog] = React.useState(false);
-  const [showEditMediaDialog, setShowEditMediaDialog] = React.useState(false);
-  const [showEditBioDialog, setShowEditBioDialog] = React.useState(false);
-  const [showAddEquipmentDialog, setShowAddEquipmentDialog] = React.useState(false);
-  const [selectedGame, setSelectedGame] = React.useState(null);
-  const [showGameDialog, setShowGameDialog] = React.useState(false);
-  const [showAllGamesDialog, setShowAllGamesDialog] = React.useState(false);
-  const [showBadgesDialog, setShowBadgesDialog] = React.useState(false);
+  
+  const [profileReady, setProfileReady] = useState(false);
   const [equipment, setEquipment] = useState<any[]>([]);
-
-  const equipmentTypes = ["Réplique principale", "Réplique secondaire", "Protection", "Accessoire"];
-
-  // 💡 Empêche le hook useProfileData de s'exécuter si user n'est pas prêt
-  if (initialLoading || !user?.id) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-grow flex items-center justify-center">
-          <div className="animate-pulse">Chargement...</div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  // ✅ Ce hook s’exécute maintenant uniquement quand user est défini
+  
   const {
     loading,
     profileData,
@@ -51,23 +28,41 @@ const Profile = () => {
     updateLocation,
     updateUserStats,
     fetchProfileData
-  } = useProfileData(user.id);
+  } = useProfileData(user?.id);
 
+  const [showSettingsDialog, setShowSettingsDialog] = useState(false);
+  const [showEditMediaDialog, setShowEditMediaDialog] = useState(false);
+  const [showEditBioDialog, setShowEditBioDialog] = useState(false);
+  const [showAddEquipmentDialog, setShowAddEquipmentDialog] = useState(false);
+  const [selectedGame, setSelectedGame] = useState(null);
+  const [showGameDialog, setShowGameDialog] = useState(false);
+  const [showAllGamesDialog, setShowAllGamesDialog] = useState(false);
+  const [showBadgesDialog, setShowBadgesDialog] = useState(false);
+
+  const equipmentTypes = ["Réplique principale", "Réplique secondaire", "Protection", "Accessoire"];
+
+  // Log pour vérifier le chargement
   useEffect(() => {
-    fetchEquipment();
-  }, [user.id]);
+    console.log('user:', user);
+    console.log('initialLoading:', initialLoading);
+  }, [user, initialLoading]);
+
+  // Ne lance le chargement qu’une fois que user est dispo
+  useEffect(() => {
+    if (user?.id) {
+      fetchEquipment();
+      setProfileReady(true);
+    }
+  }, [user]);
 
   const fetchEquipment = async () => {
     try {
       const { data, error } = await supabase
         .from('equipment')
         .select('*')
-        .eq('user_id', user.id);
+        .eq('user_id', user?.id);
 
-      if (error) {
-        throw error;
-      }
-
+      if (error) throw error;
       setEquipment(data || []);
     } catch (error) {
       console.error("Erreur lors de la récupération de l'équipement:", error);
@@ -80,7 +75,7 @@ const Profile = () => {
         .from('equipment')
         .insert({
           ...newEquipment,
-          user_id: user.id
+          user_id: user?.id
         });
 
       if (error) throw error;
@@ -114,6 +109,19 @@ const Profile = () => {
   const handleNavigateToGame = (gameId) => {
     navigate(`/game/${gameId}`);
   };
+
+  // Cas où tout est encore en chargement
+  if (initialLoading || !user || loading || !profileReady) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-grow flex items-center justify-center">
+          <div className="animate-pulse text-gray-500">Chargement du profil...</div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
