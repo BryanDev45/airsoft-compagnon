@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -98,6 +99,76 @@ const glossaryItems = [
   {
     term: "Tappet plate",
     definition: "Plaque qui synchronise l'alimentation des billes avec le cycle de la gearbox.",
+    category: "Technique"
+  },
+  {
+    term: "HPA",
+    definition: "High Pressure Air - Système utilisant de l'air comprimé pour propulser les billes, offrant une cadence et une précision élevées.",
+    category: "Équipement"
+  },
+  {
+    term: "Green Gas",
+    definition: "Mélange gazeux à base de propane utilisé pour alimenter les répliques à gaz.",
+    category: "Équipement"
+  },
+  {
+    term: "Blowback",
+    definition: "Système de recul simulant le mouvement de la culasse sur les répliques à gaz ou électriques.",
+    category: "Technique"
+  },
+  {
+    term: "Speedloader",
+    definition: "Accessoire permettant de charger rapidement les chargeurs de répliques.",
+    category: "Accessoire"
+  },
+  {
+    term: "Réglage VSR",
+    definition: "Méthode de réglage précis du hop-up basée sur le système VSR-10 de Tokyo Marui.",
+    category: "Technique"
+  },
+  {
+    term: "Shimming",
+    definition: "Ajustement précis des engrenages dans une gearbox pour optimiser son fonctionnement.",
+    category: "Maintenance"
+  },
+  {
+    term: "AOE",
+    definition: "Angle of Engagement - Angle de contact entre les dents du piston et du secteur gear, crucial pour l'efficacité mécanique.",
+    category: "Technique"
+  },
+  {
+    term: "Reshim",
+    definition: "Procédure de réajustement des cales d'engrenages pour optimiser le fonctionnement de la gearbox.",
+    category: "Maintenance"
+  },
+  {
+    term: "R-hop",
+    definition: "Modification avancée du hop-up offrant une meilleure stabilité et portée des billes.",
+    category: "Technique"
+  },
+  {
+    term: "IPSC",
+    definition: "International Practical Shooting Confederation - Type de compétition de tir dynamique adaptée à l'airsoft.",
+    category: "Compétition"
+  },
+  {
+    term: "UKARA",
+    definition: "United Kingdom Airsoft Retailers Association - Système de régulation britannique pour l'achat de répliques.",
+    category: "Réglementation"
+  },
+  {
+    term: "TDM",
+    definition: "Team Death Match - Format de jeu où deux équipes s'affrontent jusqu'à élimination ou limite de temps.",
+    category: "Type de jeu"
+  },
+  {
+    term: "BBs",
+    definition: "Désignation courante des billes d'airsoft, généralement en plastique et de différents poids.",
+    category: "Équipement"
+  },
+  {
+    term: "Joule Creep",
+    definition: "Phénomène où l'énergie cinétique d'une bille augmente au-delà de la valeur mesurée au chronographe.",
     category: "Technique"
   }
 ];

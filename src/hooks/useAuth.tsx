@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -81,6 +82,7 @@ export const useAuth = () => {
   
   const register = async (email: string, password: string, userData: any) => {
     try {
+      setLoading(true);
       const userDataWithAvatar = {
         ...userData,
         avatar: getRandomAvatar()
@@ -115,8 +117,7 @@ export const useAuth = () => {
         throw new Error("Erreur lors de la création du compte");
       }
       
-      // Important: Create the profile as a service role to bypass RLS
-      // This avoids the chicken-and-egg problem with RLS policies
+      // Create the profile immediately
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
@@ -128,19 +129,31 @@ export const useAuth = () => {
           birth_date: userDataWithAvatar.birth_date,
           avatar: userDataWithAvatar.avatar,
           join_date: new Date().toISOString().split('T')[0]
-        })
-        .select();
+        });
 
       if (profileError) {
         console.error("Erreur lors de la création du profil:", profileError);
         throw new Error(`Erreur lors de la création du profil: ${profileError.message}`);
+      }
+
+      // Also create stats for the new user
+      const { error: statsError } = await supabase
+        .from('user_stats')
+        .insert({
+          user_id: data.user.id
+        });
+
+      if (statsError) {
+        console.error("Erreur lors de la création des statistiques:", statsError);
       }
       
       toast({
         title: "Inscription réussie",
         description: "Votre compte a été créé avec succès",
       });
-      navigate('/login');
+      
+      // Navigate to profile after successful registration
+      navigate('/profile');
     } catch (error: any) {
       console.error("Erreur d'inscription:", error);
       toast({
@@ -148,6 +161,8 @@ export const useAuth = () => {
         description: error.message,
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
