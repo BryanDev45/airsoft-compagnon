@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -118,10 +117,9 @@ export const useProfileData = (userId: string | undefined) => {
     
     try {
       const { error } = await supabase
-        .rpc('update_user_location', {
-          p_user_id: userId,
-          p_location: location
-        });
+        .from('profiles')
+        .update({ location })
+        .eq('id', userId);
 
       if (error) throw error;
 

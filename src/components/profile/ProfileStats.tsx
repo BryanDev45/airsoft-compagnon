@@ -28,6 +28,8 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData }) => {
   const handleSave = async () => {
     try {
       setIsSaving(true);
+      console.log("Mise à jour des statistiques:", gameType, role, level);
+      
       const success = await updateUserStats(gameType, role, level);
       
       if (success) {

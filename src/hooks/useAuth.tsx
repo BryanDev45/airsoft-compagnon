@@ -12,23 +12,26 @@ export const useAuth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Écouteur d'état d'auth
+    // Vérification de session existante d'abord
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user || null);
+      setInitialLoading(false);
+    });
+
+    // Puis écouteur d'état d'auth
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user || null);
 
         // Redirection après connexion
         if (event === 'SIGNED_IN') {
-          navigate('/profile');
+          // Utiliser setTimeout pour éviter les problèmes de timing avec la redirection
+          setTimeout(() => {
+            navigate('/profile');
+          }, 0);
         }
       }
     );
-
-    // Vérification de session existante
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user || null);
-      setInitialLoading(false); // fin du chargement initial
-    });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
@@ -52,7 +55,8 @@ export const useAuth = () => {
           description: "Bienvenue sur Airsoft Compagnon",
         });
         
-        // La redirection est gérée par l'écouteur onAuthStateChange
+        // Navigation explicite ici aussi (le reste est géré par l'écouteur)
+        navigate('/profile');
         return true;
       } else {
         throw new Error("Aucune donnée utilisateur retournée");
