@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, User as UserIcon, LogOut, Bell, Settings, Users, Wrench, Globe } from 'lucide-react';
+import { Menu, X, User as UserIcon, LogOut, Bell, BellOff, Settings, Users, Wrench, Globe } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -21,7 +21,7 @@ const Header = () => {
     avatar: string;
     teamId?: string;
   } | null>(null);
-  const [notificationCount, setNotificationCount] = useState(3);
+  const [localNotificationCount, setLocalNotificationCount] = useState(3);
   const [notifications, setNotifications] = useState([
     {
       id: 1,
@@ -59,11 +59,11 @@ const Header = () => {
           .select('username, avatar, team_id')
           .eq('id', session.user.id)
           .single();
-          
+
         setUser(profileData);
       }
     };
-    
+
     checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -74,7 +74,7 @@ const Header = () => {
           .select('username, avatar, team_id')
           .eq('id', session.user.id)
           .single();
-          
+
         setUser(profileData);
       } else {
         setUser(null);
@@ -116,19 +116,19 @@ const Header = () => {
   };
 
   const handleNotificationRead = (id: number) => {
-    setNotifications(prev => 
-      prev.map(notif => 
-        notif.id === id ? {...notif, read: true} : notif
+    setNotifications(prev =>
+      prev.map(notif =>
+        notif.id === id ? { ...notif, read: true } : notif
       )
     );
-    setNotificationCount(prev => Math.max(0, prev - 1));
+    setLocalNotificationCount(prev => Math.max(0, prev - 1));
   };
 
   const handleReadAllNotifications = () => {
-    setNotifications(prev => 
-      prev.map(notif => ({...notif, read: true}))
+    setNotifications(prev =>
+      prev.map(notif => ({ ...notif, read: true }))
     );
-    setNotificationCount(0);
+    setLocalNotificationCount(0);
     toast({
       title: "Notifications",
       description: "Toutes les notifications ont été marquées comme lues"
@@ -186,17 +186,17 @@ const Header = () => {
             {isAuthenticated && (
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     className="relative"
                   >
                     <Bell size={20} className="text-white hover:text-airsoft-red transition-colors" />
-                    {notificationCount > 0 && (
-                      <Badge 
+                    {localNotificationCount > 0 && (
+                      <Badge
                         className="absolute -top-1 -right-1 h-5 w-5 text-xs p-0 flex items-center justify-center bg-airsoft-red"
                       >
-                        {notificationCount}
+                        {localNotificationCount}
                       </Badge>
                     )}
                   </Button>
@@ -214,7 +214,7 @@ const Header = () => {
                 </SheetContent>
               </Sheet>
             )}
-            
+
             {isAuthenticated && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -236,7 +236,7 @@ const Header = () => {
                   <DropdownMenuItem onClick={handleNavigateToTeam}>
                     <Users className="mr-2 h-4 w-4" /> Mon équipe
                   </DropdownMenuItem>
-                  
+
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" /> Déconnexion
@@ -264,20 +264,20 @@ const Header = () => {
             <Wrench size={18} />
             <span>ToolBox</span>
           </Link>
-          
+
           {isAuthenticated && (
             <div className="flex items-center py-2">
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     className="flex items-center gap-2 text-white"
                   >
                     <Bell size={18} />
                     <span>Notifications</span>
-                    {notificationCount > 0 && (
-                      <Badge className="bg-airsoft-red">{notificationCount}</Badge>
+                    {localNotificationCount > 0 && (
+                      <Badge className="bg-airsoft-red">{localNotificationCount}</Badge>
                     )}
                   </Button>
                 </SheetTrigger>
@@ -285,8 +285,8 @@ const Header = () => {
                   <SheetHeader>
                     <SheetTitle className="text-xl flex items-center justify-between">
                       <span>Notifications</span>
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         className="text-sm h-8 px-2"
                         onClick={handleReadAllNotifications}
                       >
@@ -297,8 +297,8 @@ const Header = () => {
                   <div className="mt-6 space-y-4 max-h-[calc(100vh-120px)] overflow-y-auto">
                     {notifications.length > 0 ? (
                       notifications.map(notification => (
-                        <div 
-                          key={notification.id} 
+                        <div
+                          key={notification.id}
                           className={`p-4 rounded-lg border ${notification.read ? 'bg-gray-50 border-gray-200' : 'bg-blue-50 border-blue-200'} cursor-pointer transition-colors hover:bg-gray-100`}
                           onClick={() => {
                             handleNotificationRead(notification.id);
@@ -328,7 +328,7 @@ const Header = () => {
               </Sheet>
             </div>
           )}
-          
+
           {isAuthenticated && user ? (
             <>
               <div className="flex items-center gap-3 py-2">
