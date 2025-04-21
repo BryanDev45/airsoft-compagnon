@@ -18,24 +18,32 @@ const BenefitsSection = () => {
       <div className="max-w-7xl mx-auto px-4">
         {/* Avantages pour les organisateurs */}
         <div className="mb-16">
-          <div className="bg-airsoft-red text-white p-6 md:p-10 rounded-lg mb-8 relative overflow-hidden">
-            <div className="flex flex-col md:flex-row gap-8">
+          <div className="bg-gradient-to-r from-airsoft-red to-red-600 text-white p-6 md:p-10 rounded-lg mb-8 relative overflow-hidden shadow-xl transform hover:scale-[1.02] transition-transform">
+            <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-red-500/20 to-transparent"></div>
+            <div className="absolute bottom-0 left-0 w-full h-1/3 bg-gradient-to-t from-red-900/20 to-transparent"></div>
+            <div className="flex flex-col md:flex-row gap-8 relative z-10">
               <div className="relative z-10 max-w-2xl">
-                <h2 className="text-3xl font-bold mb-4">Quels avantages pour les organisateurs ?</h2>
-                <p className="text-lg mb-4">
-                  Vous en avez assez de gaspiller votre temps dans la gestion des inscriptions ?
-                </p>
-                <p className="text-lg">
-                  Airsoft Compagnon s'occupe de tout pour vous. Déposez simplement votre annonce et c'est tout !
-                  Les joueurs trouvent automatiquement votre annonce grâce à nos filtres et tous les paiements de PAF sont gérés par l'application.
-                  Réduisez le taux d'absentéisme grâce à la validation des inscriptions après le paiement de la PAF.
-                </p>
+                <h2 className="text-4xl font-bold mb-6 leading-tight">
+                  Quels avantages pour les organisateurs ?
+                </h2>
+                <div className="space-y-4">
+                  <p className="text-lg opacity-90">
+                    Vous en avez assez de gaspiller votre temps dans la gestion des inscriptions ?
+                  </p>
+                  <p className="text-lg opacity-90">
+                    Airsoft Compagnon s'occupe de tout pour vous. Déposez simplement votre annonce et c'est tout !
+                    Les joueurs trouvent automatiquement votre annonce grâce à nos filtres et tous les paiements de PAF sont gérés par l'application.
+                  </p>
+                  <p className="text-lg font-semibold">
+                    Réduisez le taux d'absentéisme grâce à la validation des inscriptions après le paiement de la PAF.
+                  </p>
+                </div>
               </div>
               <div className="md:w-1/3 flex-shrink-0">
                 <img 
                   src="/lovable-uploads/84404d08-fa37-4317-80e0-d607d3676fd5.png" 
                   alt="Joueurs d'airsoft en équipement militaire" 
-                  className="rounded-lg w-full h-full object-cover shadow-lg"
+                  className="rounded-lg w-full h-full object-cover shadow-lg transform hover:scale-105 transition-transform duration-300"
                 />
               </div>
             </div>

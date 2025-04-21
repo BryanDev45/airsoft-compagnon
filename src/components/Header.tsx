@@ -1,21 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, User as UserIcon, LogOut, Bell, BellOff, Settings, Users, Wrench, Globe } from 'lucide-react';
+import { Menu, X, User as UserIcon, LogOut, Bell, Settings, Users, Wrench, Globe } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Sheet, 
-  SheetContent, 
-  SheetHeader, 
-  SheetTitle, 
-  SheetTrigger,
-  SheetClose,
-  SheetFooter
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose, SheetFooter } from "@/components/ui/sheet";
+import { NotificationList } from '@/components/notifications/NotificationList';
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -145,6 +139,20 @@ const Header = () => {
     navigate(link);
   };
 
+  const { data: notificationCount = 0 } = useQuery({
+    queryKey: ['unreadNotifications'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('read', false);
+
+      if (error) throw error;
+      return count || 0;
+    },
+    enabled: isAuthenticated,
+  });
+
   return (
     <header className="bg-gradient-to-r from-gray-600 to-gray-900 text-white sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex justify-between items-center py-4">
@@ -195,42 +203,9 @@ const Header = () => {
                 </SheetTrigger>
                 <SheetContent side="right" className="w-[400px] sm:w-[540px]">
                   <SheetHeader>
-                    <SheetTitle className="text-xl flex items-center justify-between">
-                      <span>Notifications</span>
-                      <Button 
-                        variant="ghost" 
-                        className="text-sm h-8 px-2"
-                        onClick={handleReadAllNotifications}
-                      >
-                        Marquer tout comme lu
-                      </Button>
-                    </SheetTitle>
+                    <SheetTitle className="text-xl">Notifications</SheetTitle>
                   </SheetHeader>
-                  <div className="mt-6 space-y-4 max-h-[calc(100vh-120px)] overflow-y-auto pr-2">
-                    {notifications.length > 0 ? (
-                      notifications.map(notification => (
-                        <div 
-                          key={notification.id} 
-                          className={`p-4 rounded-lg border ${notification.read ? 'bg-gray-50 border-gray-200' : 'bg-blue-50 border-blue-200'} cursor-pointer transition-colors hover:bg-gray-100`}
-                          onClick={() => {
-                            handleNotificationRead(notification.id);
-                            handleNotificationClick(notification.link);
-                          }}
-                        >
-                          <div className="flex justify-between items-start mb-1">
-                            <h3 className="font-medium text-gray-900">{notification.title}</h3>
-                            <p className="text-xs text-gray-500">{notification.date}</p>
-                          </div>
-                          <p className="text-sm text-gray-600">{notification.message}</p>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-center py-10">
-                        <BellOff className="mx-auto h-12 w-12 text-gray-400 mb-3" />
-                        <p className="text-gray-500">Vous n'avez aucune notification</p>
-                      </div>
-                    )}
-                  </div>
+                  <NotificationList />
                   <SheetFooter className="mt-4">
                     <SheetClose asChild>
                       <Button variant="outline" className="w-full">Fermer</Button>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,6 +5,7 @@ import { UserPlus, UserMinus, UserCheck, Search } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from 'react-router-dom';
+import { Avatar, AvatarImage, AvatarFallback } from '@chakra-ui/react';
 
 const ProfileFriends = ({ userId, isOwnProfile }) => {
   const [friends, setFriends] = React.useState([]);
@@ -13,40 +13,53 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
   const navigate = useNavigate();
 
   const fetchFriends = async () => {
-    const { data: acceptedFriends, error: friendsError } = await supabase
-      .from('friendships')
-      .select(`
-        friend_id,
-        profiles!friendships_friend_id_fkey (
-          id,
-          username,
-          avatar
-        )
-      `)
-      .eq('user_id', userId)
-      .eq('status', 'accepted');
-
-    if (!friendsError && acceptedFriends) {
-      setFriends(acceptedFriends.map(f => f.profiles));
-    }
-
-    if (isOwnProfile) {
-      const { data: pending, error: pendingError } = await supabase
+    try {
+      const { data: acceptedFriends, error: friendsError } = await supabase
         .from('friendships')
         .select(`
-          user_id,
-          profiles!friendships_user_id_fkey (
+          friend_id,
+          profiles!friendships_friend_id_fkey (
             id,
             username,
-            avatar
+            avatar,
+            team,
+            location
           )
         `)
-        .eq('friend_id', userId)
-        .eq('status', 'pending');
+        .eq('user_id', userId)
+        .eq('status', 'accepted');
 
-      if (!pendingError && pending) {
-        setPendingRequests(pending.map(p => p.profiles));
+      if (!friendsError && acceptedFriends) {
+        setFriends(acceptedFriends.map(f => f.profiles));
       }
+
+      if (isOwnProfile) {
+        const { data: pending, error: pendingError } = await supabase
+          .from('friendships')
+          .select(`
+            user_id,
+            profiles!friendships_user_id_fkey (
+              id,
+              username,
+              avatar,
+              team,
+              location
+            )
+          `)
+          .eq('friend_id', userId)
+          .eq('status', 'pending');
+
+        if (!pendingError && pending) {
+          setPendingRequests(pending.map(p => p.profiles));
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération des amis:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger la liste d'amis",
+        variant: "destructive"
+      });
     }
   };
 
@@ -98,7 +111,6 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
   };
 
   const navigateToSearch = () => {
-    // Redirection vers la page "parties" avec l'onglet "joueurs" sélectionné
     navigate('/parties?tab=players');
   };
 
@@ -122,41 +134,44 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
       )}
 
       {isOwnProfile && pendingRequests.length > 0 && (
-        <Card className="p-6">
-          <h3 className="text-lg font-medium mb-4">Demandes d'amitié en attente</h3>
+        <div className="bg-gradient-to-r from-airsoft-red/10 to-red-100 p-6 rounded-lg border border-airsoft-red/20">
+          <h3 className="text-lg font-medium mb-4 text-airsoft-red">Demandes d'amitié en attente</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {pendingRequests.map((request) => (
-              <Card key={request.id} className="p-4 flex items-center justify-between">
+              <div key={request.id} className="bg-white p-4 rounded-lg shadow-sm flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <img 
-                    src={request.avatar || '/placeholder.svg'} 
-                    alt={request.username} 
-                    className="w-10 h-10 rounded-full"
-                  />
-                  <span>{request.username}</span>
+                  <Avatar>
+                    <AvatarImage src={request.avatar || '/placeholder.svg'} alt={request.username} />
+                    <AvatarFallback>{request.username?.[0]?.toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{request.username}</p>
+                    {request.team && (
+                      <p className="text-sm text-gray-500">{request.team}</p>
+                    )}
+                  </div>
                 </div>
                 <div className="flex space-x-2">
                   <Button 
                     variant="default" 
                     size="sm"
                     onClick={() => handleAcceptFriend(request.id)}
+                    className="bg-airsoft-red hover:bg-red-700"
                   >
-                    <UserCheck className="h-4 w-4 mr-1" />
                     Accepter
                   </Button>
                   <Button 
-                    variant="destructive" 
+                    variant="outline" 
                     size="sm"
                     onClick={() => handleRejectFriend(request.id)}
                   >
-                    <UserMinus className="h-4 w-4 mr-1" />
                     Refuser
                   </Button>
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
-        </Card>
+        </div>
       )}
 
       <Card className="p-6">
