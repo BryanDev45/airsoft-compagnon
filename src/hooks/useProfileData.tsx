@@ -1,21 +1,30 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
 
-export const useProfileData = (userId?: string) => {
-  const [loading, setLoading] = useState(false);
+export const useProfileData = (userId: string | undefined) => {
+  const [loading, setLoading] = useState(true);
   const [profileData, setProfileData] = useState<any>(null);
   const [userStats, setUserStats] = useState<any>(null);
   const navigate = useNavigate();
 
-  const fetchProfileData = useCallback(async () => {
-    if (!userId) return;
+  useEffect(() => {
+    if (userId) {
+      fetchProfileData();
+    } else {
+      setLoading(false);
+    }
+  }, [userId]);
 
-    setLoading(true);
-
+  const fetchProfileData = async () => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+    
     try {
-      // Charger le profil
+      // Vérifier si le profil existe déjà
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
@@ -26,37 +35,39 @@ export const useProfileData = (userId?: string) => {
         throw profileError;
       }
 
+      // Si le profil n'existe pas encore, récupérer les données de l'utilisateur Auth
       if (!profile) {
+        console.log("Profil non trouvé, tentative de création...");
         const { data: userData } = await supabase.auth.getUser();
-        const user = userData?.user;
-        
-        if (user) {
-          const meta = user.user_metadata;
+        if (userData?.user) {
+          // Créer un nouveau profil basé sur les métadonnées de l'utilisateur
+          const metaData = userData.user.user_metadata;
           const newProfile = {
             id: userId,
-            username: meta.username || `user_${userId.slice(0, 8)}`,
-            email: user.email,
-            firstname: meta.firstname,
-            lastname: meta.lastname,
-            birth_date: meta.birth_date,
-            age: meta.age || null,
+            username: metaData.username || `user_${userId.substring(0, 8)}`,
+            email: userData.user.email,
+            firstname: metaData.firstname,
+            lastname: metaData.lastname,
+            birth_date: metaData.birth_date,
+            age: metaData.age || null,
             join_date: new Date().toISOString().split('T')[0],
-            avatar: meta.avatar
+            avatar: metaData.avatar
           };
-
+          
+          // Insérer le nouveau profil
           const { error: insertError } = await supabase
             .from('profiles')
             .insert(newProfile);
-
+            
           if (insertError) throw insertError;
-
+          
           setProfileData(newProfile);
         }
       } else {
         setProfileData(profile);
       }
 
-      // Charger ou créer les stats
+      // Récupérer les statistiques utilisateur
       const { data: stats, error: statsError } = await supabase
         .from('user_stats')
         .select('*')
@@ -68,6 +79,7 @@ export const useProfileData = (userId?: string) => {
       }
 
       if (!stats) {
+        // Créer des statistiques par défaut si elles n'existent pas
         const defaultStats = {
           user_id: userId,
           games_played: 0,
@@ -75,20 +87,19 @@ export const useProfileData = (userId?: string) => {
           reputation: 0,
           preferred_game_type: 'CQB',
           favorite_role: 'Assaut',
-          level: 'Débutant',
+          level: 'Débutant'
         };
-
+        
         const { error: insertStatsError } = await supabase
           .from('user_stats')
           .insert(defaultStats);
-
+          
         if (insertStatsError) throw insertStatsError;
-
+        
         setUserStats(defaultStats);
       } else {
         setUserStats(stats);
       }
-
     } catch (error: any) {
       console.error("Erreur lors du chargement des données:", error);
       toast({
@@ -99,11 +110,11 @@ export const useProfileData = (userId?: string) => {
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  };
 
   const updateLocation = async (location: string) => {
     if (!userId) return false;
-
+    
     try {
       const { error } = await supabase
         .from('profiles')
@@ -113,12 +124,12 @@ export const useProfileData = (userId?: string) => {
       if (error) throw error;
 
       setProfileData(prev => ({ ...prev, location }));
-
+      
       toast({
         title: "Succès",
         description: "Votre localisation a été mise à jour avec succès",
       });
-
+      
       return true;
     } catch (error: any) {
       console.error("Erreur lors de la mise à jour de la localisation:", error);
@@ -131,14 +142,13 @@ export const useProfileData = (userId?: string) => {
     }
   };
 
-  const updateUserStats = async (
-    preferredGameType: string,
-    favoriteRole: string,
-    level: string
-  ) => {
+  const updateUserStats = async (preferredGameType: string, favoriteRole: string, level: string) => {
     if (!userId) return false;
-
+    
     try {
+      console.log("Mise à jour des statistiques:", preferredGameType, favoriteRole, level);
+      
+      // Mise à jour dans la base de données
       const { error } = await supabase
         .from('user_stats')
         .update({
@@ -149,8 +159,12 @@ export const useProfileData = (userId?: string) => {
         })
         .eq('user_id', userId);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Erreur Supabase:", error);
+        throw error;
+      }
 
+      // Mise à jour du state
       setUserStats(prev => ({
         ...prev,
         preferred_game_type: preferredGameType,
@@ -158,7 +172,7 @@ export const useProfileData = (userId?: string) => {
         level: level,
         updated_at: new Date().toISOString()
       }));
-
+      
       return true;
     } catch (error: any) {
       console.error("Erreur lors de la mise à jour des stats:", error);
@@ -175,8 +189,8 @@ export const useProfileData = (userId?: string) => {
     loading,
     profileData,
     userStats,
-    fetchProfileData,
     updateLocation,
     updateUserStats,
+    fetchProfileData,
   };
 };
