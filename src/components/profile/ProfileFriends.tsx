@@ -116,7 +116,9 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
   };
 
   React.useEffect(() => {
-    fetchFriends();
+    if (userId) {
+      fetchFriends();
+    }
   }, [userId]);
 
   return (

@@ -18,6 +18,7 @@ const Header = () => {
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<{
+    id?: string;
     username: string;
     avatar: string;
     teamId?: string;
@@ -30,11 +31,18 @@ const Header = () => {
       if (session?.user) {
         const { data: profileData } = await supabase
           .from('profiles')
-          .select('username, avatar, team_id')
+          .select('id, username, avatar, team_id')
           .eq('id', session.user.id)
           .single();
 
-        setUser(profileData);
+        if (profileData) {
+          setUser({
+            id: profileData.id,
+            username: profileData.username,
+            avatar: profileData.avatar,
+            teamId: profileData.team_id
+          });
+        }
       }
     };
 
@@ -45,11 +53,18 @@ const Header = () => {
       if (session?.user) {
         const { data: profileData } = await supabase
           .from('profiles')
-          .select('username, avatar, team_id')
+          .select('id, username, avatar, team_id')
           .eq('id', session.user.id)
           .single();
 
-        setUser(profileData);
+        if (profileData) {
+          setUser({
+            id: profileData.id,
+            username: profileData.username,
+            avatar: profileData.avatar,
+            teamId: profileData.team_id
+          });
+        }
       } else {
         setUser(null);
       }
@@ -92,10 +107,12 @@ const Header = () => {
   const { data: notificationCount = 0, isLoading: isLoadingNotifications } = useQuery({
     queryKey: ['unreadNotifications'],
     queryFn: async () => {
+      if (!user?.id) return 0;
+      
       const { count, error } = await supabase
         .from('notifications')
         .select('id', { count: 'exact', head: true })
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .eq('read', false);
 
       if (error) throw error;
