@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { toast } from "@/components/ui/use-toast";
 import { Upload, Image as ImageIcon, RefreshCw } from 'lucide-react';
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { getAllDefaultAvatars } from "@/utils/avatarUtils";
 
 interface ProfileEditMediaDialogProps {
   open: boolean;
@@ -29,7 +31,6 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
           .select('avatar, banner')
           .eq('id', user.id)
           .single();
-          
         if (data) {
           setAvatarPreview(data.avatar);
           setBannerPreview(data.banner);
@@ -37,9 +38,7 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
       }
     };
 
-    if (open) {
-      fetchCurrentImages();
-    }
+    if (open) fetchCurrentImages();
   }, [open, user?.id]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,13 +52,17 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
         });
         return;
       }
-
       const reader = new FileReader();
       reader.onload = () => {
         setAvatarPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  // Ajout sélection d'un avatar par défaut
+  const handleSelectDefaultAvatar = (src: string) => {
+    setAvatarPreview(src);
   };
 
   const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,7 +76,6 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
         });
         return;
       }
-
       const reader = new FileReader();
       reader.onload = () => {
         setBannerPreview(reader.result as string);
@@ -84,19 +86,11 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
 
   const handleSaveChanges = async () => {
     if (!user?.id) return;
-    
     setLoading(true);
     try {
       const updates: Record<string, any> = {};
-      
-      if (avatarPreview) {
-        updates['avatar'] = avatarPreview;
-      }
-      
-      if (bannerPreview) {
-        updates['banner'] = bannerPreview;
-      }
-      
+      if (avatarPreview) updates['avatar'] = avatarPreview;
+      if (bannerPreview) updates['banner'] = bannerPreview;
       if (Object.keys(updates).length > 0) {
         const { error } = await supabase
           .from('profiles')
@@ -105,12 +99,10 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
 
         if (error) throw error;
       }
-
       toast({
         title: "Médias mis à jour",
         description: "Vos images de profil ont été mises à jour avec succès."
       });
-      
       onOpenChange(false);
       setTimeout(() => {
         window.location.reload();
@@ -127,9 +119,12 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
     }
   };
 
+  // Récupération avatars par défaut (nouvelle feature)
+  const defaultAvatars = getAllDefaultAvatars();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[520px]">
         <DialogHeader>
           <DialogTitle>Personnaliser votre profil</DialogTitle>
           <DialogDescription>
@@ -182,10 +177,29 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
                   </Button>
                 )}
               </div>
-              
               <p className="text-xs text-gray-500 text-center">
                 Formats acceptés : JPG, PNG. Taille maximale : 2MB.
               </p>
+              <div className="w-full mt-4">
+                <p className="text-xs text-gray-400 mb-2">Ou choisissez un avatar de base</p>
+                <div className="flex flex-wrap gap-3 justify-center">
+                  {defaultAvatars.map((src) => (
+                    <button
+                      key={src}
+                      type="button"
+                      className={`p-0.5 rounded-full border-2 ${avatarPreview === src ? 'border-airsoft-red' : 'border-transparent'} bg-white focus:outline-airsoft-red`}
+                      onClick={() => handleSelectDefaultAvatar(src)}
+                      title="Choisir cet avatar"
+                    >
+                      <img
+                        src={src}
+                        alt="Avatar airsoft"
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </TabsContent>
           
@@ -204,7 +218,6 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
                   )}
                 </div>
               </div>
-              
               <div className="flex gap-3 mb-2">
                 <Label 
                   htmlFor="banner-upload" 
@@ -220,7 +233,6 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
                   onChange={handleBannerChange} 
                   className="hidden" 
                 />
-                
                 {bannerPreview && (
                   <Button 
                     variant="outline" 
@@ -233,14 +245,12 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
                   </Button>
                 )}
               </div>
-              
               <p className="text-xs text-gray-500 text-center">
                 Format recommandé : 1500x500px. Taille maximale : 5MB.
               </p>
             </div>
           </TabsContent>
         </Tabs>
-
         <DialogFooter className="mt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Annuler
@@ -248,6 +258,7 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
           <Button 
             onClick={handleSaveChanges} 
             className="bg-airsoft-red hover:bg-red-700"
+            disabled={loading}
           >
             Enregistrer
           </Button>

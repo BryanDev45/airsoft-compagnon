@@ -1,45 +1,38 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { getRandomAvatar } from '@/utils/avatarUtils';
+import { getRandomAvatar, getAllDefaultAvatars } from '@/utils/avatarUtils';
 
 export const useAuth = () => {
   const [user, setUser] = useState<any>(null);
-  const [initialLoading, setInitialLoading] = useState(true); // pour la vérification de session
-  const [loading, setLoading] = useState(false); // pour les actions utilisateur
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Vérification de session existante d'abord
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user || null);
-      setInitialLoading(false);
-    });
-
-    // Puis écouteur d'état d'auth
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user || null);
 
-        // Redirection après connexion
         if (event === 'SIGNED_IN') {
-          // Utiliser setTimeout pour éviter les problèmes de timing avec la redirection
           setTimeout(() => {
             navigate('/profile');
           }, 0);
         }
-        
-        // Redirection après déconnexion
         if (event === 'SIGNED_OUT') {
-          setUser(null); // Make sure user state is cleared
+          setUser(null);
           setTimeout(() => {
             navigate('/login');
           }, 0);
         }
       }
     );
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user || null);
+      setInitialLoading(false);
+    });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
@@ -62,8 +55,6 @@ export const useAuth = () => {
           title: "Connexion réussie",
           description: "Bienvenue sur Airsoft Compagnon",
         });
-        
-        // Navigation explicite ici aussi (le reste est géré par l'écouteur)
         navigate('/profile');
         return true;
       } else {
@@ -80,13 +71,13 @@ export const useAuth = () => {
       setLoading(false);
     }
   };
-  
+
   const register = async (email: string, password: string, userData: any) => {
     try {
       setLoading(true);
       const userDataWithAvatar = {
         ...userData,
-        avatar: getRandomAvatar()
+        avatar: getRandomAvatar(),
       };
 
       const { data: existingUser, error: checkError } = await supabase
@@ -100,10 +91,9 @@ export const useAuth = () => {
       }
 
       if (existingUser) {
-        throw new Error('Cette adresse email est déjà utilisée');
+        throw new Error('Cette adresse email est déjà utilisée.');
       }
 
-      // First, sign up the user with auth
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -111,22 +101,51 @@ export const useAuth = () => {
           data: userDataWithAvatar,
         },
       });
-      
-      if (error) throw error;
 
-      if (!data.user) {
-        throw new Error("Erreur lors de la création du compte");
+      if (error) throw error;
+      if (!data.user) throw new Error("Erreur lors de la création du compte");
+
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: data.user.id,
+          email: data.user.email,
+          username: userDataWithAvatar.username,
+          firstname: userDataWithAvatar.firstname,
+          lastname: userDataWithAvatar.lastname,
+          birth_date: userDataWithAvatar.birth_date,
+          avatar: userDataWithAvatar.avatar,
+          join_date: new Date().toISOString().split('T')[0]
+        });
+
+      if (profileError) {
+        console.error("Erreur lors de la création du profil:", profileError);
+        if (
+          profileError.message &&
+          profileError.message.includes("new row violates row-level security policy")
+        ) {
+          throw new Error(
+            "Erreur RLS lors de l'inscription : veuillez vérifier la politique de sécurité (RLS) pour la table 'profiles' dans Supabase. Donnez accès à l'utilisateur connecté pour INSERT."
+          );
+        }
+        throw new Error(`Erreur lors de la création du profil: ${profileError.message}`);
       }
-      
-      // Now that the user is created in auth, instead of manually inserting into profiles,
-      // rely on the database trigger to handle this automatically
-      
+
+      const { error: statsError } = await supabase
+        .from('user_stats')
+        .insert({
+          user_id: data.user.id,
+        });
+
+      if (statsError) {
+        console.error("Erreur lors de la création des statistiques:", statsError);
+      }
+
       toast({
         title: "Inscription réussie",
-        description: "Votre compte a été créé avec succès",
+        description: "Votre compte a été créé avec succès.",
       });
-      
-      // Navigate to profile after successful registration
+
       navigate('/profile');
     } catch (error: any) {
       console.error("Erreur d'inscription:", error);
@@ -145,13 +164,8 @@ export const useAuth = () => {
       setLoading(true);
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      
-      // Force clear the user state
       setUser(null);
-      
-      // Force navigate to login - don't rely only on the auth listener
       navigate('/login');
-      
       toast({
         title: "Déconnexion réussie",
         description: "À bientôt !",
@@ -186,5 +200,5 @@ export const useAuth = () => {
     }
   };
 
-  return { user, loading, initialLoading, login, register, logout, handleSocialLogin };
+  return { user, loading, initialLoading, login, register, logout, handleSocialLogin, getAllDefaultAvatars };
 };
