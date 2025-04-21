@@ -1,30 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
 
-export const useProfileData = (userId: string | undefined) => {
-  const [loading, setLoading] = useState(true);
+export const useProfileData = (userId?: string) => {
+  const [loading, setLoading] = useState(false);
   const [profileData, setProfileData] = useState<any>(null);
   const [userStats, setUserStats] = useState<any>(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (userId) {
-      fetchProfileData();
-    } else {
-      setLoading(false);
-    }
-  }, [userId]);
+  const fetchProfileData = useCallback(async () => {
+    if (!userId) return;
 
-  const fetchProfileData = async () => {
-    if (!userId) {
-      setLoading(false);
-      return;
-    }
-    
+    setLoading(true);
+
     try {
-      // Vérifier si le profil existe déjà
+      // Charger le profil
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
@@ -35,39 +26,37 @@ export const useProfileData = (userId: string | undefined) => {
         throw profileError;
       }
 
-      // Si le profil n'existe pas encore, récupérer les données de l'utilisateur Auth
       if (!profile) {
-        console.log("Profil non trouvé, tentative de création...");
         const { data: userData } = await supabase.auth.getUser();
-        if (userData?.user) {
-          // Créer un nouveau profil basé sur les métadonnées de l'utilisateur
-          const metaData = userData.user.user_metadata;
+        const user = userData?.user;
+        
+        if (user) {
+          const meta = user.user_metadata;
           const newProfile = {
             id: userId,
-            username: metaData.username || `user_${userId.substring(0, 8)}`,
-            email: userData.user.email,
-            firstname: metaData.firstname,
-            lastname: metaData.lastname,
-            birth_date: metaData.birth_date,
-            age: metaData.age || null,
+            username: meta.username || `user_${userId.slice(0, 8)}`,
+            email: user.email,
+            firstname: meta.firstname,
+            lastname: meta.lastname,
+            birth_date: meta.birth_date,
+            age: meta.age || null,
             join_date: new Date().toISOString().split('T')[0],
-            avatar: metaData.avatar
+            avatar: meta.avatar
           };
-          
-          // Insérer le nouveau profil
+
           const { error: insertError } = await supabase
             .from('profiles')
             .insert(newProfile);
-            
+
           if (insertError) throw insertError;
-          
+
           setProfileData(newProfile);
         }
       } else {
         setProfileData(profile);
       }
 
-      // Récupérer les statistiques utilisateur
+      // Charger ou créer les stats
       const { data: stats, error: statsError } = await supabase
         .from('user_stats')
         .select('*')
@@ -79,7 +68,6 @@ export const useProfileData = (userId: string | undefined) => {
       }
 
       if (!stats) {
-        // Créer des statistiques par défaut si elles n'existent pas
         const defaultStats = {
           user_id: userId,
           games_played: 0,
@@ -87,19 +75,20 @@ export const useProfileData = (userId: string | undefined) => {
           reputation: 0,
           preferred_game_type: 'CQB',
           favorite_role: 'Assaut',
-          level: 'Débutant'
+          level: 'Débutant',
         };
-        
+
         const { error: insertStatsError } = await supabase
           .from('user_stats')
           .insert(defaultStats);
-          
+
         if (insertStatsError) throw insertStatsError;
-        
+
         setUserStats(defaultStats);
       } else {
         setUserStats(stats);
       }
+
     } catch (error: any) {
       console.error("Erreur lors du chargement des données:", error);
       toast({
@@ -110,11 +99,11 @@ export const useProfileData = (userId: string | undefined) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
   const updateLocation = async (location: string) => {
     if (!userId) return false;
-    
+
     try {
       const { error } = await supabase
         .from('profiles')
@@ -124,12 +113,12 @@ export const useProfileData = (userId: string | undefined) => {
       if (error) throw error;
 
       setProfileData(prev => ({ ...prev, location }));
-      
+
       toast({
         title: "Succès",
         description: "Votre localisation a été mise à jour avec succès",
       });
-      
+
       return true;
     } catch (error: any) {
       console.error("Erreur lors de la mise à jour de la localisation:", error);
@@ -142,13 +131,14 @@ export const useProfileData = (userId: string | undefined) => {
     }
   };
 
-  const updateUserStats = async (preferredGameType: string, favoriteRole: string, level: string) => {
+  const updateUserStats = async (
+    preferredGameType: string,
+    favoriteRole: string,
+    level: string
+  ) => {
     if (!userId) return false;
-    
+
     try {
-      console.log("Mise à jour des statistiques:", preferredGameType, favoriteRole, level);
-      
-      // Mise à jour dans la base de données
       const { error } = await supabase
         .from('user_stats')
         .update({
@@ -159,12 +149,8 @@ export const useProfileData = (userId: string | undefined) => {
         })
         .eq('user_id', userId);
 
-      if (error) {
-        console.error("Erreur Supabase:", error);
-        throw error;
-      }
+      if (error) throw error;
 
-      // Mise à jour du state
       setUserStats(prev => ({
         ...prev,
         preferred_game_type: preferredGameType,
@@ -172,7 +158,7 @@ export const useProfileData = (userId: string | undefined) => {
         level: level,
         updated_at: new Date().toISOString()
       }));
-      
+
       return true;
     } catch (error: any) {
       console.error("Erreur lors de la mise à jour des stats:", error);
@@ -189,8 +175,8 @@ export const useProfileData = (userId: string | undefined) => {
     loading,
     profileData,
     userStats,
+    fetchProfileData,
     updateLocation,
     updateUserStats,
-    fetchProfileData,
   };
 };
