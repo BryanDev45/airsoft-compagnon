@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,6 +27,13 @@ export const useAuth = () => {
           // Utiliser setTimeout pour éviter les problèmes de timing avec la redirection
           setTimeout(() => {
             navigate('/profile');
+          }, 0);
+        }
+        
+        // Redirection après déconnexion
+        if (event === 'SIGNED_OUT') {
+          setTimeout(() => {
+            navigate('/login');
           }, 0);
         }
       }
@@ -147,10 +153,11 @@ export const useAuth = () => {
 
   const logout = async () => {
     try {
+      setLoading(true);
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      setUser(null);
-      navigate('/login');
+      
+      // Nous ne naviguons plus ici car c'est maintenant géré par l'écouteur onAuthStateChange
       toast({
         title: "Déconnexion réussie",
         description: "À bientôt !",
@@ -161,6 +168,8 @@ export const useAuth = () => {
         description: error.message,
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 

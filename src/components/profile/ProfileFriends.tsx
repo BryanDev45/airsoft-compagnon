@@ -98,7 +98,8 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
   };
 
   const navigateToSearch = () => {
-    navigate('/search?tab=players');
+    // Redirection vers la page "parties" avec l'onglet "joueurs" sélectionné
+    navigate('/parties?tab=players');
   };
 
   React.useEffect(() => {

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -86,18 +85,6 @@ const ProfileEquipment = ({ equipment, readOnly, equipmentTypes, fetchEquipment 
                           <span className="block text-sm">Pas d'image</span>
                         </div>
                       )}
-                      
-                      {!readOnly && (
-                        <Button 
-                          variant="secondary" 
-                          size="sm" 
-                          className="absolute top-2 right-2 bg-red opacity-80 hover:opacity-100"
-                          onClick={() => setEditingEquipment(item)}
-                        >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Éditer
-                        </Button>
-                      )}
                     </div>
                     
                     <div className="p-4 md:w-2/3">
@@ -118,6 +105,15 @@ const ProfileEquipment = ({ equipment, readOnly, equipmentTypes, fetchEquipment 
                         
                         {!readOnly && (
                           <div className="flex gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                              onClick={() => setEditingEquipment(item)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
                                 <Button 

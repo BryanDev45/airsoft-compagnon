@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import Index from './pages/Index';
@@ -77,6 +78,7 @@ function App() {
         <Route path="/team/:id" element={<Team />} />
         <Route path="/team/create" element={<CreateTeam />} />
         <Route path="/user/:username" element={<UserProfile />} />
+        <Route path="/search" element={<Parties />} /> {/* Ajout de cette redirection */}
         <Route 
           path="/profile" 
           element={
