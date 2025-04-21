@@ -5,7 +5,7 @@ import { UserPlus, UserMinus, UserCheck, Search } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from 'react-router-dom';
-import { Avatar, AvatarImage, AvatarFallback } from '@chakra-ui/react';
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const ProfileFriends = ({ userId, isOwnProfile }) => {
   const [friends, setFriends] = React.useState([]);
