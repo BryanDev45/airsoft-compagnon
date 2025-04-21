@@ -14,7 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CitySearchCombobox } from '@/components/profile/CitySearchCombobox';
+import { ComboboxDemo } from '@/components/profile/CityCombobox';
 
 const teamSchema = z.object({
   name: z.string().min(3, { message: "Le nom de l'équipe doit contenir au moins 3 caractères" }),
@@ -158,7 +158,7 @@ const CreateTeam = () => {
                 
                 <div>
                   <Label htmlFor="location">Localisation</Label>
-                  <CitySearchCombobox onSelect={onLocationSelect} />
+                  <ComboboxDemo onSelect={onLocationSelect} />
                 </div>
                 
                 <div>

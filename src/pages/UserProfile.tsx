@@ -13,7 +13,6 @@ import ProfileStats from '../components/profile/ProfileStats';
 import ProfileEquipment from '../components/profile/ProfileEquipment';
 import ProfileBadges from '../components/profile/ProfileBadges';
 import ProfileDialogs from '../components/profile/ProfileDialogs';
-import ProfileFriends from '../components/profile/ProfileFriends';
 import ReportUserButton from '../components/profile/ReportUserButton';
 import { Button } from "@/components/ui/button";
 import { UserPlus, UserMinus } from "lucide-react";
@@ -36,76 +35,129 @@ const UserProfile = () => {
   
   useEffect(() => {
     const fetchUserData = async () => {
-      if (!username) return;
-      
       try {
-        setLoading(true);
-        
-        // Récupérer le profil de l'utilisateur
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('username', username)
-          .single();
-          
-        if (profileError) throw profileError;
-        if (!profileData) throw new Error('Profil non trouvé');
-        
-        setProfileData(profileData);
-        
-        // Récupérer les statistiques de l'utilisateur
-        const { data: statsData, error: statsError } = await supabase
-          .from('user_stats')
-          .select('*')
-          .eq('user_id', profileData.id)
-          .single();
-          
-        if (!statsError && statsData) {
-          setUserStats(statsData);
-        }
-        
-        // Récupérer l'équipement de l'utilisateur
-        const { data: equipmentData, error: equipmentError } = await supabase
-          .from('equipment')
-          .select('*')
-          .eq('user_id', profileData.id);
-          
-        if (!equipmentError && equipmentData) {
-          profileData.equipment = equipmentData;
-        }
-        
-        // Récupérer les parties auxquelles l'utilisateur a participé
-        const { data: gamesData, error: gamesError } = await supabase
-          .from('game_participants')
-          .select(`
-            game_id,
-            games (*)
-          `)
-          .eq('user_id', profileData.id)
-          .limit(5);
-          
-        if (!gamesError && gamesData) {
-          profileData.games = gamesData.map(g => g.games);
-        }
-        
-        // Récupérer les badges de l'utilisateur
-        const { data: badgesData, error: badgesError } = await supabase
-          .from('user_badges')
-          .select(`
-            badge_id,
-            date,
-            badges (*)
-          `)
-          .eq('user_id', profileData.id);
-          
-        if (!badgesError && badgesData) {
-          profileData.badges = badgesData.map(b => ({
-            ...b.badges,
-            date: b.date
-          }));
-        }
-        
-        setUserData(profileData);
+        // In a real implementation, this would fetch data from Supabase
+        const mockUserData = {
+          id: '123',
+          username: username || 'unknown',
+          games: [
+            {
+              id: '1',
+              title: 'Opération Faucon',
+              date: '2023-08-15',
+              location: 'Forêt de Fontainebleau',
+              image: '/placeholder.svg',
+              role: 'Assaut',
+              team: 'Alpha',
+              result: 'Victoire',
+              status: 'Terminé'
+            },
+            {
+              id: '2',
+              title: 'Battle Royale',
+              date: '2023-07-22',
+              location: 'Terrain CQB Paris',
+              image: '/placeholder.svg',
+              role: 'Sniper',
+              team: 'Solo',
+              result: 'Top 5',
+              status: 'Terminé'
+            }
+          ],
+          allGames: [
+            {
+              id: '3',
+              title: 'Opération Tempête',
+              date: '2023-06-10',
+              location: 'Terrain militaire Lyon',
+              image: '/placeholder.svg',
+              role: 'Support',
+              team: 'Bravo',
+              status: 'Terminé',
+              result: 'Victoire'
+            }
+          ],
+          badges: [
+            {
+              id: 1,
+              name: 'Vétéran',
+              description: 'Plus de 20 parties jouées',
+              image: '/placeholder.svg',
+              icon: '/placeholder.svg',
+              date: '2023-05-15',
+              backgroundColor: '#f8f9fa',
+              borderColor: '#e9ecef'
+            },
+            {
+              id: 2,
+              name: 'Tireur d\'élite',
+              description: 'Précision supérieure à 65%',
+              image: '/placeholder.svg',
+              icon: '/placeholder.svg',
+              date: '2023-06-22',
+              backgroundColor: '#f8f9fa',
+              borderColor: '#e9ecef'
+            }
+          ],
+          equipment: [
+            {
+              id: 1,
+              type: 'Réplique principale',
+              brand: 'G&G',
+              power: '350 FPS',
+              description: 'M4 avec rail keymod et grip vertical',
+              image: '/placeholder.svg'
+            },
+            {
+              id: 2,
+              type: 'Réplique secondaire',
+              brand: 'WE',
+              power: '300 FPS',
+              description: 'Glock 17',
+              image: '/placeholder.svg'
+            }
+          ]
+        };
+
+        const mockProfileData = {
+          id: '123',
+          username: username || 'unknown',
+          avatar: '/placeholder.svg',
+          bio: 'Passionné d\'airsoft depuis 5 ans. Je joue principalement en milsim.',
+          location: 'Paris, France',
+          firstname: 'John',
+          lastname: 'Doe',
+          age: '28',
+          team: 'Les Aigles Noirs',
+          team_id: '456',
+          join_date: '2022-06-15',
+          verified: true,
+          premium: false,
+          reputation: 4.5,
+          badges: mockUserData.badges,
+          games: mockUserData.games,
+          allGames: mockUserData.allGames,
+          equipment: mockUserData.equipment
+        };
+
+        const mockUserStats = {
+          user_id: '123',
+          games_played: 25,
+          preferred_game_type: 'Milsim',
+          favorite_role: 'Sniper',
+          win_rate: '72%',
+          accuracy: '68%',
+          reputation: 8,
+          level: 'Confirmé',
+          time_played: '85h',
+          objectives_completed: 12,
+          flags_captured: 7,
+          tactical_awareness: 'Bon'
+        };
+
+        setUserData(mockUserData);
+        setProfileData(mockProfileData);
+        setUserStats(mockUserStats);
         setLoading(false);
       } catch (error) {
         console.error("Erreur lors de la récupération des données:", error);
@@ -121,55 +173,8 @@ const UserProfile = () => {
     fetchUserData();
   }, [username]);
 
-  const handleFollowUser = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast({
-          title: "Authentification requise",
-          description: "Vous devez être connecté pour suivre un utilisateur",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      if (isFollowing) {
-        // Supprimer l'ami
-        await supabase
-          .from('friendships')
-          .delete()
-          .or(`and(user_id.eq.${user.id},friend_id.eq.${profileData.id}),and(user_id.eq.${profileData.id},friend_id.eq.${user.id})`);
-          
-        setIsFollowing(false);
-        toast({
-          title: "Suivi supprimé",
-          description: `Vous ne suivez plus ${profileData.username}`,
-        });
-      } else {
-        // Ajouter une demande d'ami
-        await supabase
-          .from('friendships')
-          .insert({
-            user_id: user.id,
-            friend_id: profileData.id,
-            status: 'pending'
-          });
-          
-        setIsFollowing(true);
-        toast({
-          title: "Demande envoyée",
-          description: `Demande d'ami envoyée à ${profileData.username}`,
-        });
-      }
-    } catch (error) {
-      console.error("Erreur lors de la gestion du suivi:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de traiter votre demande",
-        variant: "destructive",
-      });
-    }
+  const handleFollowUser = () => {
+    setIsFollowing(!isFollowing);
   };
 
   const handleNavigateToGame = (gameId) => {
@@ -211,7 +216,11 @@ const UserProfile = () => {
     return false;
   };
   
+  // Add the missing fetchProfileData function
   const fetchProfileData = async () => {
+    // This is a mock implementation since we're using mock data
+    // In a real implementation, this would fetch fresh data from Supabase
+    console.log("Fetching profile data for user ID:", profileData?.id);
     return true;
   };
 
@@ -273,7 +282,6 @@ const UserProfile = () => {
                   <TabsTrigger value="stats">Statistiques</TabsTrigger>
                   <TabsTrigger value="equipment">Équipement</TabsTrigger>
                   <TabsTrigger value="badges">Badges</TabsTrigger>
-                  <TabsTrigger value="friends">Amis</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="profile">
@@ -282,13 +290,12 @@ const UserProfile = () => {
                     profileData={profileData}
                     updateLocation={updateLocation}
                     handleNavigateToTeam={handleNavigateToTeam}
-                    isOwnProfile={false}
                   />
                 </TabsContent>
                 
                 <TabsContent value="games">
                   <ProfileGames 
-                    games={profileData.games || []} 
+                    games={profileData.games} 
                     handleViewGameDetails={(game) => {
                       setSelectedGame(game);
                       setShowGameDialog(true);
@@ -299,7 +306,7 @@ const UserProfile = () => {
                 
                 <TabsContent value="stats">
                   <ProfileStats 
-                    userStats={userStats || {}}
+                    userStats={userStats}
                     updateUserStats={updateUserStats}
                     fetchProfileData={fetchProfileData}
                   />
@@ -307,7 +314,7 @@ const UserProfile = () => {
                 
                 <TabsContent value="equipment">
                   <ProfileEquipment 
-                    equipment={profileData.equipment || []} 
+                    equipment={profileData.equipment} 
                     equipmentTypes={equipmentTypes}
                     readOnly={true}
                   />
@@ -315,15 +322,8 @@ const UserProfile = () => {
                 
                 <TabsContent value="badges">
                   <ProfileBadges 
-                    badges={profileData.badges || []} 
+                    badges={profileData.badges} 
                     handleViewAllBadges={() => setShowBadgesDialog(true)} 
-                  />
-                </TabsContent>
-                
-                <TabsContent value="friends">
-                  <ProfileFriends 
-                    userId={profileData.id}
-                    isOwnProfile={false}
                   />
                 </TabsContent>
               </Tabs>

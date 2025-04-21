@@ -1,166 +1,144 @@
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CitySearchCombobox } from "@/components/profile/CitySearchCombobox";
-import { toast } from "@/components/ui/use-toast";
-import { MapPin, Users, Calendar, Flag } from "lucide-react";
+import { ComboboxDemo as CityCombobox } from './CityCombobox';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import { MapPin, Calendar, User, Users, Building2, Award, Edit, Save, X, Search, Minus } from 'lucide-react';
 
-const ProfileInfo = ({ user, profileData, updateLocation, handleNavigateToTeam, isOwnProfile = false }) => {
+const ProfileInfo = ({
+  user,
+  profileData,
+  updateLocation,
+  handleNavigateToTeam
+}) => {
   const [isEditingLocation, setIsEditingLocation] = useState(false);
-  const [location, setLocation] = useState(profileData?.location || '');
-
-  const handleEditLocation = () => {
-    setIsEditingLocation(true);
-  };
-
-  const handleSaveLocation = async () => {
-    if (!location) {
-      toast({
-        title: "Erreur",
-        description: "Veuillez sélectionner une localisation valide",
-        variant: "destructive"
+  
+  const formatDate = dateString => {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      return format(date, 'dd MMMM yyyy', {
+        locale: fr
       });
-      return;
-    }
-
-    const success = await updateLocation(location);
-    if (success) {
-      setIsEditingLocation(false);
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return dateString;
     }
   };
-
-  const handleCancelEditLocation = () => {
-    setLocation(profileData?.location || '');
-    setIsEditingLocation(false);
+  
+  const handleLocationUpdate = async location => {
+    if (updateLocation) {
+      const success = await updateLocation(location);
+      if (success) {
+        setIsEditingLocation(false);
+      }
+    }
   };
-
-  return (
-    <div className="space-y-8">
+  
+  return <Card className="p-6 shadow-md">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="space-y-6">
-          <div>
-            <h3 className="text-lg font-medium mb-2">Informations personnelles</h3>
+          <h2 className="text-xl font-semibold mb-4">Informations personnelles</h2>
+          
+          <div className="space-y-3">
+            <div className="flex items-center">
+              <User className="h-5 w-5 text-gray-500 mr-3" />
+              <div>
+                <span className="text-sm text-gray-500">Nom complet</span>
+                <p className="font-medium">
+                  {profileData?.firstname || ''} {profileData?.lastname || ''}
+                </p>
+              </div>
+            </div>
             
-            <div className="space-y-4 bg-gray-50 rounded-lg p-4">
-              {profileData?.firstname && profileData?.lastname && (
-                <div className="flex flex-col">
-                  <span className="text-gray-500 text-sm">Nom complet</span>
-                  <span>{profileData.firstname} {profileData.lastname}</span>
+            <div className="flex items-center">
+              <Calendar className="h-5 w-5 text-gray-500 mr-3" />
+              <div>
+                <span className="text-sm text-gray-500">Membre depuis</span>
+                <p className="font-medium">{formatDate(profileData?.join_date)}</p>
+              </div>
+            </div>
+            
+            {profileData?.age && <div className="flex items-center">
+                <User className="h-5 w-5 text-gray-500 mr-3" />
+                <div>
+                  <span className="text-sm text-gray-500">Âge</span>
+                  <p className="font-medium">{profileData.age} ans</p>
                 </div>
-              )}
-              
-              {profileData?.age && (
-                <div className="flex flex-col">
-                  <span className="text-gray-500 text-sm">Âge</span>
-                  <span>{profileData.age} ans</span>
-                </div>
-              )}
-
-              <div className="flex flex-col">
-                <span className="text-gray-500 text-sm">Localisation</span>
-                {isEditingLocation ? (
-                  <div className="space-y-2">
-                    <CitySearchCombobox
-                      onSelect={setLocation}
-                      defaultValue={location}
-                    />
-                    <div className="flex space-x-2 mt-2">
-                      <Button 
-                        size="sm" 
-                        onClick={handleSaveLocation}
-                        className="bg-airsoft-red hover:bg-red-700"
-                      >
-                        Enregistrer
-                      </Button>
-                      <Button 
-                        size="sm"
-                        variant="outline"
-                        onClick={handleCancelEditLocation}
-                      >
+              </div>}
+            
+            <div className="flex items-start">
+              <MapPin className="h-5 w-5 text-gray-500 mr-3 mt-1" />
+              <div className="flex-1">
+                <span className="text-sm text-gray-500">Localisation</span>
+                {isEditingLocation ? <div className="mt-1 space-y-2">
+                    <CityCombobox defaultValue={profileData?.location || ''} onSelect={handleLocationUpdate} />
+                    <div className="flex space-x-2">
+                      <Button variant="outline" size="sm" onClick={() => setIsEditingLocation(false)}>
+                        <X className="h-4 w-4 mr-2" />
                         Annuler
                       </Button>
                     </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center">
-                    <MapPin className="h-4 w-4 text-airsoft-red mr-1" />
-                    <span>{profileData?.location || 'Non spécifiée'}</span>
-                    {isOwnProfile && (
-                      <Button 
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleEditLocation}
-                        className="ml-2 h-7 px-2"
-                      >
-                        Modifier
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </div>
-              
-              <div className="flex flex-col">
-                <span className="text-gray-500 text-sm">Membre depuis</span>
-                <div className="flex items-center">
-                  <Calendar className="h-4 w-4 text-airsoft-red mr-1" />
-                  <span>{profileData?.join_date 
-                    ? new Date(profileData.join_date).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'}) 
-                    : 'Information non disponible'}
-                  </span>
-                </div>
+                  </div> : <div className="flex items-center justify-between">
+                    <p className="font-medium">
+                      {profileData?.location || 'Non spécifié'}
+                    </p>
+                    <Button variant="ghost" size="sm" onClick={() => setIsEditingLocation(true)} className="h-8 px-2">
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  </div>}
               </div>
             </div>
           </div>
-          
-          {/* Autres sections selon vos besoins */}
         </div>
         
         <div className="space-y-6">
-          <div>
-            <h3 className="text-lg font-medium mb-2">Équipe</h3>
-            
-            <div className="bg-gray-50 rounded-lg p-4">
-              {profileData?.team ? (
-                <div className="flex flex-col space-y-2">
-                  <div className="flex items-center">
-                    <Flag className="h-4 w-4 text-airsoft-red mr-1" />
-                    <span className="font-medium">{profileData.team}</span>
-                  </div>
-                  
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={handleNavigateToTeam}
-                    className="mt-2"
-                  >
-                    <Users className="h-4 w-4 mr-2" />
-                    Voir l'équipe
-                  </Button>
-                </div>
-              ) : isOwnProfile ? (
-                <div className="flex flex-col items-center justify-center py-4">
-                  <p className="text-gray-500 mb-2">Vous n'êtes pas membre d'une équipe</p>
-                  <Button 
-                    variant="default"
-                    size="sm"
-                    onClick={handleNavigateToTeam}
-                    className="bg-airsoft-red hover:bg-red-700"
-                  >
-                    <Users className="h-4 w-4 mr-2" />
-                    Créer une équipe
-                  </Button>
-                </div>
-              ) : (
-                <p className="text-gray-500 py-2">Aucune équipe</p>
-              )}
-            </div>
-          </div>
+          <h2 className="text-xl font-semibold mb-4">Équipe</h2>
           
-          {/* Autres sections selon vos besoins */}
+          <div className="space-y-3">
+            <div className="flex items-start">
+              <Users className="h-5 w-5 text-gray-500 mr-3 mt-1" />
+              <div className="flex-grow">
+                <span className="text-sm text-gray-500">Équipe</span>
+                {profileData?.team ? <div className="flex items-center justify-between">
+                    <p className="font-medium">{profileData.team}</p>
+                    <Button variant="ghost" size="sm" onClick={handleNavigateToTeam} className="h-8 px-2">
+                      <Users className="h-4 w-4" />
+                    </Button>
+                  </div> : <div className="flex items-center justify-between">
+                    <p className="font-medium">Aucune équipe</p>
+                    <div className="flex gap-2">
+                      <Link to="/teams">
+                        <Button variant="ghost" size="sm" className="h-8 px-2">
+                          <Search className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>}
+              </div>
+            </div>
+            
+            {profileData?.is_team_leader && <div className="flex items-center">
+                <Award className="h-5 w-5 text-gray-500 mr-3" />
+                <div>
+                  <span className="text-sm text-gray-500">Statut d'équipe</span>
+                  <p className="font-medium">Chef d'équipe</p>
+                </div>
+              </div>}
+            
+            {profileData?.association && <div className="flex items-center">
+                <Building2 className="h-5 w-5 text-gray-500 mr-3" />
+                <div>
+                  <span className="text-sm text-gray-500">Association</span>
+                  <p className="font-medium">{profileData.association}</p>
+                </div>
+              </div>}
+          </div>
         </div>
       </div>
-    </div>
-  );
+    </Card>;
 };
-
 export default ProfileInfo;
