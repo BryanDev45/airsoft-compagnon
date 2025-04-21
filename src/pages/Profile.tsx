@@ -17,10 +17,18 @@ import { toast } from '@/components/ui/use-toast';
 const Profile = () => {
   const { user, initialLoading } = useAuth();
   const navigate = useNavigate();
-  
-  const [profileReady, setProfileReady] = useState(false);
+
+  const [readyToLoad, setReadyToLoad] = useState(false);
   const [equipment, setEquipment] = useState<any[]>([]);
-  
+
+  // 👇 Ce useEffect attend que `user` soit prêt
+  useEffect(() => {
+    if (!initialLoading && user?.id) {
+      setReadyToLoad(true);
+    }
+  }, [initialLoading, user]);
+
+  // ✅ On n'appelle le hook qu'une fois qu'on est sûr que `user.id` est prêt
   const {
     loading,
     profileData,
@@ -28,8 +36,9 @@ const Profile = () => {
     updateLocation,
     updateUserStats,
     fetchProfileData
-  } = useProfileData(user?.id);
+  } = useProfileData(readyToLoad ? user?.id : null);
 
+  // Reste des états
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [showEditMediaDialog, setShowEditMediaDialog] = useState(false);
   const [showEditBioDialog, setShowEditBioDialog] = useState(false);
@@ -41,19 +50,11 @@ const Profile = () => {
 
   const equipmentTypes = ["Réplique principale", "Réplique secondaire", "Protection", "Accessoire"];
 
-  // Log pour vérifier le chargement
   useEffect(() => {
-    console.log('user:', user);
-    console.log('initialLoading:', initialLoading);
-  }, [user, initialLoading]);
-
-  // Ne lance le chargement qu’une fois que user est dispo
-  useEffect(() => {
-    if (user?.id) {
+    if (readyToLoad) {
       fetchEquipment();
-      setProfileReady(true);
     }
-  }, [user]);
+  }, [readyToLoad]);
 
   const fetchEquipment = async () => {
     try {
@@ -110,8 +111,7 @@ const Profile = () => {
     navigate(`/game/${gameId}`);
   };
 
-  // Cas où tout est encore en chargement
-  if (initialLoading || !user || loading || !profileReady) {
+  if (initialLoading || !readyToLoad || loading || !profileData) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
