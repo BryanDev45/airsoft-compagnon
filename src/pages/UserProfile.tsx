@@ -24,6 +24,7 @@ const UserProfile = () => {
   const [userData, setUserData] = useState<any>(null);
   const [profileData, setProfileData] = useState<any>(null);
   const [userStats, setUserStats] = useState<any>(null);
+  const [equipment, setEquipment] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [selectedGame, setSelectedGame] = useState(null);
@@ -36,128 +37,119 @@ const UserProfile = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // In a real implementation, this would fetch data from Supabase
-        const mockUserData = {
-          id: '123',
-          username: username || 'unknown',
-          games: [
-            {
-              id: '1',
-              title: 'Opération Faucon',
-              date: '2023-08-15',
-              location: 'Forêt de Fontainebleau',
-              image: '/placeholder.svg',
-              role: 'Assaut',
-              team: 'Alpha',
-              result: 'Victoire',
-              status: 'Terminé'
-            },
-            {
-              id: '2',
-              title: 'Battle Royale',
-              date: '2023-07-22',
-              location: 'Terrain CQB Paris',
-              image: '/placeholder.svg',
-              role: 'Sniper',
-              team: 'Solo',
-              result: 'Top 5',
-              status: 'Terminé'
-            }
-          ],
-          allGames: [
-            {
-              id: '3',
-              title: 'Opération Tempête',
-              date: '2023-06-10',
-              location: 'Terrain militaire Lyon',
-              image: '/placeholder.svg',
-              role: 'Support',
-              team: 'Bravo',
-              status: 'Terminé',
-              result: 'Victoire'
-            }
-          ],
-          badges: [
-            {
-              id: 1,
-              name: 'Vétéran',
-              description: 'Plus de 20 parties jouées',
-              image: '/placeholder.svg',
-              icon: '/placeholder.svg',
-              date: '2023-05-15',
-              backgroundColor: '#f8f9fa',
-              borderColor: '#e9ecef'
-            },
-            {
-              id: 2,
-              name: 'Tireur d\'élite',
-              description: 'Précision supérieure à 65%',
-              image: '/placeholder.svg',
-              icon: '/placeholder.svg',
-              date: '2023-06-22',
-              backgroundColor: '#f8f9fa',
-              borderColor: '#e9ecef'
-            }
-          ],
-          equipment: [
-            {
-              id: 1,
-              type: 'Réplique principale',
-              brand: 'G&G',
-              power: '350 FPS',
-              description: 'M4 avec rail keymod et grip vertical',
-              image: '/placeholder.svg'
-            },
-            {
-              id: 2,
-              type: 'Réplique secondaire',
-              brand: 'WE',
-              power: '300 FPS',
-              description: 'Glock 17',
-              image: '/placeholder.svg'
-            }
-          ]
+        // Récupérer le profil de l'utilisateur par son nom d'utilisateur
+        const { data: userProfile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('username', username)
+          .single();
+
+        if (profileError) throw profileError;
+        
+        if (!userProfile) {
+          toast({
+            title: "Utilisateur non trouvé",
+            description: "Ce profil n'existe pas",
+            variant: "destructive",
+          });
+          navigate('/');
+          return;
+        }
+
+        // Récupérer les statistiques de l'utilisateur
+        const { data: stats, error: statsError } = await supabase
+          .from('user_stats')
+          .select('*')
+          .eq('user_id', userProfile.id)
+          .maybeSingle();
+
+        if (statsError && statsError.code !== 'PGRST116') {
+          throw statsError;
+        }
+
+        // Récupérer l'équipement de l'utilisateur
+        const { data: userEquipment, error: equipmentError } = await supabase
+          .from('equipment')
+          .select('*')
+          .eq('user_id', userProfile.id);
+
+        if (equipmentError) throw equipmentError;
+
+        // Récupérer les parties du joueur (à implémenter plus tard)
+        const mockGames = [
+          {
+            id: '1',
+            title: 'Opération Faucon',
+            date: '2023-08-15',
+            location: 'Forêt de Fontainebleau',
+            image: '/placeholder.svg',
+            role: 'Assaut',
+            team: 'Alpha',
+            result: 'Victoire',
+            status: 'Terminé'
+          },
+          {
+            id: '2',
+            title: 'Battle Royale',
+            date: '2023-07-22',
+            location: 'Terrain CQB Paris',
+            image: '/placeholder.svg',
+            role: 'Sniper',
+            team: 'Solo',
+            result: 'Top 5',
+            status: 'Terminé'
+          }
+        ];
+
+        // Récupérer les badges du joueur (à implémenter plus tard)
+        const mockBadges = [
+          {
+            id: 1,
+            name: 'Vétéran',
+            description: 'Plus de 20 parties jouées',
+            image: '/placeholder.svg',
+            icon: '/placeholder.svg',
+            date: '2023-05-15',
+            backgroundColor: '#f8f9fa',
+            borderColor: '#e9ecef'
+          },
+          {
+            id: 2,
+            name: 'Tireur d\'élite',
+            description: 'Précision supérieure à 65%',
+            image: '/placeholder.svg',
+            icon: '/placeholder.svg',
+            date: '2023-06-22',
+            backgroundColor: '#f8f9fa',
+            borderColor: '#e9ecef'
+          }
+        ];
+
+        // Enrichir le profil avec les données supplémentaires
+        const enrichedProfile = {
+          ...userProfile,
+          games: mockGames,
+          allGames: [...mockGames],
+          badges: mockBadges
         };
 
-        const mockProfileData = {
-          id: '123',
-          username: username || 'unknown',
-          avatar: '/placeholder.svg',
-          bio: 'Passionné d\'airsoft depuis 5 ans. Je joue principalement en milsim.',
-          location: 'Paris, France',
-          firstname: 'John',
-          lastname: 'Doe',
-          age: '28',
-          team: 'Les Aigles Noirs',
-          team_id: '456',
-          join_date: '2022-06-15',
-          verified: true,
-          premium: false,
-          reputation: 4.5,
-          badges: mockUserData.badges,
-          games: mockUserData.games,
-          allGames: mockUserData.allGames,
-          equipment: mockUserData.equipment
-        };
-
-        const mockUserStats = {
-          user_id: '123',
-          games_played: 25,
-          preferred_game_type: 'Milsim',
-          favorite_role: 'Sniper',
-          win_rate: '72%',
-          accuracy: '68%',
-          reputation: 8,
-          level: 'Confirmé',
-          time_played: '85h',
-          objectives_completed: 12,
-          flags_captured: 7,
-          tactical_awareness: 'Bon'
-        };
-
-        setUserData(mockUserData);
-        setProfileData(mockProfileData);
-        setUserStats(mockUserStats);
+        setUserData({ id: userProfile.id, ...enrichedProfile });
+        setProfileData(enrichedProfile);
+        setUserStats(stats || {
+          user_id: userProfile.id,
+          games_played: 0,
+          preferred_game_type: 'Indéfini',
+          favorite_role: 'Indéfini',
+          level: 'Débutant',
+          reputation: 0,
+          win_rate: '0%',
+          accuracy: '0%',
+          time_played: '0h',
+          objectives_completed: 0,
+          flags_captured: 0,
+          tactical_awareness: 'À évaluer'
+        });
+        setEquipment(userEquipment || []);
         setLoading(false);
       } catch (error) {
         console.error("Erreur lors de la récupération des données:", error);
@@ -170,8 +162,10 @@ const UserProfile = () => {
       }
     };
 
-    fetchUserData();
-  }, [username]);
+    if (username) {
+      fetchUserData();
+    }
+  }, [username, navigate]);
 
   const handleFollowUser = () => {
     setIsFollowing(!isFollowing);
@@ -216,10 +210,8 @@ const UserProfile = () => {
     return false;
   };
   
-  // Add the missing fetchProfileData function
   const fetchProfileData = async () => {
-    // This is a mock implementation since we're using mock data
-    // In a real implementation, this would fetch fresh data from Supabase
+    // Fonction fictive pour la compatibilité avec les props
     console.log("Fetching profile data for user ID:", profileData?.id);
     return true;
   };
@@ -314,7 +306,7 @@ const UserProfile = () => {
                 
                 <TabsContent value="equipment">
                   <ProfileEquipment 
-                    equipment={profileData.equipment} 
+                    equipment={equipment} 
                     equipmentTypes={equipmentTypes}
                     readOnly={true}
                   />

@@ -22,6 +22,11 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
+  const [defaultAvatars, setDefaultAvatars] = useState<string[]>([]);
+
+  useEffect(() => {
+    setDefaultAvatars(getAllDefaultAvatars());
+  }, []);
 
   useEffect(() => {
     const fetchCurrentImages = async () => {
@@ -118,8 +123,6 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
     }
   };
 
-  const defaultAvatars = getAllDefaultAvatars();
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[520px]">
@@ -181,9 +184,9 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
               <div className="w-full mt-4">
                 <p className="text-xs text-gray-400 mb-2">Ou choisissez un avatar de base</p>
                 <div className="grid grid-cols-4 gap-3 mt-2 max-h-48 overflow-y-auto p-2">
-                  {defaultAvatars.map((src) => (
+                  {defaultAvatars.map((src, index) => (
                     <button
-                      key={src}
+                      key={`${src}-${index}`}
                       type="button"
                       className={`p-0.5 rounded-full border-2 ${avatarPreview === src ? 'border-airsoft-red' : 'border-transparent'} hover:border-gray-300 transition-colors focus:outline-none`}
                       onClick={() => handleSelectDefaultAvatar(src)}
@@ -192,7 +195,7 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
                       <div className="w-12 h-12 rounded-full overflow-hidden">
                         <img
                           src={src}
-                          alt="Avatar airsoft"
+                          alt={`Avatar airsoft ${index + 1}`}
                           className="w-full h-full object-cover"
                           loading="lazy"
                         />
