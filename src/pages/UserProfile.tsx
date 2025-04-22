@@ -25,6 +25,8 @@ const UserProfile = () => {
   const [profileData, setProfileData] = useState<any>(null);
   const [userStats, setUserStats] = useState<any>(null);
   const [equipment, setEquipment] = useState<any[]>([]);
+  const [userGames, setUserGames] = useState<any[]>([]);
+  const [userBadges, setUserBadges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [selectedGame, setSelectedGame] = useState(null);
@@ -75,62 +77,101 @@ const UserProfile = () => {
 
         if (equipmentError) throw equipmentError;
 
-        // Récupérer les parties du joueur (à implémenter plus tard)
-        const mockGames = [
-          {
-            id: '1',
-            title: 'Opération Faucon',
-            date: '2023-08-15',
-            location: 'Forêt de Fontainebleau',
-            image: '/placeholder.svg',
-            role: 'Assaut',
-            team: 'Alpha',
-            result: 'Victoire',
-            status: 'Terminé'
-          },
-          {
-            id: '2',
-            title: 'Battle Royale',
-            date: '2023-07-22',
-            location: 'Terrain CQB Paris',
-            image: '/placeholder.svg',
-            role: 'Sniper',
-            team: 'Solo',
-            result: 'Top 5',
-            status: 'Terminé'
-          }
-        ];
+        // Récupérer les parties du joueur
+        const { data: games, error: gamesError } = await supabase
+          .from('game_participants')
+          .select(`
+            status,
+            role,
+            games (
+              id,
+              title,
+              date,
+              location,
+              status,
+              image
+            )
+          `)
+          .eq('user_id', userProfile.id)
+          .limit(5);
 
-        // Récupérer les badges du joueur (à implémenter plus tard)
-        const mockBadges = [
-          {
-            id: 1,
-            name: 'Vétéran',
-            description: 'Plus de 20 parties jouées',
-            image: '/placeholder.svg',
-            icon: '/placeholder.svg',
-            date: '2023-05-15',
-            backgroundColor: '#f8f9fa',
-            borderColor: '#e9ecef'
-          },
-          {
-            id: 2,
-            name: 'Tireur d\'élite',
-            description: 'Précision supérieure à 65%',
-            image: '/placeholder.svg',
-            icon: '/placeholder.svg',
-            date: '2023-06-22',
-            backgroundColor: '#f8f9fa',
-            borderColor: '#e9ecef'
-          }
-        ];
+        if (gamesError) throw gamesError;
+
+        // Formater les données des parties
+        let formattedGames = [];
+        if (games && games.length > 0) {
+          formattedGames = games.map(entry => ({
+            id: entry.games.id,
+            title: entry.games.title,
+            date: new Date(entry.games.date).toLocaleDateString('fr-FR'),
+            location: entry.games.location,
+            image: entry.games.image || '/placeholder.svg',
+            role: entry.role,
+            status: entry.games.status,
+            team: 'Indéfini', // Cette information pourrait être ajoutée plus tard
+            result: entry.status
+          }));
+        }
+
+        // Récupérer les badges du joueur
+        const { data: badges, error: badgesError } = await supabase
+          .from('user_badges')
+          .select(`
+            date,
+            badges (
+              id,
+              name,
+              description,
+              icon,
+              background_color,
+              border_color
+            )
+          `)
+          .eq('user_id', userProfile.id);
+
+        if (badgesError) throw badgesError;
+
+        // Formater les données des badges
+        let formattedBadges = [];
+        if (badges && badges.length > 0) {
+          formattedBadges = badges.map(entry => ({
+            id: entry.badges.id,
+            name: entry.badges.name,
+            description: entry.badges.description,
+            icon: entry.badges.icon || '/placeholder.svg',
+            date: new Date(entry.date).toLocaleDateString('fr-FR'),
+            backgroundColor: entry.badges.background_color || '#f8f9fa',
+            borderColor: entry.badges.border_color || '#e9ecef'
+          }));
+        }
+
+        // Si pas de données réelles, utilisez des données par défaut pour l'interface
+        if (formattedGames.length === 0) {
+          formattedGames = [
+            {
+              id: '1',
+              title: 'Aucune partie jouée',
+              date: '-',
+              location: '-',
+              image: '/placeholder.svg',
+              role: '-',
+              team: '-',
+              result: '-',
+              status: 'Aucune'
+            }
+          ];
+        }
+
+        if (formattedBadges.length === 0) {
+          formattedBadges = [];
+        }
 
         // Enrichir le profil avec les données supplémentaires
         const enrichedProfile = {
           ...userProfile,
-          games: mockGames,
-          allGames: [...mockGames],
-          badges: mockBadges
+          games: formattedGames,
+          allGames: [...formattedGames],
+          badges: formattedBadges
         };
 
         setUserData({ id: userProfile.id, ...enrichedProfile });
@@ -150,6 +191,8 @@ const UserProfile = () => {
           tactical_awareness: 'À évaluer'
         });
         setEquipment(userEquipment || []);
+        setUserGames(formattedGames);
+        setUserBadges(formattedBadges);
         setLoading(false);
       } catch (error) {
         console.error("Erreur lors de la récupération des données:", error);
@@ -287,7 +330,7 @@ const UserProfile = () => {
                 
                 <TabsContent value="games">
                   <ProfileGames 
-                    games={profileData.games} 
+                    games={userGames} 
                     handleViewGameDetails={(game) => {
                       setSelectedGame(game);
                       setShowGameDialog(true);
@@ -314,7 +357,7 @@ const UserProfile = () => {
                 
                 <TabsContent value="badges">
                   <ProfileBadges 
-                    badges={profileData.badges} 
+                    badges={userBadges} 
                     handleViewAllBadges={() => setShowBadgesDialog(true)} 
                   />
                 </TabsContent>

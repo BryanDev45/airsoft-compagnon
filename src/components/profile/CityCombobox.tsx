@@ -51,13 +51,9 @@ export function ComboboxDemo({
 
       setIsLoading(true);
       try {
+        // Use a more reliable and open city search API
         const response = await fetch(
-          `https://api.api-ninjas.com/v1/city?name=${encodeURIComponent(debouncedSearchTerm)}&limit=15`,
-          {
-            headers: {
-              'X-Api-Key': 'KucnUMEZjzwS8MpUhXlHOw==EaXPLcgegM2mWEwZ'
-            }
-          }
+          `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(debouncedSearchTerm)}&type=city&limit=10&apiKey=56b3ef22dedb42e48632bea692e1b27c`
         );
         
         if (!response.ok) {
@@ -66,17 +62,21 @@ export function ComboboxDemo({
         
         const data = await response.json();
         
-        // Vérifier que data est un tableau avant de le mapper
-        if (Array.isArray(data)) {
-          const formattedCities = data.map((city: any) => ({
-            name: city.name,
-            country: city.country,
-            fullName: `${city.name}, ${city.country}`
-          }));
+        if (data && data.features && Array.isArray(data.features)) {
+          const formattedCities = data.features.map((city: any) => {
+            const properties = city.properties;
+            const name = properties.city || properties.name;
+            const country = properties.country;
+            return {
+              name: name || "",
+              country: country || "",
+              fullName: `${name || ""}, ${country || ""}`
+            };
+          }).filter((city: City) => city.name && city.country);
           
           setCities(formattedCities);
         } else {
-          console.error("La réponse API n'est pas un tableau:", data);
+          console.error("Invalid API response:", data);
           setCities([]);
         }
       } catch (error) {

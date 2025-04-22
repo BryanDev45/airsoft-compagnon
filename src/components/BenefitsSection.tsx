@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { Users, Calendar, Search, Shield, Clock, BadgePercent } from 'lucide-react';
+import { Users, Calendar, Search, Shield, Clock, BadgePercent, Trophy, Crosshair, Target } from 'lucide-react';
 
 const BenefitCard = ({ title, description, icon, color }: { title: string; description: string; icon: React.ReactNode; color: string }) => (
-  <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+  <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow">
     <div className={`rounded-full w-12 h-12 flex items-center justify-center ${color} mb-4`}>
       {icon}
     </div>
@@ -71,20 +71,63 @@ const BenefitsSection = () => {
           </div>
         </div>
         
-        {/* Avantages pour les joueurs */}
+        {/* Avantages pour les joueurs - Redesigned with airsoft image */}
         <div>
-          <div className="bg-airsoft-dark text-white p-6 md:p-10 rounded-lg mb-8 relative overflow-hidden">
-            <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-white/10 to-transparent"></div>
-            <div className="relative z-10 max-w-2xl">
-              <h2 className="text-3xl font-bold mb-4">Quels avantages pour les joueurs ?</h2>
-              <p className="text-lg mb-4">
-                Fini les recherches interminables. Accédez instantanément à toutes les parties et magasins qui se trouvent autour de vous.
-              </p>
-              <p className="text-lg">
-                Simplifiez le règlement de votre PAF et retrouvez tous les détails de vos événements passés et à venir.
-                Créez votre profil, montrez votre équipement et faites partie d'une équipe.
-                Collectionnez différents badges pour démontrer votre engagement envers la communauté.
-              </p>
+          <div className="bg-airsoft-dark text-white p-6 md:p-10 rounded-lg mb-8 relative overflow-hidden shadow-xl transform hover:scale-[1.02] transition-transform">
+            {/* Background enhancement */}
+            <div className="absolute inset-0 bg-gradient-to-br from-airsoft-dark via-airsoft-dark to-airsoft-dark/70 z-0"></div>
+            <div className="absolute bottom-0 right-0 w-1/2 h-full">
+              <img 
+                src="/lovable-uploads/dabf8bbc-44a7-4c03-bebe-009592f0c6c8.png" 
+                alt="Joueur d'airsoft en action" 
+                className="object-cover h-full w-full opacity-50 mix-blend-overlay"
+              />
+            </div>
+            
+            <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
+              <div className="md:w-1/3 lg:w-1/4 mb-6 md:mb-0 transform -rotate-3 hover:rotate-0 transition-transform duration-300">
+                <img 
+                  src="/lovable-uploads/dabf8bbc-44a7-4c03-bebe-009592f0c6c8.png" 
+                  alt="Joueur d'airsoft équipé" 
+                  className="rounded-lg shadow-lg border-4 border-white/10"
+                />
+              </div>
+              
+              <div className="relative z-10 max-w-2xl">
+                <div className="inline-block bg-airsoft-red px-4 py-1 rounded-full mb-4">
+                  <Trophy className="inline-block mr-2 h-5 w-5 text-white" />
+                  <span className="text-white font-semibold">Pour les joueurs</span>
+                </div>
+                
+                <h2 className="text-3xl md:text-4xl font-bold mb-6 leading-tight">
+                  Améliorez votre expérience d'airsoft
+                </h2>
+                
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-1 flex-shrink-0">
+                      <Crosshair className="h-5 w-5 text-airsoft-red" />
+                    </div>
+                    <p className="text-lg opacity-90">
+                      Fini les recherches interminables. Accédez instantanément à toutes les parties et magasins qui se trouvent autour de vous.
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-start gap-3">
+                    <div className="mt-1 flex-shrink-0">
+                      <Target className="h-5 w-5 text-airsoft-red" />
+                    </div>
+                    <p className="text-lg opacity-90">
+                      Simplifiez le règlement de votre PAF et retrouvez tous les détails de vos événements passés et à venir.
+                      Créez votre profil, montrez votre équipement et faites partie d'une équipe.
+                    </p>
+                  </div>
+                  
+                  <p className="text-lg font-semibold text-airsoft-red">
+                    Collectionnez différents badges pour démontrer votre engagement envers la communauté.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
           
