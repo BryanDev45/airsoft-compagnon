@@ -1,12 +1,11 @@
-
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ComboboxDemo as CityCombobox } from './CityCombobox';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { MapPin, Calendar, User, Users, Building2, Award, Edit, Save, X, Search, Minus } from 'lucide-react';
+import { MapPin, Calendar, User, Users, Building2, Award, Edit, X } from 'lucide-react';
+import CitySearchApi from './CitySearchApi';
 
 const ProfileInfo = ({
   user,
@@ -15,6 +14,7 @@ const ProfileInfo = ({
   handleNavigateToTeam
 }) => {
   const [isEditingLocation, setIsEditingLocation] = useState(false);
+  const navigate = useNavigate();
   
   const formatDate = dateString => {
     if (!dateString) return '';
@@ -36,6 +36,10 @@ const ProfileInfo = ({
         setIsEditingLocation(false);
       }
     }
+  };
+  
+  const handleTeamSearch = () => {
+    navigate('/search?tab=teams');
   };
   
   return <Card className="p-6 shadow-md">
@@ -74,22 +78,29 @@ const ProfileInfo = ({
               <MapPin className="h-5 w-5 text-gray-500 mr-3 mt-1" />
               <div className="flex-1">
                 <span className="text-sm text-gray-500">Localisation</span>
-                {isEditingLocation ? <div className="mt-1 space-y-2">
-                    <CityCombobox defaultValue={profileData?.location || ''} onSelect={handleLocationUpdate} />
+                {isEditingLocation ? (
+                  <div className="mt-1 space-y-2">
+                    <CitySearchApi
+                      defaultValue={profileData?.location || ''}
+                      onSelect={handleLocationUpdate}
+                    />
                     <div className="flex space-x-2">
                       <Button variant="outline" size="sm" onClick={() => setIsEditingLocation(false)}>
                         <X className="h-4 w-4 mr-2" />
                         Annuler
                       </Button>
                     </div>
-                  </div> : <div className="flex items-center justify-between">
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
                     <p className="font-medium">
                       {profileData?.location || 'Non spécifié'}
                     </p>
                     <Button variant="ghost" size="sm" onClick={() => setIsEditingLocation(true)} className="h-8 px-2">
                       <Edit className="h-4 w-4" />
                     </Button>
-                  </div>}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -103,21 +114,21 @@ const ProfileInfo = ({
               <Users className="h-5 w-5 text-gray-500 mr-3 mt-1" />
               <div className="flex-grow">
                 <span className="text-sm text-gray-500">Équipe</span>
-                {profileData?.team ? <div className="flex items-center justify-between">
+                {profileData?.team ? (
+                  <div className="flex items-center justify-between">
                     <p className="font-medium">{profileData.team}</p>
                     <Button variant="ghost" size="sm" onClick={handleNavigateToTeam} className="h-8 px-2">
                       <Users className="h-4 w-4" />
                     </Button>
-                  </div> : <div className="flex items-center justify-between">
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
                     <p className="font-medium">Aucune équipe</p>
-                    <div className="flex gap-2">
-                      <Link to="/teams">
-                        <Button variant="ghost" size="sm" className="h-8 px-2">
-                          <Search className="h-4 w-4" />
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>}
+                    <Button variant="ghost" size="sm" onClick={handleTeamSearch} className="h-8 px-2">
+                      <Users className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
             
@@ -141,4 +152,5 @@ const ProfileInfo = ({
       </div>
     </Card>;
 };
+
 export default ProfileInfo;
