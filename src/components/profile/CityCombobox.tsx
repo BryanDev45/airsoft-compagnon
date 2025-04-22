@@ -1,76 +1,92 @@
-import * as React from "react"
-import { Check, ChevronsUpDown } from "lucide-react"
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import * as React from "react";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
-} from "@/components/ui/command"
+} from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/components/ui/popover";
+import { useDebounce } from "@/hooks/use-debounce";
+import { useState, useEffect } from "react";
+import { Loader2 } from "lucide-react";
 
-// Liste simplifiée des grandes villes
-const cities = [
-  { city: "Paris", country: "France", value: "paris" },
-  { city: "Lyon", country: "France", value: "lyon" },
-  { city: "Marseille", country: "France", value: "marseille" },
-  { city: "Toulouse", country: "France", value: "toulouse" },
-  { city: "Nice", country: "France", value: "nice" },
-  { city: "Nantes", country: "France", value: "nantes" },
-  { city: "Strasbourg", country: "France", value: "strasbourg" },
-  { city: "Montpellier", country: "France", value: "montpellier" },
-  { city: "Bordeaux", country: "France", value: "bordeaux" },
-  { city: "Lille", country: "France", value: "lille" },
-  { city: "Rennes", country: "France", value: "rennes" },
-  { city: "Reims", country: "France", value: "reims" },
-  { city: "Le Havre", country: "France", value: "le-havre" },
-  { city: "Saint-Étienne", country: "France", value: "saint-etienne" },
-  { city: "Toulon", country: "France", value: "toulon" },
-  { city: "Bruxelles", country: "Belgique", value: "bruxelles" },
-  { city: "Genève", country: "Suisse", value: "geneve" },
-  { city: "Luxembourg", country: "Luxembourg", value: "luxembourg" },
-];
+interface City {
+  name: string;
+  country: string;
+  fullName: string;
+}
 
-type ComboboxDemoProps = {
-  onSelect?: (location: string) => void;
+export function ComboboxDemo({
+  defaultValue = "",
+  onSelect
+}: {
   defaultValue?: string;
-};
-
-export function ComboboxDemo({ onSelect, defaultValue = "" }: ComboboxDemoProps) {
+  onSelect: (value: string) => void;
+}) {
   const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState("");
-  const [displayValue, setDisplayValue] = React.useState("");
+  const [value, setValue] = React.useState(defaultValue);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [cities, setCities] = useState<City[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-  React.useEffect(() => {
-    if (!defaultValue) return;
+  // Fetch cities based on search term
+  useEffect(() => {
+    const fetchCities = async () => {
+      if (debouncedSearchTerm.length < 2) {
+        setCities([]);
+        return;
+      }
 
-    const [cityNameRaw] = defaultValue.split(",").map(str => str.trim().toLowerCase());
-    const matched = cities.find(({ city }) => city.toLowerCase() === cityNameRaw);
+      setIsLoading(true);
+      try {
+        const response = await fetch(
+          `https://api.api-ninjas.com/v1/city?name=${encodeURIComponent(debouncedSearchTerm)}&limit=15`,
+          {
+            headers: {
+              'X-Api-Key': 'KucnUMEZjzwS8MpUhXlHOw==EaXPLcgegM2mWEwZ'
+            }
+          }
+        );
+        
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        
+        const data = await response.json();
+        
+        const formattedCities = data.map((city: any) => ({
+          name: city.name,
+          country: city.country,
+          fullName: `${city.name}, ${city.country}`
+        }));
+        
+        setCities(formattedCities);
+      } catch (error) {
+        console.error("Error fetching cities:", error);
+        setCities([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    if (matched) {
-      setValue(matched.value);
-      setDisplayValue(`${matched.city}, ${matched.country}`);
-    } else {
-      setDisplayValue(defaultValue);
-    }
-  }, [defaultValue]);
+    fetchCities();
+  }, [debouncedSearchTerm]);
 
-  const handleSelectCity = (selectedValue: string) => {
-    const selectedCity = cities.find(c => c.value === selectedValue);
-    if (!selectedCity) return;
-
+  const handleSelect = (selectedValue: string) => {
     setValue(selectedValue);
-    setDisplayValue(`${selectedCity.city}, ${selectedCity.country}`);
+    onSelect(selectedValue);
     setOpen(false);
-
-    onSelect?.(`${selectedCity.city}, ${selectedCity.country}`);
   };
 
   return (
@@ -82,31 +98,44 @@ export function ComboboxDemo({ onSelect, defaultValue = "" }: ComboboxDemoProps)
           aria-expanded={open}
           className="w-full justify-between"
         >
-          {displayValue || "Sélectionnez une ville..."}
+          {value || "Sélectionner une ville..."}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0">
+      <PopoverContent className="p-0 w-[300px]">
         <Command>
-          <CommandInput placeholder="Rechercher une ville..." />
-          <CommandEmpty>Aucune ville trouvée.</CommandEmpty>
-          <CommandGroup>
-            {cities.map(({ city, country, value: cityValue }) => (
-              <CommandItem
-                key={cityValue}
-                value={cityValue}
-                onSelect={handleSelectCity}
-              >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    value === cityValue ? "opacity-100" : "opacity-0"
-                  )}
-                />
-                {city}, {country}
-              </CommandItem>
-            ))}
-          </CommandGroup>
+          <CommandInput 
+            placeholder="Rechercher une ville..." 
+            value={searchTerm}
+            onValueChange={setSearchTerm}
+          />
+          {isLoading ? (
+            <div className="flex items-center justify-center p-4">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span className="ml-2">Recherche en cours...</span>
+            </div>
+          ) : (
+            <>
+              <CommandEmpty>Aucune ville trouvée.</CommandEmpty>
+              <CommandGroup>
+                {cities.map((city) => (
+                  <CommandItem
+                    key={city.fullName}
+                    value={city.fullName}
+                    onSelect={() => handleSelect(city.fullName)}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === city.fullName ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {city.fullName}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </>
+          )}
         </Command>
       </PopoverContent>
     </Popover>

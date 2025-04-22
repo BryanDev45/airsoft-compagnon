@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ComboboxDemo as CityCombobox } from './CityCombobox';
@@ -15,6 +14,7 @@ const ProfileInfo = ({
   handleNavigateToTeam
 }) => {
   const [isEditingLocation, setIsEditingLocation] = useState(false);
+  const navigate = useNavigate();
   
   const formatDate = dateString => {
     if (!dateString) return '';
@@ -36,6 +36,10 @@ const ProfileInfo = ({
         setIsEditingLocation(false);
       }
     }
+  };
+  
+  const handleNavigateToTeamSearch = () => {
+    navigate('/teams');
   };
   
   return <Card className="p-6 shadow-md">
@@ -111,11 +115,9 @@ const ProfileInfo = ({
                   </div> : <div className="flex items-center justify-between">
                     <p className="font-medium">Aucune équipe</p>
                     <div className="flex gap-2">
-                      <Link to="/teams">
-                        <Button variant="ghost" size="sm" className="h-8 px-2">
-                          <Search className="h-4 w-4" />
-                        </Button>
-                      </Link>
+                      <Button variant="ghost" size="sm" className="h-8 px-2" onClick={handleNavigateToTeamSearch}>
+                        <Search className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>}
               </div>
