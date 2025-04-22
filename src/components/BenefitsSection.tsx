@@ -1,42 +1,38 @@
-
 import React from 'react';
 import { Users, Calendar, Search, Shield, Clock, BadgePercent, Trophy, Crosshair, Target, Download, Facebook, Instagram, Mail, MessageSquare, MapPin, CreditCard, Award } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
-
-const BenefitCard = ({ title, description, icon, color }: { title: string; description: string; icon: React.ReactNode; color: string }) => (
-  <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow">
+const BenefitCard = ({
+  title,
+  description,
+  icon,
+  color
+}: {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  color: string;
+}) => <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow">
     <div className={`rounded-full w-12 h-12 flex items-center justify-center ${color} mb-4`}>
       {icon}
     </div>
     <h3 className="text-xl font-bold mb-2">{title}</h3>
     <p className="text-gray-600">{description}</p>
-  </div>
-);
-
+  </div>;
 const BenefitsSection = () => {
-  return (
-    <div className="py-16 bg-gray-100">
+  return <div className="py-16 bg-gray-100">
       <div className="max-w-7xl mx-auto px-4">
         {/* Avantages pour les organisateurs - Modifié avec l'image de fond */}
         <div className="mb-16">
           <div className="bg-airsoft-dark text-white p-6 md:p-10 rounded-lg mb-8 relative overflow-hidden shadow-xl transform hover:scale-[1.02] transition-transform">
             <div className="absolute inset-0">
-              <img 
-                src="/lovable-uploads/84404d08-fa37-4317-80e0-d607d3676fd5.png" 
-                alt="Joueurs d'airsoft en équipement" 
-                className="object-cover w-full h-full opacity-30"
-              />
+              <img src="/lovable-uploads/84404d08-fa37-4317-80e0-d607d3676fd5.png" alt="Joueurs d'airsoft en équipement" className="object-cover w-full h-full opacity-30" />
               <div className="absolute inset-0 bg-gradient-to-br from-airsoft-dark via-airsoft-dark/90 to-airsoft-dark/80"></div>
             </div>
             
             <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
               <div className="md:w-1/3 lg:w-1/4 mb-6 md:mb-0 transform -rotate-3 hover:rotate-0 transition-transform duration-300">
-                <img 
-                  src="/lovable-uploads/84404d08-fa37-4317-80e0-d607d3676fd5.png" 
-                  alt="Joueurs d'airsoft en équipement" 
-                  className="rounded-lg shadow-lg border-4 border-white/10"
-                />
+                <img src="/lovable-uploads/84404d08-fa37-4317-80e0-d607d3676fd5.png" alt="Joueurs d'airsoft en équipement" className="rounded-lg shadow-lg border-4 border-white/10" />
               </div>
               
               <div className="relative z-10 max-w-2xl">
@@ -45,9 +41,7 @@ const BenefitsSection = () => {
                   <span className="text-white font-semibold">Pour les organisateurs</span>
                 </div>
                 
-                <h2 className="text-3xl md:text-4xl font-bold mb-6 leading-tight">
-                  Quels avantages pour les organisateurs ?
-                </h2>
+                <h2 className="text-3xl md:text-4xl font-bold mb-6 leading-tight">Gagnez du temps, sécurisez vos paiements, attirez plus de joueurs.</h2>
                 
                 <div className="space-y-4">
                   <p className="text-lg opacity-90">
@@ -66,24 +60,9 @@ const BenefitsSection = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <BenefitCard
-              title="Gestion simplifiée"
-              description="Gérez facilement vos inscriptions et vos paiements sans effort administratif."
-              icon={<Calendar className="text-white" size={24} />}
-              color="bg-airsoft-red"
-            />
-            <BenefitCard
-              title="Visibilité maximale"
-              description="Vos parties sont automatiquement mises en avant auprès des joueurs de votre région."
-              icon={<Search className="text-white" size={24} />}
-              color="bg-airsoft-red"
-            />
-            <BenefitCard
-              title="Réduction d'absentéisme"
-              description="Le système de paiement anticipé permet de réduire considérablement les absences de dernière minute."
-              icon={<Shield className="text-white" size={24} />}
-              color="bg-airsoft-red"
-            />
+            <BenefitCard title="Gestion simplifiée" description="Gérez facilement vos inscriptions et vos paiements sans effort administratif." icon={<Calendar className="text-white" size={24} />} color="bg-airsoft-red" />
+            <BenefitCard title="Visibilité maximale" description="Vos parties sont automatiquement mises en avant auprès des joueurs de votre région." icon={<Search className="text-white" size={24} />} color="bg-airsoft-red" />
+            <BenefitCard title="Réduction d'absentéisme" description="Le système de paiement anticipé permet de réduire considérablement les absences de dernière minute." icon={<Shield className="text-white" size={24} />} color="bg-airsoft-red" />
           </div>
         </div>
         
@@ -92,11 +71,7 @@ const BenefitsSection = () => {
           <div className="bg-airsoft-dark text-white p-6 md:p-10 rounded-lg mb-8 relative overflow-hidden shadow-xl transform hover:scale-[1.02] transition-transform">
             <div className="absolute inset-0 bg-gradient-to-br from-airsoft-dark via-airsoft-dark to-airsoft-dark/70 z-0"></div>
             <div className="absolute inset-0 opacity-20">
-              <img 
-                src="/lovable-uploads/364d4f7f-8b4d-4ff8-bdd4-3257db537d1e.png"
-                alt="Fond airsoft"
-                className="object-cover w-full h-full"
-              />
+              <img src="/lovable-uploads/364d4f7f-8b4d-4ff8-bdd4-3257db537d1e.png" alt="Fond airsoft" className="object-cover w-full h-full" />
             </div>
             
             <div className="relative z-10 max-w-4xl mx-auto">
@@ -137,8 +112,6 @@ const BenefitsSection = () => {
         
         {/* Suppression de la section Contact qui est maintenant gérée par le composant ContactSection */}
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default BenefitsSection;
