@@ -1,5 +1,8 @@
+
 import React from 'react';
-import { Users, Calendar, Search, Shield, Clock, BadgePercent, Trophy, Crosshair, Target } from 'lucide-react';
+import { Users, Calendar, Search, Shield, Clock, BadgePercent, Trophy, Crosshair, Target, Download, Facebook, Instagram, Mail, MessageSquare } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Link } from 'react-router-dom';
 
 const BenefitCard = ({ title, description, icon, color }: { title: string; description: string; icon: React.ReactNode; color: string }) => (
   <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow">
