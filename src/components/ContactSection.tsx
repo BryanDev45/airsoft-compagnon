@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Facebook, Instagram, Mail, MessageSquare, Download } from 'lucide-react';
+import { Facebook, Instagram, Mail, MessageSquare, Download, Users } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
 
@@ -10,8 +10,8 @@ const ContactSection = () => {
       <div className="absolute inset-0 bg-gradient-to-br from-airsoft-dark via-airsoft-dark to-airsoft-dark/70 z-0"></div>
       <div className="absolute bottom-0 right-0 w-1/2 h-full">
         <img 
-          src="/lovable-uploads/dabf8bbc-44a7-4c03-bebe-009592f0c6c8.png" 
-          alt="Joueur d'airsoft en action" 
+          src="/lovable-uploads/ae8f6590-a316-4f3b-a876-7ed8bdc03246.png" 
+          alt="Joueurs d'airsoft tactiques avec vision nocturne" 
           className="object-cover h-full w-full opacity-50 mix-blend-overlay"
         />
       </div>
