@@ -9,7 +9,6 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
-  CommandList,
 } from "@/components/ui/command";
 import {
   Popover,
@@ -17,7 +16,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useDebounce } from "@/hooks/use-debounce";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
 interface City {
@@ -41,8 +40,7 @@ export function ComboboxDemo({
   
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-  // Fetch cities based on search term
-  useEffect(() => {
+  React.useEffect(() => {
     const fetchCities = async () => {
       if (debouncedSearchTerm.length < 2) {
         setCities([]);
@@ -51,9 +49,8 @@ export function ComboboxDemo({
 
       setIsLoading(true);
       try {
-        // Use a more reliable and open city search API
         const response = await fetch(
-          `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(debouncedSearchTerm)}&type=city&limit=10&apiKey=56b3ef22dedb42e48632bea692e1b27c`
+          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(debouncedSearchTerm)}&count=10&language=fr&format=json`
         );
         
         if (!response.ok) {
@@ -62,21 +59,15 @@ export function ComboboxDemo({
         
         const data = await response.json();
         
-        if (data && data.features && Array.isArray(data.features)) {
-          const formattedCities = data.features.map((city: any) => {
-            const properties = city.properties;
-            const name = properties.city || properties.name;
-            const country = properties.country;
-            return {
-              name: name || "",
-              country: country || "",
-              fullName: `${name || ""}, ${country || ""}`
-            };
-          }).filter((city: City) => city.name && city.country);
+        if (data && data.results && Array.isArray(data.results)) {
+          const formattedCities = data.results.map((city: any) => ({
+            name: city.name,
+            country: city.country,
+            fullName: `${city.name}, ${city.country}`
+          }));
           
           setCities(formattedCities);
         } else {
-          console.error("Invalid API response:", data);
           setCities([]);
         }
       } catch (error) {
@@ -89,12 +80,6 @@ export function ComboboxDemo({
 
     fetchCities();
   }, [debouncedSearchTerm]);
-
-  const handleSelect = (selectedValue: string) => {
-    setValue(selectedValue);
-    onSelect(selectedValue);
-    setOpen(false);
-  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -116,7 +101,7 @@ export function ComboboxDemo({
             value={searchTerm}
             onValueChange={setSearchTerm}
           />
-          <CommandList>
+          <CommandGroup>
             {isLoading ? (
               <div className="flex items-center justify-center p-4">
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -124,27 +109,31 @@ export function ComboboxDemo({
               </div>
             ) : (
               <>
-                <CommandEmpty>Aucune ville trouvée.</CommandEmpty>
-                <CommandGroup>
-                  {cities.map((city) => (
-                    <CommandItem
-                      key={city.fullName}
-                      value={city.fullName}
-                      onSelect={() => handleSelect(city.fullName)}
-                    >
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          value === city.fullName ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                      {city.fullName}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
+                {cities.length === 0 && (
+                  <CommandEmpty>Aucune ville trouvée.</CommandEmpty>
+                )}
+                {cities.map((city) => (
+                  <CommandItem
+                    key={city.fullName}
+                    value={city.fullName}
+                    onSelect={() => {
+                      setValue(city.fullName);
+                      onSelect(city.fullName);
+                      setOpen(false);
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === city.fullName ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {city.fullName}
+                  </CommandItem>
+                ))}
               </>
             )}
-          </CommandList>
+          </CommandGroup>
         </Command>
       </PopoverContent>
     </Popover>
