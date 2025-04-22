@@ -9,6 +9,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList,
 } from "@/components/ui/command";
 import {
   Popover,
@@ -115,33 +116,35 @@ export function ComboboxDemo({
             value={searchTerm}
             onValueChange={setSearchTerm}
           />
-          {isLoading ? (
-            <div className="flex items-center justify-center p-4">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span className="ml-2">Recherche en cours...</span>
-            </div>
-          ) : (
-            <>
-              <CommandEmpty>Aucune ville trouvée.</CommandEmpty>
-              <CommandGroup>
-                {Array.isArray(cities) && cities.map((city) => (
-                  <CommandItem
-                    key={city.fullName}
-                    value={city.fullName}
-                    onSelect={() => handleSelect(city.fullName)}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        value === city.fullName ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    {city.fullName}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </>
-          )}
+          <CommandList>
+            {isLoading ? (
+              <div className="flex items-center justify-center p-4">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span className="ml-2">Recherche en cours...</span>
+              </div>
+            ) : (
+              <>
+                <CommandEmpty>Aucune ville trouvée.</CommandEmpty>
+                <CommandGroup>
+                  {cities.map((city) => (
+                    <CommandItem
+                      key={city.fullName}
+                      value={city.fullName}
+                      onSelect={() => handleSelect(city.fullName)}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          value === city.fullName ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {city.fullName}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </>
+            )}
+          </CommandList>
         </Command>
       </PopoverContent>
     </Popover>
