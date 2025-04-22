@@ -65,13 +65,19 @@ export function ComboboxDemo({
         
         const data = await response.json();
         
-        const formattedCities = data.map((city: any) => ({
-          name: city.name,
-          country: city.country,
-          fullName: `${city.name}, ${city.country}`
-        }));
-        
-        setCities(formattedCities);
+        // Vérifier que data est un tableau avant de le mapper
+        if (Array.isArray(data)) {
+          const formattedCities = data.map((city: any) => ({
+            name: city.name,
+            country: city.country,
+            fullName: `${city.name}, ${city.country}`
+          }));
+          
+          setCities(formattedCities);
+        } else {
+          console.error("La réponse API n'est pas un tableau:", data);
+          setCities([]);
+        }
       } catch (error) {
         console.error("Error fetching cities:", error);
         setCities([]);
@@ -118,7 +124,7 @@ export function ComboboxDemo({
             <>
               <CommandEmpty>Aucune ville trouvée.</CommandEmpty>
               <CommandGroup>
-                {cities.map((city) => (
+                {Array.isArray(cities) && cities.map((city) => (
                   <CommandItem
                     key={city.fullName}
                     value={city.fullName}

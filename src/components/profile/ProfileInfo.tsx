@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
@@ -39,7 +40,7 @@ const ProfileInfo = ({
   };
   
   const handleNavigateToTeamSearch = () => {
-    navigate('/teams');
+    navigate('/parties?tab=teams'); // Redirection vers la page de recherche avec l'onglet "teams" sélectionné
   };
   
   return <Card className="p-6 shadow-md">
