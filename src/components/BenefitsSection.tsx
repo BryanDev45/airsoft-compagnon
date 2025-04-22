@@ -2,7 +2,6 @@ import React from 'react';
 import { Users, Calendar, Search, Shield, Clock, BadgePercent, Trophy, Crosshair, Target, Download, Facebook, Instagram, Mail, MessageSquare, MapPin, CreditCard, Award } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
-
 const BenefitCard = ({
   title,
   description,
@@ -13,40 +12,19 @@ const BenefitCard = ({
   description: string;
   icon: React.ReactNode;
   color: string;
-}) => (
-  <div className="bg-white p-8 rounded-lg shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+}) => <div className="bg-white p-8 rounded-lg shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
     <div className={`rounded-full w-14 h-14 flex items-center justify-center ${color} mb-6 shadow-md`}>
       {icon}
     </div>
     <h3 className="text-xl font-bold mb-3 text-gray-800">{title}</h3>
     <p className="text-gray-600 leading-relaxed">{description}</p>
-  </div>
-);
-
+  </div>;
 const BenefitsSection = () => {
-  return (
-    <div className="py-16 bg-gray-100">
+  return <div className="bg-gray-100 py-0">
       <div className="max-w-7xl mx-auto px-4">
         {/* Section "Airsoft compagnon, c'est quoi ?" */}
         <div className="mb-16 max-w-4xl mx-auto">
-          <div className="bg-white p-8 rounded-lg shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
-            <h2 className="text-3xl font-bold mb-6 text-gray-800 relative inline-block">
-              Airsoft compagnon, c'est quoi ?
-              <div className="absolute bottom-0 left-0 w-full h-1 bg-airsoft-red rounded-full"></div>
-            </h2>
-            <div className="space-y-4">
-              <p className="text-lg text-gray-700 leading-relaxed">
-                Que vous soyez organisateur ou simplement joueur, Airsoft Compagnon est l'outil indispensable pour votre passion.
-                Trouvez facilement vos parties d'airsoft en un seul clic, ou même les magasins autour de vous.
-              </p>
-              <p className="text-lg text-gray-700 leading-relaxed">
-                Publiez vos parties en toute simplicité, sans vous inquiéter des paiements et des inscriptions. Nous nous occupons de tout pour vous.
-              </p>
-              <p className="text-xl font-bold text-airsoft-red mt-6">
-                Le plus ? Tout ça est totalement gratuit !
-              </p>
-            </div>
-          </div>
+          
         </div>
 
         {/* Avantages pour les organisateurs */}
@@ -87,24 +65,9 @@ const BenefitsSection = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            <BenefitCard 
-              title="Gestion simplifiée" 
-              description="Gérez facilement vos inscriptions et vos paiements sans effort administratif." 
-              icon={<Calendar className="text-white" size={24} />} 
-              color="bg-airsoft-red" 
-            />
-            <BenefitCard 
-              title="Visibilité maximale" 
-              description="Vos parties sont automatiquement mises en avant auprès des joueurs de votre région." 
-              icon={<Search className="text-white" size={24} />} 
-              color="bg-airsoft-red" 
-            />
-            <BenefitCard 
-              title="Réduction d'absentéisme" 
-              description="Le système de paiement anticipé permet de réduire considérablement les absences de dernière minute." 
-              icon={<Shield className="text-white" size={24} />} 
-              color="bg-airsoft-red" 
-            />
+            <BenefitCard title="Gestion simplifiée" description="Gérez facilement vos inscriptions et vos paiements sans effort administratif." icon={<Calendar className="text-white" size={24} />} color="bg-airsoft-red" />
+            <BenefitCard title="Visibilité maximale" description="Vos parties sont automatiquement mises en avant auprès des joueurs de votre région." icon={<Search className="text-white" size={24} />} color="bg-airsoft-red" />
+            <BenefitCard title="Réduction d'absentéisme" description="Le système de paiement anticipé permet de réduire considérablement les absences de dernière minute." icon={<Shield className="text-white" size={24} />} color="bg-airsoft-red" />
           </div>
         </div>
 
@@ -152,8 +115,6 @@ const BenefitsSection = () => {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default BenefitsSection;
