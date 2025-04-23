@@ -2,6 +2,7 @@ import React from 'react';
 import { Users, Calendar, Search, Shield, Clock, BadgePercent, Trophy, Crosshair, Target, Download, Facebook, Instagram, Mail, MessageSquare, MapPin, CreditCard, Award } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
+
 const BenefitCard = ({
   title,
   description,
@@ -13,12 +14,13 @@ const BenefitCard = ({
   icon: React.ReactNode;
   color: string;
 }) => <div className="bg-white p-8 rounded-lg shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-    <div className={`rounded-full w-14 h-14 flex items-center justify-center ${color} mb-6 shadow-md`}>
+    <div className={`rounded-full w-14 h-14 flex items-center justify-center ${color} mb-6 shadow-md mx-auto`}>
       {icon}
     </div>
     <h3 className="text-xl font-bold mb-3 text-gray-800">{title}</h3>
     <p className="text-gray-600 leading-relaxed">{description}</p>
   </div>;
+
 const BenefitsSection = () => {
   return <div className="bg-gray-100 py-0">
       <div className="max-w-7xl mx-auto px-4">
@@ -117,4 +119,5 @@ const BenefitsSection = () => {
       </div>
     </div>;
 };
+
 export default BenefitsSection;
