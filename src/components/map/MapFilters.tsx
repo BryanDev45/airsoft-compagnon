@@ -13,8 +13,6 @@ interface MapFiltersProps {
   setSelectedDepartment: (value: string) => void;
   selectedDate: string;
   setSelectedDate: (value: string) => void;
-  selectedType: string;
-  setSelectedType: (value: string) => void;
   searchRadius: number[];
   setSearchRadius: (value: number[]) => void;
   getCurrentPosition: () => void;
@@ -27,30 +25,12 @@ const MapFilters: React.FC<MapFiltersProps> = ({
   setSelectedDepartment,
   selectedDate,
   setSelectedDate,
-  selectedType,
-  setSelectedType,
   searchRadius,
   setSearchRadius,
   getCurrentPosition
 }) => {
   return (
     <div className="space-y-4">
-      <div>
-        <label className="block text-sm mb-2">Type de partie</label>
-        <Select value={selectedType} onValueChange={setSelectedType}>
-          <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-            <SelectValue placeholder="Tous les types" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tous les types</SelectItem>
-            <SelectItem value="cqb">CQB</SelectItem>
-            <SelectItem value="woodland">Woodland</SelectItem>
-            <SelectItem value="milsim">Milsim</SelectItem>
-            <SelectItem value="tournament">Tournoi</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
       <div>
         <label className="block text-sm mb-2">Pays</label>
         <Select value={selectedCountry} onValueChange={setSelectedCountry}>
@@ -59,34 +39,12 @@ const MapFilters: React.FC<MapFiltersProps> = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tous les pays</SelectItem>
-            <SelectItem value="allemagne">Allemagne</SelectItem>
-            <SelectItem value="autriche">Autriche</SelectItem>
-            <SelectItem value="belgique">Belgique</SelectItem>
-            <SelectItem value="bulgarie">Bulgarie</SelectItem>
-            <SelectItem value="chypre">Chypre</SelectItem>
-            <SelectItem value="croatie">Croatie</SelectItem>
-            <SelectItem value="danemark">Danemark</SelectItem>
-            <SelectItem value="espagne">Espagne</SelectItem>
-            <SelectItem value="estonie">Estonie</SelectItem>
-            <SelectItem value="finlande">Finlande</SelectItem>
             <SelectItem value="france">France</SelectItem>
-            <SelectItem value="grece">Grèce</SelectItem>
-            <SelectItem value="hongrie">Hongrie</SelectItem>
-            <SelectItem value="irlande">Irlande</SelectItem>
-            <SelectItem value="italie">Italie</SelectItem>
-            <SelectItem value="lettonie">Lettonie</SelectItem>
-            <SelectItem value="lituanie">Lituanie</SelectItem>
-            <SelectItem value="luxembourg">Luxembourg</SelectItem>
-            <SelectItem value="malte">Malte</SelectItem>
-            <SelectItem value="paysbas">Pays-Bas</SelectItem>
-            <SelectItem value="pologne">Pologne</SelectItem>
-            <SelectItem value="portugal">Portugal</SelectItem>
-            <SelectItem value="republiquetcheque">République tchèque</SelectItem>
-            <SelectItem value="roumanie">Roumanie</SelectItem>
-            <SelectItem value="slovaquie">Slovaquie</SelectItem>
-            <SelectItem value="slovenie">Slovénie</SelectItem>
-            <SelectItem value="suede">Suède</SelectItem>
+            <SelectItem value="belgique">Belgique</SelectItem>
             <SelectItem value="suisse">Suisse</SelectItem>
+            <SelectItem value="allemagne">Allemagne</SelectItem>
+            <SelectItem value="espagne">Espagne</SelectItem>
+            <SelectItem value="italie">Italie</SelectItem>
           </SelectContent>
         </Select>
       </div>

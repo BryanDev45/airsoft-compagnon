@@ -49,16 +49,8 @@ export function ComboboxDemo({
 
       setIsLoading(true);
       try {
-        // Utilisation de l'API geocoding avec mode CORS
         const response = await fetch(
-          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(debouncedSearchTerm)}&count=10&language=fr&format=json`,
-          {
-            method: 'GET',
-            headers: {
-              'Accept': 'application/json',
-            },
-            mode: 'cors'
-          }
+          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(debouncedSearchTerm)}&count=10&language=fr&format=json`
         );
         
         if (!response.ok) {
@@ -67,13 +59,12 @@ export function ComboboxDemo({
         
         const data = await response.json();
         
-        if (data && data.results && Array.isArray(data.results)) {
+        if (data && data.results) {
           const formattedCities = data.results.map((city: any) => ({
-            name: city.name,
-            country: city.country,
-            fullName: `${city.name}, ${city.country}`
+            name: city.name || '',
+            country: city.country || '',
+            fullName: `${city.name || ''}, ${city.country || ''}`
           }));
-          
           setCities(formattedCities);
         } else {
           setCities([]);
@@ -109,8 +100,8 @@ export function ComboboxDemo({
             value={searchTerm}
             onValueChange={setSearchTerm}
             className="h-9"
-            autoFocus
           />
+          <CommandEmpty>Aucune ville trouvée.</CommandEmpty>
           <CommandGroup className="max-h-[200px] overflow-y-auto">
             {isLoading ? (
               <div className="flex items-center justify-center p-4">
@@ -118,31 +109,25 @@ export function ComboboxDemo({
                 <span className="ml-2">Recherche en cours...</span>
               </div>
             ) : (
-              <>
-                {cities.length === 0 && searchTerm.length >= 2 && !isLoading && (
-                  <CommandEmpty>Aucune ville trouvée.</CommandEmpty>
-                )}
-                {/* Correction de l'itération : vérification que cities est un tableau */}
-                {Array.isArray(cities) && cities.map((city) => (
-                  <CommandItem
-                    key={city.fullName}
-                    value={city.fullName}
-                    onSelect={() => {
-                      setValue(city.fullName);
-                      onSelect(city.fullName);
-                      setOpen(false);
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        value === city.fullName ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    {city.fullName}
-                  </CommandItem>
-                ))}
-              </>
+              cities.map((city) => (
+                <CommandItem
+                  key={city.fullName}
+                  value={city.fullName}
+                  onSelect={() => {
+                    setValue(city.fullName);
+                    onSelect(city.fullName);
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === city.fullName ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {city.fullName}
+                </CommandItem>
+              ))
             )}
           </CommandGroup>
         </Command>

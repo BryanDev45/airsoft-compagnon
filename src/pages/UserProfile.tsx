@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -16,6 +15,7 @@ import ProfileDialogs from '../components/profile/ProfileDialogs';
 import ReportUserButton from '../components/profile/ReportUserButton';
 import { Button } from "@/components/ui/button";
 import { UserPlus, UserMinus } from "lucide-react";
+import RatingStars from '../components/RatingStars';
 
 const UserProfile = () => {
   const { username } = useParams();
@@ -33,13 +33,13 @@ const UserProfile = () => {
   const [showGameDialog, setShowGameDialog] = useState(false);
   const [showAllGamesDialog, setShowAllGamesDialog] = useState(false);
   const [showBadgesDialog, setShowBadgesDialog] = useState(false);
+  const [userRating, setUserRating] = useState(0);
   
   const equipmentTypes = ["Réplique principale", "Réplique secondaire", "Protection", "Accessoire"];
   
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // Récupérer le profil de l'utilisateur par son nom d'utilisateur
         const { data: userProfile, error: profileError } = await supabase
           .from('profiles')
           .select('*')
@@ -58,7 +58,6 @@ const UserProfile = () => {
           return;
         }
 
-        // Récupérer les statistiques de l'utilisateur
         const { data: stats, error: statsError } = await supabase
           .from('user_stats')
           .select('*')
@@ -69,7 +68,6 @@ const UserProfile = () => {
           throw statsError;
         }
 
-        // Récupérer l'équipement de l'utilisateur
         const { data: userEquipment, error: equipmentError } = await supabase
           .from('equipment')
           .select('*')
@@ -77,7 +75,6 @@ const UserProfile = () => {
 
         if (equipmentError) throw equipmentError;
 
-        // Récupérer les parties du joueur
         const { data: games, error: gamesError } = await supabase
           .from('game_participants')
           .select(`
@@ -97,7 +94,6 @@ const UserProfile = () => {
 
         if (gamesError) throw gamesError;
 
-        // Formater les données des parties
         let formattedGames = [];
         if (games && games.length > 0) {
           formattedGames = games.map(entry => ({
@@ -108,12 +104,11 @@ const UserProfile = () => {
             image: entry.games.image || '/placeholder.svg',
             role: entry.role,
             status: entry.games.status,
-            team: 'Indéfini', // Cette information pourrait être ajoutée plus tard
+            team: 'Indéfini',
             result: entry.status
           }));
         }
 
-        // Récupérer les badges du joueur
         const { data: badges, error: badgesError } = await supabase
           .from('user_badges')
           .select(`
@@ -131,7 +126,6 @@ const UserProfile = () => {
 
         if (badgesError) throw badgesError;
 
-        // Formater les données des badges
         let formattedBadges = [];
         if (badges && badges.length > 0) {
           formattedBadges = badges.map(entry => ({
@@ -145,7 +139,6 @@ const UserProfile = () => {
           }));
         }
 
-        // Si pas de données réelles, utilisez des données par défaut pour l'interface
         if (formattedGames.length === 0) {
           formattedGames = [
             {
@@ -166,7 +159,6 @@ const UserProfile = () => {
           formattedBadges = [];
         }
 
-        // Enrichir le profil avec les données supplémentaires
         const enrichedProfile = {
           ...userProfile,
           games: formattedGames,
@@ -254,7 +246,6 @@ const UserProfile = () => {
   };
   
   const fetchProfileData = async () => {
-    // Fonction fictive pour la compatibilité avec les props
     console.log("Fetching profile data for user ID:", profileData?.id);
     return true;
   };
@@ -295,15 +286,22 @@ const UserProfile = () => {
                   {isFollowing ? (
                     <>
                       <UserMinus className="mr-2 h-4 w-4" />
-                      Ne plus suivre
+                      Retirer des amis
                     </>
                   ) : (
                     <>
                       <UserPlus className="mr-2 h-4 w-4" />
-                      Suivre
+                      Ajouter en ami
                     </>
                   )}
                 </Button>
+                
+                <div className="flex items-center gap-2">
+                  <RatingStars
+                    rating={userRating}
+                    onRatingChange={setUserRating}
+                  />
+                </div>
                 
                 <ReportUserButton username={profileData.username} />
               </div>
