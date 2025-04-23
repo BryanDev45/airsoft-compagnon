@@ -123,7 +123,7 @@ const Header = () => {
         <div className="flex items-center">
           <Link to="/" className="flex items-center gap-2">
             <img src="/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png" alt="Airsoft Compagnon Logo" className="h-12" />
-            <span className="hidden md:block text-lg font-bold">Airsoft Compagnon</span>
+            <span className="hidden md:block text-lg font-bold" style={{ fontFamily: 'Agency FB, sans-serif' }}>Airsoft Compagnon</span>
           </Link>
         </div>
 

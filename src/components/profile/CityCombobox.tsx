@@ -122,7 +122,8 @@ export function ComboboxDemo({
                 {cities.length === 0 && searchTerm.length >= 2 && !isLoading && (
                   <CommandEmpty>Aucune ville trouvée.</CommandEmpty>
                 )}
-                {cities.map((city) => (
+                {/* Correction de l'itération : vérification que cities est un tableau */}
+                {Array.isArray(cities) && cities.map((city) => (
                   <CommandItem
                     key={city.fullName}
                     value={city.fullName}
