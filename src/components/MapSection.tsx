@@ -10,6 +10,7 @@ import MapComponent from './map/MapComponent';
 import EventCard from './map/EventCard';
 import MapFilters from './map/MapFilters';
 import { calculateDistance } from '../utils/mapUtils';
+
 const MapSection = () => {
   const mapContainer = useRef(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -20,7 +21,6 @@ const MapSection = () => {
   const [searchRadius, setSearchRadius] = useState([0]);
   const [searchCenter, setSearchCenter] = useState<[number, number]>([2.3522, 46.2276]);
 
-  // Country coordinates (centers)
   const countryCoordinates: Record<string, [number, number]> = {
     france: [2.3522, 46.2276],
     belgique: [4.3517, 50.8503],
@@ -30,7 +30,6 @@ const MapSection = () => {
     italie: [12.5674, 41.8719]
   };
 
-  // Simulons des données de parties d'airsoft
   const [events] = useState([{
     id: 1,
     title: "Partie CQB",
@@ -43,7 +42,7 @@ const MapSection = () => {
     lng: 2.3522,
     maxPlayers: 20,
     price: 15,
-    image: "/lovable-uploads/1cc60b94-2b6c-4e0e-9ab8-1bd1e8cb1098.png"
+    image: "/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png"
   }, {
     id: 2,
     title: "Milsim Forest",
@@ -56,7 +55,7 @@ const MapSection = () => {
     lng: 4.8357,
     maxPlayers: 30,
     price: 25,
-    image: "/lovable-uploads/24d6452d-2439-4baf-b334-41863a1077c5.png"
+    image: "/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png"
   }, {
     id: 3,
     title: "Partie nocturne",
@@ -69,7 +68,7 @@ const MapSection = () => {
     lng: 5.3698,
     maxPlayers: 15,
     price: 10,
-    image: "/lovable-uploads/381c6357-0426-45d3-8262-7b1be5c1bc96.png"
+    image: "/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png"
   }, {
     id: 4,
     title: "Open day",
@@ -82,7 +81,7 @@ const MapSection = () => {
     lng: -0.5792,
     maxPlayers: 25,
     price: 20,
-    image: "/lovable-uploads/3c025802-3046-4c34-ae5e-2328e941b479.png"
+    image: "/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png"
   }, {
     id: 5,
     title: "Tournoi 3v3",
@@ -95,10 +94,9 @@ const MapSection = () => {
     lng: 3.0573,
     maxPlayers: 10,
     price: 30,
-    image: "/lovable-uploads/84404d08-fa37-4317-80e0-d607d3676fd5.png"
+    image: "/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png"
   }]);
 
-  // Filtrer les événements en fonction des critères de recherche
   const filteredEvents = events.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) || event.location.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = selectedType === 'all' || event.type === selectedType;
@@ -106,12 +104,10 @@ const MapSection = () => {
     const matchesDate = !selectedDate || event.date.includes(selectedDate);
     const matchesCountry = selectedCountry === 'all' || event.country === selectedCountry;
 
-    // If search radius is 0, show all events filtered by other criteria
     if (searchRadius[0] === 0) {
       return matchesSearch && matchesType && matchesDepartment && matchesDate && matchesCountry;
     }
 
-    // Filter by distance if we have a search center and radius > 0
     if (searchCenter && searchRadius[0] > 0) {
       const distance = calculateDistance(searchCenter[1], searchCenter[0], event.lat, event.lng);
       return matchesSearch && matchesType && matchesDepartment && matchesDate && matchesCountry && distance <= searchRadius[0];
@@ -119,15 +115,12 @@ const MapSection = () => {
     return matchesSearch && matchesType && matchesDepartment && matchesDate && matchesCountry;
   });
 
-  // Function to geocode a location name to coordinates
   const geocodeLocation = async (locationName: string) => {
     if (!locationName) return null;
     try {
-      // Using OpenStreetMap Nominatim API for geocoding
       const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationName)}`);
       const data = await response.json();
       if (data && data.length > 0) {
-        // Use the first result
         const {
           lat,
           lon
@@ -141,7 +134,6 @@ const MapSection = () => {
     }
   };
 
-  // Fonction pour obtenir la position actuelle
   const getCurrentPosition = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(position => {
@@ -159,14 +151,12 @@ const MapSection = () => {
     }
   };
 
-  // Handle country selection change
   useEffect(() => {
     if (selectedCountry !== 'all' && countryCoordinates[selectedCountry]) {
       setSearchCenter(countryCoordinates[selectedCountry]);
     }
   }, [selectedCountry]);
 
-  // Handle search query changes
   useEffect(() => {
     const searchLocation = async () => {
       if (searchQuery) {
@@ -177,12 +167,12 @@ const MapSection = () => {
       }
     };
 
-    // Debounce search to avoid too many requests
     const timerId = setTimeout(() => {
       searchLocation();
     }, 500);
     return () => clearTimeout(timerId);
   }, [searchQuery]);
+
   return <div className="py-12 bg-gray-100 md:py-0">
       <div className="max-w-7xl mx-auto px-4 py-[30px]">
         <h2 className="text-3xl font-bold mb-8 text-center py-0">Trouvez votre prochaine partie</h2>
@@ -245,11 +235,11 @@ const MapSection = () => {
           </div>
         </div>
         
-        {/* Liste des événements */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
           {filteredEvents.map(event => <EventCard key={event.id} event={event} />)}
         </div>
       </div>
     </div>;
 };
+
 export default MapSection;
