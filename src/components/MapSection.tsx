@@ -189,7 +189,7 @@ const MapSection = () => {
         
         <div className="flex justify-end mb-6">
           <Link to="/parties/create">
-            <Button className="bg-airsoft-red hover:bg-red-700">
+            <Button className="bg-airsoft-red hover:bg-red-700 shadow-lg">
               <Plus className="mr-2 h-4 w-4" />
               Créer une partie
             </Button>
