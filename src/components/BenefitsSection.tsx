@@ -32,7 +32,7 @@ const BenefitsSection = () => {
           <div className="bg-airsoft-dark text-white p-6 md:p-10 rounded-lg mb-8 relative overflow-hidden shadow-xl transform hover:scale-[1.02] transition-transform">
             <div className="absolute inset-0">
               <img src="/lovable-uploads/84404d08-fa37-4317-80e0-d607d3676fd5.png" alt="Joueurs d'airsoft en équipement" className="object-cover w-full h-full opacity-30" />
-              <div className="absolute inset-0 bg-gradient-to-br from-airsoft-dark via-airsoft-dark/90 to-airsoft-dark/80"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-airsoft-dark via-airsoft-dark/60 to-airsoft-dark/50"></div>
             </div>
             
             <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
