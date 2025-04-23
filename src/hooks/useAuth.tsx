@@ -18,14 +18,14 @@ export const useAuth = () => {
         setUser(session?.user || null);
 
         if (event === 'SIGNED_IN') {
-          // Using setTimeout to avoid potential deadlocks with Supabase auth
+          // Utiliser setTimeout pour éviter les deadlocks potentiels
           setTimeout(() => {
             navigate('/profile');
           }, 0);
         }
         if (event === 'SIGNED_OUT') {
           setUser(null);
-          // Using setTimeout to avoid potential deadlocks with Supabase auth
+          // Utiliser setTimeout pour éviter les deadlocks potentiels
           setTimeout(() => {
             navigate('/login');
           }, 0);
@@ -60,6 +60,8 @@ export const useAuth = () => {
           title: "Connexion réussie",
           description: "Bienvenue sur Airsoft Compagnon",
         });
+        // Naviguer directement au lieu de laisser l'événement onAuthStateChange le faire
+        // Cela assure que la navigation se produise, même en cas de problème avec l'événement
         navigate('/profile');
         return true;
       } else {

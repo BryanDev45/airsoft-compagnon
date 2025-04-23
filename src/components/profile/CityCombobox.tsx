@@ -49,8 +49,16 @@ export function ComboboxDemo({
 
       setIsLoading(true);
       try {
+        // Utilisation de l'API geocoding avec mode CORS
         const response = await fetch(
-          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(debouncedSearchTerm)}&count=10&language=fr&format=json`
+          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(debouncedSearchTerm)}&count=10&language=fr&format=json`,
+          {
+            method: 'GET',
+            headers: {
+              'Accept': 'application/json',
+            },
+            mode: 'cors'
+          }
         );
         
         if (!response.ok) {
@@ -100,8 +108,10 @@ export function ComboboxDemo({
             placeholder="Rechercher une ville..." 
             value={searchTerm}
             onValueChange={setSearchTerm}
+            className="h-9"
+            autoFocus
           />
-          <CommandGroup>
+          <CommandGroup className="max-h-[200px] overflow-y-auto">
             {isLoading ? (
               <div className="flex items-center justify-center p-4">
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -109,7 +119,7 @@ export function ComboboxDemo({
               </div>
             ) : (
               <>
-                {cities.length === 0 && (
+                {cities.length === 0 && searchTerm.length >= 2 && !isLoading && (
                   <CommandEmpty>Aucune ville trouvée.</CommandEmpty>
                 )}
                 {cities.map((city) => (

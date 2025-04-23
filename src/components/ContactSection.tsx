@@ -17,7 +17,7 @@ const ContactSection = () => {
           />
         </div>
         
-        <div className="relative z-10">
+        <div className="relative z-10 flex flex-col items-center text-center">
           <div className="inline-block bg-airsoft-red px-4 py-1 rounded-full mb-4">
             <Users className="inline-block mr-2 h-5 w-5 text-white" />
             <span className="text-white font-semibold">Rejoignez-nous</span>
@@ -28,7 +28,7 @@ const ContactSection = () => {
             Retrouvez-nous sur les réseaux sociaux avec Facebook et Instagram afin d'être au courant des dernières actualités et de ne rien louper.
           </p>
           
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-4 justify-center">
             <Button 
               variant="outline" 
               className="bg-airsoft-red hover:bg-red-700 text-white border-white hover:bg-white hover:text-airsoft-red transition-colors flex items-center gap-2"
@@ -46,7 +46,7 @@ const ContactSection = () => {
             </a>
           </div>
           
-          <div className="mt-8 flex flex-col sm:flex-row gap-4">
+          <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/contact">
               <Button className="bg-airsoft-red text-white hover:bg-red-700 border border-white">
                 <Mail className="mr-2" size={18} />
