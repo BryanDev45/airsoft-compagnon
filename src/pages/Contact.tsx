@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import Header from '../components/Header';
@@ -10,7 +9,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Mail, Phone, MapPin, Send, MessageSquare, Clock, Users } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
-
 const Contact = () => {
   const form = useForm({
     defaultValues: {
@@ -20,27 +18,20 @@ const Contact = () => {
       message: ''
     }
   });
-  
   const onSubmit = (data: any) => {
     console.log(data);
     toast({
       title: "Message envoyé",
-      description: "Nous vous répondrons dans les plus brefs délais.",
+      description: "Nous vous répondrons dans les plus brefs délais."
     });
     form.reset();
   };
-  
-  return (
-    <div className="min-h-screen flex flex-col">
+  return <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow bg-gray-50">
         <div className="relative bg-airsoft-dark text-white py-16 mb-12">
           <div className="absolute inset-0 overflow-hidden">
-            <img 
-              src="/lovable-uploads/ae8f6590-a316-4f3b-a876-7ed8bdc03246.png" 
-              alt="Background" 
-              className="w-full h-full object-cover opacity-30"
-            />
+            <img src="/lovable-uploads/ae8f6590-a316-4f3b-a876-7ed8bdc03246.png" alt="Background" className="w-full h-full object-cover opacity-30" />
           </div>
           
           <div className="relative max-w-7xl mx-auto px-4 text-center">
@@ -66,17 +57,7 @@ const Contact = () => {
               </CardContent>
             </Card>
             
-            <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-              <CardContent className="p-6 flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-full bg-airsoft-red flex items-center justify-center mb-4 text-white">
-                  <Clock className="h-8 w-8" />
-                </div>
-                <h3 className="font-bold text-xl mb-2">Horaires</h3>
-                <p className="text-gray-600 mb-4">Support disponible</p>
-                <p className="font-medium">Lun-Ven: 9h00-18h00</p>
-                <p className="font-medium">Weekend: 10h00-16h00</p>
-              </CardContent>
-            </Card>
+            
             
             <Card className="overflow-hidden hover:shadow-lg transition-shadow">
               <CardContent className="p-6 flex flex-col items-center text-center">
@@ -108,67 +89,46 @@ const Contact = () => {
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-6">
-                    <FormField 
-                      control={form.control} 
-                      name="name" 
-                      render={({ field }) => (
-                        <FormItem>
+                    <FormField control={form.control} name="name" render={({
+                    field
+                  }) => <FormItem>
                           <FormLabel>Nom</FormLabel>
                           <FormControl>
                             <Input placeholder="Votre nom" {...field} required />
                           </FormControl>
                           <FormMessage />
-                        </FormItem>
-                      )} 
-                    />
+                        </FormItem>} />
                     
-                    <FormField 
-                      control={form.control} 
-                      name="email" 
-                      render={({ field }) => (
-                        <FormItem>
+                    <FormField control={form.control} name="email" render={({
+                    field
+                  }) => <FormItem>
                           <FormLabel>Email</FormLabel>
                           <FormControl>
                             <Input type="email" placeholder="Votre email" {...field} required />
                           </FormControl>
                           <FormMessage />
-                        </FormItem>
-                      )} 
-                    />
+                        </FormItem>} />
                   </div>
                   
-                  <FormField 
-                    control={form.control} 
-                    name="subject" 
-                    render={({ field }) => (
-                      <FormItem>
+                  <FormField control={form.control} name="subject" render={({
+                  field
+                }) => <FormItem>
                         <FormLabel>Sujet</FormLabel>
                         <FormControl>
                           <Input placeholder="Sujet de votre message" {...field} required />
                         </FormControl>
                         <FormMessage />
-                      </FormItem>
-                    )} 
-                  />
+                      </FormItem>} />
                   
-                  <FormField 
-                    control={form.control} 
-                    name="message" 
-                    render={({ field }) => (
-                      <FormItem>
+                  <FormField control={form.control} name="message" render={({
+                  field
+                }) => <FormItem>
                         <FormLabel>Message</FormLabel>
                         <FormControl>
-                          <textarea 
-                            className="flex min-h-[160px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
-                            placeholder="Votre message" 
-                            {...field} 
-                            required 
-                          />
+                          <textarea className="flex min-h-[160px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" placeholder="Votre message" {...field} required />
                         </FormControl>
                         <FormMessage />
-                      </FormItem>
-                    )} 
-                  />
+                      </FormItem>} />
                   
                   <Button type="submit" className="w-full bg-airsoft-red hover:bg-red-700 transition-colors">
                     <Send className="mr-2 h-5 w-5" /> Envoyer le message
@@ -179,11 +139,7 @@ const Contact = () => {
             
             <div className="bg-airsoft-dark text-white rounded-lg shadow-md p-8 relative overflow-hidden">
               <div className="absolute inset-0 opacity-20">
-                <img 
-                  src="/lovable-uploads/c7db344c-5322-45a9-9666-3b984775e92c.jpg" 
-                  alt="Background pattern" 
-                  className="w-full h-full object-cover"
-                />
+                <img src="/lovable-uploads/c7db344c-5322-45a9-9666-3b984775e92c.jpg" alt="Background pattern" className="w-full h-full object-cover" />
               </div>
               <div className="relative">
                 <h2 className="text-2xl font-bold mb-6">Foire aux questions</h2>
@@ -217,8 +173,6 @@ const Contact = () => {
         </div>
       </main>
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default Contact;
