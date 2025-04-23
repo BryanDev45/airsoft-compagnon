@@ -10,7 +10,6 @@ import MapComponent from './map/MapComponent';
 import EventCard from './map/EventCard';
 import MapFilters from './map/MapFilters';
 import { calculateDistance } from '../utils/mapUtils';
-
 const MapSection = () => {
   const mapContainer = useRef(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -18,8 +17,8 @@ const MapSection = () => {
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('france');
-  const [searchRadius, setSearchRadius] = useState([0]); 
-  const [searchCenter, setSearchCenter] = useState<[number, number]>([2.3522, 46.2276]); 
+  const [searchRadius, setSearchRadius] = useState([0]);
+  const [searchCenter, setSearchCenter] = useState<[number, number]>([2.3522, 46.2276]);
 
   // Country coordinates (centers)
   const countryCoordinates: Record<string, [number, number]> = {
@@ -101,46 +100,38 @@ const MapSection = () => {
 
   // Filtrer les événements en fonction des critères de recherche
   const filteredEvents = events.filter(event => {
-    const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                        event.location.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) || event.location.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = selectedType === 'all' || event.type === selectedType;
     const matchesDepartment = selectedDepartment === 'all' || event.department === selectedDepartment;
     const matchesDate = !selectedDate || event.date.includes(selectedDate);
     const matchesCountry = selectedCountry === 'all' || event.country === selectedCountry;
-    
+
     // If search radius is 0, show all events filtered by other criteria
     if (searchRadius[0] === 0) {
       return matchesSearch && matchesType && matchesDepartment && matchesDate && matchesCountry;
     }
-    
+
     // Filter by distance if we have a search center and radius > 0
     if (searchCenter && searchRadius[0] > 0) {
-      const distance = calculateDistance(
-        searchCenter[1], 
-        searchCenter[0], 
-        event.lat, 
-        event.lng
-      );
-      
-      return matchesSearch && matchesType && matchesDepartment && matchesDate && 
-             matchesCountry && distance <= searchRadius[0];
+      const distance = calculateDistance(searchCenter[1], searchCenter[0], event.lat, event.lng);
+      return matchesSearch && matchesType && matchesDepartment && matchesDate && matchesCountry && distance <= searchRadius[0];
     }
-    
     return matchesSearch && matchesType && matchesDepartment && matchesDate && matchesCountry;
   });
 
   // Function to geocode a location name to coordinates
   const geocodeLocation = async (locationName: string) => {
     if (!locationName) return null;
-    
     try {
       // Using OpenStreetMap Nominatim API for geocoding
       const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationName)}`);
       const data = await response.json();
-      
       if (data && data.length > 0) {
         // Use the first result
-        const { lat, lon } = data[0];
+        const {
+          lat,
+          lon
+        } = data[0];
         return [parseFloat(lon), parseFloat(lat)] as [number, number];
       }
       return null;
@@ -153,10 +144,13 @@ const MapSection = () => {
   // Fonction pour obtenir la position actuelle
   const getCurrentPosition = () => {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        const { latitude, longitude } = position.coords;
+      navigator.geolocation.getCurrentPosition(position => {
+        const {
+          latitude,
+          longitude
+        } = position.coords;
         setSearchCenter([longitude, latitude]);
-      }, (error) => {
+      }, error => {
         console.error("Erreur de géolocalisation:", error);
         alert("Impossible d'obtenir votre position actuelle. Veuillez vérifier vos paramètres de localisation.");
       });
@@ -182,19 +176,16 @@ const MapSection = () => {
         }
       }
     };
-    
+
     // Debounce search to avoid too many requests
     const timerId = setTimeout(() => {
       searchLocation();
     }, 500);
-    
     return () => clearTimeout(timerId);
   }, [searchQuery]);
-  
-  return (
-    <div className="py-12 md:py-16 bg-gray-100">
+  return <div className="py-12 bg-gray-100 md:py-0">
       <div className="max-w-7xl mx-auto px-4">
-        <h2 className="text-3xl font-bold mb-8 text-center">Trouvez votre prochaine partie</h2>
+        <h2 className="text-3xl font-bold mb-8 text-center py-[10px]">Trouvez votre prochaine partie</h2>
         
         <div className="flex justify-end mb-6">
           <Link to="/parties/create">
@@ -224,19 +215,7 @@ const MapSection = () => {
                 </Button>
               </div>
               
-              <MapFilters 
-                selectedCountry={selectedCountry}
-                setSelectedCountry={setSelectedCountry}
-                selectedDepartment={selectedDepartment}
-                setSelectedDepartment={setSelectedDepartment}
-                selectedType={selectedType}
-                setSelectedType={setSelectedType}
-                selectedDate={selectedDate}
-                setSelectedDate={setSelectedDate}
-                searchRadius={searchRadius}
-                setSearchRadius={setSearchRadius}
-                getCurrentPosition={getCurrentPosition}
-              />
+              <MapFilters selectedCountry={selectedCountry} setSelectedCountry={setSelectedCountry} selectedDepartment={selectedDepartment} setSelectedDepartment={setSelectedDepartment} selectedType={selectedType} setSelectedType={setSelectedType} selectedDate={selectedDate} setSelectedDate={setSelectedDate} searchRadius={searchRadius} setSearchRadius={setSearchRadius} getCurrentPosition={getCurrentPosition} />
 
               <div className="pt-4">
                 <p className="text-sm mb-2">{filteredEvents.length} parties trouvées</p>
@@ -261,24 +240,16 @@ const MapSection = () => {
             </div>
             
             <div className="w-full md:w-3/4 h-[600px] relative">
-              <MapComponent 
-                searchCenter={searchCenter}
-                searchRadius={searchRadius[0]} 
-                filteredEvents={filteredEvents}
-              />
+              <MapComponent searchCenter={searchCenter} searchRadius={searchRadius[0]} filteredEvents={filteredEvents} />
             </div>
           </div>
         </div>
         
         {/* Liste des événements */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-          {filteredEvents.map(event => (
-            <EventCard key={event.id} event={event} />
-          ))}
+          {filteredEvents.map(event => <EventCard key={event.id} event={event} />)}
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default MapSection;

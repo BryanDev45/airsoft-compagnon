@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Header from '../components/Header';
 import Hero from '../components/Hero';
@@ -6,14 +5,12 @@ import MapSection from '../components/MapSection';
 import BenefitsSection from '../components/BenefitsSection';
 import ContactSection from '../components/ContactSection';
 import Footer from '../components/Footer';
-
 const Index = () => {
-  return (
-    <div className="min-h-screen flex flex-col">
+  return <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow">
         <Hero />
-        <div className="py-12 bg-white">
+        <div className="bg-white py-[40px]">
           <div className="max-w-4xl mx-auto px-4 text-center">
             <h2 className="text-3xl font-bold mb-6">Airsoft compagnon, c'est quoi ?</h2>
             <p className="text-lg text-gray-700 mb-4">
@@ -33,8 +30,6 @@ const Index = () => {
         <ContactSection />
       </main>
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
