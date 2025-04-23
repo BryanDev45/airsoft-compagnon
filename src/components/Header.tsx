@@ -118,7 +118,7 @@ const Header = () => {
             <img src="/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png" alt="Airsoft Compagnon Logo" className="h-12" />
             <span style={{
             fontFamily: 'Agency FB, sans-serif'
-          }} className="hidden md:block font-bold text-2xl">Airsoft Compagnon</span>
+          }} className="hidden md:block font-bold text-3xl">Airsoft Compagnon</span>
           </Link>
         </div>
 
