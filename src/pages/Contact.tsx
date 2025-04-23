@@ -161,7 +161,7 @@ const Contact = () => {
                   
                   <div className="mt-8">
                     <Button variant="outline" className="text-white border-white hover:bg-white hover:text-airsoft-dark" asChild>
-                      <a href="/faq">
+                      <a href="/faq" className="w-full bg-airsoft-red hover:bg-red-700 transition-colors">
                         Voir toutes les questions fréquentes
                       </a>
                     </Button>
