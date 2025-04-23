@@ -37,7 +37,7 @@ const BenefitsSection = () => {
             
             <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
               <div className="md:w-1/3 lg:w-1/4 mb-6 md:mb-0 transform -rotate-3 hover:rotate-0 transition-transform duration-300">
-                <img src="/lovable-uploads/84404d08-fa37-4317-80e0-d607d3676fd5.png" alt="Joueurs d'airsoft en équipement" className="rounded-lg shadow-lg border-4 border-white/10" />
+                <img alt="Joueurs d'airsoft en équipement" className="rounded-lg shadow-lg border-4 border-white/10" src="/lovable-uploads/c7db344c-5322-45a9-9666-3b984775e92c.jpg" />
               </div>
               
               <div className="relative z-10 max-w-2xl">
