@@ -16,6 +16,8 @@ interface MapFiltersProps {
   searchRadius: number[];
   setSearchRadius: (value: number[]) => void;
   getCurrentPosition: () => void;
+  selectedType?: string;
+  setSelectedType?: (value: string) => void;
 }
 
 const MapFilters: React.FC<MapFiltersProps> = ({
@@ -27,7 +29,9 @@ const MapFilters: React.FC<MapFiltersProps> = ({
   setSelectedDate,
   searchRadius,
   setSearchRadius,
-  getCurrentPosition
+  getCurrentPosition,
+  selectedType,
+  setSelectedType
 }) => {
   return (
     <div className="space-y-4">

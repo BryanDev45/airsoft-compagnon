@@ -205,7 +205,17 @@ const MapSection = () => {
                 </Button>
               </div>
               
-              <MapFilters selectedCountry={selectedCountry} setSelectedCountry={setSelectedCountry} selectedDepartment={selectedDepartment} setSelectedDepartment={setSelectedDepartment} selectedType={selectedType} setSelectedType={setSelectedType} selectedDate={selectedDate} setSelectedDate={setSelectedDate} searchRadius={searchRadius} setSearchRadius={setSearchRadius} getCurrentPosition={getCurrentPosition} />
+              <MapFilters 
+                selectedCountry={selectedCountry} 
+                setSelectedCountry={setSelectedCountry} 
+                selectedDepartment={selectedDepartment} 
+                setSelectedDepartment={setSelectedDepartment} 
+                selectedDate={selectedDate} 
+                setSelectedDate={setSelectedDate} 
+                searchRadius={searchRadius} 
+                setSearchRadius={setSearchRadius} 
+                getCurrentPosition={getCurrentPosition} 
+              />
 
               <div className="pt-4">
                 <p className="text-sm mb-2">{filteredEvents.length} parties trouvées</p>

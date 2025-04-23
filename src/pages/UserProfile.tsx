@@ -15,7 +15,7 @@ import ProfileDialogs from '../components/profile/ProfileDialogs';
 import ReportUserButton from '../components/profile/ReportUserButton';
 import { Button } from "@/components/ui/button";
 import { UserPlus, UserMinus } from "lucide-react";
-import RatingStars from '../components/RatingStars';
+import RatingStars from '../components/profile/RatingStars';
 
 const UserProfile = () => {
   const { username } = useParams();

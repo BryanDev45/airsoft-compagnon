@@ -212,8 +212,6 @@ const MapSection = () => {
                 setSelectedCountry={setSelectedCountry}
                 selectedDepartment={selectedDepartment}
                 setSelectedDepartment={setSelectedDepartment}
-                selectedType={selectedType}
-                setSelectedType={setSelectedType}
                 selectedDate={selectedDate}
                 setSelectedDate={setSelectedDate}
                 searchRadius={searchRadius}
