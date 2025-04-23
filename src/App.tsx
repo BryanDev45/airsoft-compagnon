@@ -11,6 +11,7 @@ import UserProfile from './pages/UserProfile';
 import Contact from './pages/Contact';
 import Parties from './pages/Parties';
 import GameDetails from './pages/GameDetails';
+import Partners from './pages/Partners';
 import NotFound from './pages/NotFound';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfUse from './pages/TermsOfUse';
@@ -64,6 +65,7 @@ function App() {
         <Route path="/parties" element={<Parties />} />
         <Route path="/parties/create" element={<CreateParty />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/partners" element={<Partners />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/reset-password" element={<ResetPassword />} />

@@ -49,8 +49,9 @@ export function ComboboxDemo({
 
       setIsLoading(true);
       try {
+        // Utiliser l'API GeoNames pour la recherche de villes
         const response = await fetch(
-          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(debouncedSearchTerm)}&count=10&language=fr&format=json`
+          `https://secure.geonames.org/searchJSON?name_startsWith=${encodeURIComponent(debouncedSearchTerm)}&featureClass=P&maxRows=10&username=airsoftcompagnon&lang=fr`
         );
         
         if (!response.ok) {
@@ -59,11 +60,11 @@ export function ComboboxDemo({
         
         const data = await response.json();
         
-        if (data && data.results) {
-          const formattedCities = data.results.map((city: any) => ({
+        if (data && data.geonames) {
+          const formattedCities = data.geonames.map((city: any) => ({
             name: city.name || '',
-            country: city.country || '',
-            fullName: `${city.name || ''}, ${city.country || ''}`
+            country: city.countryName || '',
+            fullName: `${city.name || ''}, ${city.countryName || ''}`
           }));
           setCities(formattedCities);
         } else {
@@ -109,7 +110,7 @@ export function ComboboxDemo({
                 <span className="ml-2">Recherche en cours...</span>
               </div>
             ) : (
-              cities.map((city) => (
+              cities && cities.length > 0 ? cities.map((city) => (
                 <CommandItem
                   key={city.fullName}
                   value={city.fullName}
@@ -127,7 +128,7 @@ export function ComboboxDemo({
                   />
                   {city.fullName}
                 </CommandItem>
-              ))
+              )) : null
             )}
           </CommandGroup>
         </Command>
