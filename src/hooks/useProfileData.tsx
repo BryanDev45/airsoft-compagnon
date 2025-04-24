@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,17 +10,11 @@ export const useProfileData = (userId: string | undefined) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    let isMounted = true; // Éviter les problèmes de race condition lors du démontage du composant
-    
     if (userId) {
       fetchProfileData();
     } else {
       setLoading(false);
     }
-    
-    return () => {
-      isMounted = false; // Indiquer que le composant est démonté
-    };
   }, [userId]);
 
   const fetchProfileData = async () => {
@@ -107,8 +100,6 @@ export const useProfileData = (userId: string | undefined) => {
       } else {
         setUserStats(stats);
       }
-      
-      setLoading(false);
     } catch (error: any) {
       console.error("Erreur lors du chargement des données:", error);
       toast({
@@ -116,6 +107,7 @@ export const useProfileData = (userId: string | undefined) => {
         description: "Impossible de charger les données du profil",
         variant: "destructive",
       });
+    } finally {
       setLoading(false);
     }
   };
@@ -124,12 +116,10 @@ export const useProfileData = (userId: string | undefined) => {
     if (!userId) return false;
     
     try {
-      // Utiliser la fonction RPC pour mettre à jour la localisation
       const { error } = await supabase
-        .rpc('update_user_location', {
-          p_user_id: userId,
-          p_location: location
-        });
+        .from('profiles')
+        .update({ location })
+        .eq('id', userId);
 
       if (error) throw error;
 
@@ -158,20 +148,23 @@ export const useProfileData = (userId: string | undefined) => {
     try {
       console.log("Mise à jour des statistiques:", preferredGameType, favoriteRole, level);
       
-      // Utiliser la fonction RPC pour mettre à jour les statistiques
+      // Mise à jour dans la base de données
       const { error } = await supabase
-        .rpc('update_user_stats', {
-          p_user_id: userId,
-          p_preferred_game_type: preferredGameType,
-          p_favorite_role: favoriteRole
-        });
+        .from('user_stats')
+        .update({
+          preferred_game_type: preferredGameType,
+          favorite_role: favoriteRole,
+          level: level,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', userId);
 
       if (error) {
         console.error("Erreur Supabase:", error);
         throw error;
       }
 
-      // Mise à jour du state local
+      // Mise à jour du state
       setUserStats(prev => ({
         ...prev,
         preferred_game_type: preferredGameType,

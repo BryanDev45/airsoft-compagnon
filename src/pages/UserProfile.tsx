@@ -3,12 +3,20 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
 import ProfileHeader from '../components/profile/ProfileHeader';
+import ProfileInfo from '../components/profile/ProfileInfo';
+import ProfileGames from '../components/profile/ProfileGames';
+import ProfileStats from '../components/profile/ProfileStats';
+import ProfileEquipment from '../components/profile/ProfileEquipment';
+import ProfileBadges from '../components/profile/ProfileBadges';
 import ProfileDialogs from '../components/profile/ProfileDialogs';
-import ProfileTabs from '../components/profile/ProfileTabs';
-import RatingControls from '../components/profile/RatingControls';
+import ReportUserButton from '../components/profile/ReportUserButton';
+import { Button } from "@/components/ui/button";
+import { UserPlus, UserMinus, Check } from "lucide-react";
+import RatingStars from '../components/profile/RatingStars';
 
 const UserProfile = () => {
   const { username } = useParams();
@@ -78,34 +86,16 @@ const UserProfile = () => {
             setFriendRequestSent(friendship.status === 'pending');
           }
           
-          // Check if the user has rated this profile
-          try {
-            // Using fetch to directly call the function without RPC
-            const response = await fetch(
-              `https://raolbrsijdjnilvkbvgj.supabase.co/rest/v1/rpc/get_user_rating`,
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhb2xicnNpamRqbmlsdmtidmdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5ODA4MTYsImV4cCI6MjA2MDU1NjgxNn0.HnfsKbtzmhxSdv-6ga8usutUXVEPDf6n80EUeAK5xCU',
-                  'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
-                },
-                body: JSON.stringify({
-                  p_rater_id: currentUserId,
-                  p_rated_id: userProfile.id
-                })
-              }
-            );
+          // Use raw query for the table that's not in types yet
+          const { data: ratings, error: ratingsError } = await supabase
+            .rpc('get_user_rating', { 
+              p_rater_id: currentUserId, 
+              p_rated_id: userProfile.id 
+            });
             
-            if (response.ok) {
-              const data = await response.json();
-              if (data !== null) {
-                setUserRating(data);
-                setHasRated(true);
-              }
-            }
-          } catch (ratingError) {
-            console.error("Error fetching rating:", ratingError);
+          if (!ratingsError && ratings) {
+            setUserRating(ratings);
+            setHasRated(true);
           }
         }
 
@@ -332,94 +322,42 @@ const UserProfile = () => {
     }
 
     try {
+      // Use direct RPC calls to avoid type issues
       if (hasRated) {
-        try {
-          // Using fetch to directly call the function without RPC
-          const response = await fetch(
-            `https://raolbrsijdjnilvkbvgj.supabase.co/rest/v1/rpc/update_user_rating`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhb2xicnNpamRqbmlsdmtidmdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5ODA4MTYsImV4cCI6MjA2MDU1NjgxNn0.HnfsKbtzmhxSdv-6ga8usutUXVEPDf6n80EUeAK5xCU',
-                'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
-              },
-              body: JSON.stringify({
-                p_rater_id: currentUserId,
-                p_rated_id: userData.id,
-                p_rating: rating
-              })
-            }
-          );
+        const { error } = await supabase
+          .rpc('update_user_rating', { 
+            p_rater_id: currentUserId, 
+            p_rated_id: userData.id, 
+            p_rating: rating 
+          });
           
-          if (!response.ok) {
-            throw new Error(`Error updating rating: ${response.status}`);
-          }
-        } catch (error) {
-          console.error("Error updating rating:", error);
-          throw error;
-        }
+        if (error) throw error;
       } else {
-        try {
-          // Using fetch to directly call the function without RPC
-          const response = await fetch(
-            `https://raolbrsijdjnilvkbvgj.supabase.co/rest/v1/rpc/insert_user_rating`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhb2xicnNpamRqbmlsdmtidmdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5ODA4MTYsImV4cCI6MjA2MDU1NjgxNn0.HnfsKbtzmhxSdv-6ga8usutUXVEPDf6n80EUeAK5xCU',
-                'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
-              },
-              body: JSON.stringify({
-                p_rater_id: currentUserId,
-                p_rated_id: userData.id,
-                p_rating: rating
-              })
-            }
-          );
+        const { error } = await supabase
+          .rpc('insert_user_rating', { 
+            p_rater_id: currentUserId, 
+            p_rated_id: userData.id, 
+            p_rating: rating 
+          });
           
-          if (!response.ok) {
-            throw new Error(`Error inserting rating: ${response.status}`);
-          }
-          
-          setHasRated(true);
-        } catch (error) {
-          console.error("Error inserting rating:", error);
-          throw error;
-        }
+        if (error) throw error;
+        setHasRated(true);
       }
 
       setUserRating(rating);
       
-      try {
-        // Using fetch to directly call the function without RPC
-        const response = await fetch(
-          `https://raolbrsijdjnilvkbvgj.supabase.co/rest/v1/rpc/get_average_rating`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhb2xicnNpamRqbmlsdmtidmdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5ODA4MTYsImV4cCI6MjA2MDU1NjgxNn0.HnfsKbtzmhxSdv-6ga8usutUXVEPDf6n80EUeAK5xCU',
-              'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
-            },
-            body: JSON.stringify({
-              p_user_id: userData.id
-            })
-          }
-        );
-        
-        if (response.ok) {
-          const avgRating = await response.json();
-          if (avgRating !== null) {
-            setProfileData(prev => ({
-              ...prev,
-              reputation: avgRating
-            }));
-          }
+      // Update average reputation
+      const { data: avgRating, error: avgError } = await supabase
+        .rpc('get_average_rating', { p_user_id: userData.id });
+      
+      if (!avgError && avgRating !== null) {
+        // Update profile data locally
+        if (profileData) {
+          setProfileData({
+            ...profileData,
+            reputation: avgRating
+          });
         }
-      } catch (error) {
-        console.error("Error getting average rating:", error);
       }
       
       toast({
@@ -446,19 +384,38 @@ const UserProfile = () => {
     }
   };
 
-  // Add needed functions that were missing from the refactor
-  const updateLocation = async (location: string): Promise<boolean> => {
-    // This is just a placeholder as it's not used in the UserProfile context
+  const setEditing = () => {
+    toast({
+      title: "Information",
+      description: "Cette fonction n'est pas disponible sur les profils des autres utilisateurs.",
+    });
+  };
+
+  const toggleProfileSettings = () => {
+    toast({
+      title: "Information",
+      description: "Cette fonction n'est pas disponible sur les profils des autres utilisateurs.",
+    });
+  };
+
+  const onEditBio = () => {
+    toast({
+      title: "Information",
+      description: "Cette fonction n'est pas disponible sur les profils des autres utilisateurs.",
+    });
+  };
+
+  const updateLocation = async () => {
+    return false;
+  };
+
+  const updateUserStats = async () => {
     return false;
   };
   
-  const updateUserStats = async (gameType: string, role: string, level: string): Promise<boolean> => {
-    // This is just a placeholder as it's not used in the UserProfile context
-    return false;
-  };
-  
-  const fetchProfileData = async (): Promise<void> => {
-    // This is just a placeholder as it's not used in the UserProfile context
+  const fetchProfileData = async () => {
+    console.log("Fetching profile data for user ID:", profileData?.id);
+    return true;
   };
 
   if (loading) {
@@ -483,37 +440,103 @@ const UserProfile = () => {
               <ProfileHeader 
                 user={profileData} 
                 isOwnProfile={false}
-                setEditing={() => toast({ description: "Cette fonction n'est pas disponible sur les profils des autres utilisateurs." })}
-                toggleProfileSettings={() => toast({ description: "Cette fonction n'est pas disponible sur les profils des autres utilisateurs." })}
-                onEditBio={() => toast({ description: "Cette fonction n'est pas disponible sur les profils des autres utilisateurs." })}
+                setEditing={setEditing}
+                toggleProfileSettings={toggleProfileSettings}
+                onEditBio={onEditBio}
               />
               
-              <RatingControls 
-                currentUserId={currentUserId}
-                userData={userData}
-                isFollowing={isFollowing}
-                friendRequestSent={friendRequestSent}
-                userRating={userRating}
-                handleFollowUser={handleFollowUser}
-                handleRatingChange={handleRatingChange}
-              />
+              <div className="absolute top-4 right-4 flex space-x-2">
+                {currentUserId && currentUserId !== userData?.id && (
+                  <Button 
+                    onClick={handleFollowUser}
+                    variant={isFollowing || friendRequestSent ? "outline" : "default"}
+                    className={isFollowing || friendRequestSent ? "bg-white text-black border-gray-300" : "bg-airsoft-red text-white"}
+                  >
+                    {isFollowing ? (
+                      <>
+                        <UserMinus className="mr-2 h-4 w-4" />
+                        Retirer des amis
+                      </>
+                    ) : friendRequestSent ? (
+                      <>
+                        <Check className="mr-2 h-4 w-4" />
+                        Demande envoyée
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="mr-2 h-4 w-4" />
+                        Ajouter en ami
+                      </>
+                    )}
+                  </Button>
+                )}
+                
+                <div className="flex items-center gap-2">
+                  <RatingStars
+                    rating={userRating}
+                    onRatingChange={handleRatingChange}
+                    readonly={!currentUserId || currentUserId === userData?.id}
+                  />
+                </div>
+                
+                <ReportUserButton username={profileData?.username} />
+              </div>
             </div>
             
-            <ProfileTabs 
-              userData={userData}
-              profileData={profileData}
-              userStats={userStats}
-              equipment={equipment}
-              equipmentTypes={equipmentTypes}
-              updateLocation={updateLocation}
-              updateUserStats={updateUserStats}
-              fetchProfileData={fetchProfileData}
-              handleNavigateToTeam={handleNavigateToTeam}
-              setSelectedGame={setSelectedGame}
-              setShowGameDialog={setShowGameDialog}
-              setShowAllGamesDialog={setShowAllGamesDialog}
-              setShowBadgesDialog={setShowBadgesDialog}
-            />
+            <div className="p-6">
+              <Tabs defaultValue="profile">
+                <TabsList className="mb-6">
+                  <TabsTrigger value="profile">Profil</TabsTrigger>
+                  <TabsTrigger value="games">Parties</TabsTrigger>
+                  <TabsTrigger value="stats">Statistiques</TabsTrigger>
+                  <TabsTrigger value="equipment">Équipement</TabsTrigger>
+                  <TabsTrigger value="badges">Badges</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="profile">
+                  <ProfileInfo 
+                    user={userData} 
+                    profileData={profileData}
+                    updateLocation={updateLocation}
+                    handleNavigateToTeam={handleNavigateToTeam}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="games">
+                  <ProfileGames 
+                    games={userGames} 
+                    handleViewGameDetails={(game) => {
+                      setSelectedGame(game);
+                      setShowGameDialog(true);
+                    }} 
+                    handleViewAllGames={() => setShowAllGamesDialog(true)} 
+                  />
+                </TabsContent>
+                
+                <TabsContent value="stats">
+                  <ProfileStats 
+                    userStats={userStats}
+                    updateUserStats={updateUserStats}
+                    fetchProfileData={fetchProfileData}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="equipment">
+                  <ProfileEquipment 
+                    equipment={equipment} 
+                    equipmentTypes={equipmentTypes}
+                    readOnly={true}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="badges">
+                  <ProfileBadges 
+                    badges={userBadges} 
+                    handleViewAllBadges={() => setShowBadgesDialog(true)} 
+                  />
+                </TabsContent>
+              </Tabs>
+            </div>
           </div>
         </div>
       </main>

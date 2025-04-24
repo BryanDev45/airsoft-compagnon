@@ -240,11 +240,7 @@ const MapSection = () => {
             </div>
             
             <div className="w-full md:w-3/4 h-[600px] relative">
-              <MapComponent 
-                searchCenter={searchCenter} 
-                searchRadius={searchRadius[0]} 
-                filteredEvents={filteredEvents} 
-              />
+              <MapComponent searchCenter={searchCenter} searchRadius={searchRadius[0]} filteredEvents={filteredEvents} />
             </div>
           </div>
         </div>

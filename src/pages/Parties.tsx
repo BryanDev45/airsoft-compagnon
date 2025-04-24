@@ -14,13 +14,13 @@ import TeamSearchResults from '../components/search/TeamSearchResults';
 import MapComponent from '../components/map/MapComponent';
 import { useAuth } from '../hooks/useAuth';
 
+// This component will automatically scroll to top on mount
 const ScrollToTop = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
   return null;
 };
-
 const Recherche = () => {
   const navigate = useNavigate();
   const {
@@ -45,7 +45,6 @@ const Recherche = () => {
       navigate('/login');
     }
   };
-
   return <div className="min-h-screen flex flex-col">
       <ScrollToTop />
       <Header />
@@ -133,11 +132,7 @@ const Recherche = () => {
                     </div>
                     
                     <div className="h-[600px] rounded-lg overflow-hidden">
-                      <MapComponent 
-                        searchCenter={searchCenter} 
-                        searchRadius={0} 
-                        filteredEvents={[]} 
-                      />
+                      <MapComponent searchCenter={searchCenter} searchRadius={0} filteredEvents={[]} />
                     </div>
                   </CardContent>
                 </Card>
@@ -149,5 +144,4 @@ const Recherche = () => {
       <Footer />
     </div>;
 };
-
 export default Recherche;
