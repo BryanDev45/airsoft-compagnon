@@ -14,7 +14,7 @@ import Point from 'ol/geom/Point';
 import { Style, Icon } from 'ol/style';
 
 interface LocationMapProps {
-  location: string;
+  location?: string;
   coordinates?: [number, number]; // Optional explicit coordinates
 }
 

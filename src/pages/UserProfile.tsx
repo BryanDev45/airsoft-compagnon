@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -86,15 +85,15 @@ const UserProfile = () => {
             setFriendRequestSent(friendship.status === 'pending');
           }
           
-          // Use direct RPC call
           const { data: ratingData, error: ratingError } = await supabase
-            .rpc('get_user_rating', { 
-              p_rater_id: currentUserId, 
-              p_rated_id: userProfile.id 
-            });
+            .from('user_ratings')
+            .select('rating')
+            .eq('rater_id', currentUserId)
+            .eq('rated_id', userProfile.id)
+            .maybeSingle();
             
-          if (!ratingError && ratingData !== null) {
-            setUserRating(ratingData);
+          if (!ratingError && ratingData) {
+            setUserRating(ratingData.rating);
             setHasRated(true);
           }
         }
@@ -322,23 +321,22 @@ const UserProfile = () => {
     }
 
     try {
-      // Use direct RPC calls
       if (hasRated) {
-        // Update existing rating
-        const { error } = await supabase.rpc('update_user_rating', { 
-          p_rater_id: currentUserId, 
-          p_rated_id: userData.id, 
-          p_rating: rating 
-        });
+        const { error } = await supabase
+          .from('user_ratings')
+          .update({ rating })
+          .eq('rater_id', currentUserId)
+          .eq('rated_id', userData.id);
           
         if (error) throw error;
       } else {
-        // Insert new rating
-        const { error } = await supabase.rpc('insert_user_rating', { 
-          p_rater_id: currentUserId, 
-          p_rated_id: userData.id, 
-          p_rating: rating 
-        });
+        const { error } = await supabase
+          .from('user_ratings')
+          .insert({
+            rater_id: currentUserId,
+            rated_id: userData.id,
+            rating: rating
+          });
           
         if (error) throw error;
         setHasRated(true);
@@ -346,12 +344,14 @@ const UserProfile = () => {
 
       setUserRating(rating);
       
-      // Update average reputation
-      const { data: avgRating, error: avgError } = await supabase
-        .rpc('get_average_rating', { p_user_id: userData.id });
+      const { data: avgRatings, error: avgError } = await supabase
+        .from('user_ratings')
+        .select('rating')
+        .eq('rated_id', userData.id);
       
-      if (!avgError && avgRating !== null) {
-        // Update profile data locally
+      if (!avgError && avgRatings) {
+        const avgRating = avgRatings.reduce((sum, item) => sum + item.rating, 0) / avgRatings.length;
+        
         if (profileData) {
           setProfileData({
             ...profileData,

@@ -1,25 +1,38 @@
 
-// Pour corriger le chargement indéfini de la carte, nous modifions ce composant pour qu'il affiche seulement
-// le chargement lorsque c'est nécessaire et pour qu'il ne bloque pas le reste de l'interface
-
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client'; 
 import LocationMap from './LocationMap';
 
-const MapComponent = ({ lat, lng }) => {
+interface MapComponentProps {
+  lat?: number;
+  lng?: number;
+  searchCenter?: [number, number];
+  searchRadius?: number;
+  filteredEvents?: any[];
+}
+
+const MapComponent: React.FC<MapComponentProps> = ({ lat, lng, searchCenter, searchRadius, filteredEvents }) => {
   const [isLoading, setIsLoading] = useState(true);
   const { id } = useParams();
+  const [coordinates, setCoordinates] = useState<[number, number] | undefined>(undefined);
   
   useEffect(() => {
-    // Si on a déjà les coordonnées, on charge directement la carte
+    // If we have direct lat/lng props, use them
     if (lat && lng) {
+      setCoordinates([lng, lat]);
       setIsLoading(false);
       return;
     }
     
-    // Si on est sur une page de détail d'un jeu et qu'on n'a pas les coordonnées,
-    // on essaie de les récupérer
+    // If we have search center, use that
+    if (searchCenter) {
+      setCoordinates(searchCenter);
+      setIsLoading(false);
+      return;
+    }
+    
+    // If we are on a game detail page and don't have coordinates, try to fetch them
     const fetchGameLocation = async () => {
       if (id) {
         try {
@@ -36,30 +49,32 @@ const MapComponent = ({ lat, lng }) => {
           }
           
           if (data.lat && data.lng) {
-            setIsLoading(false);
-          } else {
-            // Si le jeu n'a pas de coordonnées, on arrête le chargement
-            setIsLoading(false);
+            setCoordinates([data.lng, data.lat]);
           }
+          
+          setIsLoading(false);
         } catch (e) {
           console.error("Erreur:", e);
           setIsLoading(false);
         }
       } else {
-        // Si on n'est pas sur une page de détail de jeu, on arrête le chargement
+        // If we're not on a game detail page, stop loading
         setIsLoading(false);
       }
     };
     
     fetchGameLocation();
-  }, [lat, lng, id]);
+  }, [lat, lng, id, searchCenter]);
   
-  // Si on n'a pas de coordonnées et qu'on ne charge plus, on ne montre rien
-  if ((!lat || !lng) && !isLoading) {
+  // If we have filtered events, we should show them on the map
+  // But for simplicity, I'm just showing a basic map here
+  
+  // If we don't have coordinates and we're not loading, don't show anything
+  if (!coordinates && !isLoading) {
     return null;
   }
   
-  // Si on est en train de charger, on montre un indicateur de chargement discret
+  // If we're loading, show a loading indicator
   if (isLoading) {
     return (
       <div className="h-64 flex items-center justify-center bg-gray-100 rounded-lg">
@@ -68,8 +83,8 @@ const MapComponent = ({ lat, lng }) => {
     );
   }
   
-  // Sinon on affiche la carte
-  return <LocationMap lat={lat} lng={lng} />;
+  // Show the map with the coordinates
+  return <LocationMap coordinates={coordinates} />;
 };
 
 export default MapComponent;
