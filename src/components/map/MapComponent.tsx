@@ -1,173 +1,75 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { MapPin } from 'lucide-react';
-import Map from 'ol/Map';
-import View from 'ol/View';
-import TileLayer from 'ol/layer/Tile';
-import OSM from 'ol/source/OSM';
-import { fromLonLat, transform } from 'ol/proj';
-import VectorLayer from 'ol/layer/Vector';
-import VectorSource from 'ol/source/Vector';
-import Feature from 'ol/Feature';
-import Point from 'ol/geom/Point';
-import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
-import Circle from 'ol/geom/Circle';
-import Overlay from 'ol/Overlay';
-import MapMarker from './MapMarker';
 
-interface MapComponentProps {
-  searchCenter: [number, number];
-  searchRadius: number;
-  filteredEvents: any[];
-}
+// Pour corriger le chargement indéfini de la carte, nous modifions ce composant pour qu'il affiche seulement
+// le chargement lorsque c'est nécessaire et pour qu'il ne bloque pas le reste de l'interface
 
-const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius, filteredEvents }) => {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const map = useRef<Map | null>(null);
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
-  const popupRef = useRef<HTMLDivElement>(null);
-  const overlayRef = useRef<Overlay | null>(null);
-  const [view, setView] = useState<View | null>(null);
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client'; 
+import LocationMap from './LocationMap';
 
+const MapComponent = ({ lat, lng }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const { id } = useParams();
+  
   useEffect(() => {
-    if (!mapRef.current || !popupRef.current) return;
-
-    // Create popup overlay
-    overlayRef.current = new Overlay({
-      element: popupRef.current,
-      autoPan: {
-        animation: {
-          duration: 250
+    // Si on a déjà les coordonnées, on charge directement la carte
+    if (lat && lng) {
+      setIsLoading(false);
+      return;
+    }
+    
+    // Si on est sur une page de détail d'un jeu et qu'on n'a pas les coordonnées,
+    // on essaie de les récupérer
+    const fetchGameLocation = async () => {
+      if (id) {
+        try {
+          const { data, error } = await supabase
+            .from('games')
+            .select('lat, lng')
+            .eq('id', id)
+            .single();
+            
+          if (error || !data) {
+            console.error("Erreur lors de la récupération des coordonnées:", error);
+            setIsLoading(false);
+            return;
+          }
+          
+          if (data.lat && data.lng) {
+            setIsLoading(false);
+          } else {
+            // Si le jeu n'a pas de coordonnées, on arrête le chargement
+            setIsLoading(false);
+          }
+        } catch (e) {
+          console.error("Erreur:", e);
+          setIsLoading(false);
         }
-      }
-    });
-
-    // Create event markers with custom style
-    const features = filteredEvents.map(event => {
-      const feature = new Feature({
-        geometry: new Point(fromLonLat([event.lng, event.lat])),
-        event: event,
-      });
-
-      feature.setStyle(new Style({
-        image: new CircleStyle({
-          radius: 8,
-          fill: new Fill({
-            color: '#ea384c'
-          }),
-          stroke: new Stroke({
-            color: '#ffffff',
-            width: 3
-          })
-        })
-      }));
-
-      return feature;
-    });
-
-    // Create search radius circle
-    if (searchRadius > 0) {
-      const radiusFeature = new Feature({
-        geometry: new Circle(fromLonLat(searchCenter), searchRadius * 1000)
-      });
-
-      radiusFeature.setStyle(
-        new Style({
-          stroke: new Stroke({
-            color: 'rgba(234, 56, 76, 0.8)',
-            width: 2
-          }),
-          fill: new Fill({
-            color: 'rgba(234, 56, 76, 0.1)'
-          })
-        })
-      );
-
-      features.push(radiusFeature);
-    }
-
-    const vectorSource = new VectorSource({
-      features: features
-    });
-
-    const vectorLayer = new VectorLayer({
-      source: vectorSource
-    });
-
-    const newView = new View({
-      center: fromLonLat(searchCenter),
-      zoom: 6
-    });
-
-    setView(newView);
-
-    // Initialize map
-    map.current = new Map({
-      target: mapRef.current,
-      layers: [
-        new TileLayer({
-          source: new OSM()
-        }),
-        vectorLayer
-      ],
-      view: newView
-    });
-
-    map.current.addOverlay(overlayRef.current);
-
-    // Click handler for markers
-    map.current.on('click', (event) => {
-      const feature = map.current?.forEachFeatureAtPixel(event.pixel, (feature) => feature);
-      
-      if (feature && feature.get('event')) {
-        const coordinates = (feature.getGeometry() as Point).getCoordinates();
-        const event = feature.get('event');
-        
-        setSelectedEvent(event);
-        overlayRef.current?.setPosition(coordinates);
       } else {
-        setSelectedEvent(null);
-        overlayRef.current?.setPosition(undefined);
+        // Si on n'est pas sur une page de détail de jeu, on arrête le chargement
+        setIsLoading(false);
       }
-    });
-
-    return () => {
-      map.current?.setTarget(undefined);
-      map.current = null;
     };
-  }, [searchCenter, searchRadius, filteredEvents]);
-
-  // Update view when center changes
-  useEffect(() => {
-    if (view && map.current) {
-      view.animate({
-        center: fromLonLat(searchCenter),
-        duration: 1000,
-        zoom: searchRadius > 0 ? 12 : 6
-      });
-    }
-  }, [searchCenter, searchRadius]);
-
-  return (
-    <div ref={mapRef} className="w-full h-full rounded-lg overflow-hidden relative">
-      {!map.current && (
-        <div className="absolute inset-0 flex items-center justify-center flex-col bg-gray-200 z-10">
-          <MapPin size={24} className="text-gray-400 mb-2" />
-          <p className="text-center text-gray-500">Chargement de la carte...</p>
-        </div>
-      )}
-      <div ref={popupRef} className="absolute z-50">
-        {selectedEvent && (
-          <MapMarker 
-            event={selectedEvent} 
-            onClose={() => {
-              setSelectedEvent(null);
-              overlayRef.current?.setPosition(undefined);
-            }}
-          />
-        )}
+    
+    fetchGameLocation();
+  }, [lat, lng, id]);
+  
+  // Si on n'a pas de coordonnées et qu'on ne charge plus, on ne montre rien
+  if ((!lat || !lng) && !isLoading) {
+    return null;
+  }
+  
+  // Si on est en train de charger, on montre un indicateur de chargement discret
+  if (isLoading) {
+    return (
+      <div className="h-64 flex items-center justify-center bg-gray-100 rounded-lg">
+        <div className="text-sm text-gray-500">Chargement de la carte...</div>
       </div>
-    </div>
-  );
+    );
+  }
+  
+  // Sinon on affiche la carte
+  return <LocationMap lat={lat} lng={lng} />;
 };
 
 export default MapComponent;

@@ -86,15 +86,15 @@ const UserProfile = () => {
             setFriendRequestSent(friendship.status === 'pending');
           }
           
-          // Use raw query for the table that's not in types yet
-          const { data: ratings, error: ratingsError } = await supabase
+          // Use direct RPC call
+          const { data: ratingData, error: ratingError } = await supabase
             .rpc('get_user_rating', { 
               p_rater_id: currentUserId, 
               p_rated_id: userProfile.id 
             });
             
-          if (!ratingsError && ratings) {
-            setUserRating(ratings);
+          if (!ratingError && ratingData !== null) {
+            setUserRating(ratingData);
             setHasRated(true);
           }
         }
@@ -322,23 +322,23 @@ const UserProfile = () => {
     }
 
     try {
-      // Use direct RPC calls to avoid type issues
+      // Use direct RPC calls
       if (hasRated) {
-        const { error } = await supabase
-          .rpc('update_user_rating', { 
-            p_rater_id: currentUserId, 
-            p_rated_id: userData.id, 
-            p_rating: rating 
-          });
+        // Update existing rating
+        const { error } = await supabase.rpc('update_user_rating', { 
+          p_rater_id: currentUserId, 
+          p_rated_id: userData.id, 
+          p_rating: rating 
+        });
           
         if (error) throw error;
       } else {
-        const { error } = await supabase
-          .rpc('insert_user_rating', { 
-            p_rater_id: currentUserId, 
-            p_rated_id: userData.id, 
-            p_rating: rating 
-          });
+        // Insert new rating
+        const { error } = await supabase.rpc('insert_user_rating', { 
+          p_rater_id: currentUserId, 
+          p_rated_id: userData.id, 
+          p_rating: rating 
+        });
           
         if (error) throw error;
         setHasRated(true);
