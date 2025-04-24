@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -16,6 +17,20 @@ import ReportUserButton from '../components/profile/ReportUserButton';
 import { Button } from "@/components/ui/button";
 import { UserPlus, UserMinus, Check } from "lucide-react";
 import RatingStars from '../components/profile/RatingStars';
+
+/**
+ * Helper function to call Supabase RPC functions with type safety bypassing
+ */
+const callRPC = async <T,>(functionName: string, params: Record<string, any> = {}): Promise<{data: T | null, error: Error | null}> => {
+  try {
+    // @ts-ignore - We're intentionally bypassing TypeScript's type checking here
+    const result = await supabase.rpc(functionName, params);
+    return result;
+  } catch (error) {
+    console.error(`Error calling RPC function ${functionName}:`, error);
+    return { data: null, error: error as Error };
+  }
+};
 
 const UserProfile = () => {
   const { username } = useParams();
@@ -85,13 +100,11 @@ const UserProfile = () => {
             setFriendRequestSent(friendship.status === 'pending');
           }
           
-          // Use direct fetch for the function that's not in types
-          // @ts-ignore - Bypass TypeScript checking for this specific call
-          const { data: ratings, error: ratingsError } = await supabase
-            .rpc('get_user_rating', { 
-              p_rater_id: currentUserId, 
-              p_rated_id: userProfile.id 
-            });
+          // Call RPC with our helper function
+          const { data: ratings, error: ratingsError } = await callRPC<number>('get_user_rating', { 
+            p_rater_id: currentUserId, 
+            p_rated_id: userProfile.id 
+          });
             
           if (!ratingsError && ratings) {
             setUserRating(ratings);
@@ -322,25 +335,20 @@ const UserProfile = () => {
     }
 
     try {
-      // Use direct fetch with @ts-ignore to bypass TypeScript checking
       if (hasRated) {
-        // @ts-ignore - Bypass TypeScript checking for this specific call
-        const { error } = await supabase
-          .rpc('update_user_rating', { 
-            p_rater_id: currentUserId, 
-            p_rated_id: userData.id, 
-            p_rating: rating 
-          });
+        const { error } = await callRPC('update_user_rating', { 
+          p_rater_id: currentUserId, 
+          p_rated_id: userData.id, 
+          p_rating: rating 
+        });
           
         if (error) throw error;
       } else {
-        // @ts-ignore - Bypass TypeScript checking for this specific call
-        const { error } = await supabase
-          .rpc('insert_user_rating', { 
-            p_rater_id: currentUserId, 
-            p_rated_id: userData.id, 
-            p_rating: rating 
-          });
+        const { error } = await callRPC('insert_user_rating', { 
+          p_rater_id: currentUserId, 
+          p_rated_id: userData.id, 
+          p_rating: rating 
+        });
           
         if (error) throw error;
         setHasRated(true);
@@ -348,10 +356,10 @@ const UserProfile = () => {
 
       setUserRating(rating);
       
-      // Update average reputation with @ts-ignore
-      // @ts-ignore - Bypass TypeScript checking for this specific call
-      const { data: avgRating, error: avgError } = await supabase
-        .rpc('get_average_rating', { p_user_id: userData.id });
+      // Update average reputation
+      const { data: avgRating, error: avgError } = await callRPC<number>('get_average_rating', 
+        { p_user_id: userData.id }
+      );
       
       if (!avgError && avgRating !== null) {
         // Update profile data locally
