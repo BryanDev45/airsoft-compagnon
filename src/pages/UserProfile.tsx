@@ -1,22 +1,13 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
 import ProfileHeader from '../components/profile/ProfileHeader';
-import ProfileInfo from '../components/profile/ProfileInfo';
-import ProfileGames from '../components/profile/ProfileGames';
-import ProfileStats from '../components/profile/ProfileStats';
-import ProfileEquipment from '../components/profile/ProfileEquipment';
-import ProfileBadges from '../components/profile/ProfileBadges';
 import ProfileDialogs from '../components/profile/ProfileDialogs';
-import ReportUserButton from '../components/profile/ReportUserButton';
-import { Button } from "@/components/ui/button";
-import { UserPlus, UserMinus, Check } from "lucide-react";
-import RatingStars from '../components/profile/RatingStars';
+import ProfileTabs from '../components/profile/ProfileTabs';
+import RatingControls from '../components/profile/RatingControls';
 
 const UserProfile = () => {
   const { username } = useParams();
@@ -391,40 +382,6 @@ const UserProfile = () => {
     }
   };
 
-  const setEditing = () => {
-    toast({
-      title: "Information",
-      description: "Cette fonction n'est pas disponible sur les profils des autres utilisateurs.",
-    });
-  };
-
-  const toggleProfileSettings = () => {
-    toast({
-      title: "Information",
-      description: "Cette fonction n'est pas disponible sur les profils des autres utilisateurs.",
-    });
-  };
-
-  const onEditBio = () => {
-    toast({
-      title: "Information",
-      description: "Cette fonction n'est pas disponible sur les profils des autres utilisateurs.",
-    });
-  };
-
-  const updateLocation = async () => {
-    return false;
-  };
-
-  const updateUserStats = async () => {
-    return false;
-  };
-  
-  const fetchProfileData = async () => {
-    console.log("Fetching profile data for user ID:", profileData?.id);
-    return true;
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -447,103 +404,37 @@ const UserProfile = () => {
               <ProfileHeader 
                 user={profileData} 
                 isOwnProfile={false}
-                setEditing={setEditing}
-                toggleProfileSettings={toggleProfileSettings}
-                onEditBio={onEditBio}
+                setEditing={() => toast({ description: "Cette fonction n'est pas disponible sur les profils des autres utilisateurs." })}
+                toggleProfileSettings={() => toast({ description: "Cette fonction n'est pas disponible sur les profils des autres utilisateurs." })}
+                onEditBio={() => toast({ description: "Cette fonction n'est pas disponible sur les profils des autres utilisateurs." })}
               />
               
-              <div className="absolute top-4 right-4 flex space-x-2">
-                {currentUserId && currentUserId !== userData?.id && (
-                  <Button 
-                    onClick={handleFollowUser}
-                    variant={isFollowing || friendRequestSent ? "outline" : "default"}
-                    className={isFollowing || friendRequestSent ? "bg-white text-black border-gray-300" : "bg-airsoft-red text-white"}
-                  >
-                    {isFollowing ? (
-                      <>
-                        <UserMinus className="mr-2 h-4 w-4" />
-                        Retirer des amis
-                      </>
-                    ) : friendRequestSent ? (
-                      <>
-                        <Check className="mr-2 h-4 w-4" />
-                        Demande envoyée
-                      </>
-                    ) : (
-                      <>
-                        <UserPlus className="mr-2 h-4 w-4" />
-                        Ajouter en ami
-                      </>
-                    )}
-                  </Button>
-                )}
-                
-                <div className="flex items-center gap-2">
-                  <RatingStars
-                    rating={userRating}
-                    onRatingChange={handleRatingChange}
-                    readonly={!currentUserId || currentUserId === userData?.id}
-                  />
-                </div>
-                
-                <ReportUserButton username={profileData?.username} />
-              </div>
+              <RatingControls 
+                currentUserId={currentUserId}
+                userData={userData}
+                isFollowing={isFollowing}
+                friendRequestSent={friendRequestSent}
+                userRating={userRating}
+                handleFollowUser={handleFollowUser}
+                handleRatingChange={handleRatingChange}
+              />
             </div>
             
-            <div className="p-6">
-              <Tabs defaultValue="profile">
-                <TabsList className="mb-6">
-                  <TabsTrigger value="profile">Profil</TabsTrigger>
-                  <TabsTrigger value="games">Parties</TabsTrigger>
-                  <TabsTrigger value="stats">Statistiques</TabsTrigger>
-                  <TabsTrigger value="equipment">Équipement</TabsTrigger>
-                  <TabsTrigger value="badges">Badges</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="profile">
-                  <ProfileInfo 
-                    user={userData} 
-                    profileData={profileData}
-                    updateLocation={updateLocation}
-                    handleNavigateToTeam={handleNavigateToTeam}
-                  />
-                </TabsContent>
-                
-                <TabsContent value="games">
-                  <ProfileGames 
-                    games={userGames} 
-                    handleViewGameDetails={(game) => {
-                      setSelectedGame(game);
-                      setShowGameDialog(true);
-                    }} 
-                    handleViewAllGames={() => setShowAllGamesDialog(true)} 
-                  />
-                </TabsContent>
-                
-                <TabsContent value="stats">
-                  <ProfileStats 
-                    userStats={userStats}
-                    updateUserStats={updateUserStats}
-                    fetchProfileData={fetchProfileData}
-                  />
-                </TabsContent>
-                
-                <TabsContent value="equipment">
-                  <ProfileEquipment 
-                    equipment={equipment} 
-                    equipmentTypes={equipmentTypes}
-                    readOnly={true}
-                  />
-                </TabsContent>
-                
-                <TabsContent value="badges">
-                  <ProfileBadges 
-                    badges={userBadges} 
-                    handleViewAllBadges={() => setShowBadgesDialog(true)} 
-                  />
-                </TabsContent>
-              </Tabs>
-            </div>
+            <ProfileTabs 
+              userData={userData}
+              profileData={profileData}
+              userStats={userStats}
+              equipment={equipment}
+              equipmentTypes={equipmentTypes}
+              updateLocation={updateLocation}
+              updateUserStats={updateUserStats}
+              fetchProfileData={fetchProfileData}
+              handleNavigateToTeam={handleNavigateToTeam}
+              setSelectedGame={setSelectedGame}
+              setShowGameDialog={setShowGameDialog}
+              setShowAllGamesDialog={setShowAllGamesDialog}
+              setShowBadgesDialog={setShowBadgesDialog}
+            />
           </div>
         </div>
       </main>
