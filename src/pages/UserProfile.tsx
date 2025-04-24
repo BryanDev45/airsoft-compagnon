@@ -86,17 +86,19 @@ const UserProfile = () => {
             setFriendRequestSent(friendship.status === 'pending');
           }
           
-          // Get rating using direct query instead of RPC
-          const { data: ratingData, error: ratingError } = await supabase
-            .from('user_ratings')
-            .select('rating')
-            .eq('rater_id', currentUserId)
-            .eq('rated_id', userProfile.id)
-            .maybeSingle();
+          // Check if the user has rated this profile
+          try {
+            const { data: ratings } = await supabase.rpc('get_user_rating', { 
+              p_rater_id: currentUserId, 
+              p_rated_id: userProfile.id 
+            });
             
-          if (!ratingError && ratingData) {
-            setUserRating(ratingData.rating);
-            setHasRated(true);
+            if (ratings) {
+              setUserRating(ratings);
+              setHasRated(true);
+            }
+          } catch (ratingError) {
+            console.error("Error fetching rating:", ratingError);
           }
         }
 
@@ -324,43 +326,45 @@ const UserProfile = () => {
 
     try {
       if (hasRated) {
-        // Update rating using direct query instead of RPC
-        const { error } = await supabase
-          .from('user_ratings')
-          .update({ rating, updated_at: new Date().toISOString() })
-          .eq('rater_id', currentUserId)
-          .eq('rated_id', userData.id);
-          
-        if (error) throw error;
-      } else {
-        // Insert rating using direct query instead of RPC
-        const { error } = await supabase
-          .from('user_ratings')
-          .insert({
-            rater_id: currentUserId,
-            rated_id: userData.id,
-            rating: rating
+        try {
+          await supabase.rpc('update_user_rating', {
+            p_rater_id: currentUserId,
+            p_rated_id: userData.id,
+            p_rating: rating
           });
-          
-        if (error) throw error;
-        setHasRated(true);
+        } catch (error) {
+          console.error("Error updating rating:", error);
+          throw error;
+        }
+      } else {
+        try {
+          await supabase.rpc('insert_user_rating', {
+            p_rater_id: currentUserId,
+            p_rated_id: userData.id,
+            p_rating: rating
+          });
+          setHasRated(true);
+        } catch (error) {
+          console.error("Error inserting rating:", error);
+          throw error;
+        }
       }
 
       setUserRating(rating);
       
-      // Get average rating using direct query instead of RPC
-      const { data: avgRatings, error: avgError } = await supabase
-        .from('user_ratings')
-        .select('rating')
-        .eq('rated_id', userData.id);
-      
-      if (!avgError && avgRatings && avgRatings.length > 0) {
-        const avgRatingValue = avgRatings.reduce((sum, item) => sum + item.rating, 0) / avgRatings.length;
+      try {
+        const { data: avgRating } = await supabase.rpc('get_average_rating', { 
+          p_user_id: userData.id 
+        });
         
-        setProfileData(prev => ({
-          ...prev,
-          reputation: avgRatingValue
-        }));
+        if (avgRating !== null) {
+          setProfileData(prev => ({
+            ...prev,
+            reputation: avgRating
+          }));
+        }
+      } catch (error) {
+        console.error("Error getting average rating:", error);
       }
       
       toast({
