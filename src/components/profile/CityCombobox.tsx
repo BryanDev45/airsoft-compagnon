@@ -60,7 +60,7 @@ export function ComboboxDemo({
         
         const data = await response.json();
         
-        if (data && data.geonames) {
+        if (data && data.geonames && Array.isArray(data.geonames)) {
           const formattedCities = data.geonames.map((city: any) => ({
             name: city.name || '',
             country: city.countryName || '',
