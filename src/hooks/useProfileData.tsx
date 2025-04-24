@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,9 +11,11 @@ export const useProfileData = (userId: string | undefined) => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Seulement exécuter fetchProfileData si userId est défini
     if (userId) {
       fetchProfileData();
     } else {
+      // Si userId est undefined, on met loading à false pour éviter un chargement infini
       setLoading(false);
     }
   }, [userId]);
@@ -62,6 +65,10 @@ export const useProfileData = (userId: string | undefined) => {
           if (insertError) throw insertError;
           
           setProfileData(newProfile);
+        } else {
+          // Si on n'a pas pu obtenir les données utilisateur, on arrête le chargement
+          setLoading(false);
+          return;
         }
       } else {
         setProfileData(profile);
@@ -108,6 +115,7 @@ export const useProfileData = (userId: string | undefined) => {
         variant: "destructive",
       });
     } finally {
+      // S'assurer que loading est mis à false dans tous les cas
       setLoading(false);
     }
   };

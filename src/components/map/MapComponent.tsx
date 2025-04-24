@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState } from 'react';
 import { MapPin } from 'lucide-react';
 import Map from 'ol/Map';
@@ -23,6 +24,7 @@ interface MapComponentProps {
 const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius, filteredEvents }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const map = useRef<Map | null>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const popupRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<Overlay | null>(null);
@@ -130,6 +132,11 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
       }
     });
 
+    // Set map as loaded when rendered
+    map.current.once('rendercomplete', () => {
+      setMapLoaded(true);
+    });
+
     return () => {
       map.current?.setTarget(undefined);
       map.current = null;
@@ -145,11 +152,11 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
         zoom: searchRadius > 0 ? 12 : 6
       });
     }
-  }, [searchCenter, searchRadius]);
+  }, [searchCenter, searchRadius, view]);
 
   return (
     <div ref={mapRef} className="w-full h-full rounded-lg overflow-hidden relative">
-      {!map.current && (
+      {!mapLoaded && (
         <div className="absolute inset-0 flex items-center justify-center flex-col bg-gray-200 z-10">
           <MapPin size={24} className="text-gray-400 mb-2" />
           <p className="text-center text-gray-500">Chargement de la carte...</p>

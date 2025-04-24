@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { MapPin } from 'lucide-react';
 import 'ol/ol.css';
 import Map from 'ol/Map';
@@ -20,6 +20,7 @@ interface LocationMapProps {
 
 const LocationMap: React.FC<LocationMapProps> = ({ location, coordinates = [2.3522, 48.8566] }) => {
   const mapRef = useRef<HTMLDivElement>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
   const map = useRef<Map | null>(null);
 
   useEffect(() => {
@@ -64,6 +65,11 @@ const LocationMap: React.FC<LocationMapProps> = ({ location, coordinates = [2.35
       controls: []
     });
 
+    // Set map as loaded once it's rendered
+    map.current.once('rendercomplete', () => {
+      setMapLoaded(true);
+    });
+
     return () => {
       if (map.current) {
         map.current.setTarget(null);
@@ -74,7 +80,7 @@ const LocationMap: React.FC<LocationMapProps> = ({ location, coordinates = [2.35
 
   return (
     <div ref={mapRef} className="w-full h-full rounded-lg overflow-hidden">
-      {!map.current && (
+      {!mapLoaded && (
         <div className="absolute inset-0 flex items-center justify-center flex-col bg-gray-200 z-10" style={{ pointerEvents: 'none' }}>
           <MapPin size={24} className="text-gray-400 mb-2" />
           <p className="text-center text-gray-500">Chargement de la carte...</p>
