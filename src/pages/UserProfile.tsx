@@ -86,14 +86,13 @@ const UserProfile = () => {
           }
           
           const { data: ratingData, error: ratingError } = await supabase
-            .from('user_ratings')
-            .select('rating')
-            .eq('rater_id', currentUserId)
-            .eq('rated_id', userProfile.id)
-            .maybeSingle();
+            .rpc('get_user_rating', {
+              p_rater_id: currentUserId,
+              p_rated_id: userProfile.id
+            });
             
           if (!ratingError && ratingData) {
-            setUserRating(ratingData.rating);
+            setUserRating(ratingData);
             setHasRated(true);
           }
         }
@@ -323,19 +322,19 @@ const UserProfile = () => {
     try {
       if (hasRated) {
         const { error } = await supabase
-          .from('user_ratings')
-          .update({ rating })
-          .eq('rater_id', currentUserId)
-          .eq('rated_id', userData.id);
+          .rpc('update_user_rating', {
+            p_rater_id: currentUserId,
+            p_rated_id: userData.id,
+            p_rating: rating
+          });
           
         if (error) throw error;
       } else {
         const { error } = await supabase
-          .from('user_ratings')
-          .insert({
-            rater_id: currentUserId,
-            rated_id: userData.id,
-            rating: rating
+          .rpc('insert_user_rating', {
+            p_rater_id: currentUserId,
+            p_rated_id: userData.id,
+            p_rating: rating
           });
           
         if (error) throw error;
@@ -344,20 +343,16 @@ const UserProfile = () => {
 
       setUserRating(rating);
       
-      const { data: avgRatings, error: avgError } = await supabase
-        .from('user_ratings')
-        .select('rating')
-        .eq('rated_id', userData.id);
+      const { data: avgRating, error: avgError } = await supabase
+        .rpc('get_average_rating', {
+          p_user_id: userData.id
+        });
       
-      if (!avgError && avgRatings) {
-        const avgRating = avgRatings.reduce((sum, item) => sum + item.rating, 0) / avgRatings.length;
-        
-        if (profileData) {
-          setProfileData({
-            ...profileData,
-            reputation: avgRating
-          });
-        }
+      if (!avgError && avgRating) {
+        setProfileData(prev => ({
+          ...prev,
+          reputation: avgRating
+        }));
       }
       
       toast({
