@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -85,15 +86,15 @@ const UserProfile = () => {
             setFriendRequestSent(friendship.status === 'pending');
           }
           
+          // Use raw query for the table that's not in types yet
           const { data: ratings, error: ratingsError } = await supabase
-            .from('user_ratings')
-            .select('rating')
-            .eq('rater_id', currentUserId)
-            .eq('rated_id', userProfile.id)
-            .maybeSingle();
+            .rpc('get_user_rating', { 
+              p_rater_id: currentUserId, 
+              p_rated_id: userProfile.id 
+            });
             
           if (!ratingsError && ratings) {
-            setUserRating(ratings.rating);
+            setUserRating(ratings);
             setHasRated(true);
           }
         }
@@ -244,28 +245,6 @@ const UserProfile = () => {
     }
   }, [username, navigate, currentUserId]);
 
-  useEffect(() => {
-    const fetchUserRating = async () => {
-      if (currentUserId && userData?.id) {
-        const { data: ratingData, error: ratingError } = await supabase
-          .from('user_ratings')
-          .select('rating')
-          .eq('rater_id', currentUserId)
-          .eq('rated_id', userData.id)
-          .maybeSingle();
-
-        if (!ratingError && ratingData) {
-          setUserRating(ratingData.rating);
-          setHasRated(true);
-        }
-      }
-    };
-
-    if (currentUserId && userData?.id) {
-      fetchUserRating();
-    }
-  }, [currentUserId, userData?.id]);
-
   const handleFollowUser = async () => {
     if (!currentUserId) {
       toast({
@@ -343,44 +322,36 @@ const UserProfile = () => {
     }
 
     try {
+      // Use direct RPC calls to avoid type issues
       if (hasRated) {
         const { error } = await supabase
-          .from('user_ratings')
-          .update({ rating, updated_at: new Date().toISOString() })
-          .eq('rater_id', currentUserId)
-          .eq('rated_id', userData.id);
-
+          .rpc('update_user_rating', { 
+            p_rater_id: currentUserId, 
+            p_rated_id: userData.id, 
+            p_rating: rating 
+          });
+          
         if (error) throw error;
       } else {
         const { error } = await supabase
-          .from('user_ratings')
-          .insert({
-            rater_id: currentUserId,
-            rated_id: userData.id,
-            rating
+          .rpc('insert_user_rating', { 
+            p_rater_id: currentUserId, 
+            p_rated_id: userData.id, 
+            p_rating: rating 
           });
-
+          
         if (error) throw error;
         setHasRated(true);
       }
 
       setUserRating(rating);
       
-      const { data: ratings, error: ratingsError } = await supabase
-        .from('user_ratings')
-        .select('rating')
-        .eq('rated_id', userData.id);
-        
-      if (ratingsError) throw ratingsError;
+      // Update average reputation
+      const { data: avgRating, error: avgError } = await supabase
+        .rpc('get_average_rating', { p_user_id: userData.id });
       
-      if (ratings && ratings.length > 0) {
-        const avgRating = ratings.reduce((sum, item) => sum + item.rating, 0) / ratings.length;
-        
-        await supabase
-          .from('profiles')
-          .update({ reputation: avgRating })
-          .eq('id', userData.id);
-
+      if (!avgError && avgRating !== null) {
+        // Update profile data locally
         if (profileData) {
           setProfileData({
             ...profileData,
