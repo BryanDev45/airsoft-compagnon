@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -14,7 +15,7 @@ import ProfileBadges from '../components/profile/ProfileBadges';
 import ProfileDialogs from '../components/profile/ProfileDialogs';
 import ReportUserButton from '../components/profile/ReportUserButton';
 import { Button } from "@/components/ui/button";
-import { UserPlus, UserMinus } from "lucide-react";
+import { UserPlus, UserMinus, Check } from "lucide-react";
 import RatingStars from '../components/profile/RatingStars';
 
 const UserProfile = () => {
@@ -34,8 +35,23 @@ const UserProfile = () => {
   const [showAllGamesDialog, setShowAllGamesDialog] = useState(false);
   const [showBadgesDialog, setShowBadgesDialog] = useState(false);
   const [userRating, setUserRating] = useState(0);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [friendRequestSent, setFriendRequestSent] = useState(false);
+  const [hasRated, setHasRated] = useState(false);
   
   const equipmentTypes = ["Réplique principale", "Réplique secondaire", "Protection", "Accessoire"];
+  
+  useEffect(() => {
+    // Récupérer l'ID de l'utilisateur connecté
+    const fetchCurrentUser = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.user?.id) {
+        setCurrentUserId(data.session.user.id);
+      }
+    };
+    
+    fetchCurrentUser();
+  }, []);
   
   useEffect(() => {
     const fetchUserData = async () => {
@@ -56,6 +72,34 @@ const UserProfile = () => {
           });
           navigate('/');
           return;
+        }
+
+        // Vérifier si l'utilisateur actuel suit déjà cet utilisateur
+        if (currentUserId) {
+          const { data: friendship, error: friendshipError } = await supabase
+            .from('friendships')
+            .select('*')
+            .eq('user_id', currentUserId)
+            .eq('friend_id', userProfile.id)
+            .single();
+            
+          if (!friendshipError && friendship) {
+            setIsFollowing(friendship.status === 'accepted');
+            setFriendRequestSent(friendship.status === 'pending');
+          }
+          
+          // Vérifier si l'utilisateur a déjà noté ce profil
+          const { data: ratings, error: ratingsError } = await supabase
+            .from('user_ratings')
+            .select('rating')
+            .eq('rater_id', currentUserId)
+            .eq('rated_id', userProfile.id)
+            .single();
+            
+          if (!ratingsError && ratings) {
+            setUserRating(ratings.rating);
+            setHasRated(true);
+          }
         }
 
         const { data: stats, error: statsError } = await supabase
@@ -197,13 +241,147 @@ const UserProfile = () => {
       }
     };
 
-    if (username) {
+    if (username && currentUserId) {
+      fetchUserData();
+    } else if (username) {
       fetchUserData();
     }
-  }, [username, navigate]);
+  }, [username, navigate, currentUserId]);
 
-  const handleFollowUser = () => {
-    setIsFollowing(!isFollowing);
+  const handleFollowUser = async () => {
+    if (!currentUserId) {
+      toast({
+        title: "Connexion requise",
+        description: "Vous devez être connecté pour ajouter un ami",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      if (isFollowing) {
+        // Supprimer l'amitié
+        const { error } = await supabase
+          .from('friendships')
+          .delete()
+          .or(`and(user_id.eq.${currentUserId},friend_id.eq.${userData.id}),and(user_id.eq.${userData.id},friend_id.eq.${currentUserId})`);
+
+        if (error) throw error;
+
+        setIsFollowing(false);
+        setFriendRequestSent(false);
+        toast({
+          title: "Ami retiré",
+          description: "Cet utilisateur a été retiré de vos amis",
+        });
+      } else if (friendRequestSent) {
+        // Annuler la demande d'amitié
+        const { error } = await supabase
+          .from('friendships')
+          .delete()
+          .eq('user_id', currentUserId)
+          .eq('friend_id', userData.id);
+
+        if (error) throw error;
+
+        setFriendRequestSent(false);
+        toast({
+          title: "Demande annulée",
+          description: "Votre demande d'amitié a été annulée",
+        });
+      } else {
+        // Envoyer une demande d'amitié
+        const { error } = await supabase
+          .from('friendships')
+          .insert({
+            user_id: currentUserId,
+            friend_id: userData.id,
+            status: 'pending'
+          });
+
+        if (error) throw error;
+
+        setFriendRequestSent(true);
+        toast({
+          title: "Demande envoyée",
+          description: "Votre demande d'amitié a été envoyée",
+        });
+      }
+    } catch (error) {
+      console.error("Erreur lors de la gestion de l'amitié:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'action",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRatingChange = async (rating: number) => {
+    if (!currentUserId) {
+      toast({
+        title: "Connexion requise",
+        description: "Vous devez être connecté pour noter un utilisateur",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      if (hasRated) {
+        // Mettre à jour la notation existante
+        const { error } = await supabase
+          .from('user_ratings')
+          .update({ rating })
+          .eq('rater_id', currentUserId)
+          .eq('rated_id', userData.id);
+
+        if (error) throw error;
+      } else {
+        // Créer une nouvelle notation
+        const { error } = await supabase
+          .from('user_ratings')
+          .insert({
+            rater_id: currentUserId,
+            rated_id: userData.id,
+            rating
+          });
+
+        if (error) throw error;
+        setHasRated(true);
+      }
+
+      setUserRating(rating);
+      
+      // Mettre à jour la réputation moyenne dans le profil de l'utilisateur
+      const { data: ratings, error: ratingsError } = await supabase
+        .from('user_ratings')
+        .select('rating')
+        .eq('rated_id', userData.id);
+        
+      if (ratingsError) throw ratingsError;
+      
+      if (ratings && ratings.length > 0) {
+        const avgRating = ratings.reduce((sum, item) => sum + item.rating, 0) / ratings.length;
+        
+        await supabase
+          .from('profiles')
+          .update({ reputation: avgRating })
+          .eq('id', userData.id);
+      }
+      
+      toast({
+        title: "Notation enregistrée",
+        description: "Votre évaluation a été prise en compte",
+      });
+    } catch (error) {
+      console.error("Erreur lors de l'enregistrement de la notation:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'enregistrer votre évaluation",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleNavigateToGame = (gameId) => {
@@ -278,28 +456,36 @@ const UserProfile = () => {
               />
               
               <div className="absolute top-4 right-4 flex space-x-2">
-                <Button 
-                  onClick={handleFollowUser}
-                  variant={isFollowing ? "outline" : "default"}
-                  className={isFollowing ? "bg-white text-black border-gray-300" : "bg-airsoft-red text-white"}
-                >
-                  {isFollowing ? (
-                    <>
-                      <UserMinus className="mr-2 h-4 w-4" />
-                      Retirer des amis
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="mr-2 h-4 w-4" />
-                      Ajouter en ami
-                    </>
-                  )}
-                </Button>
+                {currentUserId && currentUserId !== userData?.id && (
+                  <Button 
+                    onClick={handleFollowUser}
+                    variant={isFollowing || friendRequestSent ? "outline" : "default"}
+                    className={isFollowing || friendRequestSent ? "bg-white text-black border-gray-300" : "bg-airsoft-red text-white"}
+                  >
+                    {isFollowing ? (
+                      <>
+                        <UserMinus className="mr-2 h-4 w-4" />
+                        Retirer des amis
+                      </>
+                    ) : friendRequestSent ? (
+                      <>
+                        <Check className="mr-2 h-4 w-4" />
+                        Demande envoyée
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="mr-2 h-4 w-4" />
+                        Ajouter en ami
+                      </>
+                    )}
+                  </Button>
+                )}
                 
                 <div className="flex items-center gap-2">
                   <RatingStars
                     rating={userRating}
-                    onRatingChange={setUserRating}
+                    onRatingChange={handleRatingChange}
+                    readonly={!currentUserId || currentUserId === userData?.id}
                   />
                 </div>
                 

@@ -63,24 +63,26 @@ const Footer = () => {
           
           <div>
             <h3 className="text-lg font-semibold mb-4">Liens rapides</h3>
-            <ul className="space-y-2">
-              <li><Link to="/" className="text-gray-400 hover:text-white transition-colors">Accueil</Link></li>
-              <li><Link to="/parties" className="text-gray-400 hover:text-white transition-colors">Recherche</Link></li>
-              <li><Link to="/toolbox" className="text-gray-400 hover:text-white transition-colors">ToolBox</Link></li>
-              <li><Link to="/partners" className="text-gray-400 hover:text-white transition-colors">Nos partenaires</Link></li>
-              <li><Link to="/faq" className="text-gray-400 hover:text-white transition-colors">FAQ</Link></li>
+            {/* Ajout d'une grille sur 2 colonnes pour les liens */}
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+              <Link to="/" className="text-gray-400 hover:text-white transition-colors">Accueil</Link>
+              <Link to="/parties" className="text-gray-400 hover:text-white transition-colors">Recherche</Link>
+              <Link to="/toolbox" className="text-gray-400 hover:text-white transition-colors">ToolBox</Link>
+              <Link to="/partners" className="text-gray-400 hover:text-white transition-colors">Nos partenaires</Link>
+              <Link to="/faq" className="text-gray-400 hover:text-white transition-colors">FAQ</Link>
+              
               {isAuthenticated ? (
                 <>
-                  <li><Link to="/profile" className="text-gray-400 hover:text-white transition-colors">Mon profil</Link></li>
-                  <li><Link to="/teams" className="text-gray-400 hover:text-white transition-colors">Mon équipe</Link></li>
+                  <Link to="/profile" className="text-gray-400 hover:text-white transition-colors">Mon profil</Link>
+                  <Link to="/teams" className="text-gray-400 hover:text-white transition-colors">Mon équipe</Link>
                 </>
               ) : (
                 <>
-                  <li><Link to="/login" className="text-gray-400 hover:text-white transition-colors">Se connecter</Link></li>
-                  <li><Link to="/register" className="text-gray-400 hover:text-white transition-colors">S'inscrire</Link></li>
+                  <Link to="/login" className="text-gray-400 hover:text-white transition-colors">Se connecter</Link>
+                  <Link to="/register" className="text-gray-400 hover:text-white transition-colors">S'inscrire</Link>
                 </>
               )}
-            </ul>
+            </div>
           </div>
           
           <div>

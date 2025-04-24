@@ -60,6 +60,7 @@ export function ComboboxDemo({
         
         const data = await response.json();
         
+        // Vérification plus stricte pour s'assurer que geonames est un tableau avant de l'utiliser
         if (data && data.geonames && Array.isArray(data.geonames)) {
           const formattedCities = data.geonames.map((city: any) => ({
             name: city.name || '',
@@ -68,6 +69,7 @@ export function ComboboxDemo({
           }));
           setCities(formattedCities);
         } else {
+          console.error("Invalid response format:", data);
           setCities([]);
         }
       } catch (error) {
