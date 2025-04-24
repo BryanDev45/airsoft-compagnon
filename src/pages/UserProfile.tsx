@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -85,14 +86,16 @@ const UserProfile = () => {
             setFriendRequestSent(friendship.status === 'pending');
           }
           
+          // Get rating using direct query instead of RPC
           const { data: ratingData, error: ratingError } = await supabase
-            .rpc('get_user_rating', {
-              p_rater_id: currentUserId,
-              p_rated_id: userProfile.id
-            });
+            .from('user_ratings')
+            .select('rating')
+            .eq('rater_id', currentUserId)
+            .eq('rated_id', userProfile.id)
+            .maybeSingle();
             
           if (!ratingError && ratingData) {
-            setUserRating(ratingData);
+            setUserRating(ratingData.rating);
             setHasRated(true);
           }
         }
@@ -321,20 +324,22 @@ const UserProfile = () => {
 
     try {
       if (hasRated) {
+        // Update rating using direct query instead of RPC
         const { error } = await supabase
-          .rpc('update_user_rating', {
-            p_rater_id: currentUserId,
-            p_rated_id: userData.id,
-            p_rating: rating
-          });
+          .from('user_ratings')
+          .update({ rating, updated_at: new Date().toISOString() })
+          .eq('rater_id', currentUserId)
+          .eq('rated_id', userData.id);
           
         if (error) throw error;
       } else {
+        // Insert rating using direct query instead of RPC
         const { error } = await supabase
-          .rpc('insert_user_rating', {
-            p_rater_id: currentUserId,
-            p_rated_id: userData.id,
-            p_rating: rating
+          .from('user_ratings')
+          .insert({
+            rater_id: currentUserId,
+            rated_id: userData.id,
+            rating: rating
           });
           
         if (error) throw error;
@@ -343,15 +348,18 @@ const UserProfile = () => {
 
       setUserRating(rating);
       
-      const { data: avgRating, error: avgError } = await supabase
-        .rpc('get_average_rating', {
-          p_user_id: userData.id
-        });
+      // Get average rating using direct query instead of RPC
+      const { data: avgRatings, error: avgError } = await supabase
+        .from('user_ratings')
+        .select('rating')
+        .eq('rated_id', userData.id);
       
-      if (!avgError && avgRating) {
+      if (!avgError && avgRatings && avgRatings.length > 0) {
+        const avgRatingValue = avgRatings.reduce((sum, item) => sum + item.rating, 0) / avgRatings.length;
+        
         setProfileData(prev => ({
           ...prev,
-          reputation: avgRating
+          reputation: avgRatingValue
         }));
       }
       
