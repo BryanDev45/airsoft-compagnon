@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -79,14 +80,29 @@ const UserProfile = () => {
           
           // Check if the user has rated this profile
           try {
-            const { data: ratings } = await supabase.rpc('get_user_rating', { 
-              p_rater_id: currentUserId, 
-              p_rated_id: userProfile.id 
-            });
+            // Using fetch to directly call the function without RPC
+            const response = await fetch(
+              `https://raolbrsijdjnilvkbvgj.supabase.co/rest/v1/rpc/get_user_rating`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhb2xicnNpamRqbmlsdmtidmdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5ODA4MTYsImV4cCI6MjA2MDU1NjgxNn0.HnfsKbtzmhxSdv-6ga8usutUXVEPDf6n80EUeAK5xCU',
+                  'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+                },
+                body: JSON.stringify({
+                  p_rater_id: currentUserId,
+                  p_rated_id: userProfile.id
+                })
+              }
+            );
             
-            if (ratings) {
-              setUserRating(ratings);
-              setHasRated(true);
+            if (response.ok) {
+              const data = await response.json();
+              if (data !== null) {
+                setUserRating(data);
+                setHasRated(true);
+              }
             }
           } catch (ratingError) {
             console.error("Error fetching rating:", ratingError);
@@ -318,22 +334,55 @@ const UserProfile = () => {
     try {
       if (hasRated) {
         try {
-          await supabase.rpc('update_user_rating', {
-            p_rater_id: currentUserId,
-            p_rated_id: userData.id,
-            p_rating: rating
-          });
+          // Using fetch to directly call the function without RPC
+          const response = await fetch(
+            `https://raolbrsijdjnilvkbvgj.supabase.co/rest/v1/rpc/update_user_rating`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhb2xicnNpamRqbmlsdmtidmdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5ODA4MTYsImV4cCI6MjA2MDU1NjgxNn0.HnfsKbtzmhxSdv-6ga8usutUXVEPDf6n80EUeAK5xCU',
+                'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+              },
+              body: JSON.stringify({
+                p_rater_id: currentUserId,
+                p_rated_id: userData.id,
+                p_rating: rating
+              })
+            }
+          );
+          
+          if (!response.ok) {
+            throw new Error(`Error updating rating: ${response.status}`);
+          }
         } catch (error) {
           console.error("Error updating rating:", error);
           throw error;
         }
       } else {
         try {
-          await supabase.rpc('insert_user_rating', {
-            p_rater_id: currentUserId,
-            p_rated_id: userData.id,
-            p_rating: rating
-          });
+          // Using fetch to directly call the function without RPC
+          const response = await fetch(
+            `https://raolbrsijdjnilvkbvgj.supabase.co/rest/v1/rpc/insert_user_rating`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhb2xicnNpamRqbmlsdmtidmdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5ODA4MTYsImV4cCI6MjA2MDU1NjgxNn0.HnfsKbtzmhxSdv-6ga8usutUXVEPDf6n80EUeAK5xCU',
+                'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+              },
+              body: JSON.stringify({
+                p_rater_id: currentUserId,
+                p_rated_id: userData.id,
+                p_rating: rating
+              })
+            }
+          );
+          
+          if (!response.ok) {
+            throw new Error(`Error inserting rating: ${response.status}`);
+          }
+          
           setHasRated(true);
         } catch (error) {
           console.error("Error inserting rating:", error);
@@ -344,15 +393,30 @@ const UserProfile = () => {
       setUserRating(rating);
       
       try {
-        const { data: avgRating } = await supabase.rpc('get_average_rating', { 
-          p_user_id: userData.id 
-        });
+        // Using fetch to directly call the function without RPC
+        const response = await fetch(
+          `https://raolbrsijdjnilvkbvgj.supabase.co/rest/v1/rpc/get_average_rating`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhb2xicnNpamRqbmlsdmtidmdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5ODA4MTYsImV4cCI6MjA2MDU1NjgxNn0.HnfsKbtzmhxSdv-6ga8usutUXVEPDf6n80EUeAK5xCU',
+              'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+            },
+            body: JSON.stringify({
+              p_user_id: userData.id
+            })
+          }
+        );
         
-        if (avgRating !== null) {
-          setProfileData(prev => ({
-            ...prev,
-            reputation: avgRating
-          }));
+        if (response.ok) {
+          const avgRating = await response.json();
+          if (avgRating !== null) {
+            setProfileData(prev => ({
+              ...prev,
+              reputation: avgRating
+            }));
+          }
         }
       } catch (error) {
         console.error("Error getting average rating:", error);
@@ -380,6 +444,21 @@ const UserProfile = () => {
     if (profileData?.team_id) {
       navigate(`/team/${profileData.team_id}`);
     }
+  };
+
+  // Add needed functions that were missing from the refactor
+  const updateLocation = async (location: string): Promise<boolean> => {
+    // This is just a placeholder as it's not used in the UserProfile context
+    return false;
+  };
+  
+  const updateUserStats = async (gameType: string, role: string, level: string): Promise<boolean> => {
+    // This is just a placeholder as it's not used in the UserProfile context
+    return false;
+  };
+  
+  const fetchProfileData = async (): Promise<void> => {
+    // This is just a placeholder as it's not used in the UserProfile context
   };
 
   if (loading) {
