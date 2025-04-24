@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -34,15 +33,14 @@ const UserProfile = () => {
   const [showGameDialog, setShowGameDialog] = useState(false);
   const [showAllGamesDialog, setShowAllGamesDialog] = useState(false);
   const [showBadgesDialog, setShowBadgesDialog] = useState(false);
-  const [userRating, setUserRating] = useState(0);
+  const [userRating, setUserRating] = useState<number>(0);
+  const [hasRated, setHasRated] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [friendRequestSent, setFriendRequestSent] = useState(false);
-  const [hasRated, setHasRated] = useState(false);
   
   const equipmentTypes = ["Réplique principale", "Réplique secondaire", "Protection", "Accessoire"];
   
   useEffect(() => {
-    // Récupérer l'ID de l'utilisateur connecté
     const fetchCurrentUser = async () => {
       const { data } = await supabase.auth.getSession();
       if (data.session?.user?.id) {
@@ -74,7 +72,6 @@ const UserProfile = () => {
           return;
         }
 
-        // Vérifier si l'utilisateur actuel suit déjà cet utilisateur
         if (currentUserId) {
           const { data: friendship, error: friendshipError } = await supabase
             .from('friendships')
@@ -88,13 +85,12 @@ const UserProfile = () => {
             setFriendRequestSent(friendship.status === 'pending');
           }
           
-          // Vérifier si l'utilisateur a déjà noté ce profil
           const { data: ratings, error: ratingsError } = await supabase
             .from('user_ratings')
             .select('rating')
             .eq('rater_id', currentUserId)
             .eq('rated_id', userProfile.id)
-            .single();
+            .maybeSingle();
             
           if (!ratingsError && ratings) {
             setUserRating(ratings.rating);
@@ -248,6 +244,28 @@ const UserProfile = () => {
     }
   }, [username, navigate, currentUserId]);
 
+  useEffect(() => {
+    const fetchUserRating = async () => {
+      if (currentUserId && userData?.id) {
+        const { data: ratingData, error: ratingError } = await supabase
+          .from('user_ratings')
+          .select('rating')
+          .eq('rater_id', currentUserId)
+          .eq('rated_id', userData.id)
+          .maybeSingle();
+
+        if (!ratingError && ratingData) {
+          setUserRating(ratingData.rating);
+          setHasRated(true);
+        }
+      }
+    };
+
+    if (currentUserId && userData?.id) {
+      fetchUserRating();
+    }
+  }, [currentUserId, userData?.id]);
+
   const handleFollowUser = async () => {
     if (!currentUserId) {
       toast({
@@ -260,7 +278,6 @@ const UserProfile = () => {
 
     try {
       if (isFollowing) {
-        // Supprimer l'amitié
         const { error } = await supabase
           .from('friendships')
           .delete()
@@ -275,7 +292,6 @@ const UserProfile = () => {
           description: "Cet utilisateur a été retiré de vos amis",
         });
       } else if (friendRequestSent) {
-        // Annuler la demande d'amitié
         const { error } = await supabase
           .from('friendships')
           .delete()
@@ -290,7 +306,6 @@ const UserProfile = () => {
           description: "Votre demande d'amitié a été annulée",
         });
       } else {
-        // Envoyer une demande d'amitié
         const { error } = await supabase
           .from('friendships')
           .insert({
@@ -329,16 +344,14 @@ const UserProfile = () => {
 
     try {
       if (hasRated) {
-        // Mettre à jour la notation existante
         const { error } = await supabase
           .from('user_ratings')
-          .update({ rating })
+          .update({ rating, updated_at: new Date().toISOString() })
           .eq('rater_id', currentUserId)
           .eq('rated_id', userData.id);
 
         if (error) throw error;
       } else {
-        // Créer une nouvelle notation
         const { error } = await supabase
           .from('user_ratings')
           .insert({
@@ -353,7 +366,6 @@ const UserProfile = () => {
 
       setUserRating(rating);
       
-      // Mettre à jour la réputation moyenne dans le profil de l'utilisateur
       const { data: ratings, error: ratingsError } = await supabase
         .from('user_ratings')
         .select('rating')
@@ -368,6 +380,13 @@ const UserProfile = () => {
           .from('profiles')
           .update({ reputation: avgRating })
           .eq('id', userData.id);
+
+        if (profileData) {
+          setProfileData({
+            ...profileData,
+            reputation: avgRating
+          });
+        }
       }
       
       toast({
@@ -489,7 +508,7 @@ const UserProfile = () => {
                   />
                 </div>
                 
-                <ReportUserButton username={profileData.username} />
+                <ReportUserButton username={profileData?.username} />
               </div>
             </div>
             
