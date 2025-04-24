@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
@@ -6,6 +7,7 @@ import { ComboboxDemo as CityCombobox } from './CityCombobox';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { MapPin, Calendar, User, Users, Building2, Award, Edit, Save, X, Search, Minus } from 'lucide-react';
+
 const ProfileInfo = ({
   user,
   profileData,
@@ -14,6 +16,7 @@ const ProfileInfo = ({
 }) => {
   const [isEditingLocation, setIsEditingLocation] = useState(false);
   const navigate = useNavigate();
+  
   const formatDate = dateString => {
     if (!dateString) return '';
     try {
@@ -26,6 +29,7 @@ const ProfileInfo = ({
       return dateString;
     }
   };
+  
   const handleLocationUpdate = async location => {
     if (updateLocation) {
       const success = await updateLocation(location);
@@ -34,9 +38,11 @@ const ProfileInfo = ({
       }
     }
   };
+  
   const handleNavigateToTeamSearch = () => {
     navigate('/parties?tab=teams'); // Redirection vers la page de recherche avec l'onglet "teams" sélectionné
   };
+  
   return <Card className="p-6 shadow-md">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="space-y-6">
@@ -85,7 +91,9 @@ const ProfileInfo = ({
                     <p className="font-medium">
                       {profileData?.location || 'Non spécifié'}
                     </p>
-                    
+                    <Button variant="ghost" size="sm" onClick={() => setIsEditingLocation(true)} className="h-8 px-2">
+                      <Edit className="h-4 w-4" />
+                    </Button>
                   </div>}
               </div>
             </div>
@@ -108,7 +116,9 @@ const ProfileInfo = ({
                   </div> : <div className="flex items-center justify-between">
                     <p className="font-medium">Aucune équipe</p>
                     <div className="flex gap-2">
-                      
+                      <Button variant="ghost" size="sm" className="h-8 px-2" onClick={handleNavigateToTeamSearch}>
+                        <Search className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>}
               </div>
