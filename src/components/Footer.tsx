@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Download, Wrench } from 'lucide-react';
@@ -32,7 +33,7 @@ const Footer = () => {
     <footer className="bg-airsoft-dark text-white">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-          <div>
+          <div className="flex flex-col items-center md:items-start">
             <div className="flex items-center gap-3 mb-4">
               <img
                 src="/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png"
@@ -41,16 +42,16 @@ const Footer = () => {
               />
               <span className="text-lg font-bold">Airsoft Compagnon</span>
             </div>
-            <p className="text-gray-400 mb-4">
+            <p className="text-gray-400 mb-4 text-center md:text-left">
               Trouvez facilement vos parties d'airsoft, vos magasins et rejoignez une communauté passionnée.
             </p>
             <div className="flex justify-center space-x-4">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a href="#" className="text-gray-400 hover:text-white transition-colors flex items-center justify-center">
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" />
                 </svg>
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a href="#" className="text-gray-400 hover:text-white transition-colors flex items-center justify-center">
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M12 2c2.717 0 3.056.01 4.122.06 1.065.05 1.79.217 2.428.465.66.254 1.216.598 1.772 1.153.509.5.902 1.105 1.153 1.772.247.637.415 1.363.465 2.428.047 1.066.06 1.405.06 4.122 0 2.717-.01 3.056-.06 4.122-.05 1.065-.218 1.79-.465 2.428a4.883 4.883 0 01-1.153 1.772c-.5.509-1.105.902-1.772 1.153-.637.247-1.363.415-2.428.465-1.066.047-1.405.06-4.122.06-2.717 0-3.056-.01-4.122-.06-1.065-.05-1.79-.218-2.428-.465a4.89 4.89 0 01-1.772-1.153 4.904 4.904 0 01-1.153-1.772c-.248-.637-.415-1.363-.465-2.428C2.013 15.056 2 14.717 2 12c0-2.717.01-3.056.06-4.122.05-1.066.217-1.79.465-2.428a4.88 4.88 0 011.153-1.772A4.897 4.897 0 015.45 2.525c.638-.248 1.362-.415 2.428-.465C8.944 2.013 9.283 2 12 2z" />
                 </svg>
@@ -84,14 +85,16 @@ const Footer = () => {
           <div className="text-center flex flex-col items-center">
             <h3 className="text-lg font-semibold mb-4">Téléchargez l'application</h3>
             <p className="text-gray-400 mb-4">Disponible sous forme d'application web progressive (PWA).</p>
-            <Button 
-              variant="outline" 
-              className="bg-airsoft-red hover:bg-red-700 text-white px-6 py-3 text-lg rounded-md shadow-lg transform transition-transform hover:scale-105 flex items-center gap-2" 
-              size="lg"
-            >
-              <Download size={20} />
-              Installer l'application (PWA)
-            </Button>
+            <div className="flex justify-center">
+              <Button 
+                variant="outline" 
+                className="bg-airsoft-red hover:bg-red-700 text-white px-6 py-3 text-lg rounded-md shadow-lg transform transition-transform hover:scale-105 flex items-center gap-2" 
+                size="lg"
+              >
+                <Download size={20} />
+                Installer l'application (PWA)
+              </Button>
+            </div>
           </div>
         </div>
         

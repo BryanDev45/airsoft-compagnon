@@ -21,14 +21,12 @@ const Profile = () => {
   const [readyToLoad, setReadyToLoad] = useState(false);
   const [equipment, setEquipment] = useState<any[]>([]);
 
-  // 👇 Ce useEffect attend que `user` soit prêt
   useEffect(() => {
     if (!initialLoading && user?.id) {
       setReadyToLoad(true);
     }
   }, [initialLoading, user]);
 
-  // ✅ On n'appelle le hook qu'une fois qu'on est sûr que `user.id` est prêt
   const {
     loading,
     profileData,
@@ -38,7 +36,6 @@ const Profile = () => {
     fetchProfileData
   } = useProfileData(readyToLoad ? user?.id : null);
 
-  // Reste des états
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [showEditMediaDialog, setShowEditMediaDialog] = useState(false);
   const [showEditBioDialog, setShowEditBioDialog] = useState(false);

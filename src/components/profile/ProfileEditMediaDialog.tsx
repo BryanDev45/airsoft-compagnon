@@ -25,7 +25,10 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
   const [defaultAvatars, setDefaultAvatars] = useState<string[]>([]);
 
   useEffect(() => {
-    setDefaultAvatars(getAllDefaultAvatars());
+    const avatars = getAllDefaultAvatars();
+    if (avatars && avatars.length > 0) {
+      setDefaultAvatars(avatars);
+    }
   }, []);
 
   useEffect(() => {
@@ -184,24 +187,28 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
               <div className="w-full mt-4">
                 <p className="text-xs text-gray-400 mb-2">Ou choisissez un avatar de base</p>
                 <div className="grid grid-cols-4 gap-3 mt-2 max-h-48 overflow-y-auto p-2">
-                  {defaultAvatars.map((src, index) => (
-                    <button
-                      key={`${src}-${index}`}
-                      type="button"
-                      className={`p-0.5 rounded-full border-2 ${avatarPreview === src ? 'border-airsoft-red' : 'border-transparent'} hover:border-gray-300 transition-colors focus:outline-none`}
-                      onClick={() => handleSelectDefaultAvatar(src)}
-                      title="Choisir cet avatar"
-                    >
-                      <div className="w-12 h-12 rounded-full overflow-hidden">
-                        <img
-                          src={src}
-                          alt={`Avatar airsoft ${index + 1}`}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                      </div>
-                    </button>
-                  ))}
+                  {defaultAvatars && defaultAvatars.length > 0 ? (
+                    defaultAvatars.map((src, index) => (
+                      <button
+                        key={`${src}-${index}`}
+                        type="button"
+                        className={`p-0.5 rounded-full border-2 ${avatarPreview === src ? 'border-airsoft-red' : 'border-transparent'} hover:border-gray-300 transition-colors focus:outline-none`}
+                        onClick={() => handleSelectDefaultAvatar(src)}
+                        title="Choisir cet avatar"
+                      >
+                        <div className="w-12 h-12 rounded-full overflow-hidden">
+                          <img
+                            src={src}
+                            alt={`Avatar airsoft ${index + 1}`}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                        </div>
+                      </button>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500 col-span-4 text-center py-4">Chargement des avatars...</p>
+                  )}
                 </div>
               </div>
             </div>

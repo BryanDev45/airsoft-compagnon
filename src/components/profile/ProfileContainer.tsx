@@ -49,7 +49,7 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
 }) => {
   return (
     <div className="p-6">
-      <Tabs defaultValue="profile">
+      <Tabs defaultValue="profile" className="ring-1 ring-airsoft-red rounded-md p-1">
         <TabsList className="mb-6">
           <TabsTrigger value="profile">Profil</TabsTrigger>
           <TabsTrigger value="games">Mes parties</TabsTrigger>
@@ -65,6 +65,7 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
             profileData={profileData}
             updateLocation={updateLocation}
             handleNavigateToTeam={handleNavigateToTeam}
+            isOwnProfile={isOwnProfile}
           />
         </TabsContent>
         

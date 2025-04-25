@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,7 @@ const ProfileHeader = ({
       
       <div className="px-6 pb-4 pt-16 relative">
         <div className="absolute -top-12 left-6">
-          <Avatar className="h-24 w-24 border-4 border-white shadow-md">
+          <Avatar className="h-24 w-24 border-4 border-white shadow-md ring-2 ring-airsoft-red">
             <AvatarImage src={user?.avatar} alt={user?.username || 'Utilisateur'} />
             <AvatarFallback>{user?.username?.charAt(0) || 'U'}</AvatarFallback>
           </Avatar>
