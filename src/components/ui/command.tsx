@@ -82,7 +82,7 @@ const CommandGroup = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Group>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Group>
 >(({ className, children, ...props }, ref) => {
-  // S'assurer que children est itérable pour éviter l'erreur "undefined is not iterable"
+  // Ensure children is defined and iterable
   const safeChildren = React.Children.toArray(children);
 
   return (
