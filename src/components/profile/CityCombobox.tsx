@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -42,7 +41,6 @@ export function ComboboxDemo({
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   React.useEffect(() => {
-    // Create an abort controller to cancel fetch requests if component unmounts
     const abortController = new AbortController();
     
     const fetchCities = async () => {
@@ -56,11 +54,10 @@ export function ComboboxDemo({
       setError(null);
       
       try {
-        // Add error handling and fallbacks for the GeoNames API request
         const response = await fetch(
           `https://secure.geonames.org/searchJSON?name_startsWith=${encodeURIComponent(debouncedSearchTerm)}&featureClass=P&maxRows=10&username=airsoftcompagnon&lang=fr`,
           { 
-            signal: AbortSignal.timeout(5000), // Add timeout to prevent hanging requests
+            signal: abortController.signal,
             headers: {
               'Accept': 'application/json'
             }
@@ -73,7 +70,6 @@ export function ComboboxDemo({
         
         const data = await response.json();
         
-        // More robust verification of API response
         if (data && data.geonames && Array.isArray(data.geonames)) {
           const formattedCities = data.geonames.map((city: any) => ({
             name: city.name || '',
@@ -82,10 +78,8 @@ export function ComboboxDemo({
           }));
           setCities(formattedCities);
         } else {
-          console.error("Invalid response format:", data);
           setCities([]);
-          // Only set error if there's an actual problem with the data structure
-          if (data.status && data.status.message) {
+          if (data.status?.message) {
             setError(`API Error: ${data.status.message}`);
           } else {
             setError("Format de réponse invalide");
@@ -102,7 +96,6 @@ export function ComboboxDemo({
 
     fetchCities();
     
-    // Clean up function to abort any in-flight requests when component unmounts
     return () => {
       abortController.abort();
     };
@@ -149,9 +142,9 @@ export function ComboboxDemo({
                   <CommandItem
                     key={city.fullName}
                     value={city.fullName}
-                    onSelect={() => {
-                      setValue(city.fullName);
-                      onSelect(city.fullName);
+                    onSelect={(currentValue: string) => {
+                      setValue(currentValue);
+                      onSelect(currentValue);
                       setOpen(false);
                     }}
                   >
