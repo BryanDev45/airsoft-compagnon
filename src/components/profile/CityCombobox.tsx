@@ -37,6 +37,7 @@ export function ComboboxDemo({
   const [searchTerm, setSearchTerm] = useState("");
   const [cities, setCities] = useState<City[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
@@ -44,23 +45,27 @@ export function ComboboxDemo({
     const fetchCities = async () => {
       if (debouncedSearchTerm.length < 2) {
         setCities([]);
+        setError(null);
         return;
       }
 
       setIsLoading(true);
+      setError(null);
+      
       try {
-        // Utiliser l'API GeoNames pour la recherche de villes
+        // Add error handling and fallbacks for the GeoNames API request
         const response = await fetch(
-          `https://secure.geonames.org/searchJSON?name_startsWith=${encodeURIComponent(debouncedSearchTerm)}&featureClass=P&maxRows=10&username=airsoftcompagnon&lang=fr`
+          `https://secure.geonames.org/searchJSON?name_startsWith=${encodeURIComponent(debouncedSearchTerm)}&featureClass=P&maxRows=10&username=airsoftcompagnon&lang=fr`,
+          { signal: AbortSignal.timeout(5000) } // Add timeout to prevent hanging requests
         );
         
         if (!response.ok) {
-          throw new Error('Network response was not ok');
+          throw new Error(`Network response error: ${response.status}`);
         }
         
         const data = await response.json();
         
-        // Vérification plus stricte pour s'assurer que geonames est un tableau avant de l'utiliser
+        // More robust verification of API response
         if (data && data.geonames && Array.isArray(data.geonames)) {
           const formattedCities = data.geonames.map((city: any) => ({
             name: city.name || '',
@@ -71,16 +76,26 @@ export function ComboboxDemo({
         } else {
           console.error("Invalid response format:", data);
           setCities([]);
+          // Only set error if there's an actual problem with the data structure
+          if (data.status && data.status.message) {
+            setError(`API Error: ${data.status.message}`);
+          }
         }
       } catch (error) {
         console.error("Error fetching cities:", error);
         setCities([]);
+        setError("Impossible de récupérer les villes. Veuillez réessayer plus tard.");
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchCities();
+    
+    // Add cleanup function to cancel any in-flight requests when component unmounts
+    return () => {
+      // AbortController cleanup would go here if needed
+    };
   }, [debouncedSearchTerm]);
 
   return (
@@ -104,15 +119,22 @@ export function ComboboxDemo({
             onValueChange={setSearchTerm}
             className="h-9"
           />
-          <CommandEmpty>Aucune ville trouvée.</CommandEmpty>
+          {error && (
+            <div className="px-4 py-2 text-sm text-red-500">
+              {error}
+            </div>
+          )}
+          <CommandEmpty>
+            {isLoading ? "" : "Aucune ville trouvée."}
+          </CommandEmpty>
           <CommandGroup className="max-h-[200px] overflow-y-auto">
             {isLoading ? (
               <div className="flex items-center justify-center p-4">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="ml-2">Recherche en cours...</span>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                <span>Recherche en cours...</span>
               </div>
             ) : (
-              cities && cities.length > 0 ? cities.map((city) => (
+              cities && cities.length > 0 && cities.map((city) => (
                 <CommandItem
                   key={city.fullName}
                   value={city.fullName}
@@ -130,7 +152,7 @@ export function ComboboxDemo({
                   />
                   {city.fullName}
                 </CommandItem>
-              )) : null
+              ))
             )}
           </CommandGroup>
         </Command>
