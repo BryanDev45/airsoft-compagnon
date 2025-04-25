@@ -9,6 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Mail, Phone, MapPin, Send, MessageSquare, Clock, Users } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
+
 const Contact = () => {
   const form = useForm({
     defaultValues: {
@@ -18,6 +19,7 @@ const Contact = () => {
       message: ''
     }
   });
+
   const onSubmit = (data: any) => {
     console.log(data);
     toast({
@@ -26,7 +28,9 @@ const Contact = () => {
     });
     form.reset();
   };
-  return <div className="min-h-screen flex flex-col">
+
+  return (
+    <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow bg-gray-50">
         <div className="relative bg-airsoft-dark text-white py-16 mb-12">
@@ -43,7 +47,7 @@ const Contact = () => {
         </div>
         
         <div className="max-w-7xl mx-auto px-4 pb-16">
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
+          <div className="grid md:grid-cols-2 gap-8 mb-12 justify-center">
             <Card className="overflow-hidden hover:shadow-lg transition-shadow">
               <CardContent className="p-6 flex flex-col items-center text-center">
                 <div className="w-16 h-16 rounded-full bg-airsoft-red flex items-center justify-center mb-4 text-white">
@@ -57,8 +61,6 @@ const Contact = () => {
               </CardContent>
             </Card>
             
-            
-            
             <Card className="overflow-hidden hover:shadow-lg transition-shadow">
               <CardContent className="p-6 flex flex-col items-center text-center">
                 <div className="w-16 h-16 rounded-full bg-airsoft-red flex items-center justify-center mb-4 text-white">
@@ -69,7 +71,7 @@ const Contact = () => {
                 <div className="flex space-x-4">
                   <a href="#" className="text-gray-600 hover:text-airsoft-red transition-colors">
                     <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" />
+                      <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12c0-2.717.01-3.056.06-4.122.05-1.066.217-1.79.465-2.428a4.883 4.883 0 01-1.153 1.772c-.5.509-1.105.902-1.772 1.153-.637.247-1.363.415-2.428.465-1.066.047-1.405.06-4.122.06-2.717 0-3.056-.01-4.122-.06-1.065-.05-1.79-.218-2.428-.465a4.89 4.89 0 01-1.772-1.153 4.904 4.904 0 01-1.153-1.772c-.248-.637-.415-1.363-.465-2.428C2.013 15.056 2 14.717 2 12c0-2.717.01-3.056.06-4.122.05-1.066.217-1.79.465-2.428a4.88 4.88 0 011.153-1.772A4.897 4.897 0 015.45 2.525c.638-.248 1.362-.415 2.428-.465C8.944 2.013 9.283 2 12 2zm0 5a5 5 0 100 10 5 5 0 000-10zm6.5-.25a1.25 1.25 0 10-2.5 0 1.25 1.25 0 002.5 0zM12 9a3 3 0 110 6 3 3 0 010-6z" />
                     </svg>
                   </a>
                   <a href="#" className="text-gray-600 hover:text-airsoft-red transition-colors">
@@ -160,8 +162,8 @@ const Contact = () => {
                   </div>
                   
                   <div className="mt-8">
-                    <Button variant="outline" className="text-white border-white hover:bg-white hover:text-airsoft-dark" asChild>
-                      <a href="/faq" className="w-full bg-airsoft-red hover:bg-red-700 transition-colors">
+                    <Button variant="outline" className="w-full bg-airsoft-red hover:bg-red-700 text-white border-white" asChild>
+                      <a href="/faq">
                         Voir toutes les questions fréquentes
                       </a>
                     </Button>
@@ -173,6 +175,8 @@ const Contact = () => {
         </div>
       </main>
       <Footer />
-    </div>;
+    </div>
+  );
 };
+
 export default Contact;

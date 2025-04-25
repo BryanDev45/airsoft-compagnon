@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
@@ -12,7 +11,8 @@ const ProfileInfo = ({
   user,
   profileData,
   updateLocation,
-  handleNavigateToTeam
+  handleNavigateToTeam,
+  isOwnProfile = false
 }) => {
   const [isEditingLocation, setIsEditingLocation] = useState(false);
   const navigate = useNavigate();
@@ -79,7 +79,8 @@ const ProfileInfo = ({
               <MapPin className="h-5 w-5 text-gray-500 mr-3 mt-1" />
               <div className="flex-1">
                 <span className="text-sm text-gray-500">Localisation</span>
-                {isEditingLocation ? <div className="mt-1 space-y-2">
+                {isOwnProfile && isEditingLocation ? (
+                  <div className="mt-1 space-y-2">
                     <CityCombobox defaultValue={profileData?.location || ''} onSelect={handleLocationUpdate} />
                     <div className="flex space-x-2">
                       <Button variant="outline" size="sm" onClick={() => setIsEditingLocation(false)}>
@@ -87,14 +88,19 @@ const ProfileInfo = ({
                         Annuler
                       </Button>
                     </div>
-                  </div> : <div className="flex items-center justify-between">
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
                     <p className="font-medium">
                       {profileData?.location || 'Non spécifié'}
                     </p>
-                    <Button variant="ghost" size="sm" onClick={() => setIsEditingLocation(true)} className="h-8 px-2">
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  </div>}
+                    {isOwnProfile && (
+                      <Button variant="ghost" size="sm" onClick={() => setIsEditingLocation(true)} className="h-8 px-2">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -108,19 +114,27 @@ const ProfileInfo = ({
               <Users className="h-5 w-5 text-gray-500 mr-3 mt-1" />
               <div className="flex-grow">
                 <span className="text-sm text-gray-500">Équipe</span>
-                {profileData?.team ? <div className="flex items-center justify-between">
+                {profileData?.team ? (
+                  <div className="flex items-center justify-between">
                     <p className="font-medium">{profileData.team}</p>
-                    <Button variant="ghost" size="sm" onClick={handleNavigateToTeam} className="h-8 px-2">
-                      <Users className="h-4 w-4" />
-                    </Button>
-                  </div> : <div className="flex items-center justify-between">
-                    <p className="font-medium">Aucune équipe</p>
-                    <div className="flex gap-2">
-                      <Button variant="ghost" size="sm" className="h-8 px-2" onClick={handleNavigateToTeamSearch}>
-                        <Search className="h-4 w-4" />
+                    {isOwnProfile && (
+                      <Button variant="ghost" size="sm" onClick={handleNavigateToTeam} className="h-8 px-2">
+                        <Users className="h-4 w-4" />
                       </Button>
-                    </div>
-                  </div>}
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium">Aucune équipe</p>
+                    {isOwnProfile && (
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => navigate('/parties?tab=teams')}>
+                          <Search className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
             
@@ -144,4 +158,5 @@ const ProfileInfo = ({
       </div>
     </Card>;
 };
+
 export default ProfileInfo;
