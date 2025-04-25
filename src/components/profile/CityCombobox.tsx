@@ -42,8 +42,11 @@ export function ComboboxDemo({
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   React.useEffect(() => {
+    // Create an abort controller to cancel fetch requests if component unmounts
+    const abortController = new AbortController();
+    
     const fetchCities = async () => {
-      if (debouncedSearchTerm.length < 2) {
+      if (!debouncedSearchTerm || debouncedSearchTerm.length < 2) {
         setCities([]);
         setError(null);
         return;
@@ -56,7 +59,12 @@ export function ComboboxDemo({
         // Add error handling and fallbacks for the GeoNames API request
         const response = await fetch(
           `https://secure.geonames.org/searchJSON?name_startsWith=${encodeURIComponent(debouncedSearchTerm)}&featureClass=P&maxRows=10&username=airsoftcompagnon&lang=fr`,
-          { signal: AbortSignal.timeout(5000) } // Add timeout to prevent hanging requests
+          { 
+            signal: AbortSignal.timeout(5000), // Add timeout to prevent hanging requests
+            headers: {
+              'Accept': 'application/json'
+            }
+          }
         );
         
         if (!response.ok) {
@@ -79,9 +87,11 @@ export function ComboboxDemo({
           // Only set error if there's an actual problem with the data structure
           if (data.status && data.status.message) {
             setError(`API Error: ${data.status.message}`);
+          } else {
+            setError("Format de réponse invalide");
           }
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching cities:", error);
         setCities([]);
         setError("Impossible de récupérer les villes. Veuillez réessayer plus tard.");
@@ -92,9 +102,9 @@ export function ComboboxDemo({
 
     fetchCities();
     
-    // Add cleanup function to cancel any in-flight requests when component unmounts
+    // Clean up function to abort any in-flight requests when component unmounts
     return () => {
-      // AbortController cleanup would go here if needed
+      abortController.abort();
     };
   }, [debouncedSearchTerm]);
 
@@ -134,25 +144,26 @@ export function ComboboxDemo({
                 <span>Recherche en cours...</span>
               </div>
             ) : (
-              cities && cities.length > 0 && cities.map((city) => (
-                <CommandItem
-                  key={city.fullName}
-                  value={city.fullName}
-                  onSelect={() => {
-                    setValue(city.fullName);
-                    onSelect(city.fullName);
-                    setOpen(false);
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === city.fullName ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {city.fullName}
-                </CommandItem>
-              ))
+              Array.isArray(cities) && cities.length > 0 ? 
+                cities.map((city) => (
+                  <CommandItem
+                    key={city.fullName}
+                    value={city.fullName}
+                    onSelect={() => {
+                      setValue(city.fullName);
+                      onSelect(city.fullName);
+                      setOpen(false);
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === city.fullName ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {city.fullName}
+                  </CommandItem>
+                )) : null
             )}
           </CommandGroup>
         </Command>
