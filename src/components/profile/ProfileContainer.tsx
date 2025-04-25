@@ -49,7 +49,7 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
 }) => {
   return (
     <div className="p-6">
-      <Tabs defaultValue="profile" className="ring-1 ring-airsoft-red rounded-md p-1">
+      <Tabs defaultValue="profile" className="ring-1 ring-airsoft-red rounded-md">
         <TabsList className="mb-6">
           <TabsTrigger value="profile">Profil</TabsTrigger>
           <TabsTrigger value="games">Mes parties</TabsTrigger>
@@ -59,7 +59,7 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
           <TabsTrigger value="friends">Amis</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="profile">
+        <TabsContent value="profile" className="p-1">
           <ProfileInfo 
             user={user}
             profileData={profileData}
@@ -69,7 +69,7 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
           />
         </TabsContent>
         
-        <TabsContent value="games">
+        <TabsContent value="games" className="p-1">
           <ProfileGames 
             games={profileData?.games || []} 
             handleViewGameDetails={(game) => {
@@ -80,7 +80,7 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
           />
         </TabsContent>
         
-        <TabsContent value="stats">
+        <TabsContent value="stats" className="p-1">
           <ProfileStats 
             userStats={userStats}
             updateUserStats={updateUserStats}
@@ -88,7 +88,7 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
           />
         </TabsContent>
         
-        <TabsContent value="equipment">
+        <TabsContent value="equipment" className="p-1">
           {isOwnProfile && (
             <div className="mb-4 flex justify-end">
               <Button 
@@ -110,14 +110,14 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
           </div>
         </TabsContent>
         
-        <TabsContent value="badges">
+        <TabsContent value="badges" className="p-1">
           <ProfileBadges 
             badges={profileData?.badges || []}
             handleViewAllBadges={() => setShowBadgesDialog(true)}
           />
         </TabsContent>
 
-        <TabsContent value="friends">
+        <TabsContent value="friends" className="p-1">
           <ProfileFriends 
             userId={user?.id}
             isOwnProfile={isOwnProfile}
