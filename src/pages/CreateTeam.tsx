@@ -114,7 +114,7 @@ const CreateTeam = () => {
       console.error("Erreur lors de la création de l'équipe:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de créer l'équipe. Veuillez réessayer.",
+        description: error.message || "Impossible de créer l'équipe. Veuillez réessayer.",
         variant: "destructive",
       });
     } finally {
@@ -158,8 +158,8 @@ const CreateTeam = () => {
                 </div>
                 
                 <div>
-                  <Label htmlFor="location">Localisation</Label>
-                  <div id="location">
+                  <Label htmlFor="locationField">Localisation</Label>
+                  <div id="locationField">
                     <ComboboxDemo onSelect={onLocationSelect} />
                   </div>
                 </div>

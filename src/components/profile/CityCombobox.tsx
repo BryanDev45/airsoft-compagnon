@@ -89,7 +89,7 @@ export function ComboboxDemo({
       } catch (error: any) {
         console.error("Error fetching cities:", error);
         setCities([]);
-        setError("Impossible de récupérer les villes. Veuillez réessayer plus tard.");
+        setError(error.message || "Impossible de récupérer les villes. Veuillez réessayer plus tard.");
       } finally {
         setIsLoading(false);
       }
@@ -148,30 +148,33 @@ export function ComboboxDemo({
           role="combobox"
           aria-expanded={open}
           className="w-full justify-between"
+          type="button" // Add explicit type to prevent form submission
         >
           {value || "Sélectionner une ville..."}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="p-0 w-[300px]">
-        <Command className="overflow-hidden">
+      <PopoverContent className="p-0 w-[300px]" align="start">
+        <Command shouldFilter={false} className="overflow-hidden rounded-md">
           <CommandInput 
             placeholder="Rechercher une ville..." 
             value={searchTerm}
             onValueChange={(value) => setSearchTerm(value || "")}
             className="h-9"
           />
-          {error && (
-            <div className="px-4 py-2 text-sm text-red-500">
-              {error}
-            </div>
-          )}
-          <CommandEmpty>
-            {isLoading ? "" : "Aucune ville trouvée."}
-          </CommandEmpty>
-          <CommandGroup className="max-h-[200px] overflow-y-auto">
-            {renderCommandItems()}
-          </CommandGroup>
+          <div className="max-h-[200px] overflow-y-auto">
+            {error && (
+              <div className="px-4 py-2 text-sm text-red-500">
+                {error}
+              </div>
+            )}
+            <CommandEmpty>
+              {isLoading ? "Chargement..." : "Aucune ville trouvée."}
+            </CommandEmpty>
+            <CommandGroup>
+              {renderCommandItems()}
+            </CommandGroup>
+          </div>
         </Command>
       </PopoverContent>
     </Popover>
