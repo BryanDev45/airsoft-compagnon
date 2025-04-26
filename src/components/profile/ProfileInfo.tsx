@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
@@ -16,6 +15,7 @@ const ProfileInfo = ({
   isOwnProfile = false
 }) => {
   const [isEditingLocation, setIsEditingLocation] = useState(false);
+  const [locationValue, setLocationValue] = useState(profileData?.location || '');
   const navigate = useNavigate();
   
   const formatDate = dateString => {
@@ -31,9 +31,9 @@ const ProfileInfo = ({
     }
   };
   
-  const handleLocationUpdate = async location => {
+  const handleLocationUpdate = async () => {
     if (updateLocation) {
-      const success = await updateLocation(location);
+      const success = await updateLocation(locationValue);
       if (success) {
         setIsEditingLocation(false);
       }
@@ -82,8 +82,17 @@ const ProfileInfo = ({
                 <span className="text-sm text-gray-500">Localisation</span>
                 {isOwnProfile && isEditingLocation ? (
                   <div className="mt-1 space-y-2">
-                    <CityCombobox defaultValue={profileData?.location || ''} onSelect={handleLocationUpdate} />
+                    <Input
+                      value={locationValue}
+                      onChange={(e) => setLocationValue(e.target.value)}
+                      placeholder="Entrez votre localisation"
+                      className="w-full"
+                    />
                     <div className="flex space-x-2">
+                      <Button variant="outline" size="sm" onClick={handleLocationUpdate}>
+                        <Save className="h-4 w-4 mr-2" />
+                        Sauvegarder
+                      </Button>
                       <Button variant="outline" size="sm" onClick={() => setIsEditingLocation(false)}>
                         <X className="h-4 w-4 mr-2" />
                         Annuler

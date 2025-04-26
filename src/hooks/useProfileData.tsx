@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,114 +10,111 @@ export const useProfileData = (userId: string | undefined) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Seulement exécuter fetchProfileData si userId est défini
-    if (userId) {
-      fetchProfileData();
-    } else {
-      // Si userId est undefined, on met loading à false pour éviter un chargement infini
-      setLoading(false);
-    }
-  }, [userId]);
+    let isMounted = true;
 
-  const fetchProfileData = async () => {
-    if (!userId) {
-      setLoading(false);
-      return;
-    }
-    
-    try {
-      // Vérifier si le profil existe déjà
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
-
-      if (profileError && profileError.code !== 'PGRST116') {
-        throw profileError;
+    const fetchProfileData = async () => {
+      if (!userId) {
+        if (isMounted) setLoading(false);
+        return;
       }
+      
+      try {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .maybeSingle();
 
-      // Si le profil n'existe pas encore, récupérer les données de l'utilisateur Auth
-      if (!profile) {
-        console.log("Profil non trouvé, tentative de création...");
-        const { data: userData } = await supabase.auth.getUser();
-        if (userData?.user) {
-          // Créer un nouveau profil basé sur les métadonnées de l'utilisateur
-          const metaData = userData.user.user_metadata;
-          const newProfile = {
-            id: userId,
-            username: metaData.username || `user_${userId.substring(0, 8)}`,
-            email: userData.user.email,
-            firstname: metaData.firstname,
-            lastname: metaData.lastname,
-            birth_date: metaData.birth_date,
-            age: metaData.age || null,
-            join_date: new Date().toISOString().split('T')[0],
-            avatar: metaData.avatar
-          };
-          
-          // Insérer le nouveau profil
-          const { error: insertError } = await supabase
-            .from('profiles')
-            .insert(newProfile);
-            
-          if (insertError) throw insertError;
-          
-          setProfileData(newProfile);
-        } else {
-          // Si on n'a pas pu obtenir les données utilisateur, on arrête le chargement
-          setLoading(false);
-          return;
+        if (profileError && profileError.code !== 'PGRST116') {
+          throw profileError;
         }
-      } else {
-        setProfileData(profile);
-      }
 
-      // Récupérer les statistiques utilisateur
-      const { data: stats, error: statsError } = await supabase
-        .from('user_stats')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
+        if (!profile) {
+          const { data: userData } = await supabase.auth.getUser();
+          if (userData?.user && isMounted) {
+            // Créer un nouveau profil basé sur les métadonnées de l'utilisateur
+            const metaData = userData.user.user_metadata;
+            const newProfile = {
+              id: userId,
+              username: metaData.username || `user_${userId.substring(0, 8)}`,
+              email: userData.user.email,
+              firstname: metaData.firstname,
+              lastname: metaData.lastname,
+              birth_date: metaData.birth_date,
+              age: metaData.age || null,
+              join_date: new Date().toISOString().split('T')[0],
+              avatar: metaData.avatar
+            };
+            
+            // Insérer le nouveau profil
+            const { error: insertError } = await supabase
+              .from('profiles')
+              .insert(newProfile);
+              
+            if (insertError) throw insertError;
+            
+            setProfileData(newProfile);
+          }
+        } else if (isMounted) {
+          setProfileData(profile);
+        }
 
-      if (statsError && statsError.code !== 'PGRST116') {
-        throw statsError;
-      }
+        if (isMounted) {
+          const { data: stats, error: statsError } = await supabase
+            .from('user_stats')
+            .select('*')
+            .eq('user_id', userId)
+            .maybeSingle();
 
-      if (!stats) {
-        // Créer des statistiques par défaut si elles n'existent pas
-        const defaultStats = {
-          user_id: userId,
-          games_played: 0,
-          games_organized: 0,
-          reputation: 0,
-          preferred_game_type: 'CQB',
-          favorite_role: 'Assaut',
-          level: 'Débutant'
-        };
-        
-        const { error: insertStatsError } = await supabase
-          .from('user_stats')
-          .insert(defaultStats);
-          
-        if (insertStatsError) throw insertStatsError;
-        
-        setUserStats(defaultStats);
-      } else {
-        setUserStats(stats);
+          if (statsError && statsError.code !== 'PGRST116') {
+            throw statsError;
+          }
+
+          if (!stats && isMounted) {
+            // Créer des statistiques par défaut si elles n'existent pas
+            const defaultStats = {
+              user_id: userId,
+              games_played: 0,
+              games_organized: 0,
+              reputation: 0,
+              preferred_game_type: 'CQB',
+              favorite_role: 'Assaut',
+              level: 'Débutant'
+            };
+            
+            const { error: insertStatsError } = await supabase
+              .from('user_stats')
+              .insert(defaultStats);
+              
+            if (insertStatsError) throw insertStatsError;
+            
+            setUserStats(defaultStats);
+          } else if (isMounted) {
+            setUserStats(stats);
+          }
+        }
+      } catch (error: any) {
+        console.error("Erreur lors du chargement des données:", error);
+        if (isMounted) {
+          toast({
+            title: "Erreur",
+            description: "Impossible de charger les données du profil",
+            variant: "destructive",
+          });
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
-    } catch (error: any) {
-      console.error("Erreur lors du chargement des données:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les données du profil",
-        variant: "destructive",
-      });
-    } finally {
-      // S'assurer que loading est mis à false dans tous les cas
-      setLoading(false);
-    }
-  };
+    };
+
+    fetchProfileData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [userId]);
 
   const updateLocation = async (location: string) => {
     if (!userId) return false;

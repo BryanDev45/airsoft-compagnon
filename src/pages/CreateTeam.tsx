@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -44,7 +43,6 @@ const CreateTeam = () => {
     },
   });
 
-  // Make sure location is always handled as a string
   const onLocationSelect = (selectedLocation: string) => {
     setLocation(selectedLocation || "");
   };
@@ -63,7 +61,6 @@ const CreateTeam = () => {
     try {
       setIsSubmitting(true);
       
-      // Créer l'équipe dans Supabase
       const { data: team, error } = await supabase
         .from('teams')
         .insert({
@@ -71,17 +68,16 @@ const CreateTeam = () => {
           description: data.description,
           is_association: data.isAssociation,
           contact: data.contact || "",
-          location: location || "", // Ensure we never insert undefined
+          location: location || "",
           leader_id: user.id,
           member_count: 1,
-          logo: "/placeholder.svg", // Logo par défaut
+          logo: "/placeholder.svg",
         })
         .select()
         .single();
       
       if (error) throw error;
       
-      // Ajouter le créateur comme membre et leader de l'équipe
       const { error: memberError } = await supabase
         .from('team_members')
         .insert({
@@ -92,7 +88,6 @@ const CreateTeam = () => {
       
       if (memberError) throw memberError;
       
-      // Mettre à jour le profil de l'utilisateur
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ 
@@ -158,10 +153,15 @@ const CreateTeam = () => {
                 </div>
                 
                 <div>
-                  <Label htmlFor="location-field">Localisation</Label>
-                  <div id="location-field">
-                    <ComboboxDemo onSelect={onLocationSelect} />
-                  </div>
+                  <Label htmlFor="location">Localisation</Label>
+                  <Input
+                    id="location"
+                    type="text"
+                    placeholder="Entrez votre localisation"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    className="w-full"
+                  />
                 </div>
                 
                 <div>
