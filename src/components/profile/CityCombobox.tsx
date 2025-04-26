@@ -162,7 +162,7 @@ export function ComboboxDemo({
             onValueChange={(value) => setSearchTerm(value || "")}
             className="h-9"
           />
-          <div className="max-h-[200px] overflow-y-auto">
+          <CommandList>
             {error && (
               <div className="px-4 py-2 text-sm text-red-500">
                 {error}
@@ -174,9 +174,21 @@ export function ComboboxDemo({
             <CommandGroup>
               {renderCommandItems()}
             </CommandGroup>
-          </div>
+          </CommandList>
         </Command>
       </PopoverContent>
     </Popover>
+  );
+}
+
+/**
+ * This component is needed to fix the "undefined is not iterable" error
+ * by properly handling empty or undefined children
+ */
+function CommandList({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="max-h-[200px] overflow-y-auto">
+      {children}
+    </div>
   );
 }

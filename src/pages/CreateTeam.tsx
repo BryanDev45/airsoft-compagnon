@@ -106,7 +106,7 @@ const CreateTeam = () => {
       
       toast({
         title: "Succès",
-        description: "Votre équipe a été créée avec succès",
+        description: "Votre équipe a été créée avec succès"
       });
       
       navigate(`/team/${team.id}`);
@@ -158,8 +158,8 @@ const CreateTeam = () => {
                 </div>
                 
                 <div>
-                  <Label htmlFor="locationField">Localisation</Label>
-                  <div id="locationField">
+                  <Label htmlFor="location-field">Localisation</Label>
+                  <div id="location-field">
                     <ComboboxDemo onSelect={onLocationSelect} />
                   </div>
                 </div>
