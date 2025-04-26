@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -13,7 +14,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ComboboxDemo } from '@/components/profile/CityCombobox';
 
 const teamSchema = z.object({
   name: z.string().min(3, { message: "Le nom de l'équipe doit contenir au moins 3 caractères" }),
@@ -43,10 +43,6 @@ const CreateTeam = () => {
     },
   });
 
-  const onLocationSelect = (selectedLocation: string) => {
-    setLocation(selectedLocation || "");
-  };
-
   const onSubmit = async (data: any) => {
     if (!user) {
       toast({
@@ -60,6 +56,8 @@ const CreateTeam = () => {
 
     try {
       setIsSubmitting(true);
+      
+      console.log("Creating team with user ID:", user.id);
       
       const { data: team, error } = await supabase
         .from('teams')
@@ -76,7 +74,12 @@ const CreateTeam = () => {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Team creation error:", error);
+        throw error;
+      }
+      
+      console.log("Team created:", team);
       
       const { error: memberError } = await supabase
         .from('team_members')
@@ -86,7 +89,10 @@ const CreateTeam = () => {
           role: 'Leader',
         });
       
-      if (memberError) throw memberError;
+      if (memberError) {
+        console.error("Member creation error:", memberError);
+        throw memberError;
+      }
       
       const { error: profileError } = await supabase
         .from('profiles')
@@ -97,7 +103,10 @@ const CreateTeam = () => {
         })
         .eq('id', user.id);
       
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error("Profile update error:", profileError);
+        throw profileError;
+      }
       
       toast({
         title: "Succès",
