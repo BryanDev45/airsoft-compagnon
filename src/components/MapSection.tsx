@@ -175,7 +175,15 @@ const MapSection = () => {
 
   return <div className="py-12 bg-gray-100 md:py-0">
       <div className="max-w-7xl mx-auto px-4 py-[30px]">
-        <h2 className="text-3xl font-bold mb-8 text-center py-0">Trouvez votre prochaine partie</h2>
+        <div className="text-center mb-8">
+          <h2 className="text-3xl md:text-4xl font-bold relative inline-block">
+            <span className="relative z-10">Trouvez votre prochaine partie</span>
+            <span className="absolute bottom-0 left-0 w-full h-2 bg-airsoft-red/20 -z-0"></span>
+          </h2>
+          <p className="text-gray-600 mt-4 max-w-2xl mx-auto text-lg">
+            Des centaines de parties d'airsoft près de chez vous
+          </p>
+        </div>
         
         <div className="flex justify-end mb-6">
           <Link to="/parties/create">
