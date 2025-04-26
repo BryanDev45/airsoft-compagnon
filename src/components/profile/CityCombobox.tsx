@@ -102,36 +102,42 @@ export function ComboboxDemo({
     };
   }, [debouncedSearchTerm]);
 
-  // Fix: Ensure the children prop is properly initialized
-  const commandItems = 
-    isLoading ? (
-      <div className="flex items-center justify-center p-4">
-        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-        <span>Recherche en cours...</span>
-      </div>
-    ) : (
-      cities && cities.length > 0 ? 
-        cities.map((city) => (
-          <CommandItem
-            key={city.fullName}
-            value={city.fullName}
-            onSelect={(currentValue: string) => {
-              setValue(currentValue);
-              onSelect(currentValue);
-              setOpen(false);
-            }}
-          >
-            <Check
-              className={cn(
-                "mr-2 h-4 w-4",
-                value === city.fullName ? "opacity-100" : "opacity-0"
-              )}
-            />
-            {city.fullName}
-          </CommandItem>
-        )) 
-        : null
-    );
+  // Safely create command items
+  const renderCommandItems = () => {
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center p-4">
+          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+          <span>Recherche en cours...</span>
+        </div>
+      );
+    }
+    
+    // Ensure cities is defined and has items
+    if (!cities || cities.length === 0) {
+      return null;
+    }
+    
+    return cities.map((city) => (
+      <CommandItem
+        key={city.fullName}
+        value={city.fullName}
+        onSelect={(currentValue: string) => {
+          setValue(currentValue);
+          onSelect(currentValue || "");
+          setOpen(false);
+        }}
+      >
+        <Check
+          className={cn(
+            "mr-2 h-4 w-4",
+            value === city.fullName ? "opacity-100" : "opacity-0"
+          )}
+        />
+        {city.fullName}
+      </CommandItem>
+    ));
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -163,7 +169,7 @@ export function ComboboxDemo({
             {isLoading ? "" : "Aucune ville trouvée."}
           </CommandEmpty>
           <CommandGroup className="max-h-[200px] overflow-y-auto">
-            {commandItems}
+            {renderCommandItems()}
           </CommandGroup>
         </Command>
       </PopoverContent>

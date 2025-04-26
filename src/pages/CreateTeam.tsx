@@ -44,12 +44,12 @@ const CreateTeam = () => {
     },
   });
 
-  // Fix: Make sure we handle the location properly and never pass undefined
-  const onLocationSelect = (selectedLocation) => {
+  // Make sure we handle the location properly and never pass undefined
+  const onLocationSelect = (selectedLocation: string) => {
     setLocation(selectedLocation || ""); // Ensure we never set undefined
   };
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: any) => {
     if (!user) {
       toast({
         title: "Erreur",
