@@ -118,13 +118,15 @@ export function ComboboxDemo({
       return null;
     }
     
-    return cities.map((city) => (
+    // Use Array.prototype.map only if cities is an array
+    return Array.isArray(cities) ? cities.map((city) => (
       <CommandItem
         key={city.fullName}
         value={city.fullName}
         onSelect={(currentValue: string) => {
-          setValue(currentValue);
-          onSelect(currentValue || "");
+          const safeValue = currentValue || "";
+          setValue(safeValue);
+          onSelect(safeValue);
           setOpen(false);
         }}
       >
@@ -136,7 +138,7 @@ export function ComboboxDemo({
         />
         {city.fullName}
       </CommandItem>
-    ));
+    )) : null;
   };
 
   return (
@@ -157,7 +159,7 @@ export function ComboboxDemo({
           <CommandInput 
             placeholder="Rechercher une ville..." 
             value={searchTerm}
-            onValueChange={setSearchTerm}
+            onValueChange={(value) => setSearchTerm(value || "")}
             className="h-9"
           />
           {error && (

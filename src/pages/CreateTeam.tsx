@@ -26,7 +26,7 @@ const teamSchema = z.object({
 const CreateTeam = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [location, setLocation] = useState("");
+  const [location, setLocation] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const {
@@ -70,7 +70,7 @@ const CreateTeam = () => {
           name: data.name,
           description: data.description,
           is_association: data.isAssociation,
-          contact: data.contact,
+          contact: data.contact || "",
           location: location || "", // Ensure we never insert undefined
           leader_id: user.id,
           member_count: 1,
@@ -110,7 +110,7 @@ const CreateTeam = () => {
       });
       
       navigate(`/team/${team.id}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erreur lors de la création de l'équipe:", error);
       toast({
         title: "Erreur",
