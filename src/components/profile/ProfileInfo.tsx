@@ -1,7 +1,9 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input"; // Add the missing import
 import { ComboboxDemo as CityCombobox } from './CityCombobox';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
