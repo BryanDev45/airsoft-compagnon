@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Download } from 'lucide-react';
@@ -13,8 +14,6 @@ const Hero = () => {
         <div className="absolute inset-0 bg-white opacity-50"></div>
         <div className="absolute inset-0 bg-gradient-to-r from-black to-transparent opacity-50"></div>
       </div>
-      
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-6 lg:py-12 md:py-[60px] after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-2 after:bg-airsoft-red after:clip-bottom-border"></div>
       
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-6 lg:py-12 md:py-[60px]">
         <div className="max-w-3xl mx-auto text-center">
