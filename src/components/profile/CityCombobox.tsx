@@ -113,8 +113,8 @@ export function ComboboxDemo({
       );
     }
     
-    // Ensure cities is defined and is an array
-    if (!cities || !Array.isArray(cities) || cities.length === 0) {
+    // Ensure cities is defined and is an array before mapping
+    if (!Array.isArray(cities) || cities.length === 0) {
       return null;
     }
     

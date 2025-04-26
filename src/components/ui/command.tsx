@@ -85,7 +85,7 @@ const CommandGroup = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Group>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Group>
 >(({ className, children, ...props }, ref) => {
-  // We MUST ensure children is always an array that can be iterated safely
+  // We MUST ensure children is always an array that can be safely iterated
   const safeChildren = React.Children.toArray(children || []);
 
   return (
