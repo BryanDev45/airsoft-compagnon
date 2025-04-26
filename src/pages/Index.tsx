@@ -55,9 +55,7 @@ const Index = () => {
                   </div>
                 </div>
                 <h3 className="text-xl font-semibold mb-3 text-center">100% Gratuit</h3>
-                <p className="text-gray-600 text-center">
-                  Tous nos services de base sont entièrement gratuits pour la communauté airsoft.
-                </p>
+                <p className="text-gray-600 text-center">Tous nos services sont entièrement gratuits pour la communauté airsoft.</p>
               </div>
             </div>
             
