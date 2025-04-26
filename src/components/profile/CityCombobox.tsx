@@ -102,7 +102,7 @@ export function ComboboxDemo({
     };
   }, [debouncedSearchTerm]);
 
-  // Safely create command items
+  // Safely create command items - ensure we're not iterating over undefined
   const renderCommandItems = () => {
     if (isLoading) {
       return (
@@ -113,7 +113,7 @@ export function ComboboxDemo({
       );
     }
     
-    // Ensure cities is defined and is an array before mapping
+    // Extra safeguard: ensure cities is defined and is an array before mapping
     if (!Array.isArray(cities) || cities.length === 0) {
       return null;
     }
@@ -148,7 +148,7 @@ export function ComboboxDemo({
           role="combobox"
           aria-expanded={open}
           className="w-full justify-between"
-          type="button" // Add explicit type to prevent form submission
+          type="button" // Prevent form submission
         >
           {value || "Sélectionner une ville..."}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
