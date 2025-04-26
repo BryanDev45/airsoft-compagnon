@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -43,8 +44,9 @@ const CreateTeam = () => {
     },
   });
 
+  // Fix: Make sure we handle the location properly and never pass undefined
   const onLocationSelect = (selectedLocation) => {
-    setLocation(selectedLocation);
+    setLocation(selectedLocation || ""); // Ensure we never set undefined
   };
 
   const onSubmit = async (data) => {
@@ -69,7 +71,7 @@ const CreateTeam = () => {
           description: data.description,
           is_association: data.isAssociation,
           contact: data.contact,
-          location: location,
+          location: location || "", // Ensure we never insert undefined
           leader_id: user.id,
           member_count: 1,
           logo: "/placeholder.svg", // Logo par défaut
