@@ -44,9 +44,9 @@ const CreateTeam = () => {
     },
   });
 
-  // Make sure we handle the location properly and never pass undefined
+  // Make sure location is always handled as a string
   const onLocationSelect = (selectedLocation: string) => {
-    setLocation(selectedLocation || ""); // Ensure we never set undefined
+    setLocation(selectedLocation || "");
   };
 
   const onSubmit = async (data: any) => {

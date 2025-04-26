@@ -33,7 +33,7 @@ export function ComboboxDemo({
   onSelect: (value: string) => void;
 }) {
   const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState(defaultValue);
+  const [value, setValue] = React.useState(defaultValue || "");
   const [searchTerm, setSearchTerm] = useState("");
   const [cities, setCities] = useState<City[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -113,13 +113,12 @@ export function ComboboxDemo({
       );
     }
     
-    // Ensure cities is defined and has items
-    if (!cities || cities.length === 0) {
+    // Ensure cities is defined and is an array
+    if (!cities || !Array.isArray(cities) || cities.length === 0) {
       return null;
     }
     
-    // Use Array.prototype.map only if cities is an array
-    return Array.isArray(cities) ? cities.map((city) => (
+    return cities.map((city) => (
       <CommandItem
         key={city.fullName}
         value={city.fullName}
@@ -138,7 +137,7 @@ export function ComboboxDemo({
         />
         {city.fullName}
       </CommandItem>
-    )) : null;
+    ));
   };
 
   return (

@@ -26,7 +26,7 @@ interface CommandDialogProps extends DialogProps {}
 
 const CommandDialog = ({ children, ...props }: CommandDialogProps) => {
   // Ensure children is defined before rendering
-  const safeChildren = children || null;
+  const safeChildren = React.Children.toArray(children || []);
   
   return (
     <Dialog {...props}>
@@ -85,8 +85,7 @@ const CommandGroup = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Group>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Group>
 >(({ className, children, ...props }, ref) => {
-  // Safely handle children using React.Children.toArray
-  // This ensures we're always passing something iterable to the component
+  // We MUST ensure children is always an array that can be iterated safely
   const safeChildren = React.Children.toArray(children || []);
 
   return (
