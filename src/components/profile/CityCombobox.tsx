@@ -154,7 +154,7 @@ export function ComboboxDemo({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="p-0 w-[300px]">
-        <Command>
+        <Command className="overflow-hidden">
           <CommandInput 
             placeholder="Rechercher une ville..." 
             value={searchTerm}

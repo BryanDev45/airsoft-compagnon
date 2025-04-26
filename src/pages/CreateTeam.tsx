@@ -159,7 +159,9 @@ const CreateTeam = () => {
                 
                 <div>
                   <Label htmlFor="location">Localisation</Label>
-                  <ComboboxDemo onSelect={onLocationSelect} />
+                  <div id="location">
+                    <ComboboxDemo onSelect={onLocationSelect} />
+                  </div>
                 </div>
                 
                 <div>
