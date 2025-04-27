@@ -25,7 +25,7 @@ const RatingStars: React.FC<RatingStarsProps> = ({
         stars.push(
           <Star
             key={i}
-            className={`text-yellow-400 ${!readonly && 'cursor-pointer'}`}
+            className={`text-yellow-400 ${!readonly && 'cursor-pointer hover:scale-110 transition-transform'}`}
             size={size}
             onClick={() => !readonly && onRatingChange?.(i)}
           />
@@ -34,7 +34,7 @@ const RatingStars: React.FC<RatingStarsProps> = ({
         stars.push(
           <StarHalf
             key={i}
-            className={`text-yellow-400 ${!readonly && 'cursor-pointer'}`}
+            className={`text-yellow-400 ${!readonly && 'cursor-pointer hover:scale-110 transition-transform'}`}
             size={size}
             onClick={() => !readonly && onRatingChange?.(i - 0.5)}
           />
@@ -43,7 +43,7 @@ const RatingStars: React.FC<RatingStarsProps> = ({
         stars.push(
           <StarOff
             key={i}
-            className={`text-gray-300 ${!readonly && 'cursor-pointer'}`}
+            className={`text-gray-300 ${!readonly && 'cursor-pointer hover:scale-110 transition-transform'}`}
             size={size}
             onClick={() => !readonly && onRatingChange?.(i)}
           />

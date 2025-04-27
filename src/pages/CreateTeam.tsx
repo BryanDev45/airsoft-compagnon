@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -9,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/components/ui/use-toast";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useForm } from 'react-hook-form';
@@ -57,8 +57,6 @@ const CreateTeam = () => {
     try {
       setIsSubmitting(true);
       
-      console.log("Creating team with user ID:", user.id);
-      
       const { data: team, error } = await supabase
         .from('teams')
         .insert({
@@ -74,12 +72,7 @@ const CreateTeam = () => {
         .select()
         .single();
       
-      if (error) {
-        console.error("Team creation error:", error);
-        throw error;
-      }
-      
-      console.log("Team created:", team);
+      if (error) throw error;
       
       const { error: memberError } = await supabase
         .from('team_members')
@@ -89,10 +82,7 @@ const CreateTeam = () => {
           role: 'Leader',
         });
       
-      if (memberError) {
-        console.error("Member creation error:", memberError);
-        throw memberError;
-      }
+      if (memberError) throw memberError;
       
       const { error: profileError } = await supabase
         .from('profiles')
@@ -103,10 +93,7 @@ const CreateTeam = () => {
         })
         .eq('id', user.id);
       
-      if (profileError) {
-        console.error("Profile update error:", profileError);
-        throw profileError;
-      }
+      if (profileError) throw profileError;
       
       toast({
         title: "Succès",
@@ -129,93 +116,102 @@ const CreateTeam = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-grow bg-gray-50 py-12">
-        <div className="max-w-3xl mx-auto px-4">
-          <h1 className="text-3xl font-bold mb-8">Créer une équipe</h1>
-          
-          <div className="bg-white rounded-lg shadow p-6">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="name">Nom de l'équipe</Label>
-                  <Input
-                    id="name"
-                    {...register('name')}
-                    className={errors.name ? "border-red-500" : ""}
-                  />
-                  {errors.name && (
-                    <p className="text-red-500 text-xs mt-1">{errors.name.message?.toString()}</p>
-                  )}
+      <main className="flex-grow bg-gradient-to-b from-gray-50 to-white py-12">
+        <div className="max-w-4xl mx-auto px-4">
+          <Card className="shadow-lg border-t-4 border-airsoft-red">
+            <CardHeader className="space-y-1">
+              <CardTitle className="text-3xl font-bold text-center">Créer une équipe</CardTitle>
+              <CardDescription className="text-center">
+                Remplissez le formulaire ci-dessous pour créer votre équipe
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent>
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                <div className="grid gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Nom de l'équipe</Label>
+                    <Input
+                      id="name"
+                      {...register('name')}
+                      className={errors.name ? "border-red-500" : ""}
+                      placeholder="Les Invincibles"
+                    />
+                    {errors.name && (
+                      <p className="text-red-500 text-xs mt-1">{errors.name.message?.toString()}</p>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      {...register('description')}
+                      className={errors.description ? "border-red-500" : ""}
+                      rows={4}
+                      placeholder="Présentez votre équipe en quelques mots..."
+                    />
+                    {errors.description && (
+                      <p className="text-red-500 text-xs mt-1">{errors.description.message?.toString()}</p>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="location">Localisation</Label>
+                    <Input
+                      id="location"
+                      type="text"
+                      placeholder="Paris, France"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="contact">Email de contact</Label>
+                    <Input
+                      id="contact"
+                      type="email"
+                      {...register('contact')}
+                      className={errors.contact ? "border-red-500" : ""}
+                      placeholder="contact@equipe.fr"
+                    />
+                    {errors.contact && (
+                      <p className="text-red-500 text-xs mt-1">{errors.contact.message?.toString()}</p>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="isAssociation"
+                      onCheckedChange={(checked) => setValue('isAssociation', !!checked)}
+                    />
+                    <Label htmlFor="isAssociation" className="text-sm">
+                      Cette équipe est une association loi 1901
+                    </Label>
+                  </div>
                 </div>
                 
-                <div>
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    {...register('description')}
-                    className={errors.description ? "border-red-500" : ""}
-                    rows={4}
-                  />
-                  {errors.description && (
-                    <p className="text-red-500 text-xs mt-1">{errors.description.message?.toString()}</p>
-                  )}
+                <div className="flex justify-end space-x-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => navigate(-1)}
+                  >
+                    Annuler
+                  </Button>
+                  
+                  <Button
+                    type="submit"
+                    className="bg-airsoft-red hover:bg-red-700"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Création en cours..." : "Créer l'équipe"}
+                  </Button>
                 </div>
-                
-                <div>
-                  <Label htmlFor="location">Localisation</Label>
-                  <Input
-                    id="location"
-                    type="text"
-                    placeholder="Entrez votre localisation"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    className="w-full"
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="contact">Email de contact</Label>
-                  <Input
-                    id="contact"
-                    type="email"
-                    {...register('contact')}
-                    className={errors.contact ? "border-red-500" : ""}
-                  />
-                  {errors.contact && (
-                    <p className="text-red-500 text-xs mt-1">{errors.contact.message?.toString()}</p>
-                  )}
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="isAssociation"
-                    onCheckedChange={(checked) => setValue('isAssociation', !!checked)}
-                  />
-                  <Label htmlFor="isAssociation" className="text-sm">
-                    Cette équipe est une association loi 1901
-                  </Label>
-                </div>
-              </div>
-              
-              <div className="pt-4 flex justify-end space-x-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => navigate(-1)}
-                >
-                  Annuler
-                </Button>
-                
-                <Button
-                  type="submit"
-                  className="bg-airsoft-red hover:bg-red-700"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? "Création en cours..." : "Créer l'équipe"}
-                </Button>
-              </div>
-            </form>
-          </div>
+              </form>
+            </CardContent>
+          </Card>
         </div>
       </main>
       <Footer />

@@ -29,128 +29,108 @@ const Team = () => {
   const [selectedField, setSelectedField] = useState<any>(null);
 
   useEffect(() => {
-    setTimeout(() => {
-      setTeam({
-        id: id || '1',
-        name: "Les Invincibles",
-        logo: "https://randomuser.me/api/portraits/men/44.jpg",
-        banner: "/lovable-uploads/381c6357-0426-45d3-8262-7b1be5c1bc96.png",
-        description: "Équipe fondée en 2019 spécialisée en milsim et parties forestières. Nous organisons régulièrement des événements sur la région parisienne et participons aux grands événements nationaux.",
-        slogan: "Ensemble, invincibles",
-        location: "Paris, France",
-        founded: "2019",
-        organizationType: "association",
-        contactEmail: "contact@lesinvincibles.fr",
-        members: [
-          {
-            id: 1,
-            username: "AirsoftMaster",
-            role: "Chef d'équipe",
-            avatar: "https://randomuser.me/api/portraits/men/44.jpg",
-            joinedTeam: "Avril 2019",
-            specialty: "Stratégie",
-            verified: true,
-            isTeamLeader: true
-          },
-          {
-            id: 2,
-            username: "SniperElite",
-            role: "Tireur d'élite",
-            avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-            joinedTeam: "Mai 2019",
-            specialty: "Précision longue distance",
-            verified: true,
-            isTeamLeader: false
-          },
-          {
-            id: 3,
-            username: "MedicAngel",
-            role: "Support médical",
-            avatar: "https://randomuser.me/api/portraits/women/22.jpg",
-            joinedTeam: "Juin 2020",
-            specialty: "Premiers secours",
-            verified: false,
-            isTeamLeader: false
-          },
-          {
-            id: 4,
-            username: "TacticalFox",
-            role: "Éclaireur",
-            avatar: "https://randomuser.me/api/portraits/men/28.jpg",
-            joinedTeam: "Août 2021",
-            specialty: "Reconnaissance",
-            verified: true,
-            isTeamLeader: false
-          },
-          {
-            id: 5,
-            username: "GunnerPrime",
-            role: "Mitrailleur",
-            avatar: "https://randomuser.me/api/portraits/men/36.jpg",
-            joinedTeam: "Janvier 2022",
-            specialty: "Support feu",
-            verified: false,
-            isTeamLeader: false
-          }
-        ],
-        achievements: [
-          { id: 1, title: "Champions de Paris Airsoft Challenge 2022", date: "Octobre 2022" },
-          { id: 2, title: "2ème place au Tournoi National d'Airsoft 2023", date: "Mai 2023" },
-          { id: 3, title: "Meilleur esprit d'équipe - Forest Warfare 2023", date: "Juillet 2023" }
-        ],
-        upcomingGames: [
-          { 
-            id: 1, 
-            title: "Opération Blackout", 
-            date: "15/05/2025", 
-            location: "Terrain Battlezone, Paris",
-            participants: 24
-          },
-          { 
-            id: 2, 
-            title: "CQB Summer Challenge", 
-            date: "02/06/2025", 
-            location: "Hangar 34, Marseille",
-            participants: 36
-          }
-        ],
-        pastGames: [
-          { 
-            id: 3, 
-            title: "Milsim Weekend", 
-            date: "10/03/2025", 
-            location: "Forêt de Fontainebleau",
-            result: "Victoire",
-            participants: 80
-          },
-          { 
-            id: 4, 
-            title: "Urban Warfare", 
-            date: "05/01/2025", 
-            location: "Zone urbaine abandonnée, Lille",
-            result: "2ème place",
-            participants: 40
-          }
-        ],
-        stats: {
-          gamesPlayed: 42,
-          memberCount: 5,
-          averageRating: 4.8
-        },
-        field: {
-          name: "Terrain Les Invincibles",
-          description: "Terrain forestier de 10 hectares avec zones CQB et bunkers",
-          address: "Forêt de Fontainebleau, 77300",
-          coordinates: [2.6667, 48.4167],
-          surface: "10 hectares",
-          type: "Forestier avec structures CQB",
-          hasBuildings: true,
-          amenities: ["Zone de repos", "Parking", "Sanitaires", "Zone CQB"]
+    const fetchTeamData = async () => {
+      try {
+        setLoading(true);
+        
+        const { data: teamData, error: teamError } = await supabase
+          .from('teams')
+          .select(`
+            *,
+            team_members (
+              id,
+              role,
+              user_id,
+              profiles:user_id (
+                username,
+                avatar,
+                join_date,
+                is_verified
+              )
+            ),
+            team_fields (*)
+          `)
+          .eq('id', id)
+          .single();
+
+        if (teamError) throw teamError;
+
+        if (!teamData) {
+          toast({
+            title: "Équipe non trouvée",
+            description: "Cette équipe n'existe pas ou a été supprimée",
+            variant: "destructive",
+          });
+          navigate('/');
+          return;
         }
-      });
-      setLoading(false);
-    }, 800);
-  }, [id]);
+
+        // Get team games
+        const { data: gamesData, error: gamesError } = await supabase
+          .from('games')
+          .select('*')
+          .eq('organizer_id', teamData.id)
+          .order('date', { ascending: true });
+
+        if (gamesError) throw gamesError;
+
+        // Format team members data
+        const formattedMembers = teamData.team_members.map(member => ({
+          id: member.profiles.id,
+          username: member.profiles.username,
+          role: member.role,
+          avatar: member.profiles.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + member.profiles.username,
+          joinedTeam: new Date(member.profiles.join_date).toLocaleDateString('fr-FR'),
+          verified: member.profiles.is_verified
+        }));
+
+        // Split games into upcoming and past
+        const now = new Date();
+        const upcomingGames = (gamesData || [])
+          .filter(game => new Date(game.date) > now)
+          .map(game => ({
+            id: game.id,
+            title: game.title,
+            date: new Date(game.date).toLocaleDateString('fr-FR'),
+            location: game.location,
+            participants: game.participants || 0
+          }));
+
+        const pastGames = (gamesData || [])
+          .filter(game => new Date(game.date) <= now)
+          .map(game => ({
+            id: game.id,
+            title: game.title,
+            date: new Date(game.date).toLocaleDateString('fr-FR'),
+            location: game.location,
+            result: game.status,
+            participants: game.participants || 0
+          }));
+
+        setTeam({
+          ...teamData,
+          members: formattedMembers,
+          upcomingGames,
+          pastGames,
+          field: teamData.team_fields?.[0] || null
+        });
+
+        setLoading(false);
+      } catch (error) {
+        console.error("Erreur lors de la récupération des données:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les données de l'équipe",
+          variant: "destructive",
+        });
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchTeamData();
+    }
+  }, [id, navigate]);
 
   const handleViewMember = (member: any) => {
     setSelectedMember(member);
