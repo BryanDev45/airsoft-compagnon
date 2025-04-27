@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Settings, UserPlus, Shield, Mail, Trash2, ImageIcon, Image, LogOut, AlertTriangle, Edit } from 'lucide-react';
 import { 
@@ -57,6 +58,7 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [localTeamDescription, setLocalTeamDescription] = useState(team.description || "");
   const [localContactEmail, setLocalContactEmail] = useState(team.contact || "");
+  const [isEditingBio, setIsEditingBio] = useState(false);
 
   const logoInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
@@ -435,8 +437,8 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
                   <Mail className="h-4 w-4 text-gray-400" />
                   <Input 
                     id="email" 
-                    value={contactEmail} 
-                    onChange={(e) => setContactEmail(e.target.value)}
+                    value={localContactEmail} 
+                    onChange={(e) => setLocalContactEmail(e.target.value)}
                     placeholder="email@example.com" 
                   />
                 </div>
