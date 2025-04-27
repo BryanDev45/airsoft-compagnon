@@ -1,5 +1,6 @@
+
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,6 +18,7 @@ import TeamDialogs from '../components/team/TeamDialogs';
 
 const Team = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [team, setTeam] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedMember, setSelectedMember] = useState<any>(null);
@@ -42,6 +44,7 @@ const Team = () => {
               role,
               user_id,
               profiles:user_id (
+                id,
                 username,
                 avatar,
                 join_date,
@@ -76,13 +79,13 @@ const Team = () => {
 
         // Format team members data
         const formattedMembers = teamData.team_members.map(member => ({
-          id: member.profiles.id,
-          username: member.profiles.username,
+          id: member.profiles?.id,
+          username: member.profiles?.username,
           role: member.role,
-          avatar: member.profiles.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + member.profiles.username,
-          joinedTeam: new Date(member.profiles.join_date).toLocaleDateString('fr-FR'),
-          verified: member.profiles.is_verified
-        }));
+          avatar: member.profiles?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + member.profiles?.username,
+          joinedTeam: member.profiles?.join_date ? new Date(member.profiles.join_date).toLocaleDateString('fr-FR') : 'N/A',
+          verified: member.profiles?.is_verified
+        })).filter(member => member.id); // Filter out any members without valid profile data
 
         // Split games into upcoming and past
         const now = new Date();
@@ -112,7 +115,12 @@ const Team = () => {
           members: formattedMembers,
           upcomingGames,
           pastGames,
-          field: teamData.team_fields?.[0] || null
+          field: teamData.team_fields?.[0] || null,
+          stats: {
+            gamesPlayed: (gamesData || []).length,
+            memberCount: formattedMembers.length,
+            averageRating: teamData.rating?.toFixed(1) || '0.0'
+          }
         });
 
         setLoading(false);
