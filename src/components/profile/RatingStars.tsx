@@ -12,6 +12,20 @@ interface RatingStarsProps {
   userId?: string;
 }
 
+/**
+ * Helper function to call Supabase RPC functions with type safety bypassing
+ */
+const callRPC = async <T,>(functionName: string, params: Record<string, any> = {}): Promise<{data: T | null, error: Error | null}> => {
+  try {
+    // @ts-ignore - We're intentionally bypassing TypeScript's type checking here
+    const result = await supabase.rpc(functionName, params);
+    return result;
+  } catch (error) {
+    console.error(`Error calling RPC function ${functionName}:`, error);
+    return { data: null, error: error as Error };
+  }
+};
+
 const RatingStars: React.FC<RatingStarsProps> = ({ 
   rating, 
   onRatingChange, 
@@ -57,30 +71,29 @@ const RatingStars: React.FC<RatingStarsProps> = ({
       setIsSaving(true);
       
       // Check if rating already exists using the custom function
-      const { data: existingRating } = await supabase
-        .rpc('get_user_rating', {
-          p_rater_id: currentUserId,
-          p_rated_id: userId
-        });
+      const { data: existingRating, error: checkError } = await callRPC<number>('get_user_rating', {
+        p_rater_id: currentUserId,
+        p_rated_id: userId
+      });
+      
+      if (checkError) throw checkError;
       
       let result;
       
       if (existingRating) {
         // Update existing rating with custom function
-        result = await supabase
-          .rpc('update_user_rating', {
-            p_rater_id: currentUserId,
-            p_rated_id: userId,
-            p_rating: newRating
-          });
+        result = await callRPC('update_user_rating', {
+          p_rater_id: currentUserId,
+          p_rated_id: userId,
+          p_rating: newRating
+        });
       } else {
         // Create new rating with custom function
-        result = await supabase
-          .rpc('insert_user_rating', {
-            p_rater_id: currentUserId,
-            p_rated_id: userId,
-            p_rating: newRating
-          });
+        result = await callRPC('insert_user_rating', {
+          p_rater_id: currentUserId,
+          p_rated_id: userId,
+          p_rating: newRating
+        });
       }
       
       if (result.error) throw result.error;
