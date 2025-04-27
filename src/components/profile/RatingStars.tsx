@@ -56,32 +56,31 @@ const RatingStars: React.FC<RatingStarsProps> = ({
     try {
       setIsSaving(true);
       
-      // Check if rating already exists
+      // Check if rating already exists using the custom function
       const { data: existingRating } = await supabase
-        .from('user_ratings')
-        .select('*')
-        .eq('rater_id', currentUserId)
-        .eq('rated_id', userId)
-        .maybeSingle();
+        .rpc('get_user_rating', {
+          p_rater_id: currentUserId,
+          p_rated_id: userId
+        });
       
       let result;
       
       if (existingRating) {
-        // Update existing rating
+        // Update existing rating with custom function
         result = await supabase
-          .from('user_ratings')
-          .update({ rating: newRating, updated_at: new Date() })
-          .eq('rater_id', currentUserId)
-          .eq('rated_id', userId);
+          .rpc('update_user_rating', {
+            p_rater_id: currentUserId,
+            p_rated_id: userId,
+            p_rating: newRating
+          });
       } else {
-        // Create new rating
+        // Create new rating with custom function
         result = await supabase
-          .from('user_ratings')
-          .insert([{ 
-            rater_id: currentUserId, 
-            rated_id: userId, 
-            rating: newRating 
-          }]);
+          .rpc('insert_user_rating', {
+            p_rater_id: currentUserId,
+            p_rated_id: userId,
+            p_rating: newRating
+          });
       }
       
       if (result.error) throw result.error;
