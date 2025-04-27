@@ -16,12 +16,42 @@ import TeamGames from '../components/team/TeamGames';
 import TeamField from '../components/team/TeamField';
 import TeamDialogs from '../components/team/TeamDialogs';
 
+interface TeamMember {
+  id?: string;
+  username?: string;
+  role?: string;
+  avatar?: string;
+  joinedTeam?: string;
+  verified?: boolean;
+  specialty?: string;
+}
+
+interface TeamData {
+  id: string;
+  name: string;
+  description?: string;
+  location?: string;
+  logo?: string;
+  banner?: string;
+  contact?: string;
+  contactEmail?: string;
+  members: TeamMember[];
+  upcomingGames: any[];
+  pastGames: any[];
+  field: any;
+  stats: {
+    gamesPlayed: number;
+    memberCount: number;
+    averageRating: string;
+  };
+}
+
 const Team = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [team, setTeam] = useState<any>(null);
+  const [team, setTeam] = useState<TeamData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedMember, setSelectedMember] = useState<any>(null);
+  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [showMemberDialog, setShowMemberDialog] = useState(false);
   const [showContactDialog, setShowContactDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
@@ -35,24 +65,10 @@ const Team = () => {
       try {
         setLoading(true);
         
+        // Fetch team data with separate queries to avoid relationship issues
         const { data: teamData, error: teamError } = await supabase
           .from('teams')
-          .select(`
-            *,
-            team_members (
-              id,
-              role,
-              user_id,
-              profiles:user_id (
-                id,
-                username,
-                avatar,
-                join_date,
-                is_verified
-              )
-            ),
-            team_fields (*)
-          `)
+          .select('*, team_fields(*)')
           .eq('id', id)
           .single();
 
@@ -68,6 +84,45 @@ const Team = () => {
           return;
         }
 
+        // Get team members
+        const { data: teamMembers, error: membersError } = await supabase
+          .from('team_members')
+          .select('id, role, user_id')
+          .eq('team_id', teamData.id);
+
+        if (membersError) throw membersError;
+
+        // Get profiles for team members
+        let formattedMembers: TeamMember[] = [];
+        if (teamMembers && teamMembers.length > 0) {
+          const userIds = teamMembers.map(member => member.user_id).filter(Boolean);
+          
+          if (userIds.length > 0) {
+            const { data: profiles, error: profilesError } = await supabase
+              .from('profiles')
+              .select('id, username, avatar, join_date, is_verified')
+              .in('id', userIds);
+
+            if (profilesError) throw profilesError;
+
+            // Match profiles with team members and format the data
+            formattedMembers = teamMembers.map(member => {
+              const profile = profiles?.find(p => p.id === member.user_id);
+              if (!profile) return null;
+              
+              return {
+                id: profile.id,
+                username: profile.username,
+                role: member.role,
+                avatar: profile.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.username || 'default'}`,
+                joinedTeam: profile.join_date ? new Date(profile.join_date).toLocaleDateString('fr-FR') : 'N/A',
+                verified: profile.is_verified,
+                specialty: 'Non spécifié' // Default value, update if you have specialty data
+              };
+            }).filter(Boolean) as TeamMember[];
+          }
+        }
+
         // Get team games
         const { data: gamesData, error: gamesError } = await supabase
           .from('games')
@@ -76,16 +131,6 @@ const Team = () => {
           .order('date', { ascending: true });
 
         if (gamesError) throw gamesError;
-
-        // Format team members data
-        const formattedMembers = teamData.team_members.map(member => ({
-          id: member.profiles?.id,
-          username: member.profiles?.username,
-          role: member.role,
-          avatar: member.profiles?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + member.profiles?.username,
-          joinedTeam: member.profiles?.join_date ? new Date(member.profiles.join_date).toLocaleDateString('fr-FR') : 'N/A',
-          verified: member.profiles?.is_verified
-        })).filter(member => member.id); // Filter out any members without valid profile data
 
         // Split games into upcoming and past
         const now = new Date();
@@ -110,7 +155,7 @@ const Team = () => {
             participants: game.participants || 0
           }));
 
-        setTeam({
+        const teamDataFormatted: TeamData = {
           ...teamData,
           members: formattedMembers,
           upcomingGames,
@@ -121,8 +166,9 @@ const Team = () => {
             memberCount: formattedMembers.length,
             averageRating: teamData.rating?.toFixed(1) || '0.0'
           }
-        });
+        };
 
+        setTeam(teamDataFormatted);
         setLoading(false);
       } catch (error) {
         console.error("Erreur lors de la récupération des données:", error);
