@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Settings, UserPlus, Shield, Mail, Trash2, ImageIcon, Image, LogOut, AlertTriangle, Edit } from 'lucide-react';
 import { 
@@ -129,7 +128,7 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
       });
       
       setSelectedMember(null);
-      if (onTeamUpdate) onTeamUpdate();
+      if (onTeamUpdate) onTeamUpdate({ ...team });
     } catch (error) {
       console.error("Error updating member role:", error);
       toast({
@@ -163,7 +162,7 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
       
       setShowDeleteMemberDialog(false);
       setSelectedMember(null);
-      if (onTeamUpdate) onTeamUpdate();
+      if (onTeamUpdate) onTeamUpdate({ ...team });
     } catch (error) {
       console.error("Error deleting member:", error);
       toast({
