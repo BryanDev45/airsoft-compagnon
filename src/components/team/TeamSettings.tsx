@@ -1,6 +1,5 @@
-
 import React, { useState, useRef, useEffect } from 'react';
-import { Settings, UserPlus, Shield, Mail, Trash2, ImageIcon, Image, LogOut, AlertTriangle } from 'lucide-react';
+import { Settings, UserPlus, Shield, Mail, Trash2, ImageIcon, Image, LogOut, AlertTriangle, Edit } from 'lucide-react';
 import { 
   Dialog, 
   DialogContent, 
@@ -35,6 +34,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { Textarea } from "@/components/ui/textarea";
 
 interface TeamSettingsProps {
   team: any;
@@ -58,6 +58,9 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
   
   const logoInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
+
+  const [teamDescription, setTeamDescription] = useState(team.description || "");
+  const [isEditingBio, setIsEditingBio] = useState(false);
 
   useEffect(() => {
     const checkUserRole = async () => {
@@ -357,6 +360,32 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
     }
   };
 
+  const handleSaveDescription = async () => {
+    try {
+      const { error } = await supabase
+        .from('teams')
+        .update({ description: teamDescription })
+        .eq('id', team.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Description mise à jour",
+        description: "La description de l'équipe a été mise à jour avec succès"
+      });
+
+      if (onTeamUpdate) onTeamUpdate();
+      setIsEditingBio(false);
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de la description:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour la description",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <>
       <Dialog>
@@ -599,6 +628,47 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
                   {isUpdating ? "Enregistrement..." : "Enregistrer les médias"}
                 </Button>
               </DialogFooter>
+            </TabsContent>
+
+            <TabsContent value="about" className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>Description de l'équipe</Label>
+                {isEditingBio ? (
+                  <div className="space-y-2">
+                    <Textarea
+                      value={teamDescription}
+                      onChange={(e) => setTeamDescription(e.target.value)}
+                      placeholder="Décrivez votre équipe..."
+                      rows={4}
+                    />
+                    <div className="flex justify-end space-x-2">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => {
+                          setTeamDescription(team.description || "");
+                          setIsEditingBio(false);
+                        }}
+                      >
+                        Annuler
+                      </Button>
+                      <Button onClick={handleSaveDescription}>
+                        Enregistrer
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <p>{teamDescription || "Aucune description"}</p>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => setIsEditingBio(true)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
             </TabsContent>
           </Tabs>
           

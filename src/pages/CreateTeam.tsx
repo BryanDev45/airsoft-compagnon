@@ -1,23 +1,23 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { toast } from "@/components/ui/use-toast";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 const teamSchema = z.object({
   name: z.string().min(3, { message: "Le nom de l'équipe doit contenir au moins 3 caractères" }),
-  description: z.string().min(10, { message: "La description doit contenir au moins 10 caractères" }),
+  description: z.string().optional(),
   isAssociation: z.boolean().optional(),
   contact: z.string().email({ message: "Email de contact invalide" }).optional(),
 });
@@ -61,7 +61,7 @@ const CreateTeam = () => {
         .from('teams')
         .insert({
           name: data.name,
-          description: data.description,
+          description: data.description || "",
           is_association: data.isAssociation,
           contact: data.contact || "",
           location: location || "",
@@ -73,27 +73,6 @@ const CreateTeam = () => {
         .single();
       
       if (error) throw error;
-      
-      const { error: memberError } = await supabase
-        .from('team_members')
-        .insert({
-          team_id: team.id,
-          user_id: user.id,
-          role: 'Leader',
-        });
-      
-      if (memberError) throw memberError;
-      
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ 
-          team_id: team.id,
-          team: data.name,
-          is_team_leader: true
-        })
-        .eq('id', user.id);
-      
-      if (profileError) throw profileError;
       
       toast({
         title: "Succès",
@@ -143,17 +122,13 @@ const CreateTeam = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
+                    <Label htmlFor="description">Description de l'équipe</Label>
                     <Textarea
                       id="description"
                       {...register('description')}
-                      className={errors.description ? "border-red-500" : ""}
                       rows={4}
                       placeholder="Présentez votre équipe en quelques mots..."
                     />
-                    {errors.description && (
-                      <p className="text-red-500 text-xs mt-1">{errors.description.message?.toString()}</p>
-                    )}
                   </div>
                   
                   <div className="space-y-2">
