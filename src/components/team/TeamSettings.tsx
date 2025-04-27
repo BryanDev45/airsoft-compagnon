@@ -1,5 +1,4 @@
-
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Settings, UserPlus, Shield, Mail, Trash2, ImageIcon, Image, LogOut, AlertTriangle, Edit } from 'lucide-react';
 import { 
   Dialog, 
@@ -39,7 +38,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 interface TeamSettingsProps {
   team: any;
-  onTeamUpdate?: () => void;
+  onTeamUpdate?: (updatedTeam: any) => void;
 }
 
 const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
@@ -56,12 +55,11 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
   const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [isCurrentUserTeamLeader, setIsCurrentUserTeamLeader] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-  
+  const [localTeamDescription, setLocalTeamDescription] = useState(team.description || "");
+  const [localContactEmail, setLocalContactEmail] = useState(team.contact || "");
+
   const logoInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
-
-  const [teamDescription, setTeamDescription] = useState(team.description || "");
-  const [isEditingBio, setIsEditingBio] = useState(false);
 
   useEffect(() => {
     const checkUserRole = async () => {
@@ -69,7 +67,6 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
         
-        // Check if user is a team leader
         const isLeader = team.members.some((m: any) => 
           m.id === user.id && (m.role === "Chef d'équipe" || m.isTeamLeader)
         );
@@ -89,7 +86,7 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
       
       const { error } = await supabase
         .from('teams')
-        .update({ contact: contactEmail })
+        .update({ contact: localContactEmail })
         .eq('id', team.id);
         
       if (error) throw error;
@@ -99,7 +96,7 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
         description: "L'adresse de contact a été mise à jour avec succès"
       });
       
-      if (onTeamUpdate) onTeamUpdate();
+      if (onTeamUpdate) onTeamUpdate({ ...team, contact: localContactEmail });
     } catch (error) {
       console.error("Error updating contact info:", error);
       toast({
@@ -231,7 +228,6 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
     try {
       setIsUpdating(true);
       
-      // Delete team
       const { error } = await supabase
         .from('teams')
         .delete()
@@ -354,7 +350,11 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
       setLogoFile(null);
       setBannerFile(null);
       
-      if (onTeamUpdate) onTeamUpdate();
+      if (onTeamUpdate) onTeamUpdate({ 
+        ...team, 
+        logo: logoUrl, 
+        banner: bannerUrl 
+      });
     } catch (error: any) {
       console.error("Error updating team media:", error);
       toast({
@@ -372,7 +372,7 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
       setIsUpdating(true);
       const { error } = await supabase
         .from('teams')
-        .update({ description: teamDescription })
+        .update({ description: localTeamDescription })
         .eq('id', team.id);
 
       if (error) throw error;
@@ -383,7 +383,10 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
       });
 
       setIsEditingBio(false);
-      if (onTeamUpdate) onTeamUpdate();
+      if (onTeamUpdate) onTeamUpdate({ 
+        ...team, 
+        description: localTeamDescription 
+      });
     } catch (error) {
       console.error("Erreur lors de la mise à jour de la description:", error);
       toast({
@@ -409,7 +412,7 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
             <span className="sr-only">Paramètres de l'équipe</span>
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Paramètres de l'équipe</DialogTitle>
             <DialogDescription>
@@ -647,8 +650,8 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
                 {isEditingBio ? (
                   <div className="space-y-2">
                     <Textarea
-                      value={teamDescription}
-                      onChange={(e) => setTeamDescription(e.target.value)}
+                      value={localTeamDescription}
+                      onChange={(e) => setLocalTeamDescription(e.target.value)}
                       placeholder="Décrivez votre équipe..."
                       rows={4}
                     />
@@ -656,13 +659,16 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
                       <Button 
                         variant="outline" 
                         onClick={() => {
-                          setTeamDescription(team.description || "");
+                          setLocalTeamDescription(team.description || "");
                           setIsEditingBio(false);
                         }}
                       >
                         Annuler
                       </Button>
-                      <Button onClick={handleSaveDescription} disabled={isUpdating}>
+                      <Button 
+                        onClick={handleSaveDescription} 
+                        disabled={isUpdating}
+                      >
                         {isUpdating ? "Enregistrement..." : "Enregistrer"}
                       </Button>
                     </div>
@@ -670,7 +676,7 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
                 ) : (
                   <div className="flex items-start gap-2 justify-between">
                     <p className="text-gray-700">
-                      {teamDescription || "Aucune description"}
+                      {localTeamDescription || "Aucune description"}
                     </p>
                     <Button 
                       variant="ghost" 
