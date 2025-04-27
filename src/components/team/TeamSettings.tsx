@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Settings, UserPlus, Shield, Mail, Trash2, ImageIcon, Image, LogOut, AlertTriangle, Edit } from 'lucide-react';
 import { 
@@ -300,7 +301,10 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
           .from('team_media')
           .upload(logoFileName, logoFile, { upsert: true });
           
-        if (logoError) throw logoError;
+        if (logoError) {
+          console.error("Error uploading logo:", logoError);
+          throw logoError;
+        }
         
         // Get public URL
         const { data: logoPublicURL } = supabase.storage
@@ -317,7 +321,10 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
           .from('team_media')
           .upload(bannerFileName, bannerFile, { upsert: true });
           
-        if (bannerError) throw bannerError;
+        if (bannerError) {
+          console.error("Error uploading banner:", bannerError);
+          throw bannerError;
+        }
         
         // Get public URL
         const { data: bannerPublicURL } = supabase.storage
@@ -348,11 +355,11 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
       setBannerFile(null);
       
       if (onTeamUpdate) onTeamUpdate();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating team media:", error);
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de la mise à jour des médias",
+        description: error.message || "Une erreur est survenue lors de la mise à jour des médias",
         variant: "destructive"
       });
     } finally {
@@ -362,6 +369,7 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
 
   const handleSaveDescription = async () => {
     try {
+      setIsUpdating(true);
       const { error } = await supabase
         .from('teams')
         .update({ description: teamDescription })
@@ -374,8 +382,8 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
         description: "La description de l'équipe a été mise à jour avec succès"
       });
 
-      if (onTeamUpdate) onTeamUpdate();
       setIsEditingBio(false);
+      if (onTeamUpdate) onTeamUpdate();
     } catch (error) {
       console.error("Erreur lors de la mise à jour de la description:", error);
       toast({
@@ -383,6 +391,8 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
         description: "Impossible de mettre à jour la description",
         variant: "destructive"
       });
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -408,10 +418,11 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
           </DialogHeader>
           
           <Tabs defaultValue="contact">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="contact">Contact</TabsTrigger>
               <TabsTrigger value="members">Membres</TabsTrigger>
               <TabsTrigger value="media">Médias</TabsTrigger>
+              <TabsTrigger value="about">À propos</TabsTrigger>
             </TabsList>
             
             <TabsContent value="contact" className="space-y-4 py-4">
@@ -651,14 +662,16 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
                       >
                         Annuler
                       </Button>
-                      <Button onClick={handleSaveDescription}>
-                        Enregistrer
+                      <Button onClick={handleSaveDescription} disabled={isUpdating}>
+                        {isUpdating ? "Enregistrement..." : "Enregistrer"}
                       </Button>
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-between">
-                    <p>{teamDescription || "Aucune description"}</p>
+                  <div className="flex items-start gap-2 justify-between">
+                    <p className="text-gray-700">
+                      {teamDescription || "Aucune description"}
+                    </p>
                     <Button 
                       variant="ghost" 
                       size="icon" 

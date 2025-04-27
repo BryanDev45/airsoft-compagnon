@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -57,6 +58,10 @@ const CreateTeam = () => {
     try {
       setIsSubmitting(true);
       
+      const defaultLogo = "/placeholder.svg";
+      const defaultBanner = "https://images.unsplash.com/photo-1553302948-2b3ec6d9eada?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&h=300&q=80";
+      
+      // Create team
       const { data: team, error } = await supabase
         .from('teams')
         .insert({
@@ -67,7 +72,8 @@ const CreateTeam = () => {
           location: location || "",
           leader_id: user.id,
           member_count: 1,
-          logo: "/placeholder.svg",
+          logo: defaultLogo,
+          banner: defaultBanner,
         })
         .select()
         .single();
