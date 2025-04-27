@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -60,131 +60,133 @@ const Team = () => {
   const [isEditingField, setIsEditingField] = useState(false);
   const [selectedField, setSelectedField] = useState<any>(null);
 
-  useEffect(() => {
-    const fetchTeamData = async () => {
-      try {
-        setLoading(true);
-        
-        // Fetch team data with separate queries to avoid relationship issues
-        const { data: teamData, error: teamError } = await supabase
-          .from('teams')
-          .select('*, team_fields(*)')
-          .eq('id', id)
-          .single();
+  // Function to fetch team data that can be reused for refresh
+  const fetchTeamData = useCallback(async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch team data with separate queries to avoid relationship issues
+      const { data: teamData, error: teamError } = await supabase
+        .from('teams')
+        .select('*, team_fields(*)')
+        .eq('id', id)
+        .single();
 
-        if (teamError) throw teamError;
+      if (teamError) throw teamError;
 
-        if (!teamData) {
-          toast({
-            title: "Équipe non trouvée",
-            description: "Cette équipe n'existe pas ou a été supprimée",
-            variant: "destructive",
-          });
-          navigate('/');
-          return;
-        }
-
-        // Get team members
-        const { data: teamMembers, error: membersError } = await supabase
-          .from('team_members')
-          .select('id, role, user_id')
-          .eq('team_id', teamData.id);
-
-        if (membersError) throw membersError;
-
-        // Get profiles for team members
-        let formattedMembers: TeamMember[] = [];
-        if (teamMembers && teamMembers.length > 0) {
-          const userIds = teamMembers.map(member => member.user_id).filter(Boolean);
-          
-          if (userIds.length > 0) {
-            const { data: profiles, error: profilesError } = await supabase
-              .from('profiles')
-              .select('id, username, avatar, join_date, is_verified')
-              .in('id', userIds);
-
-            if (profilesError) throw profilesError;
-
-            // Match profiles with team members and format the data
-            formattedMembers = teamMembers.map(member => {
-              const profile = profiles?.find(p => p.id === member.user_id);
-              if (!profile) return null;
-              
-              return {
-                id: profile.id,
-                username: profile.username,
-                role: member.role,
-                avatar: profile.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.username || 'default'}`,
-                joinedTeam: profile.join_date ? new Date(profile.join_date).toLocaleDateString('fr-FR') : 'N/A',
-                verified: profile.is_verified,
-                specialty: 'Non spécifié' // Default value, update if you have specialty data
-              };
-            }).filter(Boolean) as TeamMember[];
-          }
-        }
-
-        // Get team games
-        const { data: gamesData, error: gamesError } = await supabase
-          .from('games')
-          .select('*')
-          .eq('organizer_id', teamData.id)
-          .order('date', { ascending: true });
-
-        if (gamesError) throw gamesError;
-
-        // Split games into upcoming and past
-        const now = new Date();
-        const upcomingGames = (gamesData || [])
-          .filter(game => new Date(game.date) > now)
-          .map(game => ({
-            id: game.id,
-            title: game.title,
-            date: new Date(game.date).toLocaleDateString('fr-FR'),
-            location: game.location,
-            participants: game.participants || 0
-          }));
-
-        const pastGames = (gamesData || [])
-          .filter(game => new Date(game.date) <= now)
-          .map(game => ({
-            id: game.id,
-            title: game.title,
-            date: new Date(game.date).toLocaleDateString('fr-FR'),
-            location: game.location,
-            result: game.status,
-            participants: game.participants || 0
-          }));
-
-        const teamDataFormatted: TeamData = {
-          ...teamData,
-          members: formattedMembers,
-          upcomingGames,
-          pastGames,
-          field: teamData.team_fields?.[0] || null,
-          stats: {
-            gamesPlayed: (gamesData || []).length,
-            memberCount: formattedMembers.length,
-            averageRating: teamData.rating?.toFixed(1) || '0.0'
-          }
-        };
-
-        setTeam(teamDataFormatted);
-        setLoading(false);
-      } catch (error) {
-        console.error("Erreur lors de la récupération des données:", error);
+      if (!teamData) {
         toast({
-          title: "Erreur",
-          description: "Impossible de charger les données de l'équipe",
+          title: "Équipe non trouvée",
+          description: "Cette équipe n'existe pas ou a été supprimée",
           variant: "destructive",
         });
-        setLoading(false);
+        navigate('/');
+        return;
       }
-    };
 
+      // Get team members
+      const { data: teamMembers, error: membersError } = await supabase
+        .from('team_members')
+        .select('id, role, user_id')
+        .eq('team_id', teamData.id);
+
+      if (membersError) throw membersError;
+
+      // Get profiles for team members
+      let formattedMembers: TeamMember[] = [];
+      if (teamMembers && teamMembers.length > 0) {
+        const userIds = teamMembers.map(member => member.user_id).filter(Boolean);
+        
+        if (userIds.length > 0) {
+          const { data: profiles, error: profilesError } = await supabase
+            .from('profiles')
+            .select('id, username, avatar, join_date, is_verified')
+            .in('id', userIds);
+
+          if (profilesError) throw profilesError;
+
+          // Match profiles with team members and format the data
+          formattedMembers = teamMembers.map(member => {
+            const profile = profiles?.find(p => p.id === member.user_id);
+            if (!profile) return null;
+            
+            return {
+              id: profile.id,
+              username: profile.username,
+              role: member.role,
+              avatar: profile.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.username || 'default'}`,
+              joinedTeam: profile.join_date ? new Date(profile.join_date).toLocaleDateString('fr-FR') : 'N/A',
+              verified: profile.is_verified,
+              specialty: 'Non spécifié' // Default value, update if you have specialty data
+            };
+          }).filter(Boolean) as TeamMember[];
+        }
+      }
+
+      // Get team games
+      const { data: gamesData, error: gamesError } = await supabase
+        .from('games')
+        .select('*')
+        .eq('organizer_id', teamData.id)
+        .order('date', { ascending: true });
+
+      if (gamesError) throw gamesError;
+
+      // Split games into upcoming and past
+      const now = new Date();
+      const upcomingGames = (gamesData || [])
+        .filter(game => new Date(game.date) > now)
+        .map(game => ({
+          id: game.id,
+          title: game.title,
+          date: new Date(game.date).toLocaleDateString('fr-FR'),
+          location: game.location,
+          participants: game.participants || 0
+        }));
+
+      const pastGames = (gamesData || [])
+        .filter(game => new Date(game.date) <= now)
+        .map(game => ({
+          id: game.id,
+          title: game.title,
+          date: new Date(game.date).toLocaleDateString('fr-FR'),
+          location: game.location,
+          result: game.status,
+          participants: game.participants || 0
+        }));
+
+      const teamDataFormatted: TeamData = {
+        ...teamData,
+        contactEmail: teamData.contact, // Map contact email
+        members: formattedMembers,
+        upcomingGames,
+        pastGames,
+        field: teamData.team_fields?.[0] || null,
+        stats: {
+          gamesPlayed: (gamesData || []).length,
+          memberCount: formattedMembers.length,
+          averageRating: teamData.rating?.toFixed(1) || '0.0'
+        }
+      };
+
+      setTeam(teamDataFormatted);
+      setLoading(false);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des données:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les données de l'équipe",
+        variant: "destructive",
+      });
+      setLoading(false);
+    }
+  }, [id, navigate]);
+
+  useEffect(() => {
     if (id) {
       fetchTeamData();
     }
-  }, [id, navigate]);
+  }, [id, fetchTeamData]);
 
   const handleViewMember = (member: any) => {
     setSelectedMember(member);
@@ -207,7 +209,7 @@ const Team = () => {
 
     toast({
       title: "Message envoyé",
-      description: `Votre message a été envoyé à ${team.name} (${team.contactEmail})`
+      description: `Votre message a été envoyé à ${team?.name} (${team?.contactEmail})`
     });
     setContactMessage('');
     setContactSubject('');
@@ -320,7 +322,7 @@ const Team = () => {
 
                 <TabsContent value="field">
                   <TeamField 
-                    field={selectedField}
+                    field={team.field}
                     isEditing={isEditingField}
                     onEdit={(fieldId, updates) => {
                       setSelectedField(updates);
@@ -347,6 +349,9 @@ const Team = () => {
                           return;
                         }
                       }
+                      
+                      // Refresh the team data
+                      fetchTeamData();
                       setIsEditingField(false);
                     }}
                     onCancel={() => {

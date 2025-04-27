@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Settings, UserPlus, Shield, Mail, Trash2, ImageIcon, Image, LogOut, AlertTriangle } from 'lucide-react';
 import { 
   Dialog, 
@@ -34,12 +34,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 interface TeamSettingsProps {
   team: any;
+  onTeamUpdate?: () => void;
 }
 
-const TeamSettings = ({ team }: TeamSettingsProps) => {
+const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
   const navigate = useNavigate();
   const [contactEmail, setContactEmail] = useState(team.contactEmail || "");
   const [selectedMember, setSelectedMember] = useState<any>(null);
@@ -49,65 +51,214 @@ const TeamSettings = ({ team }: TeamSettingsProps) => {
   const [showDeleteTeamDialog, setShowDeleteTeamDialog] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
+  const [isCurrentUserTeamLeader, setIsCurrentUserTeamLeader] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   
   const logoInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
 
-  const handleUpdateContactInfo = () => {
-    // Simulating API call
-    toast({
-      title: "Informations mises à jour",
-      description: "L'adresse de contact a été mise à jour avec succès"
-    });
+  useEffect(() => {
+    const checkUserRole = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        
+        // Check if user is a team leader
+        const isLeader = team.members.some((m: any) => 
+          m.id === user.id && (m.role === "Chef d'équipe" || m.isTeamLeader)
+        );
+        
+        setIsCurrentUserTeamLeader(isLeader);
+      } catch (error) {
+        console.error("Error checking user role:", error);
+      }
+    };
+    
+    checkUserRole();
+  }, [team]);
+
+  const handleUpdateContactInfo = async () => {
+    try {
+      setIsUpdating(true);
+      
+      const { error } = await supabase
+        .from('teams')
+        .update({ contact: contactEmail })
+        .eq('id', team.id);
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Informations mises à jour",
+        description: "L'adresse de contact a été mise à jour avec succès"
+      });
+      
+      if (onTeamUpdate) onTeamUpdate();
+    } catch (error) {
+      console.error("Error updating contact info:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la mise à jour des informations",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
-  const handleUpdateMemberRole = (memberId: number, newRole: string) => {
-    // Simulating API call
-    toast({
-      title: "Rôle mis à jour",
-      description: `Le rôle du membre a été mis à jour avec succès`
-    });
-    setSelectedMember(null);
+  const handleUpdateMemberRole = async (memberId: string, newRole: string) => {
+    try {
+      setIsUpdating(true);
+      
+      const { error } = await supabase
+        .from('team_members')
+        .update({ role: newRole })
+        .eq('user_id', memberId)
+        .eq('team_id', team.id);
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Rôle mis à jour",
+        description: `Le rôle du membre a été mis à jour avec succès`
+      });
+      
+      setSelectedMember(null);
+      if (onTeamUpdate) onTeamUpdate();
+    } catch (error) {
+      console.error("Error updating member role:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la mise à jour du rôle",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
-  const handleDeleteMember = () => {
+  const handleDeleteMember = async () => {
     if (!selectedMember) return;
     
-    // Simulating API call
-    toast({
-      title: "Membre supprimé",
-      description: `${selectedMember.username} a été retiré de l'équipe`
-    });
-    
-    setShowDeleteMemberDialog(false);
-    setSelectedMember(null);
+    try {
+      setIsUpdating(true);
+      
+      const { error } = await supabase
+        .from('team_members')
+        .delete()
+        .eq('user_id', selectedMember.id)
+        .eq('team_id', team.id);
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Membre supprimé",
+        description: `${selectedMember.username} a été retiré de l'équipe`
+      });
+      
+      setShowDeleteMemberDialog(false);
+      setSelectedMember(null);
+      if (onTeamUpdate) onTeamUpdate();
+    } catch (error) {
+      console.error("Error deleting member:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la suppression du membre",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
-  const handleLeaveTeam = () => {
-    // Simulating API call
-    toast({
-      title: "Équipe quittée",
-      description: "Vous avez quitté l'équipe avec succès"
-    });
-    
-    setShowLeaveTeamDialog(false);
-    navigate('/profile');
+  const handleLeaveTeam = async () => {
+    try {
+      setIsUpdating(true);
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Erreur",
+          description: "Vous devez être connecté pour quitter l'équipe",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      const { error } = await supabase
+        .from('team_members')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('team_id', team.id);
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Équipe quittée",
+        description: "Vous avez quitté l'équipe avec succès"
+      });
+      
+      setShowLeaveTeamDialog(false);
+      navigate('/profile');
+    } catch (error) {
+      console.error("Error leaving team:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors du départ de l'équipe",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdating(false);
+    }
   };
   
-  const handleDeleteTeam = () => {
-    // Simulating API call
-    toast({
-      title: "Équipe supprimée",
-      description: "L'équipe a été supprimée avec succès"
-    });
+  const handleDeleteTeam = async () => {
+    if (!isCurrentUserTeamLeader) {
+      toast({
+        title: "Action non autorisée",
+        description: "Seuls les chefs d'équipe peuvent supprimer l'équipe",
+        variant: "destructive"
+      });
+      return;
+    }
     
-    setShowDeleteTeamDialog(false);
-    navigate('/profile');
+    try {
+      setIsUpdating(true);
+      
+      // Delete team
+      const { error } = await supabase
+        .from('teams')
+        .delete()
+        .eq('id', team.id);
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Équipe supprimée",
+        description: "L'équipe a été supprimée avec succès"
+      });
+      
+      setShowDeleteTeamDialog(false);
+      navigate('/profile');
+    } catch (error) {
+      console.error("Error deleting team:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la suppression de l'équipe",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      setLogoFile(file);
+      
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target && typeof event.target.result === 'string') {
@@ -121,6 +272,8 @@ const TeamSettings = ({ team }: TeamSettingsProps) => {
   const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      setBannerFile(file);
+      
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target && typeof event.target.result === 'string') {
@@ -131,12 +284,77 @@ const TeamSettings = ({ team }: TeamSettingsProps) => {
     }
   };
 
-  const handleSaveMedia = () => {
-    // Simulating API call
-    toast({
-      title: "Médias mis à jour",
-      description: "Les médias de l'équipe ont été mis à jour avec succès"
-    });
+  const handleSaveMedia = async () => {
+    try {
+      setIsUpdating(true);
+      let logoUrl = team.logo;
+      let bannerUrl = team.banner;
+      
+      // Upload logo if changed
+      if (logoFile) {
+        const logoFileName = `team_logo_${team.id}_${Date.now()}`;
+        const { data: logoData, error: logoError } = await supabase.storage
+          .from('team_media')
+          .upload(logoFileName, logoFile, { upsert: true });
+          
+        if (logoError) throw logoError;
+        
+        // Get public URL
+        const { data: logoPublicURL } = supabase.storage
+          .from('team_media')
+          .getPublicUrl(logoFileName);
+          
+        logoUrl = logoPublicURL.publicUrl;
+      }
+      
+      // Upload banner if changed
+      if (bannerFile) {
+        const bannerFileName = `team_banner_${team.id}_${Date.now()}`;
+        const { data: bannerData, error: bannerError } = await supabase.storage
+          .from('team_media')
+          .upload(bannerFileName, bannerFile, { upsert: true });
+          
+        if (bannerError) throw bannerError;
+        
+        // Get public URL
+        const { data: bannerPublicURL } = supabase.storage
+          .from('team_media')
+          .getPublicUrl(bannerFileName);
+          
+        bannerUrl = bannerPublicURL.publicUrl;
+      }
+      
+      // Update team record with new media URLs
+      const { error } = await supabase
+        .from('teams')
+        .update({ 
+          logo: logoUrl,
+          banner: bannerUrl
+        })
+        .eq('id', team.id);
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Médias mis à jour",
+        description: "Les médias de l'équipe ont été mis à jour avec succès"
+      });
+      
+      // Clear file states
+      setLogoFile(null);
+      setBannerFile(null);
+      
+      if (onTeamUpdate) onTeamUpdate();
+    } catch (error) {
+      console.error("Error updating team media:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la mise à jour des médias",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   return (
@@ -185,7 +403,9 @@ const TeamSettings = ({ team }: TeamSettingsProps) => {
               </div>
               
               <DialogFooter>
-                <Button onClick={handleUpdateContactInfo}>Enregistrer</Button>
+                <Button onClick={handleUpdateContactInfo} disabled={isUpdating}>
+                  {isUpdating ? "Enregistrement..." : "Enregistrer"}
+                </Button>
               </DialogFooter>
             </TabsContent>
             
@@ -202,7 +422,7 @@ const TeamSettings = ({ team }: TeamSettingsProps) => {
                       className={`p-2 rounded-md border ${selectedMember?.id === member.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200'} cursor-pointer`}
                       onClick={() => {
                         setSelectedMember(member);
-                        setMemberRole(member.role);
+                        setMemberRole(member.role || "");
                       }}
                     >
                       <div className="flex items-center justify-between">
@@ -213,7 +433,7 @@ const TeamSettings = ({ team }: TeamSettingsProps) => {
                               alt={member.username} 
                               className="w-10 h-10 rounded-full"
                             />
-                            {member.isTeamLeader && (
+                            {member.role === "Chef d'équipe" && (
                               <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5">
                                 <Shield className="h-3 w-3 text-yellow-600" />
                               </div>
@@ -224,7 +444,7 @@ const TeamSettings = ({ team }: TeamSettingsProps) => {
                             <div className="text-xs text-gray-500">{member.role}</div>
                           </div>
                         </div>
-                        {selectedMember?.id === member.id && !member.isTeamLeader && (
+                        {selectedMember?.id === member.id && member.role !== "Chef d'équipe" && (
                           <Button 
                             variant="ghost" 
                             size="icon" 
@@ -253,6 +473,7 @@ const TeamSettings = ({ team }: TeamSettingsProps) => {
                         <Select 
                           value={memberRole} 
                           onValueChange={setMemberRole}
+                          disabled={selectedMember.role === "Chef d'équipe" && isCurrentUserTeamLeader}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Sélectionner un rôle" />
@@ -272,8 +493,8 @@ const TeamSettings = ({ team }: TeamSettingsProps) => {
                         <Button variant="outline" onClick={() => setSelectedMember(null)}>
                           Annuler
                         </Button>
-                        <Button onClick={() => handleUpdateMemberRole(selectedMember.id, memberRole)}>
-                          Enregistrer
+                        <Button onClick={() => handleUpdateMemberRole(selectedMember.id, memberRole)} disabled={isUpdating}>
+                          {isUpdating ? "Enregistrement..." : "Enregistrer"}
                         </Button>
                       </div>
                     </div>
@@ -374,8 +595,8 @@ const TeamSettings = ({ team }: TeamSettingsProps) => {
               </div>
               
               <DialogFooter>
-                <Button onClick={handleSaveMedia}>
-                  Enregistrer les médias
+                <Button onClick={handleSaveMedia} disabled={isUpdating}>
+                  {isUpdating ? "Enregistrement..." : "Enregistrer les médias"}
                 </Button>
               </DialogFooter>
             </TabsContent>
@@ -391,7 +612,7 @@ const TeamSettings = ({ team }: TeamSettingsProps) => {
               Quitter l'équipe
             </Button>
             
-            {team.members.some((m: any) => m.isTeamLeader) && (
+            {isCurrentUserTeamLeader && (
               <Button 
                 variant="outline" 
                 className="w-full justify-start text-red-600 border-red-200 hover:bg-red-50"
@@ -464,6 +685,7 @@ const TeamSettings = ({ team }: TeamSettingsProps) => {
             <AlertDialogAction 
               className="bg-red-500 hover:bg-red-700 text-white" 
               onClick={handleDeleteTeam}
+              disabled={!isCurrentUserTeamLeader}
             >
               Supprimer définitivement
             </AlertDialogAction>
