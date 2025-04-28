@@ -417,17 +417,17 @@ const UserProfile = () => {
 
   const updateLocation = async () => {
     console.log("updateLocation called, but not available in UserProfile view");
-    return false;
+    return;
   };
 
   const updateUserStats = async () => {
     console.log("updateUserStats called, but not available in UserProfile view");
-    return false;
+    return;
   };
   
   const fetchProfileData = async () => {
     console.log("Fetching profile data for user ID:", profileData?.id);
-    return true;
+    return;
   };
 
   if (loading) {
