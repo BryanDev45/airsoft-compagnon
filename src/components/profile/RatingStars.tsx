@@ -70,30 +70,37 @@ const RatingStars: React.FC<RatingStarsProps> = ({
     try {
       setIsSaving(true);
       
-      // Check if rating already exists using the custom function
-      const { data: existingRating, error: checkError } = await callRPC<number>('get_user_rating', {
-        p_rater_id: currentUserId,
-        p_rated_id: userId
-      });
+      // Check if rating already exists
+      const { data: existingRatings, error: checkError } = await supabase
+        .from('user_ratings')
+        .select('rating')
+        .eq('rater_id', currentUserId)
+        .eq('rated_id', userId)
+        .maybeSingle();
       
       if (checkError) throw checkError;
       
       let result;
       
-      if (existingRating) {
-        // Update existing rating with custom function
-        result = await callRPC('update_user_rating', {
-          p_rater_id: currentUserId,
-          p_rated_id: userId,
-          p_rating: newRating
-        });
+      if (existingRatings) {
+        // Update existing rating
+        result = await supabase
+          .from('user_ratings')
+          .update({ 
+            rating: newRating,
+            updated_at: new Date().toISOString()
+          })
+          .eq('rater_id', currentUserId)
+          .eq('rated_id', userId);
       } else {
-        // Create new rating with custom function
-        result = await callRPC('insert_user_rating', {
-          p_rater_id: currentUserId,
-          p_rated_id: userId,
-          p_rating: newRating
-        });
+        // Create new rating
+        result = await supabase
+          .from('user_ratings')
+          .insert({
+            rater_id: currentUserId,
+            rated_id: userId,
+            rating: newRating
+          });
       }
       
       if (result.error) throw result.error;
@@ -105,6 +112,9 @@ const RatingStars: React.FC<RatingStarsProps> = ({
       if (onRatingChange) {
         onRatingChange(newRating);
       }
+      
+      // Update user reputation in profiles
+      await updateUserReputation(userId);
       
       toast({
         title: "Évaluation enregistrée",
@@ -120,6 +130,32 @@ const RatingStars: React.FC<RatingStarsProps> = ({
       });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // Function to update user's reputation (average rating)
+  const updateUserReputation = async (ratedUserId: string) => {
+    try {
+      // Calculate average rating
+      const { data: ratings, error } = await supabase
+        .from('user_ratings')
+        .select('rating')
+        .eq('rated_id', ratedUserId);
+        
+      if (error) throw error;
+      
+      if (ratings && ratings.length > 0) {
+        const totalRating = ratings.reduce((sum, item) => sum + Number(item.rating), 0);
+        const avgRating = totalRating / ratings.length;
+        
+        // Update profile reputation
+        await supabase
+          .from('profiles')
+          .update({ reputation: avgRating })
+          .eq('id', ratedUserId);
+      }
+    } catch (error) {
+      console.error("Error updating reputation:", error);
     }
   };
 

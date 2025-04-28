@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Dialog, 
@@ -40,7 +39,7 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
   const [currentTab, setCurrentTab] = useState('general');
   
   // Vérifier si l'utilisateur est le propriétaire de l'équipe
-  const isTeamOwner = user?.id === team?.owner_id;
+  const isTeamOwner = user?.id === team?.leader_id;
   
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
