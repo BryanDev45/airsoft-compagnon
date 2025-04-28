@@ -1,12 +1,15 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, MapPin, Calendar, Users } from 'lucide-react';
 import TeamSettings from './TeamSettings';
 interface TeamBannerProps {
   team: any;
+  onTeamUpdate?: (updatedTeam: any) => void;
 }
 const TeamBanner = ({
-  team
+  team,
+  onTeamUpdate
 }: TeamBannerProps) => {
   return <div className="h-64 bg-cover bg-center relative" style={{
     backgroundImage: `url(${team.banner})`
@@ -19,7 +22,7 @@ const TeamBanner = ({
         </Link>
         
         {/* Team Settings Button */}
-        <TeamSettings team={team} />
+        <TeamSettings team={team} onTeamUpdate={onTeamUpdate} />
         
         <div className="flex items-center gap-6">
           <div className="relative">

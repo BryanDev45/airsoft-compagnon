@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,7 @@ const levelOptions = ['Débutant', 'Novice', 'Intermédiaire', 'Confirmé', 'Exp
 const gameTypeOptions = ['CQB', 'Milsim', 'Woodland', 'Scénario', 'Speedsoft', 'Tournoi'];
 const roleOptions = ['Assaut', 'Support', 'Sniper', 'Démolition', 'Médic', 'Éclaireur'];
 
-const ProfileStats = ({ userStats, updateUserStats, fetchProfileData }) => {
+const ProfileStats = ({ userStats, updateUserStats, fetchProfileData, isOwnProfile = false }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [gameType, setGameType] = useState(userStats?.preferred_game_type || 'CQB');
   const [role, setRole] = useState(userStats?.favorite_role || 'Assaut');
@@ -71,7 +70,7 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData }) => {
           <Medal className="h-6 w-6 text-amber-500" />
           <h2 className="text-xl font-semibold">Statistiques et préférences</h2>
         </div>
-        {!isEditing ? (
+        {isOwnProfile && !isEditing ? (
           <Button
             variant="default"
             size="sm"
@@ -81,7 +80,7 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData }) => {
             <Edit className="h-4 w-4 mr-2" />
             Modifier
           </Button>
-        ) : (
+        ) : isEditing ? (
           <div className="flex space-x-2">
             <Button
               variant="outline"
@@ -102,7 +101,7 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData }) => {
               {isSaving ? "Enregistrement..." : "Enregistrer"}
             </Button>
           </div>
-        )}
+        ) : null}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-6">

@@ -12,7 +12,13 @@ export const useAuth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // First, set up the auth state listener
+    // First, check for an existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user || null);
+      setInitialLoading(false);
+    });
+
+    // Then set up the auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user || null);
@@ -32,12 +38,6 @@ export const useAuth = () => {
         }
       }
     );
-
-    // Then check for an existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user || null);
-      setInitialLoading(false);
-    });
 
     return () => subscription.unsubscribe();
   }, [navigate]);

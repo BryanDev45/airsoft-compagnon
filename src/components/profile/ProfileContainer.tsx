@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileInfo from './ProfileInfo';
@@ -67,7 +68,12 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
         </TabsContent>
         
         <TabsContent value="stats" className="p-1">
-          <ProfileStats userStats={userStats} updateUserStats={updateUserStats} fetchProfileData={fetchProfileData} />
+          <ProfileStats 
+            userStats={userStats} 
+            updateUserStats={updateUserStats} 
+            fetchProfileData={fetchProfileData} 
+            isOwnProfile={isOwnProfile} 
+          />
         </TabsContent>
         
         <TabsContent value="equipment" className="p-1">
