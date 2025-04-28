@@ -420,14 +420,14 @@ const UserProfile = () => {
     return false;
   };
 
-  const updateUserStats = async (gameType: string, role: string, level: string) => {
+  const updateUserStats = async () => {
     console.log("updateUserStats called, but not available in UserProfile view");
     return false;
   };
   
   const fetchProfileData = async () => {
     console.log("Fetching profile data for user ID:", profileData?.id);
-    return;
+    return true;
   };
 
   if (loading) {

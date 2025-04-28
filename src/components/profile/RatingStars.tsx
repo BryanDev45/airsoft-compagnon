@@ -70,39 +70,30 @@ const RatingStars: React.FC<RatingStarsProps> = ({
     try {
       setIsSaving(true);
       
-      // Check if rating already exists
-      const { data: existingRating, error: checkError } = await callRPC<number>(
-        'get_user_rating', 
-        { 
-          p_rater_id: currentUserId, 
-          p_rated_id: userId 
-        }
-      );
+      // Check if rating already exists using the custom function
+      const { data: existingRating, error: checkError } = await callRPC<number>('get_user_rating', {
+        p_rater_id: currentUserId,
+        p_rated_id: userId
+      });
       
       if (checkError) throw checkError;
       
       let result;
       
       if (existingRating) {
-        // Update existing rating using RPC
-        result = await callRPC(
-          'update_user_rating', 
-          {
-            p_rater_id: currentUserId,
-            p_rated_id: userId,
-            p_rating: newRating
-          }
-        );
+        // Update existing rating with custom function
+        result = await callRPC('update_user_rating', {
+          p_rater_id: currentUserId,
+          p_rated_id: userId,
+          p_rating: newRating
+        });
       } else {
-        // Create new rating using RPC
-        result = await callRPC(
-          'insert_user_rating', 
-          {
-            p_rater_id: currentUserId,
-            p_rated_id: userId,
-            p_rating: newRating
-          }
-        );
+        // Create new rating with custom function
+        result = await callRPC('insert_user_rating', {
+          p_rater_id: currentUserId,
+          p_rated_id: userId,
+          p_rating: newRating
+        });
       }
       
       if (result.error) throw result.error;
