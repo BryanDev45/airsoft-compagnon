@@ -417,12 +417,12 @@ const UserProfile = () => {
 
   const updateLocation = async () => {
     console.log("updateLocation called, but not available in UserProfile view");
-    return;
+    return false;
   };
 
-  const updateUserStats = async () => {
+  const updateUserStats = async (gameType: string, role: string, level: string) => {
     console.log("updateUserStats called, but not available in UserProfile view");
-    return;
+    return false;
   };
   
   const fetchProfileData = async () => {
