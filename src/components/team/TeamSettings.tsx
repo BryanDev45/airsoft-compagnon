@@ -1,27 +1,55 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Dialog, 
   DialogContent, 
   DialogHeader, 
   DialogTitle, 
   DialogTrigger,
-  DialogFooter
+  DialogFooter,
+  DialogDescription
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Upload, PenBox, Settings, X, Save, Camera, Trash2 } from "lucide-react";
+import { 
+  Upload, 
+  PenBox, 
+  Settings, 
+  X, 
+  Save, 
+  Camera, 
+  Trash2, 
+  LogOut, 
+  UserPlus, 
+  UserMinus, 
+  Check,
+  LockOpen,
+  Lock
+} from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
+import { Switch } from "@/components/ui/switch";
+import { 
+  ToggleGroup, 
+  ToggleGroupItem 
+} from "@/components/ui/toggle-group";
 
 interface TeamSettingsProps {
   team: any;
-  isTeamMember: boolean; // Added this prop to check if user is team member
-  onTeamUpdate?: (updatedTeam: any) => void; // Cette fonction sera appelée lors des mises à jour
+  isTeamMember: boolean;
+  onTeamUpdate?: (updatedTeam: any) => void;
 }
 
 const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) => {
@@ -39,12 +67,45 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
   const [loading, setLoading] = useState(false);
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [currentTab, setCurrentTab] = useState('general');
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [pendingMembers, setPendingMembers] = useState<any[]>([]);
+  const [isRecruitmentOpen, setIsRecruitmentOpen] = useState(team?.is_recruiting || false);
   
   // Vérifier si l'utilisateur est le propriétaire de l'équipe
-  const isTeamOwner = user?.id === team?.owner_id;
+  const isTeamLeader = user?.id === team?.leader_id;
   
   // If the user is not a team member, don't render the component
   if (!isTeamMember) return null;
+  
+  // Fonction pour récupérer les membres de l'équipe
+  const fetchTeamMembers = async () => {
+    if (!team?.id) return;
+    
+    try {
+      const { data: members, error } = await supabase
+        .from('team_members')
+        .select('*, profiles:user_id(id, username, avatar)')
+        .eq('team_id', team.id);
+        
+      if (error) throw error;
+      
+      // Séparer les membres confirmés et les demandes en attente
+      const confirmed = members?.filter(m => m.status === 'confirmed' || !m.status) || [];
+      const pending = members?.filter(m => m.status === 'pending') || [];
+      
+      setTeamMembers(confirmed);
+      setPendingMembers(pending);
+    } catch (error) {
+      console.error('Erreur lors de la récupération des membres:', error);
+    }
+  };
+  
+  useEffect(() => {
+    if (open) {
+      fetchTeamMembers();
+      setIsRecruitmentOpen(team?.is_recruiting || false);
+    }
+  }, [open, team?.id]);
   
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -140,16 +201,6 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
   };
   
   const updateTeamInfo = async (mediaUrls: { logo?: string, banner?: string } = {}) => {
-    // Only team owners can update team information
-    if (!isTeamOwner) {
-      toast({
-        title: "Accès refusé",
-        description: "Seul le propriétaire de l'équipe peut modifier ces informations.",
-        variant: "destructive",
-      });
-      return false;
-    }
-    
     try {
       const updatedFields = {
         name,
@@ -190,17 +241,6 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
     setLoading(true);
     
     try {
-      // Check if user is team owner for updating team info
-      if (!isTeamOwner) {
-        toast({
-          title: "Accès refusé",
-          description: "Seul le propriétaire de l'équipe peut modifier ces informations.",
-          variant: "destructive",
-        });
-        setOpen(false);
-        return;
-      }
-      
       let mediaUrls = {};
       
       // Update media files if any changed
@@ -215,6 +255,11 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
       await updateTeamInfo(mediaUrls);
       
       setOpen(false);
+      
+      toast({
+        title: "Équipe mise à jour",
+        description: "Les informations de l'équipe ont été mises à jour avec succès.",
+      });
     } catch (error) {
       console.error("Erreur lors de la sauvegarde des modifications:", error);
     } finally {
@@ -223,17 +268,6 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
   };
   
   const handleUpdateDescription = async () => {
-    // Only team owners can update team description
-    if (!isTeamOwner) {
-      toast({
-        title: "Accès refusé",
-        description: "Seul le propriétaire de l'équipe peut modifier ces informations.",
-        variant: "destructive",
-      });
-      setIsEditingBio(false);
-      return;
-    }
-    
     setLoading(true);
     
     try {
@@ -271,8 +305,8 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
   };
   
   const handleDeleteTeam = async () => {
-    // Only team owners can delete the team
-    if (!isTeamOwner) {
+    // Only team leaders can delete the team
+    if (!isTeamLeader) {
       toast({
         title: "Accès refusé",
         description: "Seul le propriétaire de l'équipe peut supprimer l'équipe.",
@@ -322,6 +356,222 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
     }
   };
   
+  const handleLeaveTeam = async () => {
+    if (!user?.id || !team?.id) return;
+    
+    // Prevent the team leader from leaving without transferring ownership
+    if (isTeamLeader) {
+      toast({
+        title: "Action impossible",
+        description: "En tant que leader de l'équipe, vous devez transférer la propriété avant de quitter ou supprimer l'équipe.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!confirm("Êtes-vous sûr de vouloir quitter cette équipe ?")) {
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      const { error } = await supabase
+        .from('team_members')
+        .delete()
+        .eq('team_id', team.id)
+        .eq('user_id', user.id);
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Équipe quittée",
+        description: "Vous avez quitté l'équipe avec succès.",
+      });
+      
+      navigate('/');
+    } catch (error: any) {
+      console.error("Erreur lors du départ de l'équipe:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de quitter l'équipe: " + error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleAcceptMember = async (memberId: string) => {
+    if (!isTeamLeader) return;
+    
+    setLoading(true);
+    
+    try {
+      const { error } = await supabase
+        .from('team_members')
+        .update({ status: 'confirmed' })
+        .eq('id', memberId);
+        
+      if (error) throw error;
+      
+      fetchTeamMembers();
+      
+      toast({
+        title: "Membre accepté",
+        description: "Le membre a été accepté dans l'équipe.",
+      });
+    } catch (error: any) {
+      console.error("Erreur lors de l'acceptation du membre:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'accepter le membre: " + error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleRejectMember = async (memberId: string) => {
+    if (!isTeamLeader) return;
+    
+    setLoading(true);
+    
+    try {
+      const { error } = await supabase
+        .from('team_members')
+        .delete()
+        .eq('id', memberId);
+        
+      if (error) throw error;
+      
+      fetchTeamMembers();
+      
+      toast({
+        title: "Membre rejeté",
+        description: "La demande d'adhésion a été rejetée.",
+      });
+    } catch (error: any) {
+      console.error("Erreur lors du rejet du membre:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de rejeter le membre: " + error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleRemoveMember = async (memberId: string) => {
+    if (!isTeamLeader) return;
+    
+    if (!confirm("Êtes-vous sûr de vouloir supprimer ce membre de l'équipe ?")) {
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      const { error } = await supabase
+        .from('team_members')
+        .delete()
+        .eq('id', memberId);
+        
+      if (error) throw error;
+      
+      fetchTeamMembers();
+      
+      toast({
+        title: "Membre supprimé",
+        description: "Le membre a été supprimé de l'équipe.",
+      });
+    } catch (error: any) {
+      console.error("Erreur lors de la suppression du membre:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer le membre: " + error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleUpdateMemberRole = async (memberId: string, newRole: string) => {
+    if (!isTeamLeader) return;
+    
+    setLoading(true);
+    
+    try {
+      const { error } = await supabase
+        .from('team_members')
+        .update({ role: newRole })
+        .eq('id', memberId);
+        
+      if (error) throw error;
+      
+      fetchTeamMembers();
+      
+      toast({
+        title: "Rôle mis à jour",
+        description: "Le rôle du membre a été mis à jour avec succès.",
+      });
+    } catch (error: any) {
+      console.error("Erreur lors de la mise à jour du rôle:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour le rôle: " + error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleToggleRecruitment = async () => {
+    if (!isTeamLeader) return;
+    
+    setLoading(true);
+    
+    try {
+      const newStatus = !isRecruitmentOpen;
+      
+      const { error } = await supabase
+        .from('teams')
+        .update({ is_recruiting: newStatus })
+        .eq('id', team.id);
+        
+      if (error) throw error;
+      
+      setIsRecruitmentOpen(newStatus);
+      
+      if (onTeamUpdate) {
+        onTeamUpdate({
+          ...team,
+          is_recruiting: newStatus
+        });
+      }
+      
+      toast({
+        title: newStatus ? "Recrutement ouvert" : "Recrutement fermé",
+        description: newStatus 
+          ? "Le recrutement est maintenant ouvert pour votre équipe." 
+          : "Le recrutement est maintenant fermé pour votre équipe.",
+      });
+    } catch (error: any) {
+      console.error("Erreur lors de la modification du statut de recrutement:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de modifier le statut de recrutement: " + error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   // Render the settings button for team members
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -336,18 +586,19 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
         </Button>
       </DialogTrigger>
       
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isTeamOwner ? "Paramètres de l'équipe" : "Informations de l'équipe"}
+            {isTeamLeader ? "Paramètres de l'équipe" : "Gestion de l'équipe"}
           </DialogTitle>
         </DialogHeader>
         
         <Tabs value={currentTab} onValueChange={setCurrentTab}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="general">Général</TabsTrigger>
             <TabsTrigger value="media">Média</TabsTrigger>
-            {isTeamOwner && <TabsTrigger value="danger">Danger</TabsTrigger>}
+            <TabsTrigger value="members">Membres</TabsTrigger>
+            <TabsTrigger value="danger">Danger</TabsTrigger>
           </TabsList>
           
           <TabsContent value="general" className="space-y-4 pt-4">
@@ -357,8 +608,6 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
                 value={name} 
                 onChange={e => setName(e.target.value)}
                 placeholder="Nom de l'équipe"
-                readOnly={!isTeamOwner}
-                className={!isTeamOwner ? "bg-gray-100" : ""}
               />
             </div>
             
@@ -368,8 +617,6 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
                 value={location} 
                 onChange={e => setLocation(e.target.value)}
                 placeholder="Localisation"
-                readOnly={!isTeamOwner}
-                className={!isTeamOwner ? "bg-gray-100" : ""}
               />
             </div>
             
@@ -382,14 +629,12 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
                 type="number"
                 min="1990"
                 max="2099"
-                readOnly={!isTeamOwner}
-                className={!isTeamOwner ? "bg-gray-100" : ""}
               />
             </div>
             
             <div>
               <label className="block text-sm font-medium mb-1">Description de l'équipe</label>
-              {isEditingBio && isTeamOwner ? (
+              {isEditingBio ? (
                 <div className="space-y-2">
                   <Textarea 
                     value={description} 
@@ -427,19 +672,57 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
                     {description || <span className="text-gray-400 italic">Aucune description</span>}
                   </div>
                   
-                  {isTeamOwner && (
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      className="absolute top-2 right-2 h-7 w-7 text-gray-600 hover:text-gray-900"
-                      onClick={() => setIsEditingBio(true)}
-                    >
-                      <PenBox className="h-4 w-4" />
-                    </Button>
-                  )}
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="absolute top-2 right-2 h-7 w-7 text-gray-600 hover:text-gray-900"
+                    onClick={() => setIsEditingBio(true)}
+                  >
+                    <PenBox className="h-4 w-4" />
+                  </Button>
                 </div>
               )}
             </div>
+            
+            {isTeamLeader && (
+              <div className="pt-4 border-t">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium">Statut du recrutement</h3>
+                    <p className="text-sm text-gray-500">
+                      Autorisez de nouveaux membres à rejoindre votre équipe
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <Switch 
+                      checked={isRecruitmentOpen} 
+                      onCheckedChange={handleToggleRecruitment}
+                      disabled={loading}
+                    />
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="ml-2"
+                      onClick={handleToggleRecruitment}
+                      disabled={loading}
+                    >
+                      {isRecruitmentOpen ? (
+                        <>
+                          <Lock className="h-4 w-4 mr-1" />
+                          Fermer
+                        </>
+                      ) : (
+                        <>
+                          <LockOpen className="h-4 w-4 mr-1" />
+                          Ouvrir
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
           </TabsContent>
           
           <TabsContent value="media" className="space-y-6 pt-4">
@@ -459,24 +742,18 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
                 </div>
                 
                 <div>
-                  {isTeamOwner ? (
-                    <Button asChild variant="outline" className="mb-2">
-                      <label className="cursor-pointer">
-                        <Camera className="h-4 w-4 mr-2" />
-                        Changer le logo
-                        <input 
-                          type="file" 
-                          accept="image/*" 
-                          className="hidden" 
-                          onChange={handleLogoChange}
-                        />
-                      </label>
-                    </Button>
-                  ) : (
-                    <p className="text-sm text-gray-500">
-                      Seul le propriétaire peut changer le logo
-                    </p>
-                  )}
+                  <Button asChild variant="outline" className="mb-2">
+                    <label className="cursor-pointer">
+                      <Camera className="h-4 w-4 mr-2" />
+                      Changer le logo
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={handleLogoChange}
+                      />
+                    </label>
+                  </Button>
                   
                   <p className="text-xs text-gray-500">
                     Format recommandé: carré, 1:1. JPG ou PNG.
@@ -504,26 +781,173 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
                   Format recommandé: 16:9 ou 4:1. JPG ou PNG. Résolution minimum 1280x720px.
                 </p>
                 
-                {isTeamOwner && (
-                  <Button asChild variant="outline">
-                    <label className="cursor-pointer">
-                      <Camera className="h-4 w-4 mr-2" />
-                      Changer la bannière
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        className="hidden" 
-                        onChange={handleBannerChange}
-                      />
-                    </label>
-                  </Button>
-                )}
+                <Button asChild variant="outline">
+                  <label className="cursor-pointer">
+                    <Camera className="h-4 w-4 mr-2" />
+                    Changer la bannière
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      onChange={handleBannerChange}
+                    />
+                  </label>
+                </Button>
               </div>
             </div>
           </TabsContent>
           
-          {isTeamOwner && (
-            <TabsContent value="danger" className="pt-4">
+          <TabsContent value="members" className="pt-4 space-y-6">
+            {isTeamLeader && pendingMembers.length > 0 && (
+              <div>
+                <h3 className="font-medium mb-2">Demandes d'adhésion en attente</h3>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Membre</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {pendingMembers.map((member) => (
+                      <TableRow key={member.id}>
+                        <TableCell className="flex items-center space-x-2">
+                          <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
+                            <img 
+                              src={member.profiles?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.profiles?.username || 'user'}`} 
+                              alt={member.profiles?.username} 
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <span>{member.profiles?.username || "Utilisateur"}</span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <Button 
+                              size="sm" 
+                              onClick={() => handleAcceptMember(member.id)}
+                              disabled={loading}
+                            >
+                              <Check className="h-4 w-4 mr-1" />
+                              Accepter
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleRejectMember(member.id)}
+                              disabled={loading}
+                            >
+                              <X className="h-4 w-4 mr-1" />
+                              Refuser
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+            
+            <div>
+              <h3 className="font-medium mb-2">Membres de l'équipe</h3>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Membre</TableHead>
+                    {isTeamLeader && <TableHead>Rôle</TableHead>}
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {teamMembers.map((member) => (
+                    <TableRow key={member.id}>
+                      <TableCell className="flex items-center space-x-2">
+                        <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
+                          <img 
+                            src={member.profiles?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.profiles?.username || 'user'}`}
+                            alt={member.profiles?.username} 
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <span>{member.profiles?.username || "Utilisateur"}</span>
+                        {member.user_id === team.leader_id && (
+                          <span className="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-full">
+                            Leader
+                          </span>
+                        )}
+                      </TableCell>
+                      
+                      {isTeamLeader && (
+                        <TableCell>
+                          {member.user_id !== team.leader_id && (
+                            <ToggleGroup 
+                              type="single" 
+                              value={member.role || "Membre"}
+                              onValueChange={(value) => {
+                                if (value) handleUpdateMemberRole(member.id, value);
+                              }}
+                              className="justify-start"
+                            >
+                              <ToggleGroupItem value="Membre" size="sm">Membre</ToggleGroupItem>
+                              <ToggleGroupItem value="Modérateur" size="sm">Modérateur</ToggleGroupItem>
+                              <ToggleGroupItem value="Admin" size="sm">Admin</ToggleGroupItem>
+                            </ToggleGroup>
+                          )}
+                        </TableCell>
+                      )}
+                      
+                      <TableCell>
+                        {isTeamLeader && member.user_id !== team.leader_id && member.user_id !== user?.id && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleRemoveMember(member.id)}
+                            disabled={loading}
+                          >
+                            <UserMinus className="h-4 w-4 mr-1" />
+                            Supprimer
+                          </Button>
+                        )}
+                        
+                        {!isTeamLeader && member.user_id === user?.id && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={handleLeaveTeam}
+                            disabled={loading}
+                          >
+                            <LogOut className="h-4 w-4 mr-1" />
+                            Quitter
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="danger" className="pt-4 space-y-4">
+            {!isTeamLeader ? (
+              <div className="border rounded-md p-4 bg-red-50 border-red-200">
+                <h3 className="font-semibold text-red-700 mb-2">Quitter l'équipe</h3>
+                <p className="text-sm text-red-600 mb-4">
+                  Attention : cette action est irréversible. Vous ne serez plus membre de cette équipe.
+                </p>
+                
+                <Button 
+                  variant="destructive" 
+                  onClick={handleLeaveTeam}
+                  disabled={loading}
+                  className="flex items-center"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  {loading ? "Traitement..." : "Quitter cette équipe"}
+                </Button>
+              </div>
+            ) : (
               <div className="border rounded-md p-4 bg-red-50 border-red-200">
                 <h3 className="font-semibold text-red-700 mb-2">Zone de danger</h3>
                 <p className="text-sm text-red-600 mb-4">
@@ -540,8 +964,8 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
                   {loading ? "Suppression..." : "Supprimer cette équipe"}
                 </Button>
               </div>
-            </TabsContent>
-          )}
+            )}
+          </TabsContent>
         </Tabs>
         
         <DialogFooter>
@@ -550,17 +974,15 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
               variant="outline" 
               onClick={() => setOpen(false)}
             >
-              {isTeamOwner ? "Annuler" : "Fermer"}
+              Annuler
             </Button>
             
-            {isTeamOwner && (
-              <Button 
-                onClick={handleSave}
-                disabled={loading}
-              >
-                {loading ? "Enregistrement..." : "Enregistrer les modifications"}
-              </Button>
-            )}
+            <Button 
+              onClick={handleSave}
+              disabled={loading}
+            >
+              {loading ? "Enregistrement..." : "Enregistrer les modifications"}
+            </Button>
           </div>
         </DialogFooter>
       </DialogContent>

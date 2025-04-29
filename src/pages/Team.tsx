@@ -35,6 +35,8 @@ interface TeamData {
   banner?: string;
   contact?: string;
   contactEmail?: string;
+  is_recruiting?: boolean;
+  leader_id?: string;
   members: TeamMember[];
   upcomingGames: any[];
   pastGames: any[];
@@ -171,6 +173,8 @@ const Team = () => {
       const teamDataFormatted: TeamData = {
         ...teamData,
         contactEmail: teamData.contact, // Map contact email
+        leader_id: teamData.leader_id, // Include team leader ID
+        is_recruiting: teamData.is_recruiting, // Include recruitment status
         members: formattedMembers,
         upcomingGames,
         pastGames,
