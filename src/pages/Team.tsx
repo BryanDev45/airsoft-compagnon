@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -59,6 +58,7 @@ const Team = () => {
   const [contactSubject, setContactSubject] = useState('');
   const [isEditingField, setIsEditingField] = useState(false);
   const [selectedField, setSelectedField] = useState<any>(null);
+  const [isTeamMember, setIsTeamMember] = useState(false);
 
   // Function to fetch team data that can be reused for refresh
   const fetchTeamData = useCallback(async () => {
@@ -155,6 +155,11 @@ const Team = () => {
           participants: game.participants || 0
         }));
 
+      // Check if the current user is a member of this team
+      const user = await supabase.auth.getUser();
+      const isCurrentUserMember = formattedMembers.some(member => member.id === user?.id);
+      setIsTeamMember(isCurrentUserMember);
+
       const teamDataFormatted: TeamData = {
         ...teamData,
         contactEmail: teamData.contact, // Map contact email
@@ -180,7 +185,7 @@ const Team = () => {
       });
       setLoading(false);
     }
-  }, [id, navigate]);
+  }, [id, navigate, user?.id]); // Add user?.id to dependencies
 
   useEffect(() => {
     if (id) {
@@ -314,6 +319,7 @@ const Team = () => {
       <main className="flex-grow bg-gray-50">
         <TeamBanner 
           team={team} 
+          isTeamMember={isTeamMember}
           onTeamUpdate={handleTeamUpdate}
         />
 

@@ -6,11 +6,13 @@ import TeamSettings from './TeamSettings';
 
 interface TeamBannerProps {
   team: any;
+  isTeamMember?: boolean;
   onTeamUpdate?: (updatedTeam: any) => void;
 }
 
 const TeamBanner = ({
   team,
+  isTeamMember = false,
   onTeamUpdate
 }: TeamBannerProps) => {
   return <div className="h-64 bg-cover bg-center relative" style={{
@@ -23,8 +25,8 @@ const TeamBanner = ({
           <span className="sr-only">Retour</span>
         </Link>
         
-        {/* Team Settings Button */}
-        <TeamSettings team={team} onTeamUpdate={onTeamUpdate} />
+        {/* Team Settings Button - Only visible to team members now */}
+        <TeamSettings team={team} isTeamMember={isTeamMember} onTeamUpdate={onTeamUpdate} />
         
         <div className="flex items-center gap-6">
           <div className="relative">
