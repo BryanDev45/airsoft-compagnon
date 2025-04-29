@@ -36,6 +36,7 @@ const RatingStars: React.FC<RatingStarsProps> = ({
   const [currentRating, setCurrentRating] = useState<number>(rating);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [hoverRating, setHoverRating] = useState<number | null>(null);
   
   useEffect(() => {
     // Get current user's ID
@@ -80,7 +81,7 @@ const RatingStars: React.FC<RatingStarsProps> = ({
       
       let result;
       
-      if (existingRating) {
+      if (existingRating !== null) {
         // Update existing rating with custom function
         result = await callRPC('update_user_rating', {
           p_rater_id: currentUserId,
@@ -123,10 +124,21 @@ const RatingStars: React.FC<RatingStarsProps> = ({
     }
   };
 
+  const handleMouseEnter = (rating: number) => {
+    if (!readonly && !isSaving) {
+      setHoverRating(rating);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setHoverRating(null);
+  };
+
   const calculateStars = () => {
     const stars = [];
-    const fullStars = Math.floor(currentRating);
-    const hasHalfStar = currentRating % 1 >= 0.5;
+    const ratingToUse = hoverRating !== null ? hoverRating : currentRating;
+    const fullStars = Math.floor(ratingToUse);
+    const hasHalfStar = ratingToUse % 1 >= 0.5;
 
     for (let i = 1; i <= 5; i++) {
       if (i <= fullStars) {
@@ -136,6 +148,8 @@ const RatingStars: React.FC<RatingStarsProps> = ({
             className={`text-yellow-400 ${!readonly && !isSaving && 'cursor-pointer hover:scale-110 transition-transform'}`}
             size={size}
             onClick={() => !readonly && !isSaving && handleRatingClick(i)}
+            onMouseEnter={() => handleMouseEnter(i)}
+            onMouseLeave={handleMouseLeave}
           />
         );
       } else if (i === fullStars + 1 && hasHalfStar) {
@@ -145,6 +159,8 @@ const RatingStars: React.FC<RatingStarsProps> = ({
             className={`text-yellow-400 ${!readonly && !isSaving && 'cursor-pointer hover:scale-110 transition-transform'}`}
             size={size}
             onClick={() => !readonly && !isSaving && handleRatingClick(i - 0.5)}
+            onMouseEnter={() => handleMouseEnter(i - 0.5)}
+            onMouseLeave={handleMouseLeave}
           />
         );
       } else {
@@ -154,6 +170,8 @@ const RatingStars: React.FC<RatingStarsProps> = ({
             className={`text-gray-300 ${!readonly && !isSaving && 'cursor-pointer hover:scale-110 transition-transform'}`}
             size={size}
             onClick={() => !readonly && !isSaving && handleRatingClick(i)}
+            onMouseEnter={() => handleMouseEnter(i)}
+            onMouseLeave={handleMouseLeave}
           />
         );
       }
@@ -162,7 +180,7 @@ const RatingStars: React.FC<RatingStarsProps> = ({
   };
 
   return (
-    <div className="flex gap-1">
+    <div className="flex gap-1 items-center">
       {calculateStars()}
       {isSaving && (
         <span className="text-xs text-gray-500 ml-2 animate-pulse">Enregistrement...</span>
