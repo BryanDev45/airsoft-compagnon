@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -59,6 +60,7 @@ const Team = () => {
   const [isEditingField, setIsEditingField] = useState(false);
   const [selectedField, setSelectedField] = useState<any>(null);
   const [isTeamMember, setIsTeamMember] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
 
   // Function to fetch team data that can be reused for refresh
   const fetchTeamData = useCallback(async () => {
@@ -156,8 +158,14 @@ const Team = () => {
         }));
 
       // Check if the current user is a member of this team
-      const user = await supabase.auth.getUser();
-      const isCurrentUserMember = formattedMembers.some(member => member.id === user?.id);
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      const currentUserId = userData?.user?.id;
+      setCurrentUserId(currentUserId);
+      
+      const isCurrentUserMember = currentUserId ? 
+        formattedMembers.some(member => member.id === currentUserId) : 
+        false;
+        
       setIsTeamMember(isCurrentUserMember);
 
       const teamDataFormatted: TeamData = {
@@ -185,7 +193,7 @@ const Team = () => {
       });
       setLoading(false);
     }
-  }, [id, navigate, user?.id]); // Add user?.id to dependencies
+  }, [id, navigate]);
 
   useEffect(() => {
     if (id) {
