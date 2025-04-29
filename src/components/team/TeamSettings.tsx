@@ -123,11 +123,6 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
         });
       }
       
-      toast({
-        title: "Média mis à jour",
-        description: "Les images de votre équipe ont été mises à jour avec succès.",
-      });
-      
       return { logo: newLogoUrl, banner: newBannerUrl };
     } catch (error: any) {
       console.error("Erreur lors de la mise à jour des médias:", error);
@@ -142,15 +137,17 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
   
   const updateTeamInfo = async (mediaUrls: { logo?: string, banner?: string } = {}) => {
     try {
+      const updatedFields = {
+        name,
+        location,
+        founded,
+        description,
+        ...mediaUrls
+      };
+      
       const { error } = await supabase
         .from('teams')
-        .update({
-          name,
-          location,
-          founded,
-          description,
-          ...mediaUrls
-        })
+        .update(updatedFields)
         .eq('id', team.id);
         
       if (error) throw error;
@@ -159,18 +156,9 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
       if (onTeamUpdate) {
         onTeamUpdate({
           ...team,
-          name,
-          location,
-          founded,
-          description,
-          ...mediaUrls
+          ...updatedFields
         });
       }
-      
-      toast({
-        title: "Équipe mise à jour",
-        description: "Les informations de votre équipe ont été mises à jour avec succès.",
-      });
       
       return true;
     } catch (error: any) {

@@ -3,10 +3,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, MapPin, Calendar, Users } from 'lucide-react';
 import TeamSettings from './TeamSettings';
+
 interface TeamBannerProps {
   team: any;
   onTeamUpdate?: (updatedTeam: any) => void;
 }
+
 const TeamBanner = ({
   team,
   onTeamUpdate
@@ -50,4 +52,5 @@ const TeamBanner = ({
       </div>
     </div>;
 };
+
 export default TeamBanner;

@@ -188,6 +188,26 @@ const Team = () => {
     }
   }, [id, fetchTeamData]);
 
+  // Function to handle team updates
+  const handleTeamUpdate = useCallback((updatedTeam: Partial<TeamData>) => {
+    if (team) {
+      // Update team data in state with the updated fields
+      setTeam(prevTeam => {
+        if (!prevTeam) return null;
+        return {
+          ...prevTeam,
+          ...updatedTeam
+        };
+      });
+      
+      // Show success message
+      toast({
+        title: "Mise à jour réussie",
+        description: "Les informations de l'équipe ont été mises à jour.",
+      });
+    }
+  }, [team]);
+
   const handleViewMember = (member: any) => {
     setSelectedMember(member);
     setShowMemberDialog(true);
@@ -292,7 +312,10 @@ const Team = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow bg-gray-50">
-        <TeamBanner team={team} />
+        <TeamBanner 
+          team={team} 
+          onTeamUpdate={handleTeamUpdate}
+        />
 
         <div className="max-w-6xl mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row md:items-start gap-8">
