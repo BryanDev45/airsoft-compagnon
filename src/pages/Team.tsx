@@ -16,14 +16,16 @@ import TeamGames from '../components/team/TeamGames';
 import TeamField from '../components/team/TeamField';
 import TeamDialogs from '../components/team/TeamDialogs';
 
+// Define a shared TeamMember interface that is consistent with TeamMembers.tsx
 interface TeamMember {
-  id?: string;
+  id: string;
   username?: string;
   role?: string;
   avatar?: string;
   joinedTeam?: string;
   verified?: boolean;
   specialty?: string;
+  isTeamLeader?: boolean;
 }
 
 interface TeamData {
