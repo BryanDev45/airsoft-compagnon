@@ -91,7 +91,7 @@ const Team = () => {
       // Get team members
       const { data: teamMembers, error: membersError } = await supabase
         .from('team_members')
-        .select('id, role, user_id')
+        .select('id, role, user_id, status')
         .eq('team_id', teamData.id);
 
       if (membersError) throw membersError;
@@ -121,7 +121,8 @@ const Team = () => {
               avatar: profile.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.username || 'default'}`,
               joinedTeam: profile.join_date ? new Date(profile.join_date).toLocaleDateString('fr-FR') : 'N/A',
               verified: profile.is_verified,
-              specialty: 'Non spécifié' // Default value, update if you have specialty data
+              specialty: 'Non spécifié', // Default value, update if you have specialty data
+              isTeamLeader: member.user_id === teamData.leader_id // Mark the team leader
             };
           }).filter(Boolean) as TeamMember[];
         }

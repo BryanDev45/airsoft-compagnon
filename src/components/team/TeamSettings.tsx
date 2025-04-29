@@ -70,6 +70,7 @@ interface TeamData {
   contact?: string;
   leader_id?: string;
   is_recruiting?: boolean;
+  founded?: string;
 }
 
 interface TeamSettingsProps {
@@ -125,8 +126,9 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
       const confirmed = members.filter(m => m.status === 'confirmed' || !m.status) || [];
       const pending = members.filter(m => m.status === 'pending') || [];
       
-      setTeamMembers(confirmed);
-      setPendingMembers(pending);
+      // Type casting for TypeScript
+      setTeamMembers(confirmed as unknown as TeamMember[]);
+      setPendingMembers(pending as unknown as TeamMember[]);
     } catch (error) {
       console.error('Erreur lors de la récupération des membres:', error);
     }
@@ -583,7 +585,7 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
         onTeamUpdate({
           ...team,
           is_recruiting: newStatus
-        });
+        } as TeamData);
       }
       
       toast({

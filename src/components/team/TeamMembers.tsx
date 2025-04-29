@@ -3,15 +3,26 @@ import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
+interface TeamMember {
+  id: string;
+  username?: string;
+  role?: string;
+  avatar?: string;
+  joinedTeam?: string;
+  verified?: boolean;
+  specialty?: string;
+  isTeamLeader?: boolean;
+}
+
 interface TeamMembersProps {
-  members: any[];
-  handleViewMember: (member: any) => void;
+  members: TeamMember[];
+  handleViewMember: (member: TeamMember) => void;
 }
 
 const TeamMembers = ({ members, handleViewMember }: TeamMembersProps) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {members.map((member: any) => (
+      {members.map((member: TeamMember) => (
         <Card key={member.id} className="overflow-hidden hover:shadow-md transition-shadow">
           <CardContent className="p-0">
             <div className="flex items-start p-4">
