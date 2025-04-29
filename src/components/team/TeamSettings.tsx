@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Dialog, 
@@ -38,9 +37,30 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
   const [loading, setLoading] = useState(false);
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [currentTab, setCurrentTab] = useState('general');
+  const [isTeamMember, setIsTeamMember] = useState(false);
   
   // Vérifier si l'utilisateur est le propriétaire de l'équipe
   const isTeamOwner = user?.id === team?.owner_id;
+  
+  // Vérifier si l'utilisateur est membre de l'équipe
+  React.useEffect(() => {
+    const checkTeamMembership = async () => {
+      if (!user || !team) return;
+      
+      const { data, error } = await supabase
+        .from('team_members')
+        .select('*')
+        .eq('team_id', team.id)
+        .eq('user_id', user.id)
+        .single();
+        
+      if (!error && data) {
+        setIsTeamMember(true);
+      }
+    };
+    
+    checkTeamMembership();
+  }, [user, team]);
   
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -276,8 +296,11 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
     }
   };
   
-  // N'afficher le bouton des paramètres que si l'utilisateur est le propriétaire de l'équipe
-  if (!isTeamOwner) return null;
+  // N'afficher le bouton des paramètres que si l'utilisateur est le propriétaire ou un membre de l'équipe
+  if (!isTeamOwner && !isTeamMember) return null;
+  
+  // Déterminer les onglets à afficher selon le rôle de l'utilisateur
+  const shouldShowDangerTab = isTeamOwner; // Seul le propriétaire peut supprimer l'équipe
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -301,7 +324,7 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="general">Général</TabsTrigger>
             <TabsTrigger value="media">Média</TabsTrigger>
-            <TabsTrigger value="danger">Danger</TabsTrigger>
+            {shouldShowDangerTab && <TabsTrigger value="danger">Danger</TabsTrigger>}
           </TabsList>
           
           <TabsContent value="general" className="space-y-4 pt-4">
@@ -311,6 +334,7 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
                 value={name} 
                 onChange={e => setName(e.target.value)}
                 placeholder="Nom de l'équipe"
+                disabled={!isTeamOwner}
               />
             </div>
             
@@ -320,6 +344,7 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
                 value={location} 
                 onChange={e => setLocation(e.target.value)}
                 placeholder="Localisation"
+                disabled={!isTeamOwner}
               />
             </div>
             
@@ -332,12 +357,13 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
                 type="number"
                 min="1990"
                 max="2099"
+                disabled={!isTeamOwner}
               />
             </div>
             
             <div>
               <label className="block text-sm font-medium mb-1">Description de l'équipe</label>
-              {isEditingBio ? (
+              {isEditingBio && isTeamOwner ? (
                 <div className="space-y-2">
                   <Textarea 
                     value={description} 
@@ -375,14 +401,16 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
                     {description || <span className="text-gray-400 italic">Aucune description</span>}
                   </div>
                   
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    className="absolute top-2 right-2 h-7 w-7 text-gray-600 hover:text-gray-900"
-                    onClick={() => setIsEditingBio(true)}
-                  >
-                    <PenBox className="h-4 w-4" />
-                  </Button>
+                  {isTeamOwner && (
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      className="absolute top-2 right-2 h-7 w-7 text-gray-600 hover:text-gray-900"
+                      onClick={() => setIsEditingBio(true)}
+                    >
+                      <PenBox className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
@@ -404,24 +432,26 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
                   )}
                 </div>
                 
-                <div>
-                  <Button asChild variant="outline" className="mb-2">
-                    <label className="cursor-pointer">
-                      <Camera className="h-4 w-4 mr-2" />
-                      Changer le logo
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        className="hidden" 
-                        onChange={handleLogoChange}
-                      />
-                    </label>
-                  </Button>
-                  
-                  <p className="text-xs text-gray-500">
-                    Format recommandé: carré, 1:1. JPG ou PNG.
-                  </p>
-                </div>
+                {isTeamOwner && (
+                  <div>
+                    <Button asChild variant="outline" className="mb-2">
+                      <label className="cursor-pointer">
+                        <Camera className="h-4 w-4 mr-2" />
+                        Changer le logo
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          className="hidden" 
+                          onChange={handleLogoChange}
+                        />
+                      </label>
+                    </Button>
+                    
+                    <p className="text-xs text-gray-500">
+                      Format recommandé: carré, 1:1. JPG ou PNG.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
             
@@ -439,45 +469,49 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
                 )}
               </div>
               
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-gray-500">
-                  Format recommandé: 16:9 ou 4:1. JPG ou PNG. Résolution minimum 1280x720px.
-                </p>
-                
-                <Button asChild variant="outline">
-                  <label className="cursor-pointer">
-                    <Camera className="h-4 w-4 mr-2" />
-                    Changer la bannière
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      className="hidden" 
-                      onChange={handleBannerChange}
-                    />
-                  </label>
-                </Button>
-              </div>
+              {isTeamOwner && (
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-gray-500">
+                    Format recommandé: 16:9 ou 4:1. JPG ou PNG. Résolution minimum 1280x720px.
+                  </p>
+                  
+                  <Button asChild variant="outline">
+                    <label className="cursor-pointer">
+                      <Camera className="h-4 w-4 mr-2" />
+                      Changer la bannière
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={handleBannerChange}
+                      />
+                    </label>
+                  </Button>
+                </div>
+              )}
             </div>
           </TabsContent>
           
-          <TabsContent value="danger" className="pt-4">
-            <div className="border rounded-md p-4 bg-red-50 border-red-200">
-              <h3 className="font-semibold text-red-700 mb-2">Zone de danger</h3>
-              <p className="text-sm text-red-600 mb-4">
-                Attention : les actions ci-dessous sont irréversibles et peuvent entraîner la perte définitive de données.
-              </p>
-              
-              <Button 
-                variant="destructive" 
-                onClick={handleDeleteTeam}
-                disabled={loading}
-                className="flex items-center"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                {loading ? "Suppression..." : "Supprimer cette équipe"}
-              </Button>
-            </div>
-          </TabsContent>
+          {shouldShowDangerTab && (
+            <TabsContent value="danger" className="pt-4">
+              <div className="border rounded-md p-4 bg-red-50 border-red-200">
+                <h3 className="font-semibold text-red-700 mb-2">Zone de danger</h3>
+                <p className="text-sm text-red-600 mb-4">
+                  Attention : les actions ci-dessous sont irréversibles et peuvent entraîner la perte définitive de données.
+                </p>
+                
+                <Button 
+                  variant="destructive" 
+                  onClick={handleDeleteTeam}
+                  disabled={loading}
+                  className="flex items-center"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  {loading ? "Suppression..." : "Supprimer cette équipe"}
+                </Button>
+              </div>
+            </TabsContent>
+          )}
         </Tabs>
         
         <DialogFooter>
@@ -489,12 +523,14 @@ const TeamSettings = ({ team, onTeamUpdate }: TeamSettingsProps) => {
               Annuler
             </Button>
             
-            <Button 
-              onClick={handleSave}
-              disabled={loading}
-            >
-              {loading ? "Enregistrement..." : "Enregistrer les modifications"}
-            </Button>
+            {isTeamOwner && (
+              <Button 
+                onClick={handleSave}
+                disabled={loading}
+              >
+                {loading ? "Enregistrement..." : "Enregistrer les modifications"}
+              </Button>
+            )}
           </div>
         </DialogFooter>
       </DialogContent>
