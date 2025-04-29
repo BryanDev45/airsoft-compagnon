@@ -71,6 +71,7 @@ interface TeamData {
   leader_id?: string;
   is_recruiting?: boolean;
   founded?: string;
+  is_association?: boolean;
 }
 
 interface TeamSettingsProps {
@@ -97,6 +98,7 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [pendingMembers, setPendingMembers] = useState<TeamMember[]>([]);
   const [isRecruitmentOpen, setIsRecruitmentOpen] = useState(team?.is_recruiting || false);
+  const [isAssociation, setIsAssociation] = useState(team?.is_association || false);
   
   // Vérifier si l'utilisateur est le propriétaire de l'équipe
   const isTeamLeader = user?.id === team?.leader_id;
@@ -138,6 +140,7 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
     if (open) {
       fetchTeamMembers();
       setIsRecruitmentOpen(team?.is_recruiting || false);
+      setIsAssociation(team?.is_association || false);
     }
   }, [open, team?.id]);
   
@@ -241,6 +244,7 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
         location,
         founded,
         description,
+        is_association: isAssociation,
         ...mediaUrls
       };
       
@@ -606,6 +610,48 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
     }
   };
   
+  const handleToggleAssociation = async () => {
+    if (!isTeamLeader) return;
+    
+    setLoading(true);
+    
+    try {
+      const newStatus = !isAssociation;
+      
+      const { error } = await supabase
+        .from('teams')
+        .update({ is_association: newStatus })
+        .eq('id', team.id);
+        
+      if (error) throw error;
+      
+      setIsAssociation(newStatus);
+      
+      if (onTeamUpdate) {
+        onTeamUpdate({
+          ...team,
+          is_association: newStatus
+        } as TeamData);
+      }
+      
+      toast({
+        title: "Statut mis à jour",
+        description: newStatus 
+          ? "Votre équipe est maintenant définie comme une association déclarée." 
+          : "Votre équipe n'est plus définie comme une association déclarée.",
+      });
+    } catch (error: any) {
+      console.error("Erreur lors de la modification du statut d'association:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de modifier le statut d'association: " + error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   // Render the settings button for team members
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -719,43 +765,67 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
             </div>
             
             {isTeamLeader && (
-              <div className="pt-4 border-t">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">Statut du recrutement</h3>
-                    <p className="text-sm text-gray-500">
-                      Autorisez de nouveaux membres à rejoindre votre équipe
-                    </p>
-                  </div>
-                  
-                  <div className="flex items-center">
-                    <Switch 
-                      checked={isRecruitmentOpen} 
-                      onCheckedChange={handleToggleRecruitment}
-                      disabled={loading}
-                    />
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="ml-2"
-                      onClick={handleToggleRecruitment}
-                      disabled={loading}
-                    >
-                      {isRecruitmentOpen ? (
-                        <>
-                          <Lock className="h-4 w-4 mr-1" />
-                          Fermer
-                        </>
-                      ) : (
-                        <>
-                          <LockOpen className="h-4 w-4 mr-1" />
-                          Ouvrir
-                        </>
-                      )}
-                    </Button>
+              <>
+                <div className="pt-4 border-t">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-medium">Statut du recrutement</h3>
+                      <p className="text-sm text-gray-500">
+                        Autorisez de nouveaux membres à rejoindre votre équipe
+                      </p>
+                    </div>
+                    
+                    <div className="flex items-center">
+                      <Switch 
+                        checked={isRecruitmentOpen} 
+                        onCheckedChange={handleToggleRecruitment}
+                        disabled={loading}
+                      />
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="ml-2"
+                        onClick={handleToggleRecruitment}
+                        disabled={loading}
+                      >
+                        {isRecruitmentOpen ? (
+                          <>
+                            <Lock className="h-4 w-4 mr-1" />
+                            Fermer
+                          </>
+                        ) : (
+                          <>
+                            <LockOpen className="h-4 w-4 mr-1" />
+                            Ouvrir
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
+                
+                <div className="pt-4 border-t">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-medium">Association déclarée</h3>
+                      <p className="text-sm text-gray-500">
+                        Indiquer si votre équipe est une association loi 1901 déclarée
+                      </p>
+                    </div>
+                    
+                    <div className="flex items-center">
+                      <Switch 
+                        checked={isAssociation} 
+                        onCheckedChange={handleToggleAssociation}
+                        disabled={loading}
+                      />
+                      <span className="ml-2 text-sm font-medium">
+                        {isAssociation ? "Oui" : "Non"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </>
             )}
           </TabsContent>
           

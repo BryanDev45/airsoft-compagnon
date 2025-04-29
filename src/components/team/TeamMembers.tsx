@@ -20,9 +20,16 @@ interface TeamMembersProps {
 }
 
 const TeamMembers = ({ members, handleViewMember }: TeamMembersProps) => {
+  // Tri des membres pour que le team leader apparaisse en premier
+  const sortedMembers = [...members].sort((a, b) => {
+    if (a.isTeamLeader && !b.isTeamLeader) return -1;
+    if (!a.isTeamLeader && b.isTeamLeader) return 1;
+    return 0;
+  });
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {members.map((member: TeamMember) => (
+      {sortedMembers.map((member: TeamMember) => (
         <Card key={member.id} className="overflow-hidden hover:shadow-md transition-shadow">
           <CardContent className="p-0">
             <div className="flex items-start p-4">

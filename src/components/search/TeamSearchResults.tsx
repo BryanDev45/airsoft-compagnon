@@ -24,6 +24,7 @@ interface Team {
   location?: string;
   member_count?: number;
   is_association?: boolean;
+  is_recruiting?: boolean;
 }
 
 const TeamSearchResults = ({
@@ -65,7 +66,8 @@ const TeamSearchResults = ({
           description: team.description || '',
           isAssociation: team.is_association || false,
           rating: team.rating || 0,
-          location: team.location
+          location: team.location,
+          is_recruiting: team.is_recruiting
         }));
         
         setTeams(formattedTeams);
@@ -269,15 +271,18 @@ const TeamSearchResults = ({
                   <Mail size={14} />
                   Contacter
                 </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex items-center gap-1"
-                  onClick={() => handleApplyToTeam(team.id)}
-                >
-                  <UserPlus size={14} />
-                  Postuler
-                </Button>
+                {/* Afficher le bouton Postuler uniquement si l'équipe recrute */}
+                {team.is_recruiting !== false && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex items-center gap-1"
+                    onClick={() => handleApplyToTeam(team.id)}
+                  >
+                    <UserPlus size={14} />
+                    Postuler
+                  </Button>
+                )}
               </div>
             </div>
           </div>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -67,6 +68,11 @@ const UserProfile = () => {
   
   useEffect(() => {
     const fetchUserData = async () => {
+      if (!username) {
+        setLoading(false);
+        return;
+      }
+
       try {
         const { data: userProfile, error: profileError } = await supabase
           .from('profiles')
@@ -250,7 +256,7 @@ const UserProfile = () => {
       }
     };
 
-    if (username && currentUserId) {
+    if (username && currentUserId !== null) {
       fetchUserData();
     } else if (username) {
       fetchUserData();
@@ -435,7 +441,10 @@ const UserProfile = () => {
       <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-grow flex items-center justify-center">
-          <div className="animate-pulse">Chargement...</div>
+          <div className="animate-pulse flex flex-col items-center">
+            <div className="h-12 w-12 bg-airsoft-red rounded-full animate-spin"></div>
+            <p className="mt-4 text-gray-600">Chargement des données du profil...</p>
+          </div>
         </main>
         <Footer />
       </div>
