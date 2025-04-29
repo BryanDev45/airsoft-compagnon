@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { 
   Dialog, 
@@ -46,10 +45,37 @@ import {
   ToggleGroupItem 
 } from "@/components/ui/toggle-group";
 
+// Define types for team members to include the status field
+interface TeamMember {
+  id: string;
+  user_id?: string;
+  team_id?: string;
+  role?: string;
+  joined_at?: string;
+  status?: string;
+  profiles?: {
+    id: string;
+    username?: string;
+    avatar?: string;
+  };
+}
+
+interface TeamData {
+  id: string;
+  name: string;
+  logo?: string;
+  banner?: string;
+  description?: string;
+  location?: string;
+  contact?: string;
+  leader_id?: string;
+  is_recruiting?: boolean;
+}
+
 interface TeamSettingsProps {
-  team: any;
+  team: TeamData;
   isTeamMember: boolean;
-  onTeamUpdate?: (updatedTeam: any) => void;
+  onTeamUpdate?: (updatedTeam: Partial<TeamData>) => void;
 }
 
 const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) => {
@@ -67,8 +93,8 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
   const [loading, setLoading] = useState(false);
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [currentTab, setCurrentTab] = useState('general');
-  const [teamMembers, setTeamMembers] = useState<any[]>([]);
-  const [pendingMembers, setPendingMembers] = useState<any[]>([]);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [pendingMembers, setPendingMembers] = useState<TeamMember[]>([]);
   const [isRecruitmentOpen, setIsRecruitmentOpen] = useState(team?.is_recruiting || false);
   
   // Vérifier si l'utilisateur est le propriétaire de l'équipe
@@ -89,9 +115,15 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
         
       if (error) throw error;
       
+      // Make sure members is an array before filtering
+      if (!Array.isArray(members)) {
+        console.error('Fetched members is not an array:', members);
+        return;
+      }
+      
       // Séparer les membres confirmés et les demandes en attente
-      const confirmed = members?.filter(m => m.status === 'confirmed' || !m.status) || [];
-      const pending = members?.filter(m => m.status === 'pending') || [];
+      const confirmed = members.filter(m => m.status === 'confirmed' || !m.status) || [];
+      const pending = members.filter(m => m.status === 'pending') || [];
       
       setTeamMembers(confirmed);
       setPendingMembers(pending);
@@ -815,7 +847,7 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
                           <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
                             <img 
                               src={member.profiles?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.profiles?.username || 'user'}`} 
-                              alt={member.profiles?.username} 
+                              alt={member.profiles?.username || "Utilisateur"} 
                               className="w-full h-full object-cover"
                             />
                           </div>
@@ -866,7 +898,7 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
                         <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
                           <img 
                             src={member.profiles?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.profiles?.username || 'user'}`}
-                            alt={member.profiles?.username} 
+                            alt={member.profiles?.username || "Utilisateur"} 
                             className="w-full h-full object-cover"
                           />
                         </div>

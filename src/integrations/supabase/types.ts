@@ -339,6 +339,7 @@ export type Database = {
           id: string
           joined_at: string | null
           role: string | null
+          status: string | null
           team_id: string | null
           user_id: string | null
         }
@@ -346,6 +347,7 @@ export type Database = {
           id?: string
           joined_at?: string | null
           role?: string | null
+          status?: string | null
           team_id?: string | null
           user_id?: string | null
         }
@@ -353,6 +355,7 @@ export type Database = {
           id?: string
           joined_at?: string | null
           role?: string | null
+          status?: string | null
           team_id?: string | null
           user_id?: string | null
         }
@@ -375,6 +378,7 @@ export type Database = {
           game_count: number | null
           id: string
           is_association: boolean | null
+          is_recruiting: boolean | null
           leader_id: string | null
           location: string | null
           logo: string | null
@@ -390,6 +394,7 @@ export type Database = {
           game_count?: number | null
           id?: string
           is_association?: boolean | null
+          is_recruiting?: boolean | null
           leader_id?: string | null
           location?: string | null
           logo?: string | null
@@ -405,6 +410,7 @@ export type Database = {
           game_count?: number | null
           id?: string
           is_association?: boolean | null
+          is_recruiting?: boolean | null
           leader_id?: string | null
           location?: string | null
           logo?: string | null
