@@ -9,6 +9,7 @@ import ProfileBadges from './ProfileBadges';
 import ProfileFriends from './ProfileFriends';
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+
 interface ProfileContainerProps {
   user: any;
   profileData: any;
@@ -27,6 +28,7 @@ interface ProfileContainerProps {
   isOwnProfile: boolean;
   equipmentTypes: string[];
 }
+
 const ProfileContainer: React.FC<ProfileContainerProps> = ({
   user,
   profileData,
@@ -45,7 +47,8 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
   isOwnProfile,
   equipmentTypes
 }) => {
-  return <div className="p-6">
+  return (
+    <div className="p-6">
       <Tabs defaultValue="profile" className="rounded-md">
         <TabsList className="mb-6">
           <TabsTrigger value="profile">Profil</TabsTrigger>
@@ -57,14 +60,24 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
         </TabsList>
         
         <TabsContent value="profile" className="p-1">
-          <ProfileInfo user={user} profileData={profileData} updateLocation={updateLocation} handleNavigateToTeam={handleNavigateToTeam} isOwnProfile={isOwnProfile} />
+          <ProfileInfo 
+            user={user} 
+            profileData={profileData} 
+            updateLocation={updateLocation} 
+            handleNavigateToTeam={handleNavigateToTeam} 
+            isOwnProfile={isOwnProfile} 
+          />
         </TabsContent>
         
         <TabsContent value="games" className="p-1">
-          <ProfileGames games={profileData?.games || []} handleViewGameDetails={game => {
-          setSelectedGame(game);
-          setShowGameDialog(true);
-        }} handleViewAllGames={() => setShowAllGamesDialog(true)} />
+          <ProfileGames 
+            games={profileData?.games || []} 
+            handleViewGameDetails={game => {
+              setSelectedGame(game);
+              setShowGameDialog(true);
+            }} 
+            handleViewAllGames={() => setShowAllGamesDialog(true)} 
+          />
         </TabsContent>
         
         <TabsContent value="stats" className="p-1">
@@ -77,25 +90,43 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
         </TabsContent>
         
         <TabsContent value="equipment" className="p-1">
-          {isOwnProfile && <div className="mb-4 flex justify-end">
-              <Button onClick={() => setShowAddEquipmentDialog(true)} className="bg-airsoft-red hover:bg-red-700 text-white">
+          {isOwnProfile && (
+            <div className="mb-4 flex justify-end">
+              <Button 
+                onClick={() => setShowAddEquipmentDialog(true)} 
+                className="bg-airsoft-red hover:bg-red-700 text-white"
+              >
                 <Plus className="h-4 w-4 mr-2" /> Ajouter un équipement
               </Button>
-            </div>}
+            </div>
+          )}
           
           <div className="grid grid-cols-1 gap-6">
-            <ProfileEquipment equipment={equipment} readOnly={!isOwnProfile} equipmentTypes={equipmentTypes} fetchEquipment={fetchEquipment} />
+            <ProfileEquipment 
+              equipment={equipment} 
+              readOnly={!isOwnProfile} 
+              equipmentTypes={equipmentTypes}
+              fetchEquipment={fetchEquipment}
+            />
           </div>
         </TabsContent>
         
         <TabsContent value="badges" className="p-1">
-          <ProfileBadges badges={profileData?.badges || []} handleViewAllBadges={() => setShowBadgesDialog(true)} />
+          <ProfileBadges 
+            badges={profileData?.badges || []} 
+            handleViewAllBadges={() => setShowBadgesDialog(true)} 
+          />
         </TabsContent>
 
         <TabsContent value="friends" className="p-1">
-          <ProfileFriends userId={user?.id} isOwnProfile={isOwnProfile} />
+          <ProfileFriends 
+            userId={user?.id}
+            isOwnProfile={isOwnProfile}
+          />
         </TabsContent>
       </Tabs>
-    </div>;
+    </div>
+  );
 };
+
 export default ProfileContainer;
