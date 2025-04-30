@@ -41,9 +41,9 @@ const RatingStars: React.FC<RatingStarsProps> = ({
   useEffect(() => {
     // Get current user's ID
     const fetchCurrentUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setCurrentUserId(user.id);
+      const { data } = await supabase.auth.getUser();
+      if (data?.user) {
+        setCurrentUserId(data.user.id);
       }
     };
     
