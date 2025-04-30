@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { useAuth } from '../hooks/useAuth';
-import { useProfileData } from '../hooks/useProfileData';
+import { useProfileData } from '../hooks/profile/useProfileData';
 import ProfileHeader from '../components/profile/ProfileHeader';
 import ProfileContainer from '../components/profile/ProfileContainer';
 import ProfileDialogs from '../components/profile/ProfileDialogs';
