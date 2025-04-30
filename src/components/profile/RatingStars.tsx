@@ -71,34 +71,30 @@ const RatingStars: React.FC<RatingStarsProps> = ({
     try {
       setIsSaving(true);
       
-      // Check if rating already exists
-      const { data: existingRating, error: checkError } = await supabase
-        .from('user_ratings')
-        .select('*')
-        .eq('rater_id', currentUserId)
-        .eq('rated_id', userId)
-        .maybeSingle();
+      // Check if rating already exists using the custom function
+      const { data: existingRating, error: checkError } = await callRPC<number>('get_user_rating', {
+        p_rater_id: currentUserId,
+        p_rated_id: userId
+      });
       
       if (checkError) throw checkError;
       
       let result;
       
-      if (existingRating) {
-        // Update existing rating
-        result = await supabase
-          .from('user_ratings')
-          .update({ rating: newRating, updated_at: new Date() })
-          .eq('rater_id', currentUserId)
-          .eq('rated_id', userId);
+      if (existingRating !== null) {
+        // Update existing rating with custom function
+        result = await callRPC('update_user_rating', {
+          p_rater_id: currentUserId,
+          p_rated_id: userId,
+          p_rating: newRating
+        });
       } else {
-        // Create new rating
-        result = await supabase
-          .from('user_ratings')
-          .insert({
-            rater_id: currentUserId,
-            rated_id: userId,
-            rating: newRating
-          });
+        // Create new rating with custom function
+        result = await callRPC('insert_user_rating', {
+          p_rater_id: currentUserId,
+          p_rated_id: userId,
+          p_rating: newRating
+        });
       }
       
       if (result.error) throw result.error;
@@ -112,21 +108,11 @@ const RatingStars: React.FC<RatingStarsProps> = ({
       }
       
       // Update the user's reputation by calculating average
-      const { data: avgRating, error: avgError } = await supabase
-        .from('user_ratings')
-        .select('rating')
-        .eq('rated_id', userId);
+      const { data: avgRating, error: avgError } = await callRPC<number>('get_average_rating', { 
+        p_user_id: userId 
+      });
       
-      if (!avgError && avgRating) {
-        const total = avgRating.reduce((sum, item) => sum + item.rating, 0);
-        const average = avgRating.length > 0 ? total / avgRating.length : 0;
-        
-        // Update profile reputation
-        await supabase
-          .from('user_stats')
-          .update({ reputation: average })
-          .eq('user_id', userId);
-      }
+      if (avgError) throw avgError;
       
       toast({
         title: "Évaluation enregistrée",
