@@ -2,14 +2,15 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
+import { Profile, UserStats } from '@/types/profile';
 
 /**
  * Hook for fetching profile and user statistics data
  */
 export const useProfileFetch = (userId: string | undefined) => {
   const [loading, setLoading] = useState(true);
-  const [profileData, setProfileData] = useState<any>(null);
-  const [userStats, setUserStats] = useState<any>(null);
+  const [profileData, setProfileData] = useState<Profile | null>(null);
+  const [userStats, setUserStats] = useState<UserStats | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -36,7 +37,7 @@ export const useProfileFetch = (userId: string | undefined) => {
           if (userData?.user && isMounted) {
             // Create a new profile based on user metadata
             const metaData = userData.user.user_metadata;
-            const newProfile = {
+            const newProfile: Profile = {
               id: userId,
               username: metaData.username || `user_${userId.substring(0, 8)}`,
               email: userData.user.email,
@@ -45,7 +46,14 @@ export const useProfileFetch = (userId: string | undefined) => {
               birth_date: metaData.birth_date,
               age: metaData.age || null,
               join_date: new Date().toISOString().split('T')[0],
-              avatar: metaData.avatar
+              avatar: metaData.avatar,
+              banner: null,
+              bio: null,
+              location: null,
+              team: null,
+              team_id: null,
+              is_team_leader: null,
+              is_verified: null
             };
             
             // Insert the new profile
@@ -58,7 +66,7 @@ export const useProfileFetch = (userId: string | undefined) => {
             setProfileData(newProfile);
           }
         } else if (isMounted) {
-          setProfileData(profile);
+          setProfileData(profile as Profile);
         }
 
         if (isMounted) {
@@ -74,14 +82,16 @@ export const useProfileFetch = (userId: string | undefined) => {
 
           if (!stats && isMounted) {
             // Create default statistics if they don't exist
-            const defaultStats = {
+            const defaultStats: UserStats = {
               user_id: userId,
               games_played: 0,
               games_organized: 0,
               reputation: 0,
               preferred_game_type: 'CQB',
               favorite_role: 'Assaut',
-              level: 'Débutant'
+              level: 'Débutant',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
             };
             
             const { error: insertStatsError } = await supabase
@@ -92,7 +102,7 @@ export const useProfileFetch = (userId: string | undefined) => {
             
             setUserStats(defaultStats);
           } else if (isMounted) {
-            setUserStats(stats);
+            setUserStats(stats as UserStats);
           }
         }
       } catch (error: any) {

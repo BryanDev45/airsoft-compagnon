@@ -4,6 +4,7 @@ import { useProfileFetch } from './useProfileFetch';
 import { useProfileUpdates } from './useProfileUpdates';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
+import { Profile, UserStats } from '@/types/profile';
 
 export const useProfileData = (userId: string | undefined) => {
   // Use the separated hooks
@@ -22,7 +23,7 @@ export const useProfileData = (userId: string | undefined) => {
   } = useProfileUpdates(userId, setProfileData, setUserStats);
 
   // Define the fetchProfileData function
-  const fetchProfileData = async () => {
+  const fetchProfileData = async (): Promise<void> => {
     if (!userId) {
       return;
     }
@@ -43,7 +44,7 @@ export const useProfileData = (userId: string | undefined) => {
         if (userData?.user) {
           // Create a new profile based on user metadata
           const metaData = userData.user.user_metadata;
-          const newProfile = {
+          const newProfile: Profile = {
             id: userId,
             username: metaData.username || `user_${userId.substring(0, 8)}`,
             email: userData.user.email,
@@ -52,7 +53,14 @@ export const useProfileData = (userId: string | undefined) => {
             birth_date: metaData.birth_date,
             age: metaData.age || null,
             join_date: new Date().toISOString().split('T')[0],
-            avatar: metaData.avatar
+            avatar: metaData.avatar,
+            banner: null,
+            bio: null,
+            location: null,
+            team: null,
+            team_id: null,
+            is_team_leader: null,
+            is_verified: null
           };
           
           // Insert the new profile
@@ -65,7 +73,7 @@ export const useProfileData = (userId: string | undefined) => {
           setProfileData(newProfile);
         }
       } else {
-        setProfileData(profile);
+        setProfileData(profile as Profile);
       }
 
       const { data: stats, error: statsError } = await supabase
@@ -80,14 +88,16 @@ export const useProfileData = (userId: string | undefined) => {
 
       if (!stats) {
         // Create default statistics if they don't exist
-        const defaultStats = {
+        const defaultStats: UserStats = {
           user_id: userId,
           games_played: 0,
           games_organized: 0,
           reputation: 0,
           preferred_game_type: 'CQB',
           favorite_role: 'Assaut',
-          level: 'Débutant'
+          level: 'Débutant',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         };
         
         const { error: insertStatsError } = await supabase
@@ -98,7 +108,7 @@ export const useProfileData = (userId: string | undefined) => {
         
         setUserStats(defaultStats);
       } else {
-        setUserStats(stats);
+        setUserStats(stats as UserStats);
       }
     } catch (error: any) {
       console.error("Error loading data:", error);

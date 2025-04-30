@@ -2,14 +2,19 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
+import { Profile, UserStats } from '@/types/profile';
 
 /**
  * Hook for profile update operations
  */
-export const useProfileUpdates = (userId: string | undefined, setProfileData: any, setUserStats: any) => {
+export const useProfileUpdates = (
+  userId: string | undefined,
+  setProfileData: React.Dispatch<React.SetStateAction<Profile | null>>,
+  setUserStats: React.Dispatch<React.SetStateAction<UserStats | null>>
+) => {
   const [updating, setUpdating] = useState(false);
 
-  const updateLocation = async (location: string) => {
+  const updateLocation = async (location: string): Promise<boolean> => {
     if (!userId) return false;
     
     try {
@@ -21,7 +26,7 @@ export const useProfileUpdates = (userId: string | undefined, setProfileData: an
 
       if (error) throw error;
 
-      setProfileData(prev => ({ ...prev, location }));
+      setProfileData(prev => prev ? { ...prev, location } : null);
       
       toast({
         title: "Succès",
@@ -42,7 +47,11 @@ export const useProfileUpdates = (userId: string | undefined, setProfileData: an
     }
   };
 
-  const updateUserStats = async (preferredGameType: string, favoriteRole: string, level: string) => {
+  const updateUserStats = async (
+    preferredGameType: string,
+    favoriteRole: string,
+    level: string
+  ): Promise<boolean> => {
     if (!userId) return false;
     
     try {
@@ -66,13 +75,13 @@ export const useProfileUpdates = (userId: string | undefined, setProfileData: an
       }
 
       // Update state
-      setUserStats(prev => ({
+      setUserStats(prev => prev ? {
         ...prev,
         preferred_game_type: preferredGameType,
         favorite_role: favoriteRole,
         level: level,
         updated_at: new Date().toISOString()
-      }));
+      } : null);
       
       return true;
     } catch (error: any) {
