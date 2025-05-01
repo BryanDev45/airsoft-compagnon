@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -206,7 +205,7 @@ const CreateParty = () => {
           toast({
             title: "Attention",
             description: "La partie a été créée mais certaines images n'ont pas pu être téléchargées",
-            variant: "warning"
+            variant: "destructive"
           });
         }
       }
