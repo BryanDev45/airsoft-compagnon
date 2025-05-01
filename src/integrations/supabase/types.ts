@@ -452,6 +452,33 @@ export type Database = {
           },
         ]
       }
+      user_ratings: {
+        Row: {
+          created_at: string
+          id: string
+          rated_id: string
+          rater_id: string
+          rating: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          rated_id: string
+          rater_id: string
+          rating: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          rated_id?: string
+          rater_id?: string
+          rating?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_stats: {
         Row: {
           created_at: string | null
@@ -493,8 +520,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_average_rating: {
+        Args: { p_user_id: string }
+        Returns: number
+      }
+      get_user_rating: {
+        Args: { p_rater_id: string; p_rated_id: string }
+        Returns: number
+      }
+      insert_user_rating: {
+        Args: { p_rater_id: string; p_rated_id: string; p_rating: number }
+        Returns: undefined
+      }
       update_user_location: {
         Args: { p_user_id: string; p_location: string }
+        Returns: undefined
+      }
+      update_user_rating: {
+        Args: { p_rater_id: string; p_rated_id: string; p_rating: number }
+        Returns: undefined
+      }
+      update_user_reputation: {
+        Args: { p_user_id: string }
         Returns: undefined
       }
       update_user_stats: {

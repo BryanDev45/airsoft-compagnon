@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Star, StarHalf, StarOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
+import { callRPC } from '@/utils/supabaseHelpers';
 
 interface RatingStarsProps {
   rating: number;
@@ -11,20 +12,6 @@ interface RatingStarsProps {
   size?: number;
   userId?: string;
 }
-
-/**
- * Helper function to call Supabase RPC functions with type safety bypassing
- */
-const callRPC = async <T,>(functionName: string, params: Record<string, any> = {}): Promise<{data: T | null, error: Error | null}> => {
-  try {
-    // @ts-ignore - We're intentionally bypassing TypeScript's type checking here
-    const result = await supabase.rpc(functionName, params);
-    return result;
-  } catch (error) {
-    console.error(`Error calling RPC function ${functionName}:`, error);
-    return { data: null, error: error as Error };
-  }
-};
 
 const RatingStars: React.FC<RatingStarsProps> = ({ 
   rating, 
