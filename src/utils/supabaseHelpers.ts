@@ -22,3 +22,63 @@ export const callRPC = async <T>(
     return { data: null, error: error as Error };
   }
 };
+
+/**
+ * Create a new airsoft game in the database
+ */
+export const createAirsoftGame = async (gameData: any) => {
+  try {
+    const { data, error } = await supabase
+      .from('airsoft_games')
+      .insert([gameData])
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return { data, error: null };
+  } catch (error) {
+    console.error('Error creating airsoft game:', error);
+    return { data: null, error };
+  }
+};
+
+/**
+ * Upload game images to storage and link them to a game
+ */
+export const uploadGameImages = async (gameId: string, images: File[]) => {
+  try {
+    const results = [];
+    
+    for (const image of images) {
+      const fileExt = image.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+      const filePath = `game-images/${gameId}/${fileName}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('games')
+        .upload(filePath, image);
+      
+      if (uploadError) throw uploadError;
+      
+      const { data: publicUrlData } = supabase.storage
+        .from('games')
+        .getPublicUrl(filePath);
+        
+      const { error: dbError } = await supabase
+        .from('airsoft_game_images')
+        .insert({
+          game_id: gameId,
+          image_url: publicUrlData.publicUrl
+        });
+        
+      if (dbError) throw dbError;
+      
+      results.push(publicUrlData.publicUrl);
+    }
+    
+    return { data: results, error: null };
+  } catch (error) {
+    console.error('Error uploading game images:', error);
+    return { data: null, error };
+  }
+};

@@ -9,6 +9,143 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      airsoft_game_images: {
+        Row: {
+          created_at: string | null
+          game_id: string
+          id: string
+          image_url: string
+        }
+        Insert: {
+          created_at?: string | null
+          game_id: string
+          id?: string
+          image_url: string
+        }
+        Update: {
+          created_at?: string | null
+          game_id?: string
+          id?: string
+          image_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "airsoft_game_images_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "airsoft_games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      airsoft_games: {
+        Row: {
+          address: string
+          aeg_fps_max: number | null
+          aeg_fps_min: number | null
+          city: string
+          created_at: string | null
+          created_by: string
+          date: string
+          description: string
+          dmr_fps_max: number | null
+          end_time: string
+          eye_protection_required: boolean | null
+          full_face_protection_required: boolean | null
+          game_type: string
+          grenades_allowed: boolean | null
+          has_equipment_rental: boolean | null
+          has_parking: boolean | null
+          has_toilets: boolean | null
+          hpa_allowed: boolean | null
+          id: string
+          is_private: boolean | null
+          latitude: number | null
+          longitude: number | null
+          manual_validation: boolean | null
+          max_players: number
+          polarstar_allowed: boolean | null
+          price: number | null
+          pyro_allowed: boolean | null
+          rules: string
+          smokes_allowed: boolean | null
+          start_time: string
+          title: string
+          tracers_allowed: boolean | null
+          zip_code: string
+        }
+        Insert: {
+          address: string
+          aeg_fps_max?: number | null
+          aeg_fps_min?: number | null
+          city: string
+          created_at?: string | null
+          created_by: string
+          date: string
+          description: string
+          dmr_fps_max?: number | null
+          end_time: string
+          eye_protection_required?: boolean | null
+          full_face_protection_required?: boolean | null
+          game_type: string
+          grenades_allowed?: boolean | null
+          has_equipment_rental?: boolean | null
+          has_parking?: boolean | null
+          has_toilets?: boolean | null
+          hpa_allowed?: boolean | null
+          id?: string
+          is_private?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          manual_validation?: boolean | null
+          max_players: number
+          polarstar_allowed?: boolean | null
+          price?: number | null
+          pyro_allowed?: boolean | null
+          rules: string
+          smokes_allowed?: boolean | null
+          start_time: string
+          title: string
+          tracers_allowed?: boolean | null
+          zip_code: string
+        }
+        Update: {
+          address?: string
+          aeg_fps_max?: number | null
+          aeg_fps_min?: number | null
+          city?: string
+          created_at?: string | null
+          created_by?: string
+          date?: string
+          description?: string
+          dmr_fps_max?: number | null
+          end_time?: string
+          eye_protection_required?: boolean | null
+          full_face_protection_required?: boolean | null
+          game_type?: string
+          grenades_allowed?: boolean | null
+          has_equipment_rental?: boolean | null
+          has_parking?: boolean | null
+          has_toilets?: boolean | null
+          hpa_allowed?: boolean | null
+          id?: string
+          is_private?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          manual_validation?: boolean | null
+          max_players?: number
+          polarstar_allowed?: boolean | null
+          price?: number | null
+          pyro_allowed?: boolean | null
+          rules?: string
+          smokes_allowed?: boolean | null
+          start_time?: string
+          title?: string
+          tracers_allowed?: boolean | null
+          zip_code?: string
+        }
+        Relationships: []
+      }
       badges: {
         Row: {
           background_color: string | null

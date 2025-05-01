@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -21,6 +22,9 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { ScrollToTop } from "../components/ui/scroll-to-top";
+import { supabase } from "@/integrations/supabase/client";
+import { createAirsoftGame, uploadGameImages } from "@/utils/supabaseHelpers";
+
 const partyFormSchema = z.object({
   title: z.string().min(5, "Le titre doit comporter au moins 5 caractères"),
   description: z.string().min(20, "La description doit comporter au moins 20 caractères"),
@@ -36,7 +40,6 @@ const partyFormSchema = z.object({
   maxPlayers: z.string().min(1, "Le nombre maximum de joueurs est requis"),
   price: z.string(),
   gameType: z.string().min(1, "Le type de jeu est requis"),
-  requiresReplica: z.boolean().default(true),
   manualValidation: z.boolean().default(false),
   hasToilets: z.boolean().default(false),
   hasParking: z.boolean().default(false),
@@ -57,7 +60,9 @@ const partyFormSchema = z.object({
   }),
   isPrivate: z.boolean().default(false)
 });
+
 type PartyFormValues = z.infer<typeof partyFormSchema>;
+
 const gameTypes = [{
   value: "cqb",
   label: "CQB"
@@ -74,10 +79,13 @@ const gameTypes = [{
   value: "scenario",
   label: "Scénario"
 }];
+
 const CreateParty = () => {
   const [images, setImages] = useState<File[]>([]);
   const [preview, setPreview] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const navigate = useNavigate();
+  
   const form = useForm<PartyFormValues>({
     resolver: zodResolver(partyFormSchema),
     defaultValues: {
@@ -92,7 +100,6 @@ const CreateParty = () => {
       maxPlayers: "20",
       price: "0",
       gameType: "",
-      requiresReplica: true,
       manualValidation: false,
       hasToilets: false,
       hasParking: false,
@@ -112,6 +119,7 @@ const CreateParty = () => {
       isPrivate: false
     }
   });
+  
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const filesArray = Array.from(e.target.files);
@@ -121,6 +129,7 @@ const CreateParty = () => {
       setPreview(newPreviews);
     }
   };
+  
   const removeImage = (index: number) => {
     const newImages = [...images];
     newImages.splice(index, 1);
@@ -130,22 +139,101 @@ const CreateParty = () => {
     newPreviews.splice(index, 1);
     setPreview(newPreviews);
   };
-  const onSubmit = (data: PartyFormValues) => {
-    console.log("Creating party with data:", data);
-    console.log("Images:", images);
-    setTimeout(() => {
+  
+  const onSubmit = async (data: PartyFormValues) => {
+    setIsSubmitting(true);
+    
+    try {
+      // Vérifier si l'utilisateur est connecté
+      const { data: userData } = await supabase.auth.getUser();
+      
+      if (!userData?.user) {
+        toast({
+          title: "Non connecté",
+          description: "Vous devez être connecté pour créer une partie",
+          variant: "destructive"
+        });
+        setIsSubmitting(false);
+        return;
+      }
+      
+      // Préparer les données à enregistrer
+      const gameData = {
+        title: data.title,
+        description: data.description,
+        rules: data.rules,
+        date: data.date.toISOString().split('T')[0],  // Format YYYY-MM-DD
+        start_time: data.startTime,
+        end_time: data.endTime,
+        address: data.address,
+        city: data.city,
+        zip_code: data.zipCode,
+        max_players: parseInt(data.maxPlayers),
+        price: parseFloat(data.price),
+        game_type: data.gameType,
+        manual_validation: data.manualValidation,
+        has_toilets: data.hasToilets,
+        has_parking: data.hasParking,
+        has_equipment_rental: data.hasEquipmentRental,
+        aeg_fps_min: parseInt(data.aeg_fps_min),
+        aeg_fps_max: parseInt(data.aeg_fps_max),
+        dmr_fps_max: parseInt(data.dmr_fps_max),
+        eye_protection_required: data.eyeProtectionRequired,
+        full_face_protection_required: data.fullFaceProtectionRequired,
+        hpa_allowed: data.hpaAllowed,
+        polarstar_allowed: data.polarStarAllowed,
+        tracers_allowed: data.tracersAllowed,
+        grenades_allowed: data.grenadesAllowed,
+        smokes_allowed: data.smokesAllowed,
+        pyro_allowed: data.pyroAllowed,
+        is_private: data.isPrivate,
+        created_by: userData.user.id
+      };
+      
+      // Créer la partie dans la base de données
+      const { data: gameResult, error } = await createAirsoftGame(gameData);
+      
+      if (error || !gameResult) {
+        throw new Error(error?.message || "Erreur lors de la création de la partie");
+      }
+      
+      // Si des images ont été téléchargées, les enregistrer
+      if (images.length > 0) {
+        const { error: imageError } = await uploadGameImages(gameResult.id, images);
+        
+        if (imageError) {
+          console.error("Erreur lors du téléchargement des images:", imageError);
+          toast({
+            title: "Attention",
+            description: "La partie a été créée mais certaines images n'ont pas pu être téléchargées",
+            variant: "warning"
+          });
+        }
+      }
+      
       toast({
         title: "Partie créée avec succès",
         description: "Votre partie a été publiée et est maintenant visible par les autres joueurs"
       });
+      
       navigate('/parties');
-    }, 1500);
+    } catch (error: any) {
+      console.error("Erreur lors de la création de la partie:", error);
+      toast({
+        title: "Erreur",
+        description: error?.message || "Une erreur est survenue lors de la création de la partie",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Scroll to top on mount
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+  
   return <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow bg-gray-50 py-12">
@@ -402,8 +490,6 @@ const CreateParty = () => {
                 </CardContent>
               </Card>
               
-              
-              
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -492,20 +578,6 @@ const CreateParty = () => {
                             <FormLabel className="text-base">Validation manuelle</FormLabel>
                             <p className="text-sm text-muted-foreground">
                               Les demandes de participation doivent être validées manuellement
-                            </p>
-                          </div>
-                          <FormControl>
-                            <Switch checked={field.value} onCheckedChange={field.onChange} />
-                          </FormControl>
-                        </FormItem>} />
-                    
-                    <FormField control={form.control} name="requiresReplica" render={({
-                    field
-                  }) => <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-base">Réplique requise</FormLabel>
-                            <p className="text-sm text-muted-foreground">
-                              Les joueurs doivent avoir leur propre réplique
                             </p>
                           </div>
                           <FormControl>
@@ -622,9 +694,18 @@ const CreateParty = () => {
                 <Button type="button" variant="outline" onClick={() => navigate('/parties')}>
                   Annuler
                 </Button>
-                <Button type="submit" className="bg-airsoft-red hover:bg-red-700">
-                  <Save className="mr-2 h-4 w-4" />
-                  Créer la partie
+                <Button type="submit" className="bg-airsoft-red hover:bg-red-700" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <span className="animate-spin mr-2">⊙</span>
+                      Création en cours...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Créer la partie
+                    </>
+                  )}
                 </Button>
               </div>
             </form>
@@ -632,6 +713,8 @@ const CreateParty = () => {
         </div>
       </main>
       <Footer />
+      <ScrollToTop />
     </div>;
 };
+
 export default CreateParty;
