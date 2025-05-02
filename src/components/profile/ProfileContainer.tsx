@@ -86,6 +86,7 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
             updateUserStats={updateUserStats} 
             fetchProfileData={fetchProfileData} 
             isOwnProfile={isOwnProfile} 
+            profileData={profileData}
           />
         </TabsContent>
         
