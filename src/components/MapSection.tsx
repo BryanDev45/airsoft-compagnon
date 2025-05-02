@@ -12,9 +12,11 @@ import MapFilters from './map/MapFilters';
 import { calculateDistance } from '../utils/mapUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 const MapSection = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const mapContainer = useRef(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('all');
@@ -103,9 +105,10 @@ const MapSection = () => {
     const matchesDepartment = selectedDepartment === 'all' || event.department === selectedDepartment;
     const matchesDate = !selectedDate || event.date.includes(selectedDate);
     const matchesCountry = selectedCountry === 'all' || event.country === selectedCountry;
+    const matchesType = selectedType === 'all' || event.type === selectedType;
     
     if (searchRadius[0] === 0) {
-      return matchesSearch && matchesDepartment && matchesDate && matchesCountry;
+      return matchesSearch && matchesDepartment && matchesDate && matchesCountry && matchesType;
     }
     
     if (searchCenter && searchRadius[0] > 0) {
@@ -117,10 +120,10 @@ const MapSection = () => {
       );
       
       return matchesSearch && matchesDepartment && matchesDate && 
-             matchesCountry && distance <= searchRadius[0];
+             matchesCountry && matchesType && distance <= searchRadius[0];
     }
     
-    return matchesSearch && matchesDepartment && matchesDate && matchesCountry;
+    return matchesSearch && matchesDepartment && matchesDate && matchesCountry && matchesType;
   });
 
   const geocodeLocation = async (locationName: string) => {
@@ -200,10 +203,10 @@ const MapSection = () => {
         </div>
         
         <div className="flex justify-end mb-6">
-          <Link to="/parties/create">
+          <Link to={user ? "/parties/create" : "/login"}>
             <Button className="bg-airsoft-red hover:bg-red-700 shadow-lg">
               <Plus className="mr-2 h-4 w-4" />
-              Créer une partie
+              {user ? "Créer une partie" : "Se connecter pour créer une partie"}
             </Button>
           </Link>
         </div>
@@ -249,6 +252,9 @@ const MapSection = () => {
                   {selectedDate && <Badge className="bg-airsoft-red hover:bg-red-700" onClick={() => setSelectedDate('')}>
                       {selectedDate} ×
                     </Badge>}
+                  {selectedType !== 'all' && <Badge className="bg-airsoft-red hover:bg-red-700" onClick={() => setSelectedType('all')}>
+                      {selectedType} ×
+                    </Badge>}
                 </div>
               </div>
             </div>
@@ -287,7 +293,7 @@ const MapSection = () => {
           ) : (
             <div className="col-span-3 text-center py-12">
               <p className="text-gray-500 text-xl">Aucune partie trouvée correspondant à vos critères</p>
-              <p className="text-gray-400 mt-2">Essayez de modifier vos filtres ou <Link to="/parties/create" className="text-airsoft-red hover:underline">créez votre propre partie</Link></p>
+              <p className="text-gray-400 mt-2">Essayez de modifier vos filtres ou <Link to={user ? "/parties/create" : "/login"} className="text-airsoft-red hover:underline">{user ? "créez votre propre partie" : "connectez-vous pour créer une partie"}</Link></p>
             </div>
           )}
         </div>

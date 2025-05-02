@@ -58,19 +58,19 @@ export const useUserProfile = (username: string | undefined) => {
         }
 
         if (currentUserId) {
+          // Vérifier si on est amis
           const { data: friendship, error: friendshipError } = await supabase
-            .from('friendships')
-            .select('*')
-            .eq('user_id', currentUserId)
-            .eq('friend_id', userProfile.id)
-            .single();
+            .rpc('check_friendship_status', { 
+              p_user_id: currentUserId, 
+              p_friend_id: userProfile.id 
+            });
             
           if (!friendshipError && friendship) {
-            setIsFollowing(friendship.status === 'accepted');
-            setFriendRequestSent(friendship.status === 'pending');
+            setIsFollowing(friendship === 'accepted');
+            setFriendRequestSent(friendship === 'pending');
           }
           
-          // Call RPC function
+          // Récupérer la note donnée
           const { data: ratings, error: ratingsError } = await callRPC<number>('get_user_rating', { 
             p_rater_id: currentUserId, 
             p_rated_id: userProfile.id 
@@ -99,68 +99,30 @@ export const useUserProfile = (username: string | undefined) => {
 
         if (equipmentError) throw equipmentError;
 
-        // Fetch game participants and related game data
-        const { data: gameParticipants, error: gamesError } = await supabase
+        // Fetch games created by user
+        const { data: createdGames, error: createdGamesError } = await supabase
+          .from('airsoft_games')
+          .select('*')
+          .eq('created_by', userProfile.id);
+
+        if (createdGamesError) throw createdGamesError;
+        
+        // Fetch games that user is participating in
+        const { data: userParticipations, error: participationError } = await supabase
           .from('game_participants')
           .select(`
             id,
             status,
             role,
             game_id,
-            user_id
+            user_id,
+            airsoft_games (*)
           `)
-          .eq('user_id', userProfile.id)
-          .limit(5);
+          .eq('user_id', userProfile.id);
 
-        if (gamesError) throw gamesError;
-
-        // Fetch games created by user
-        const { data: createdGames, error: createdGamesError } = await supabase
-          .from('airsoft_games')
-          .select('*')
-          .eq('created_by', userProfile.id)
-          .limit(5);
-
-        if (createdGamesError) throw createdGamesError;
-        
-        console.log("Created games:", createdGames);
+        if (participationError) throw participationError;
 
         let formattedGames: any[] = [];
-
-        // Format participated games
-        if (gameParticipants && gameParticipants.length > 0) {
-          // Fetch the actual game data for each participation
-          const gameIds = gameParticipants.map(gp => gp.game_id);
-          
-          const { data: games, error: gamesDataError } = await supabase
-            .from('airsoft_games')
-            .select('*')
-            .in('id', gameIds);
-            
-          if (gamesDataError) throw gamesDataError;
-          
-          if (games && games.length > 0) {
-            const participatedGames = gameParticipants.map(gp => {
-              const gameData = games.find(g => g.id === gp.game_id);
-              if (gameData) {
-                return {
-                  id: gameData.id,
-                  title: gameData.title,
-                  date: new Date(gameData.date).toLocaleDateString('fr-FR'),
-                  location: gameData.city,
-                  image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
-                  role: gp.role,
-                  status: 'À venir',
-                  team: 'Indéfini',
-                  result: gp.status
-                };
-              }
-              return null;
-            }).filter(Boolean);
-            
-            formattedGames.push(...participatedGames);
-          }
-        }
 
         // Format created games
         if (createdGames && createdGames.length > 0) {
@@ -171,12 +133,29 @@ export const useUserProfile = (username: string | undefined) => {
             location: game.city,
             image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
             role: 'Organisateur',
-            status: 'À venir',
-            team: 'Organisateur',
-            result: 'Organisateur'
+            status: game.date >= new Date().toISOString().split('T')[0] ? 'À venir' : 'Terminé',
+            team: 'Organisateur'
           }));
           
-          formattedGames.push(...organizedGames);
+          formattedGames = [...formattedGames, ...organizedGames];
+        }
+
+        // Format participated games
+        if (userParticipations && userParticipations.length > 0) {
+          const participatedGames = userParticipations
+            .filter(p => p.airsoft_games)
+            .map(p => ({
+              id: p.game_id,
+              title: p.airsoft_games.title,
+              date: new Date(p.airsoft_games.date).toLocaleDateString('fr-FR'),
+              location: p.airsoft_games.city,
+              image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
+              role: p.role || 'Participant',
+              status: p.airsoft_games.date >= new Date().toISOString().split('T')[0] ? 'À venir' : 'Terminé',
+              team: 'Indéfini',
+              result: p.status
+            }));
+          formattedGames = [...formattedGames, ...participatedGames];
         }
 
         // Fetch user badges
@@ -219,7 +198,7 @@ export const useUserProfile = (username: string | undefined) => {
 
         const enrichedProfile = {
           ...userProfile,
-          games: formattedGames,
+          games: formattedGames.slice(0, 5),
           allGames: [...formattedGames],
           badges: formattedBadges
         };

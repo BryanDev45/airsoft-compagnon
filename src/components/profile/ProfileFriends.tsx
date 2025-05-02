@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { UserPlus, UserMinus, UserCheck } from "lucide-react";
+import { UserPlus, UserMinus, UserCheck, Trash } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from 'react-router-dom';
@@ -15,9 +15,11 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
 
   const fetchFriends = async () => {
     try {
+      // Récupérer les amis acceptés
       const { data: acceptedFriends, error: friendsError } = await supabase
         .from('friendships')
         .select(`
+          id,
           friend_id,
           profiles!friendships_friend_id_fkey (
             id,
@@ -30,14 +32,59 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
         .eq('user_id', userId)
         .eq('status', 'accepted');
 
-      if (!friendsError && acceptedFriends) {
-        setFriends(acceptedFriends.map(f => f.profiles));
+      if (friendsError) throw friendsError;
+
+      // Récupérer également les amis où l'utilisateur est "friend_id"
+      const { data: acceptedFriendsReverse, error: friendsErrorReverse } = await supabase
+        .from('friendships')
+        .select(`
+          id,
+          user_id,
+          profiles!friendships_user_id_fkey (
+            id,
+            username,
+            avatar,
+            team,
+            location
+          )
+        `)
+        .eq('friend_id', userId)
+        .eq('status', 'accepted');
+
+      if (friendsErrorReverse) throw friendsErrorReverse;
+
+      // Combiner les deux listes d'amis
+      let allFriends = [];
+      if (acceptedFriends) {
+        allFriends = [...allFriends, ...acceptedFriends.map(f => ({
+          friendshipId: f.id,
+          id: f.profiles.id,
+          username: f.profiles.username,
+          avatar: f.profiles.avatar,
+          team: f.profiles.team,
+          location: f.profiles.location
+        }))];
       }
 
+      if (acceptedFriendsReverse) {
+        allFriends = [...allFriends, ...acceptedFriendsReverse.map(f => ({
+          friendshipId: f.id,
+          id: f.profiles.id,
+          username: f.profiles.username,
+          avatar: f.profiles.avatar,
+          team: f.profiles.team,
+          location: f.profiles.location
+        }))];
+      }
+
+      setFriends(allFriends);
+
+      // Récupérer les demandes en attente uniquement si c'est le profil de l'utilisateur connecté
       if (isOwnProfile) {
         const { data: pending, error: pendingError } = await supabase
           .from('friendships')
           .select(`
+            id,
             user_id,
             profiles!friendships_user_id_fkey (
               id,
@@ -50,8 +97,17 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
           .eq('friend_id', userId)
           .eq('status', 'pending');
 
-        if (!pendingError && pending) {
-          setPendingRequests(pending.map(p => p.profiles));
+        if (pendingError) throw pendingError;
+        
+        if (pending) {
+          setPendingRequests(pending.map(p => ({
+            friendshipId: p.id,
+            id: p.profiles.id,
+            username: p.profiles.username,
+            avatar: p.profiles.avatar,
+            team: p.profiles.team,
+            location: p.profiles.location
+          })));
         }
       }
     } catch (error) {
@@ -64,50 +120,78 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
     }
   };
 
-  const handleAcceptFriend = async (friendId) => {
-    const { error } = await supabase
-      .from('friendships')
-      .update({ status: 'accepted' })
-      .eq('user_id', friendId)
-      .eq('friend_id', userId);
+  const handleAcceptFriend = async (friendshipId) => {
+    try {
+      const { error } = await supabase
+        .from('friendships')
+        .update({ status: 'accepted' })
+        .eq('id', friendshipId);
 
-    if (!error) {
+      if (error) throw error;
+      
       toast({
         title: "Demande acceptée",
         description: "Vous êtes maintenant amis",
       });
+      
       fetchFriends();
+    } catch (error) {
+      console.error('Erreur lors de l\'acceptation de la demande d\'ami:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'accepter la demande d'ami",
+        variant: "destructive"
+      });
     }
   };
 
-  const handleRejectFriend = async (friendId) => {
-    const { error } = await supabase
-      .from('friendships')
-      .update({ status: 'rejected' })
-      .eq('user_id', friendId)
-      .eq('friend_id', userId);
+  const handleRejectFriend = async (friendshipId) => {
+    try {
+      const { error } = await supabase
+        .from('friendships')
+        .update({ status: 'rejected' })
+        .eq('id', friendshipId);
 
-    if (!error) {
+      if (error) throw error;
+      
       toast({
         title: "Demande rejetée",
         description: "La demande d'ami a été rejetée",
       });
+      
       fetchFriends();
+    } catch (error) {
+      console.error('Erreur lors du rejet de la demande d\'ami:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de rejeter la demande d'ami",
+        variant: "destructive"
+      });
     }
   };
 
   const handleRemoveFriend = async (friendId) => {
-    const { error } = await supabase
-      .from('friendships')
-      .delete()
-      .or(`and(user_id.eq.${userId},friend_id.eq.${friendId}),and(user_id.eq.${friendId},friend_id.eq.${userId})`);
+    try {
+      const { error } = await supabase
+        .from('friendships')
+        .delete()
+        .or(`and(user_id.eq.${userId},friend_id.eq.${friendId}),and(user_id.eq.${friendId},friend_id.eq.${userId})`);
 
-    if (!error) {
+      if (error) throw error;
+      
       toast({
         title: "Ami supprimé",
         description: "L'ami a été retiré de votre liste",
       });
+      
       fetchFriends();
+    } catch (error) {
+      console.error('Erreur lors de la suppression d\'un ami:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer cet ami",
+        variant: "destructive"
+      });
     }
   };
 
@@ -116,7 +200,9 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
   };
 
   React.useEffect(() => {
-    fetchFriends();
+    if (userId) {
+      fetchFriends();
+    }
   }, [userId]);
 
   return (
@@ -156,16 +242,18 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
                   <Button 
                     variant="default" 
                     size="sm"
-                    onClick={() => handleAcceptFriend(request.id)}
+                    onClick={() => handleAcceptFriend(request.friendshipId)}
                     className="bg-airsoft-red hover:bg-red-700"
                   >
+                    <UserCheck className="h-4 w-4 mr-1" />
                     Accepter
                   </Button>
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => handleRejectFriend(request.id)}
+                    onClick={() => handleRejectFriend(request.friendshipId)}
                   >
+                    <UserMinus className="h-4 w-4 mr-1" />
                     Refuser
                   </Button>
                 </div>

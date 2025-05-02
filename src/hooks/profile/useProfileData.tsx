@@ -1,124 +1,190 @@
-
-import { useState } from 'react';
-import { useProfileFetch } from './useProfileFetch';
-import { useProfileUpdates } from './useProfileUpdates';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
-import { Profile, UserStats } from '@/types/profile';
+import { useNavigate } from 'react-router-dom';
 
-export const useProfileData = (userId: string | undefined) => {
-  // Use the separated hooks
-  const { 
-    loading, 
-    profileData, 
-    userStats, 
-    setProfileData, 
-    setUserStats 
-  } = useProfileFetch(userId);
-  
-  const { 
-    updating, 
-    updateLocation, 
-    updateUserStats 
-  } = useProfileUpdates(userId, setProfileData, setUserStats);
+export const useProfileData = (userId: string | null) => {
+  const [loading, setLoading] = useState(true);
+  const [profileData, setProfileData] = useState<any>(null);
+  const [userStats, setUserStats] = useState<any>(null);
+  const navigate = useNavigate();
 
-  // Define the fetchProfileData function
-  const fetchProfileData = async (): Promise<void> => {
-    if (!userId) {
-      return;
-    }
-    
+  const fetchProfileData = async () => {
+    if (!userId) return false;
+
     try {
+      // Fetch user profile
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .maybeSingle();
+        .single();
 
-      if (profileError && profileError.code !== 'PGRST116') {
-        throw profileError;
-      }
+      if (profileError) throw profileError;
 
-      if (!profile) {
-        const { data: userData } = await supabase.auth.getUser();
-        if (userData?.user) {
-          // Create a new profile based on user metadata
-          const metaData = userData.user.user_metadata;
-          const newProfile: Profile = {
-            id: userId,
-            username: metaData.username || `user_${userId.substring(0, 8)}`,
-            email: userData.user.email,
-            firstname: metaData.firstname,
-            lastname: metaData.lastname,
-            birth_date: metaData.birth_date,
-            age: metaData.age || null,
-            join_date: new Date().toISOString().split('T')[0],
-            avatar: metaData.avatar,
-            banner: null,
-            bio: null,
-            location: null,
-            team: null,
-            team_id: null,
-            is_team_leader: null,
-            is_verified: null
-          };
-          
-          // Insert the new profile
-          const { error: insertError } = await supabase
-            .from('profiles')
-            .insert(newProfile);
-            
-          if (insertError) throw insertError;
-          
-          setProfileData(newProfile);
-        }
-      } else {
-        setProfileData(profile as Profile);
-      }
-
+      // Fetch user stats
       const { data: stats, error: statsError } = await supabase
         .from('user_stats')
         .select('*')
         .eq('user_id', userId)
         .maybeSingle();
 
-      if (statsError && statsError.code !== 'PGRST116') {
-        throw statsError;
+      if (statsError && statsError.code !== 'PGRST116') throw statsError;
+
+      // Fetch games that user created
+      const { data: createdGames, error: createdGamesError } = await supabase
+        .from('airsoft_games')
+        .select('*')
+        .eq('created_by', userId);
+
+      if (createdGamesError) throw createdGamesError;
+
+      // Fetch games that user is participating in
+      const { data: userParticipations, error: participationError } = await supabase
+        .from('game_participants')
+        .select(`
+          id,
+          status,
+          role,
+          game_id,
+          user_id,
+          airsoft_games (*)
+        `)
+        .eq('user_id', userId);
+
+      if (participationError) throw participationError;
+
+      // Format games
+      let formattedGames = [];
+
+      // Format created games
+      if (createdGames && createdGames.length > 0) {
+        const organizedGames = createdGames.map(game => ({
+          id: game.id,
+          title: game.title,
+          date: new Date(game.date).toLocaleDateString('fr-FR'),
+          location: game.city,
+          image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
+          role: 'Organisateur',
+          status: game.date >= new Date().toISOString().split('T')[0] ? 'À venir' : 'Terminé',
+          team: 'Organisateur'
+        }));
+        formattedGames = [...formattedGames, ...organizedGames];
       }
 
-      if (!stats) {
-        // Create default statistics if they don't exist
-        const defaultStats: UserStats = {
-          user_id: userId,
-          games_played: 0,
-          games_organized: 0,
-          reputation: 0,
-          preferred_game_type: 'CQB',
-          favorite_role: 'Assaut',
-          level: 'Débutant',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
-        
-        const { error: insertStatsError } = await supabase
-          .from('user_stats')
-          .insert(defaultStats);
-          
-        if (insertStatsError) throw insertStatsError;
-        
-        setUserStats(defaultStats);
-      } else {
-        setUserStats(stats as UserStats);
+      // Format participated games
+      if (userParticipations && userParticipations.length > 0) {
+        const participatedGames = userParticipations
+          .filter(p => p.airsoft_games)
+          .map(p => ({
+            id: p.game_id,
+            title: p.airsoft_games.title,
+            date: new Date(p.airsoft_games.date).toLocaleDateString('fr-FR'),
+            location: p.airsoft_games.city,
+            image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
+            role: p.role || 'Participant',
+            status: p.airsoft_games.date >= new Date().toISOString().split('T')[0] ? 'À venir' : 'Terminé',
+            team: 'Indéfini',
+            result: p.status
+          }));
+        formattedGames = [...formattedGames, ...participatedGames];
       }
-    } catch (error: any) {
-      console.error("Error loading data:", error);
+
+      // Remove duplicates in case a game appears in both participated and created lists
+      formattedGames = formattedGames.filter((game, index, self) => 
+        index === self.findIndex(g => g.id === game.id)
+      );
+
+      // Create enriched profile with games
+      const enrichedProfile = {
+        ...profile,
+        games: formattedGames.slice(0, 5), // Show only 5 recent games
+        allGames: formattedGames // Store all games for showing in dialog
+      };
+
+      setProfileData(enrichedProfile);
+      setUserStats(stats || {
+        user_id: userId,
+        games_played: 0,
+        preferred_game_type: 'Indéfini',
+        favorite_role: 'Indéfini',
+        level: 'Débutant',
+        reputation: profile?.reputation || 0,
+        win_rate: '0%',
+        accuracy: '0%',
+        time_played: '0h',
+        objectives_completed: 0,
+        flags_captured: 0,
+        tactical_awareness: 'À évaluer'
+      });
+      setLoading(false);
+      return true;
+    } catch (error) {
+      console.error('Error fetching profile data:', error);
       toast({
         title: "Erreur",
         description: "Impossible de charger les données du profil",
         variant: "destructive",
       });
+      setLoading(false);
+      return false;
     }
   };
+
+  const updateLocation = async (location: string) => {
+    if (!userId) return false;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ location })
+        .eq('id', userId);
+
+      if (error) throw error;
+      toast({
+        title: "Localisation mise à jour",
+        description: "Votre localisation a été mise à jour avec succès",
+      });
+      return true;
+    } catch (error) {
+      console.error('Error updating location:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour la localisation",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
+  const updateUserStats = async (gameType: string, role: string, level: string) => {
+    if (!userId) return false;
+
+    try {
+      const { error } = await supabase
+        .from('user_stats')
+        .update({
+          preferred_game_type: gameType,
+          favorite_role: role,
+          level: level
+        })
+        .eq('user_id', userId);
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      console.error('Error updating user stats:', error);
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    if (userId) {
+      fetchProfileData();
+    } else {
+      setLoading(false);
+    }
+  }, [userId]);
 
   return {
     loading,
@@ -126,6 +192,6 @@ export const useProfileData = (userId: string | undefined) => {
     userStats,
     updateLocation,
     updateUserStats,
-    fetchProfileData,
+    fetchProfileData
   };
 };

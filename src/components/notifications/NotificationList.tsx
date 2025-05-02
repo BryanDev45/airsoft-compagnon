@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, BellOff, UserCheck, UserMinus } from 'lucide-react';
+import { Bell, BellOff, UserCheck, UserMinus, Trash, Check } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -27,9 +27,12 @@ export const NotificationList = () => {
   const { data: notifications = [], isLoading } = useQuery({
     queryKey: ['notifications'],
     queryFn: async () => {
+      if (!user) return [];
+      
       const { data, error } = await supabase
         .from('notifications')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -37,6 +40,31 @@ export const NotificationList = () => {
     },
     enabled: !!user,
   });
+
+  const handleDeleteNotification = async (notificationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('id', notificationId);
+
+      if (error) throw error;
+      
+      toast({
+        title: "Notification supprimée",
+        description: "La notification a été supprimée avec succès",
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer la notification",
+        variant: "destructive"
+      });
+    }
+  };
 
   const handleMarkAsRead = async (notificationId: string) => {
     try {
@@ -63,6 +91,32 @@ export const NotificationList = () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
+    }
+  };
+
+  const handleDeleteAllRead = async () => {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('user_id', user?.id)
+        .eq('read', true);
+
+      if (error) throw error;
+      
+      toast({
+        title: "Notifications supprimées",
+        description: "Toutes les notifications lues ont été supprimées",
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    } catch (error) {
+      console.error('Error deleting read notifications:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer les notifications",
+        variant: "destructive"
+      });
     }
   };
 
@@ -137,12 +191,21 @@ export const NotificationList = () => {
     <div className="max-h-[calc(100vh-120px)] overflow-y-auto pr-2">
       {notifications.length > 0 ? (
         <>
-          <div className="mb-4 flex justify-end">
+          <div className="mb-4 flex justify-between">
+            <Button 
+              variant="ghost" 
+              className="text-sm h-8 px-2 text-red-500 hover:text-red-600 hover:bg-red-50"
+              onClick={handleDeleteAllRead}
+            >
+              <Trash className="h-3 w-3 mr-1" />
+              Supprimer les notifications lues
+            </Button>
             <Button 
               variant="ghost" 
               className="text-sm h-8 px-2"
               onClick={handleMarkAllAsRead}
             >
+              <Check className="h-3 w-3 mr-1" />
               Tout marquer comme lu
             </Button>
           </div>
@@ -154,14 +217,27 @@ export const NotificationList = () => {
               >
                 <div className="flex justify-between items-start mb-1">
                   <h3 className="font-medium text-gray-900">{notification.title}</h3>
-                  <p className="text-xs text-gray-500">
-                    {new Date(notification.created_at).toLocaleDateString('fr-FR', {
-                      day: 'numeric',
-                      month: 'short',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </p>
+                  <div className="flex items-center space-x-2">
+                    {notification.read && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-7 w-7 p-0"
+                        onClick={() => handleDeleteNotification(notification.id)}
+                      >
+                        <Trash className="h-4 w-4 text-red-500" />
+                        <span className="sr-only">Supprimer</span>
+                      </Button>
+                    )}
+                    <p className="text-xs text-gray-500">
+                      {new Date(notification.created_at).toLocaleDateString('fr-FR', {
+                        day: 'numeric',
+                        month: 'short',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                  </div>
                 </div>
                 <p className="text-sm text-gray-600 mb-2">{notification.message}</p>
                 
