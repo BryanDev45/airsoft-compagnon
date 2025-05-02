@@ -19,7 +19,7 @@ import NotificationList from './notifications/NotificationList';
 import { supabase } from '@/integrations/supabase/client';
 
 const Header = () => {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, initialLoading, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [showMenu, setShowMenu] = useState(false);
@@ -117,7 +117,7 @@ const Header = () => {
 
   const handleSignOut = async () => {
     try {
-      await signOut();
+      await logout(); // Changed from signOut to logout to match the useAuth hook
       navigate('/');
     } catch (error) {
       console.error('Error signing out:', error);

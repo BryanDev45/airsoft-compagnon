@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -48,6 +47,15 @@ interface TeamData {
     memberCount: number;
     averageRating: string;
   };
+}
+
+interface Game {
+  id: string;
+  title: string;
+  date: string;
+  location: string;
+  participants: number;
+  result?: string;
 }
 
 const Team = () => {
@@ -130,36 +138,36 @@ const Team = () => {
         }
       }
 
-      // Get team games
+      // Get team games - using airsoft_games table instead of games
       const { data: gamesData, error: gamesError } = await supabase
-        .from('games')
+        .from('airsoft_games') // Changed from 'games' to 'airsoft_games'
         .select('*')
-        .eq('organizer_id', teamData.id)
+        .eq('created_by', teamData.id)
         .order('date', { ascending: true });
 
       if (gamesError) throw gamesError;
 
       // Split games into upcoming and past
       const now = new Date();
-      const upcomingGames = (gamesData || [])
+      const upcomingGames: Game[] = (gamesData || [])
         .filter(game => new Date(game.date) > now)
         .map(game => ({
           id: game.id,
           title: game.title,
           date: new Date(game.date).toLocaleDateString('fr-FR'),
-          location: game.location,
-          participants: game.participants || 0
+          location: game.city || game.address, // Using city or address
+          participants: game.max_players || 0
         }));
 
-      const pastGames = (gamesData || [])
+      const pastGames: Game[] = (gamesData || [])
         .filter(game => new Date(game.date) <= now)
         .map(game => ({
           id: game.id,
           title: game.title,
           date: new Date(game.date).toLocaleDateString('fr-FR'),
-          location: game.location,
-          result: game.status,
-          participants: game.participants || 0
+          location: game.city || game.address, // Using city or address
+          result: 'Terminé', // Default status
+          participants: game.max_players || 0
         }));
 
       // Check if the current user is a member of this team
@@ -228,7 +236,7 @@ const Team = () => {
     }
   }, [team]);
 
-  const handleViewMember = (member: any) => {
+  const handleViewMember = (member: TeamMember) => {
     setSelectedMember(member);
     setShowMemberDialog(true);
   };
@@ -332,101 +340,107 @@ const Team = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow bg-gray-50">
-        <TeamBanner 
-          team={team} 
-          isTeamMember={isTeamMember}
-          onTeamUpdate={handleTeamUpdate}
-        />
+        {team && (
+          <TeamBanner 
+            team={team} 
+            isTeamMember={isTeamMember}
+            onTeamUpdate={handleTeamUpdate}
+          />
+        )}
 
         <div className="max-w-6xl mx-auto px-4 py-8">
-          <div className="flex flex-col md:flex-row md:items-start gap-8">
-            <div className="md:w-1/3 space-y-6">
-              <TeamAbout 
-                team={team} 
-                handleContactTeam={handleContactTeam} 
-                handleShare={handleShare} 
-              />
-            </div>
+          {team && (
+            <div className="flex flex-col md:flex-row md:items-start gap-8">
+              <div className="md:w-1/3 space-y-6">
+                <TeamAbout 
+                  team={team} 
+                  handleContactTeam={handleContactTeam} 
+                  handleShare={handleShare} 
+                />
+              </div>
 
-            <div className="md:w-2/3">
-              <Tabs defaultValue="members">
-                <TabsList className="mb-6">
-                  <TabsTrigger value="members">Membres</TabsTrigger>
-                  <TabsTrigger value="games">Parties</TabsTrigger>
-                  <TabsTrigger value="field">Terrain</TabsTrigger>
-                </TabsList>
+              <div className="md:w-2/3">
+                <Tabs defaultValue="members">
+                  <TabsList className="mb-6">
+                    <TabsTrigger value="members">Membres</TabsTrigger>
+                    <TabsTrigger value="games">Parties</TabsTrigger>
+                    <TabsTrigger value="field">Terrain</TabsTrigger>
+                  </TabsList>
 
-                <TabsContent value="members">
-                  <TeamMembers members={team.members} handleViewMember={handleViewMember} />
-                </TabsContent>
+                  <TabsContent value="members">
+                    <TeamMembers members={team.members} handleViewMember={handleViewMember} />
+                  </TabsContent>
 
-                <TabsContent value="games">
-                  <TeamGames upcomingGames={team.upcomingGames} pastGames={team.pastGames} />
-                </TabsContent>
+                  <TabsContent value="games">
+                    <TeamGames upcomingGames={team.upcomingGames} pastGames={team.pastGames} />
+                  </TabsContent>
 
-                <TabsContent value="field">
-                  <TeamField 
-                    field={team.field}
-                    isEditing={isEditingField}
-                    onEdit={(fieldId, updates) => {
-                      setSelectedField(updates);
-                      setIsEditingField(true);
-                    }}
-                    onSave={async (fieldId, updates) => {
-                      if (fieldId) {
-                        const { error } = await supabase
-                          .from('team_fields')
-                          .update(updates)
-                          .eq('id', fieldId);
-                        
-                        if (error) {
-                          console.error('Error updating field:', error);
-                          return;
+                  <TabsContent value="field">
+                    <TeamField 
+                      field={team.field}
+                      isEditing={isEditingField}
+                      onEdit={(fieldId, updates) => {
+                        setSelectedField(updates);
+                        setIsEditingField(true);
+                      }}
+                      onSave={async (fieldId, updates) => {
+                        if (fieldId) {
+                          const { error } = await supabase
+                            .from('team_fields')
+                            .update(updates)
+                            .eq('id', fieldId);
+                          
+                          if (error) {
+                            console.error('Error updating field:', error);
+                            return;
+                          }
+                        } else {
+                          const { error } = await supabase
+                            .from('team_fields')
+                            .insert([{ ...updates, team_id: team?.id }]);
+                          
+                          if (error) {
+                            console.error('Error creating field:', error);
+                            return;
+                          }
                         }
-                      } else {
-                        const { error } = await supabase
-                          .from('team_fields')
-                          .insert([{ ...updates, team_id: team?.id }]);
                         
-                        if (error) {
-                          console.error('Error creating field:', error);
-                          return;
-                        }
-                      }
-                      
-                      // Refresh the team data
-                      fetchTeamData();
-                      setIsEditingField(false);
-                    }}
-                    onCancel={() => {
-                      setIsEditingField(false);
-                      setSelectedField(null);
-                    }}
-                  />
-                </TabsContent>
-              </Tabs>
+                        // Refresh the team data
+                        fetchTeamData();
+                        setIsEditingField(false);
+                      }}
+                      onCancel={() => {
+                        setIsEditingField(false);
+                        setSelectedField(null);
+                      }}
+                    />
+                  </TabsContent>
+                </Tabs>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </main>
       <Footer />
 
-      <TeamDialogs 
-        team={team}
-        selectedMember={selectedMember}
-        showMemberDialog={showMemberDialog}
-        setShowMemberDialog={setShowMemberDialog}
-        showContactDialog={showContactDialog}
-        setShowContactDialog={setShowContactDialog}
-        showShareDialog={showShareDialog}
-        setShowShareDialog={setShowShareDialog}
-        contactMessage={contactMessage}
-        setContactMessage={setContactMessage}
-        contactSubject={contactSubject}
-        setContactSubject={setContactSubject}
-        handleSendMessage={handleSendMessage}
-        handleShareVia={handleShareVia}
-      />
+      {team && (
+        <TeamDialogs 
+          team={team}
+          selectedMember={selectedMember}
+          showMemberDialog={showMemberDialog}
+          setShowMemberDialog={setShowMemberDialog}
+          showContactDialog={showContactDialog}
+          setShowContactDialog={setShowContactDialog}
+          showShareDialog={showShareDialog}
+          setShowShareDialog={setShowShareDialog}
+          contactMessage={contactMessage}
+          setContactMessage={setContactMessage}
+          contactSubject={contactSubject}
+          setContactSubject={setContactSubject}
+          handleSendMessage={handleSendMessage}
+          handleShareVia={handleShareVia}
+        />
+      )}
     </div>
   );
 };

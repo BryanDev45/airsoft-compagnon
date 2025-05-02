@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
@@ -41,19 +40,45 @@ export const useProfileData = (userId: string | null) => {
       if (createdGamesError) throw createdGamesError;
 
       // Fetch games that user is participating in
-      const { data: userParticipations, error: participationError } = await supabase
+      const { data: gameParticipations, error: participationError } = await supabase
         .from('game_participants')
-        .select(`
-          id,
-          status,
-          role,
-          game_id,
-          user_id,
-          airsoft_games:game_id (*)
-        `)
+        .select('id, status, role, game_id, user_id')
         .eq('user_id', userId);
 
       if (participationError) throw participationError;
+      
+      // Fetch the games details separately to avoid relationship issues
+      let participatedGames = [];
+      if (gameParticipations && gameParticipations.length > 0) {
+        const gameIds = gameParticipations.map(p => p.game_id).filter(Boolean);
+        
+        if (gameIds.length > 0) {
+          const { data: games, error: gamesError } = await supabase
+            .from('airsoft_games')
+            .select('*')
+            .in('id', gameIds);
+          
+          if (gamesError) throw gamesError;
+          
+          // Match games with participations
+          participatedGames = gameParticipations.map(p => {
+            const gameDetails = games?.find(g => g.id === p.game_id);
+            if (!gameDetails) return null;
+            
+            return {
+              id: p.game_id,
+              title: gameDetails.title,
+              date: new Date(gameDetails.date).toLocaleDateString('fr-FR'),
+              location: gameDetails.city,
+              image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
+              role: p.role || 'Participant',
+              status: gameDetails.date >= new Date().toISOString().split('T')[0] ? 'À venir' : 'Terminé',
+              team: 'Indéfini',
+              result: p.status
+            };
+          }).filter(Boolean);
+        }
+      }
 
       // Format games
       let formattedGames = [];
@@ -73,23 +98,8 @@ export const useProfileData = (userId: string | null) => {
         formattedGames = [...formattedGames, ...organizedGames];
       }
 
-      // Format participated games
-      if (userParticipations && userParticipations.length > 0) {
-        const participatedGames = userParticipations
-          .filter(p => p.airsoft_games)
-          .map(p => ({
-            id: p.game_id,
-            title: p.airsoft_games?.title,
-            date: p.airsoft_games?.date ? new Date(p.airsoft_games.date).toLocaleDateString('fr-FR') : 'Date inconnue',
-            location: p.airsoft_games?.city || 'Lieu inconnu',
-            image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
-            role: p.role || 'Participant',
-            status: p.airsoft_games?.date && p.airsoft_games.date >= new Date().toISOString().split('T')[0] ? 'À venir' : 'Terminé',
-            team: 'Indéfini',
-            result: p.status
-          }));
-        formattedGames = [...formattedGames, ...participatedGames];
-      }
+      // Add participated games to the formatted games list
+      formattedGames = [...formattedGames, ...participatedGames];
 
       // Remove duplicates in case a game appears in both participated and created lists
       formattedGames = formattedGames.filter((game, index, self) => 

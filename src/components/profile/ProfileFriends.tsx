@@ -18,97 +18,111 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
       // Récupérer les amis acceptés où l'utilisateur est "user_id"
       const { data: acceptedFriends, error: friendsError } = await supabase
         .from('friendships')
-        .select(`
-          id,
-          friend_id,
-          profiles:friend_id (
-            id,
-            username,
-            avatar,
-            team,
-            location
-          )
-        `)
+        .select('id, friend_id')
         .eq('user_id', userId)
         .eq('status', 'accepted');
 
       if (friendsError) throw friendsError;
+      
+      // Fetch friend profiles separately to avoid relationship issues
+      let friendProfiles = [];
+      if (acceptedFriends && acceptedFriends.length > 0) {
+        const friendIds = acceptedFriends.map(f => f.friend_id);
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, username, avatar, team, location')
+          .in('id', friendIds);
+          
+        if (profilesError) throw profilesError;
+        
+        // Combine friendship and profile data
+        friendProfiles = acceptedFriends.map(friendship => {
+          const profile = profilesData?.find(p => p.id === friendship.friend_id);
+          return profile ? {
+            friendshipId: friendship.id,
+            id: profile.id,
+            username: profile.username,
+            avatar: profile.avatar,
+            team: profile.team,
+            location: profile.location
+          } : null;
+        }).filter(Boolean);
+      }
 
       // Récupérer également les amis où l'utilisateur est "friend_id"
       const { data: acceptedFriendsReverse, error: friendsErrorReverse } = await supabase
         .from('friendships')
-        .select(`
-          id,
-          user_id,
-          profiles:user_id (
-            id,
-            username,
-            avatar,
-            team,
-            location
-          )
-        `)
+        .select('id, user_id')
         .eq('friend_id', userId)
         .eq('status', 'accepted');
 
       if (friendsErrorReverse) throw friendsErrorReverse;
-
-      // Combiner les deux listes d'amis
-      let allFriends = [];
-      if (acceptedFriends) {
-        allFriends = [...allFriends, ...acceptedFriends.map(f => ({
-          friendshipId: f.id,
-          id: f.profiles?.id,
-          username: f.profiles?.username,
-          avatar: f.profiles?.avatar,
-          team: f.profiles?.team,
-          location: f.profiles?.location
-        }))];
+      
+      // Fetch the other direction friend profiles separately
+      let friendProfilesReverse = [];
+      if (acceptedFriendsReverse && acceptedFriendsReverse.length > 0) {
+        const friendIds = acceptedFriendsReverse.map(f => f.user_id);
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, username, avatar, team, location')
+          .in('id', friendIds);
+          
+        if (profilesError) throw profilesError;
+        
+        // Combine friendship and profile data
+        friendProfilesReverse = acceptedFriendsReverse.map(friendship => {
+          const profile = profilesData?.find(p => p.id === friendship.user_id);
+          return profile ? {
+            friendshipId: friendship.id,
+            id: profile.id,
+            username: profile.username,
+            avatar: profile.avatar,
+            team: profile.team,
+            location: profile.location
+          } : null;
+        }).filter(Boolean);
       }
 
-      if (acceptedFriendsReverse) {
-        allFriends = [...allFriends, ...acceptedFriendsReverse.map(f => ({
-          friendshipId: f.id,
-          id: f.profiles?.id,
-          username: f.profiles?.username,
-          avatar: f.profiles?.avatar,
-          team: f.profiles?.team,
-          location: f.profiles?.location
-        }))];
-      }
-
+      // Combine all friends
+      const allFriends = [...friendProfiles, ...friendProfilesReverse];
       setFriends(allFriends);
 
       // Récupérer les demandes en attente uniquement si c'est le profil de l'utilisateur connecté
       if (isOwnProfile) {
         const { data: pending, error: pendingError } = await supabase
           .from('friendships')
-          .select(`
-            id,
-            user_id,
-            profiles:user_id (
-              id,
-              username,
-              avatar,
-              team,
-              location
-            )
-          `)
+          .select('id, user_id')
           .eq('friend_id', userId)
           .eq('status', 'pending');
 
         if (pendingError) throw pendingError;
         
-        if (pending) {
-          setPendingRequests(pending.map(p => ({
-            friendshipId: p.id,
-            id: p.profiles?.id,
-            username: p.profiles?.username,
-            avatar: p.profiles?.avatar,
-            team: p.profiles?.team,
-            location: p.profiles?.location
-          })));
+        // Fetch pending request profiles separately
+        let pendingProfiles = [];
+        if (pending && pending.length > 0) {
+          const pendingIds = pending.map(p => p.user_id);
+          const { data: profilesData, error: profilesError } = await supabase
+            .from('profiles')
+            .select('id, username, avatar, team, location')
+            .in('id', pendingIds);
+            
+          if (profilesError) throw profilesError;
+          
+          // Combine pending request and profile data
+          pendingProfiles = pending.map(request => {
+            const profile = profilesData?.find(p => p.id === request.user_id);
+            return profile ? {
+              friendshipId: request.id,
+              id: profile.id,
+              username: profile.username,
+              avatar: profile.avatar,
+              team: profile.team,
+              location: profile.location
+            } : null;
+          }).filter(Boolean);
         }
+        
+        setPendingRequests(pendingProfiles);
       }
     } catch (error) {
       console.error('Erreur lors de la récupération des amis:', error);
