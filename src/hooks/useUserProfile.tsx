@@ -99,38 +99,53 @@ export const useUserProfile = (username: string | undefined) => {
 
         if (equipmentError) throw equipmentError;
 
-        const { data: games, error: gamesError } = await supabase
+        // Fetch game participants and related game data
+        const { data: gameParticipants, error: gamesError } = await supabase
           .from('game_participants')
           .select(`
+            id,
             status,
             role,
-            games (
-              id,
-              title,
-              date,
-              location,
-              status,
-              image
-            )
+            game_id,
+            user_id
           `)
           .eq('user_id', userProfile.id)
           .limit(5);
 
         if (gamesError) throw gamesError;
 
-        let formattedGames = [];
-        if (games && games.length > 0) {
-          formattedGames = games.map(entry => ({
-            id: entry.games.id,
-            title: entry.games.title,
-            date: new Date(entry.games.date).toLocaleDateString('fr-FR'),
-            location: entry.games.location,
-            image: entry.games.image || '/placeholder.svg',
-            role: entry.role,
-            status: entry.games.status,
-            team: 'Indéfini',
-            result: entry.status
-          }));
+        let formattedGames: any[] = [];
+
+        if (gameParticipants && gameParticipants.length > 0) {
+          // Fetch the actual game data for each participation
+          const gameIds = gameParticipants.map(gp => gp.game_id);
+          
+          const { data: games, error: gamesDataError } = await supabase
+            .from('airsoft_games')
+            .select('*')
+            .in('id', gameIds);
+            
+          if (gamesDataError) throw gamesDataError;
+          
+          if (games && games.length > 0) {
+            formattedGames = gameParticipants.map(gp => {
+              const gameData = games.find(g => g.id === gp.game_id);
+              if (gameData) {
+                return {
+                  id: gameData.id,
+                  title: gameData.title,
+                  date: new Date(gameData.date).toLocaleDateString('fr-FR'),
+                  location: gameData.city,
+                  image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
+                  role: gp.role,
+                  status: 'À venir',
+                  team: 'Indéfini',
+                  result: gp.status
+                };
+              }
+              return null;
+            }).filter(Boolean);
+          }
         }
 
         const { data: badges, error: badgesError } = await supabase
@@ -163,6 +178,7 @@ export const useUserProfile = (username: string | undefined) => {
           }));
         }
 
+        // Set empty games array with placeholder if no games found
         if (formattedGames.length === 0) {
           formattedGames = [
             {
@@ -178,6 +194,8 @@ export const useUserProfile = (username: string | undefined) => {
             }
           ];
         }
+
+        console.log("Games found:", formattedGames);
 
         const enrichedProfile = {
           ...userProfile,

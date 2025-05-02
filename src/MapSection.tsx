@@ -74,13 +74,14 @@ const MapSection = () => {
           department: game.zip_code?.substring(0, 2) || "",
           type: game.game_type || "woodland",
           country: "france", // Valeur par défaut, peut être étendue plus tard
-          lat: game.latitude ? parseFloat(String(game.latitude)) : 48.8566,
-          lng: game.longitude ? parseFloat(String(game.longitude)) : 2.3522,
+          lat: game.latitude ? parseFloat(game.latitude.toString()) : 48.8566,
+          lng: game.longitude ? parseFloat(game.longitude.toString()) : 2.3522,
           maxPlayers: game.max_players,
           price: game.price,
           image: "/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png" // Image par défaut
         })) || [];
         
+        console.log("Formatted events:", formattedEvents);
         setEvents(formattedEvents);
       } catch (error: any) {
         console.error("Erreur lors du chargement des parties:", error);

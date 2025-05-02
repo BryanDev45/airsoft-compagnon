@@ -23,7 +23,7 @@ const ProfileGames = ({ games, handleViewGameDetails, handleViewAllGames }: Prof
               Historique et parties à venir
             </CardDescription>
           </div>
-          <Link to="/create-party">
+          <Link to="/parties/create">
             <Button className="bg-airsoft-red hover:bg-red-700">
               <Plus className="h-4 w-4 mr-2" />
               Créer une partie
@@ -33,12 +33,12 @@ const ProfileGames = ({ games, handleViewGameDetails, handleViewAllGames }: Prof
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {games.length === 0 ? (
+          {games && games.length === 0 ? (
             <p className="text-center text-gray-500 py-6">
               Vous n'avez pas encore participé à des parties.
             </p>
           ) : (
-            games.map(game => (
+            games && games.map(game => (
               <div 
                 key={game.id} 
                 className="border rounded-lg p-4 hover:shadow-md transition-shadow flex justify-between items-center"

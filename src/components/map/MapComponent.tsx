@@ -45,8 +45,9 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
 
     // Create event markers with custom style
     const features = filteredEvents.map(event => {
+      // Make sure we're using the correct coordinates for the game
       const feature = new Feature({
-        geometry: new Point(fromLonLat([event.lng, event.lat])),
+        geometry: new Point(fromLonLat([event.lng || 0, event.lat || 0])),
         event: event,
       });
 
