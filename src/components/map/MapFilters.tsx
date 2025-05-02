@@ -16,8 +16,8 @@ interface MapFiltersProps {
   searchRadius: number[];
   setSearchRadius: (value: number[]) => void;
   getCurrentPosition: () => void;
-  selectedType?: string;
-  setSelectedType?: (value: string) => void;
+  selectedType: string;
+  setSelectedType: (value: string) => void;
 }
 
 const MapFilters: React.FC<MapFiltersProps> = ({
@@ -35,24 +35,22 @@ const MapFilters: React.FC<MapFiltersProps> = ({
 }) => {
   return (
     <div className="space-y-4">
-      {selectedType !== undefined && setSelectedType !== undefined && (
-        <div>
-          <label className="block text-sm mb-2">Type de partie</label>
-          <Select value={selectedType} onValueChange={setSelectedType}>
-            <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-              <SelectValue placeholder="Type de partie" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tous les types</SelectItem>
-              <SelectItem value="cqb">CQB</SelectItem>
-              <SelectItem value="woodland">Woodland</SelectItem>
-              <SelectItem value="milsim">Milsim</SelectItem>
-              <SelectItem value="speedsoft">Speedsoft</SelectItem>
-              <SelectItem value="scenario">Scénario</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      )}
+      <div>
+        <label className="block text-sm mb-2">Type de partie</label>
+        <Select value={selectedType} onValueChange={setSelectedType}>
+          <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+            <SelectValue placeholder="Type de partie" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous les types</SelectItem>
+            <SelectItem value="cqb">CQB</SelectItem>
+            <SelectItem value="woodland">Woodland</SelectItem>
+            <SelectItem value="milsim">Milsim</SelectItem>
+            <SelectItem value="speedsoft">Speedsoft</SelectItem>
+            <SelectItem value="scenario">Scénario</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
       
       <div>
         <label className="block text-sm mb-2">Pays</label>

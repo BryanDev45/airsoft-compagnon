@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Calendar, Map as MapIcon, MapPin, Maximize, Navigation, Plus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -74,8 +73,8 @@ const MapSection = () => {
           department: game.zip_code?.substring(0, 2) || "",
           type: game.game_type || "woodland",
           country: "france", // Valeur par défaut, peut être étendue plus tard
-          lat: parseFloat(game.latitude) || 48.8566,
-          lng: parseFloat(game.longitude) || 2.3522,
+          lat: game.latitude ? parseFloat(String(game.latitude)) : 48.8566,
+          lng: game.longitude ? parseFloat(String(game.longitude)) : 2.3522,
           maxPlayers: game.max_players,
           price: game.price,
           image: "/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png" // Image par défaut
@@ -187,7 +186,8 @@ const MapSection = () => {
     return () => clearTimeout(timerId);
   }, [searchQuery]);
   
-  return <div className="py-12 bg-gray-100 md:py-0">
+  return (
+    <div className="py-12 md:py-0">
       <div className="max-w-7xl mx-auto px-4 py-[30px]">
         <div className="text-center mb-8">
           <h2 className="text-3xl md:text-4xl font-bold relative inline-block">
@@ -304,7 +304,8 @@ const MapSection = () => {
           )}
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
 
 export default MapSection;
