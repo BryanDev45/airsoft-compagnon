@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
+import { callRPC } from '@/utils/supabaseHelpers';
 
 export const useUserProfile = (username: string | undefined) => {
   const navigate = useNavigate();
@@ -57,27 +58,26 @@ export const useUserProfile = (username: string | undefined) => {
         }
 
         if (currentUserId) {
-          // Vérifier si on est amis avec la fonction SQL
-          const { data: friendshipStatus, error: friendshipError } = await supabase
-            .rpc('check_friendship_status', { 
-              p_user_id: currentUserId, 
-              p_friend_id: userProfile.id 
-            });
+          const { data: friendship, error: friendshipError } = await supabase
+            .from('friendships')
+            .select('*')
+            .eq('user_id', currentUserId)
+            .eq('friend_id', userProfile.id)
+            .single();
             
-          if (!friendshipError && friendshipStatus) {
-            setIsFollowing(friendshipStatus === 'accepted');
-            setFriendRequestSent(friendshipStatus === 'pending');
+          if (!friendshipError && friendship) {
+            setIsFollowing(friendship.status === 'accepted');
+            setFriendRequestSent(friendship.status === 'pending');
           }
           
-          // Récupérer la note donnée
-          const { data: ratings, error: ratingsError } = await supabase
-            .rpc('get_user_rating', { 
-              p_rater_id: currentUserId, 
-              p_rated_id: userProfile.id 
-            });
+          // Call RPC function
+          const { data: ratings, error: ratingsError } = await callRPC<number>('get_user_rating', { 
+            p_rater_id: currentUserId, 
+            p_rated_id: userProfile.id 
+          });
             
           if (!ratingsError && ratings !== null) {
-            setUserRating(Number(ratings));
+            setUserRating(ratings);
             setHasRated(true);
           }
         }
@@ -99,56 +99,68 @@ export const useUserProfile = (username: string | undefined) => {
 
         if (equipmentError) throw equipmentError;
 
+        // Fetch game participants and related game data
+        const { data: gameParticipants, error: gamesError } = await supabase
+          .from('game_participants')
+          .select(`
+            id,
+            status,
+            role,
+            game_id,
+            user_id
+          `)
+          .eq('user_id', userProfile.id)
+          .limit(5);
+
+        if (gamesError) throw gamesError;
+
         // Fetch games created by user
         const { data: createdGames, error: createdGamesError } = await supabase
           .from('airsoft_games')
           .select('*')
-          .eq('created_by', userProfile.id);
+          .eq('created_by', userProfile.id)
+          .limit(5);
 
         if (createdGamesError) throw createdGamesError;
         
-        // Fetch games that user is participating in
-        const { data: gameParticipations, error: participationError } = await supabase
-          .from('game_participants')
-          .select('id, status, role, game_id, user_id')
-          .eq('user_id', userProfile.id);
-
-        if (participationError) throw participationError;
-        
-        // Fetch the games details separately to avoid relationship issues
-        let participatedGames = [];
-        if (gameParticipations && gameParticipations.length > 0) {
-          const gameIds = gameParticipations.map(p => p.game_id).filter(Boolean);
-          
-          if (gameIds.length > 0) {
-            const { data: games, error: gamesError } = await supabase
-              .from('airsoft_games')
-              .select('*')
-              .in('id', gameIds);
-            
-            if (gamesError) throw gamesError;
-            
-            // Match games with participations
-            participatedGames = gameParticipations.map(p => {
-              const gameDetails = games?.find(g => g.id === p.game_id);
-              if (!gameDetails) return null;
-              
-              return {
-                id: p.game_id,
-                title: gameDetails.title,
-                date: new Date(gameDetails.date).toLocaleDateString('fr-FR'),
-                location: gameDetails.city,
-                image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
-                role: p.role || 'Participant',
-                status: gameDetails.date >= new Date().toISOString().split('T')[0] ? 'À venir' : 'Terminé',
-                team: 'Indéfini',
-                result: p.status
-              };
-            }).filter(Boolean);
-          }
-        }
+        console.log("Created games:", createdGames);
 
         let formattedGames: any[] = [];
+
+        // Format participated games
+        if (gameParticipants && gameParticipants.length > 0) {
+          // Fetch the actual game data for each participation
+          const gameIds = gameParticipants.map(gp => gp.game_id);
+          
+          const { data: games, error: gamesDataError } = await supabase
+            .from('airsoft_games')
+            .select('*')
+            .in('id', gameIds);
+            
+          if (gamesDataError) throw gamesDataError;
+          
+          if (games && games.length > 0) {
+            const participatedGames = gameParticipants.map(gp => {
+              const gameData = games.find(g => g.id === gp.game_id);
+              if (gameData) {
+                return {
+                  id: gameData.id,
+                  title: gameData.title,
+                  date: new Date(gameData.date).toLocaleDateString('fr-FR'),
+                  location: gameData.city,
+                  image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
+                  role: gp.role,
+                  status: 'À venir',
+                  team: 'Indéfini',
+                  result: gp.status
+                };
+              }
+              return null;
+            }).filter(Boolean);
+            
+            formattedGames.push(...participatedGames);
+          }
+        }
 
         // Format created games
         if (createdGames && createdGames.length > 0) {
@@ -159,15 +171,13 @@ export const useUserProfile = (username: string | undefined) => {
             location: game.city,
             image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
             role: 'Organisateur',
-            status: game.date >= new Date().toISOString().split('T')[0] ? 'À venir' : 'Terminé',
-            team: 'Organisateur'
+            status: 'À venir',
+            team: 'Organisateur',
+            result: 'Organisateur'
           }));
           
-          formattedGames = [...formattedGames, ...organizedGames];
+          formattedGames.push(...organizedGames);
         }
-
-        // Add participated games to formatted games
-        formattedGames = [...formattedGames, ...participatedGames];
 
         // Fetch user badges
         const { data: badges, error: badgesError } = await supabase
@@ -209,7 +219,7 @@ export const useUserProfile = (username: string | undefined) => {
 
         const enrichedProfile = {
           ...userProfile,
-          games: formattedGames.slice(0, 5),
+          games: formattedGames,
           allGames: [...formattedGames],
           badges: formattedBadges
         };
@@ -330,7 +340,7 @@ export const useUserProfile = (username: string | undefined) => {
 
     try {
       if (hasRated) {
-        const { error } = await supabase.rpc('update_user_rating', { 
+        const { error } = await callRPC('update_user_rating', { 
           p_rater_id: currentUserId, 
           p_rated_id: userData.id, 
           p_rating: rating 
@@ -338,7 +348,7 @@ export const useUserProfile = (username: string | undefined) => {
           
         if (error) throw error;
       } else {
-        const { error } = await supabase.rpc('insert_user_rating', { 
+        const { error } = await callRPC('insert_user_rating', { 
           p_rater_id: currentUserId, 
           p_rated_id: userData.id, 
           p_rating: rating 
@@ -351,7 +361,7 @@ export const useUserProfile = (username: string | undefined) => {
       setUserRating(rating);
       
       // Update average reputation
-      const { data: avgRating, error: avgError } = await supabase.rpc('get_average_rating', 
+      const { data: avgRating, error: avgError } = await callRPC<number>('get_average_rating', 
         { p_user_id: userData.id }
       );
       

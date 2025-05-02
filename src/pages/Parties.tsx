@@ -1,11 +1,10 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import MapSection from '../components/MapSection';
 import Footer from '../components/Footer';
 import { Button } from "@/components/ui/button";
-import { Store, MapPin, User, Users, Search, Plus, Flag } from 'lucide-react';
+import { Store, MapPin, User, Users, Search, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -22,7 +21,6 @@ const ScrollToTop = () => {
   }, []);
   return null;
 };
-
 const Recherche = () => {
   const navigate = useNavigate();
   const {
@@ -32,16 +30,6 @@ const Recherche = () => {
   const [activeTab, setActiveTab] = useState("parties");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchCenter, setSearchCenter] = useState<[number, number]>([2.3522, 48.8566]); // Paris coordinates
-  const [events, setEvents] = useState([]);
-
-  // Récupérer le paramètre 'tab' dans l'URL pour définir l'onglet actif
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const tabParam = urlParams.get('tab');
-    if (tabParam && ["parties", "joueurs", "equipes", "magasins"].includes(tabParam)) {
-      setActiveTab(tabParam);
-    }
-  }, []);
 
   const handleCreateParty = () => {
     if (user) {
@@ -50,7 +38,6 @@ const Recherche = () => {
       navigate('/login');
     }
   };
-
   const handleCreateTeam = () => {
     if (user) {
       navigate('/team/create');
@@ -58,9 +45,7 @@ const Recherche = () => {
       navigate('/login');
     }
   };
-
-  return (
-    <div className="min-h-screen flex flex-col">
+  return <div className="min-h-screen flex flex-col">
       <ScrollToTop />
       <Header />
       <main className="flex-grow">
@@ -73,6 +58,7 @@ const Recherche = () => {
                   Trouvez des parties, des joueurs, des équipes et des magasins
                 </p>
               </div>
+              {activeTab === "parties"}
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
@@ -125,14 +111,9 @@ const Recherche = () => {
                         </Button>
                       </div>
                       
-                      {!user?.team_id && !initialLoading && (
-                        <Button 
-                          onClick={handleCreateTeam} 
-                          className="bg-airsoft-red hover:bg-red-700 text-white ml-4"
-                        >
+                      {!user?.team_id && !initialLoading && <Button onClick={handleCreateTeam} className="bg-airsoft-red hover:bg-red-700 text-white ml-4">
                           <Plus className="h-4 w-4 mr-2" /> Créer une équipe
-                        </Button>
-                      )}
+                        </Button>}
                     </div>
                     
                     <TeamSearchResults searchQuery={searchQuery} />
@@ -161,8 +142,6 @@ const Recherche = () => {
         </div>
       </main>
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default Recherche;

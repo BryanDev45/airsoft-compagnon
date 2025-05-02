@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Calendar, Map as MapIcon, MapPin, Maximize, Navigation, Plus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -13,11 +12,9 @@ import MapFilters from './map/MapFilters';
 import { calculateDistance } from '../utils/mapUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
-import { useAuth } from '@/hooks/useAuth';
 
 const MapSection = () => {
   const { toast } = useToast();
-  const { user } = useAuth();
   const mapContainer = useRef(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('all');
@@ -106,10 +103,9 @@ const MapSection = () => {
     const matchesDepartment = selectedDepartment === 'all' || event.department === selectedDepartment;
     const matchesDate = !selectedDate || event.date.includes(selectedDate);
     const matchesCountry = selectedCountry === 'all' || event.country === selectedCountry;
-    const matchesType = selectedType === 'all' || event.type === selectedType;
     
     if (searchRadius[0] === 0) {
-      return matchesSearch && matchesDepartment && matchesDate && matchesCountry && matchesType;
+      return matchesSearch && matchesDepartment && matchesDate && matchesCountry;
     }
     
     if (searchCenter && searchRadius[0] > 0) {
@@ -121,10 +117,10 @@ const MapSection = () => {
       );
       
       return matchesSearch && matchesDepartment && matchesDate && 
-             matchesCountry && matchesType && distance <= searchRadius[0];
+             matchesCountry && distance <= searchRadius[0];
     }
     
-    return matchesSearch && matchesDepartment && matchesDate && matchesCountry && matchesType;
+    return matchesSearch && matchesDepartment && matchesDate && matchesCountry;
   });
 
   const geocodeLocation = async (locationName: string) => {
@@ -204,10 +200,10 @@ const MapSection = () => {
         </div>
         
         <div className="flex justify-end mb-6">
-          <Link to={user ? "/parties/create" : "/login"}>
+          <Link to="/parties/create">
             <Button className="bg-airsoft-red hover:bg-red-700 shadow-lg">
               <Plus className="mr-2 h-4 w-4" />
-              {user ? "Créer une partie" : "Se connecter pour créer une partie"}
+              Créer une partie
             </Button>
           </Link>
         </div>
@@ -253,15 +249,21 @@ const MapSection = () => {
                   {selectedDate && <Badge className="bg-airsoft-red hover:bg-red-700" onClick={() => setSelectedDate('')}>
                       {selectedDate} ×
                     </Badge>}
-                  {selectedType !== 'all' && <Badge className="bg-airsoft-red hover:bg-red-700" onClick={() => setSelectedType('all')}>
-                      {selectedType} ×
-                    </Badge>}
                 </div>
               </div>
             </div>
             
             <div className="w-full md:w-3/4 h-[600px] relative">
-              <MapComponent searchCenter={searchCenter} searchRadius={searchRadius[0]} filteredEvents={filteredEvents} />
+              {loading ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center">
+                    <div className="h-12 w-12 border-4 border-airsoft-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-gray-500">Chargement de la carte...</p>
+                  </div>
+                </div>
+              ) : (
+                <MapComponent searchCenter={searchCenter} searchRadius={searchRadius[0]} filteredEvents={filteredEvents} />
+              )}
             </div>
           </div>
         </div>
@@ -279,13 +281,13 @@ const MapSection = () => {
               </div>
             ))
           ) : filteredEvents.length > 0 ? (
-            filteredEvents.slice(0, 6).map(event => (
+            filteredEvents.map(event => (
               <EventCard key={event.id} event={event} />
             ))
           ) : (
             <div className="col-span-3 text-center py-12">
               <p className="text-gray-500 text-xl">Aucune partie trouvée correspondant à vos critères</p>
-              <p className="text-gray-400 mt-2">Essayez de modifier vos filtres ou <Link to={user ? "/parties/create" : "/login"} className="text-airsoft-red hover:underline">{user ? "créez votre propre partie" : "connectez-vous pour créer une partie"}</Link></p>
+              <p className="text-gray-400 mt-2">Essayez de modifier vos filtres ou <Link to="/parties/create" className="text-airsoft-red hover:underline">créez votre propre partie</Link></p>
             </div>
           )}
         </div>

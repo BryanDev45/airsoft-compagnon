@@ -264,6 +264,77 @@ export type Database = {
           status?: string | null
           user_id?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "game_participants_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      games: {
+        Row: {
+          country: string | null
+          created_at: string | null
+          date: string
+          department: string | null
+          description: string | null
+          duration: string | null
+          id: string
+          image: string | null
+          lat: number | null
+          lng: number | null
+          location: string | null
+          max_participants: number | null
+          organizer_id: string | null
+          participants: number | null
+          price: number | null
+          status: string | null
+          title: string
+          type: string | null
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string | null
+          date: string
+          department?: string | null
+          description?: string | null
+          duration?: string | null
+          id?: string
+          image?: string | null
+          lat?: number | null
+          lng?: number | null
+          location?: string | null
+          max_participants?: number | null
+          organizer_id?: string | null
+          participants?: number | null
+          price?: number | null
+          status?: string | null
+          title: string
+          type?: string | null
+        }
+        Update: {
+          country?: string | null
+          created_at?: string | null
+          date?: string
+          department?: string | null
+          description?: string | null
+          duration?: string | null
+          id?: string
+          image?: string | null
+          lat?: number | null
+          lng?: number | null
+          location?: string | null
+          max_participants?: number | null
+          organizer_id?: string | null
+          participants?: number | null
+          price?: number | null
+          status?: string | null
+          title?: string
+          type?: string | null
+        }
         Relationships: []
       }
       notifications: {
@@ -589,10 +660,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      check_friendship_status: {
-        Args: { p_user_id: string; p_friend_id: string }
-        Returns: string
-      }
       get_average_rating: {
         Args: { p_user_id: string }
         Returns: number
