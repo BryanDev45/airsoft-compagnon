@@ -17,7 +17,6 @@ const MapSection = () => {
   const { toast } = useToast();
   const mapContainer = useRef(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedType, setSelectedType] = useState('all');
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('france');
@@ -25,6 +24,7 @@ const MapSection = () => {
   const [searchCenter, setSearchCenter] = useState<[number, number]>([2.3522, 46.2276]);
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState<any[]>([]);
+  const [selectedType, setSelectedType] = useState('all');
 
   const countryCoordinates: Record<string, [number, number]> = {
     france: [2.3522, 46.2276],
@@ -80,6 +80,7 @@ const MapSection = () => {
           image: "/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png" // Image par défaut
         })) || [];
         
+        console.log("Formatted events:", formattedEvents);
         setEvents(formattedEvents);
       } catch (error: any) {
         console.error("Erreur lors du chargement des parties:", error);
@@ -99,13 +100,12 @@ const MapSection = () => {
   const filteredEvents = events.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                         event.location.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = selectedType === 'all' || event.type === selectedType;
     const matchesDepartment = selectedDepartment === 'all' || event.department === selectedDepartment;
     const matchesDate = !selectedDate || event.date.includes(selectedDate);
     const matchesCountry = selectedCountry === 'all' || event.country === selectedCountry;
     
     if (searchRadius[0] === 0) {
-      return matchesSearch && matchesType && matchesDepartment && matchesDate && matchesCountry;
+      return matchesSearch && matchesDepartment && matchesDate && matchesCountry;
     }
     
     if (searchCenter && searchRadius[0] > 0) {
@@ -116,11 +116,11 @@ const MapSection = () => {
         event.lng
       );
       
-      return matchesSearch && matchesType && matchesDepartment && matchesDate && 
+      return matchesSearch && matchesDepartment && matchesDate && 
              matchesCountry && distance <= searchRadius[0];
     }
     
-    return matchesSearch && matchesType && matchesDepartment && matchesDate && matchesCountry;
+    return matchesSearch && matchesDepartment && matchesDate && matchesCountry;
   });
 
   const geocodeLocation = async (locationName: string) => {
@@ -218,15 +218,6 @@ const MapSection = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-2 mb-6">
-                <Button variant="outline" className="border-gray-600 bg-airsoft-red hover:bg-red-700 text-white w-full">
-                  <span className="mx-auto">Dominicale</span>
-                </Button>
-                <Button variant="outline" className="border-gray-600 bg-airsoft-red hover:bg-red-700 text-white w-full">
-                  <span className="mx-auto">Opé</span>
-                </Button>
-              </div>
-              
               <MapFilters 
                 selectedCountry={selectedCountry} 
                 setSelectedCountry={setSelectedCountry} 
@@ -248,9 +239,6 @@ const MapSection = () => {
                 <div className="flex flex-wrap gap-2">
                   {searchQuery && <Badge className="bg-airsoft-red hover:bg-red-700" onClick={() => setSearchQuery('')}>
                       {searchQuery} ×
-                    </Badge>}
-                  {selectedType !== 'all' && <Badge className="bg-airsoft-red hover:bg-red-700" onClick={() => setSelectedType('all')}>
-                      {selectedType} ×
                     </Badge>}
                   {selectedDepartment !== 'all' && <Badge className="bg-airsoft-red hover:bg-red-700" onClick={() => setSelectedDepartment('all')}>
                       Dép. {selectedDepartment} ×

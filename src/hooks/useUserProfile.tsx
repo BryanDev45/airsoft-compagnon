@@ -76,7 +76,7 @@ export const useUserProfile = (username: string | undefined) => {
             p_rated_id: userProfile.id 
           });
             
-          if (!ratingsError && ratings) {
+          if (!ratingsError && ratings !== null) {
             setUserRating(ratings);
             setHasRated(true);
           }
@@ -114,8 +114,18 @@ export const useUserProfile = (username: string | undefined) => {
 
         if (gamesError) throw gamesError;
 
+        // Fetch games created by user
+        const { data: createdGames, error: createdGamesError } = await supabase
+          .from('airsoft_games')
+          .select('*')
+          .eq('created_by', userProfile.id)
+          .limit(5);
+
+        if (createdGamesError) throw createdGamesError;
+
         let formattedGames: any[] = [];
 
+        // Format participated games
         if (gameParticipants && gameParticipants.length > 0) {
           // Fetch the actual game data for each participation
           const gameIds = gameParticipants.map(gp => gp.game_id);
@@ -128,7 +138,7 @@ export const useUserProfile = (username: string | undefined) => {
           if (gamesDataError) throw gamesDataError;
           
           if (games && games.length > 0) {
-            formattedGames = gameParticipants.map(gp => {
+            const participatedGames = gameParticipants.map(gp => {
               const gameData = games.find(g => g.id === gp.game_id);
               if (gameData) {
                 return {
@@ -145,9 +155,29 @@ export const useUserProfile = (username: string | undefined) => {
               }
               return null;
             }).filter(Boolean);
+            
+            formattedGames.push(...participatedGames);
           }
         }
 
+        // Format created games
+        if (createdGames && createdGames.length > 0) {
+          const organizedGames = createdGames.map(game => ({
+            id: game.id,
+            title: game.title,
+            date: new Date(game.date).toLocaleDateString('fr-FR'),
+            location: game.city,
+            image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
+            role: 'Organisateur',
+            status: 'À venir',
+            team: 'Organisateur',
+            result: 'Organisateur'
+          }));
+          
+          formattedGames.push(...organizedGames);
+        }
+
+        // Fetch user badges
         const { data: badges, error: badgesError } = await supabase
           .from('user_badges')
           .select(`
@@ -178,22 +208,10 @@ export const useUserProfile = (username: string | undefined) => {
           }));
         }
 
-        // Set empty games array with placeholder if no games found
-        if (formattedGames.length === 0) {
-          formattedGames = [
-            {
-              id: '1',
-              title: 'Aucune partie jouée',
-              date: '-',
-              location: '-',
-              image: '/placeholder.svg',
-              role: '-',
-              team: '-',
-              result: '-',
-              status: 'Aucune'
-            }
-          ];
-        }
+        // Remove duplicates in case a game appears in both participated and created lists
+        formattedGames = formattedGames.filter((game, index, self) => 
+          index === self.findIndex(g => g.id === game.id)
+        );
 
         console.log("Games found:", formattedGames);
 

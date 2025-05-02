@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,7 @@ const levelOptions = ['Débutant', 'Novice', 'Intermédiaire', 'Confirmé', 'Exp
 const gameTypeOptions = ['CQB', 'Milsim', 'Woodland', 'Scénario', 'Speedsoft', 'Tournoi'];
 const roleOptions = ['Assaut', 'Support', 'Sniper', 'Démolition', 'Médic', 'Éclaireur'];
 
-const ProfileStats = ({ userStats, updateUserStats, fetchProfileData, isOwnProfile = false }) => {
+const ProfileStats = ({ userStats, updateUserStats, fetchProfileData, isOwnProfile = false, profileData }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [gameType, setGameType] = useState(userStats?.preferred_game_type || 'CQB');
   const [role, setRole] = useState(userStats?.favorite_role || 'Assaut');
@@ -62,6 +63,9 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData, isOwnProfi
     };
     return colors[level] || 'bg-gray-100 text-gray-800';
   };
+
+  // Utiliser la réputation du profil au lieu du stats.reputation
+  const reputation = profileData?.reputation || 0;
 
   return (
     <Card className="p-6 shadow-md bg-gradient-to-br from-white to-gray-50">
@@ -125,7 +129,7 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData, isOwnProfi
           <Star className="text-purple-500 w-10 h-10 mr-4" />
           <div>
             <span className="text-sm font-medium text-purple-700">Réputation</span>
-            <p className="text-purple-900 text-2xl font-bold">{userStats?.reputation || '0'}</p>
+            <p className="text-purple-900 text-2xl font-bold">{reputation.toFixed(1)}</p>
           </div>
         </div>
       </div>

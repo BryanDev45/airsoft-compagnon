@@ -120,6 +120,7 @@ const UserProfile = () => {
                     userStats={userStats}
                     updateUserStats={updateUserStats}
                     fetchProfileData={fetchProfileData}
+                    profileData={profileData}
                   />
                 </TabsContent>
                 
