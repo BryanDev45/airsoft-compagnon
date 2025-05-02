@@ -122,6 +122,8 @@ export const useUserProfile = (username: string | undefined) => {
           .limit(5);
 
         if (createdGamesError) throw createdGamesError;
+        
+        console.log("Created games:", createdGames);
 
         let formattedGames: any[] = [];
 
@@ -230,7 +232,7 @@ export const useUserProfile = (username: string | undefined) => {
           preferred_game_type: 'Indéfini',
           favorite_role: 'Indéfini',
           level: 'Débutant',
-          reputation: 0,
+          reputation: userProfile.reputation || 0,
           win_rate: '0%',
           accuracy: '0%',
           time_played: '0h',

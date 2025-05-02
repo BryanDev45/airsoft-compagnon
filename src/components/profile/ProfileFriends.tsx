@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { UserPlus, UserMinus, UserCheck, Search } from "lucide-react";
+import { UserPlus, UserMinus, UserCheck } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from 'react-router-dom';
@@ -128,7 +128,7 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
             onClick={navigateToSearch}
             className="bg-airsoft-red hover:bg-red-700 text-white"
           >
-            <Search className="h-4 w-4 mr-2" />
+            <UserPlus className="h-4 w-4 mr-2" />
             Rechercher des joueurs
           </Button>
         </div>

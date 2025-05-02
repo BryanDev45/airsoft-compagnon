@@ -1,11 +1,12 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, BellOff } from 'lucide-react';
+import { Bell, BellOff, UserCheck, UserMinus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "@/components/ui/use-toast";
 
 interface Notification {
   id: string;
@@ -65,6 +66,62 @@ export const NotificationList = () => {
     }
   };
 
+  const handleAcceptFriendRequest = async (notification: Notification) => {
+    try {
+      const { error } = await supabase
+        .from('friendships')
+        .update({ status: 'accepted' })
+        .eq('id', notification.related_id);
+
+      if (error) throw error;
+      
+      // Mark notification as read
+      await handleMarkAsRead(notification.id);
+      
+      toast({
+        title: "Demande acceptée",
+        description: "Vous êtes maintenant amis",
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    } catch (error) {
+      console.error('Error accepting friend request:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'accepter la demande d'ami",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleRejectFriendRequest = async (notification: Notification) => {
+    try {
+      const { error } = await supabase
+        .from('friendships')
+        .update({ status: 'rejected' })
+        .eq('id', notification.related_id);
+
+      if (error) throw error;
+      
+      // Mark notification as read
+      await handleMarkAsRead(notification.id);
+      
+      toast({
+        title: "Demande rejetée",
+        description: "La demande d'ami a été rejetée",
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    } catch (error) {
+      console.error('Error rejecting friend request:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de rejeter la demande d'ami",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleNotificationClick = async (notification: Notification) => {
     await handleMarkAsRead(notification.id);
     if (notification.link) {
@@ -93,8 +150,7 @@ export const NotificationList = () => {
             {notifications.map(notification => (
               <div 
                 key={notification.id} 
-                className={`p-4 rounded-lg border ${notification.read ? 'bg-gray-50 border-gray-200' : 'bg-blue-50 border-blue-200'} cursor-pointer transition-colors hover:bg-gray-100`}
-                onClick={() => handleNotificationClick(notification)}
+                className={`p-4 rounded-lg border ${notification.read ? 'bg-gray-50 border-gray-200' : 'bg-blue-50 border-blue-200'} transition-colors hover:bg-gray-100`}
               >
                 <div className="flex justify-between items-start mb-1">
                   <h3 className="font-medium text-gray-900">{notification.title}</h3>
@@ -107,7 +163,36 @@ export const NotificationList = () => {
                     })}
                   </p>
                 </div>
-                <p className="text-sm text-gray-600">{notification.message}</p>
+                <p className="text-sm text-gray-600 mb-2">{notification.message}</p>
+                
+                {notification.type === 'friend_request' && !notification.read ? (
+                  <div className="flex mt-2 space-x-2 justify-end">
+                    <Button 
+                      variant="default"
+                      size="sm"
+                      className="bg-airsoft-red hover:bg-red-700"
+                      onClick={() => handleAcceptFriendRequest(notification)}
+                    >
+                      <UserCheck className="h-4 w-4 mr-1" />
+                      Accepter
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleRejectFriendRequest(notification)}
+                    >
+                      <UserMinus className="h-4 w-4 mr-1" />
+                      Refuser
+                    </Button>
+                  </div>
+                ) : (
+                  <div 
+                    className="cursor-pointer" 
+                    onClick={() => handleNotificationClick(notification)}
+                  >
+                    {/* Clickable area for standard notifications */}
+                  </div>
+                )}
               </div>
             ))}
           </div>
