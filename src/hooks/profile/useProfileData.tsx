@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
@@ -48,7 +49,7 @@ export const useProfileData = (userId: string | null) => {
           role,
           game_id,
           user_id,
-          airsoft_games (*)
+          airsoft_games:game_id (*)
         `)
         .eq('user_id', userId);
 
@@ -78,12 +79,12 @@ export const useProfileData = (userId: string | null) => {
           .filter(p => p.airsoft_games)
           .map(p => ({
             id: p.game_id,
-            title: p.airsoft_games.title,
-            date: new Date(p.airsoft_games.date).toLocaleDateString('fr-FR'),
-            location: p.airsoft_games.city,
+            title: p.airsoft_games?.title,
+            date: p.airsoft_games?.date ? new Date(p.airsoft_games.date).toLocaleDateString('fr-FR') : 'Date inconnue',
+            location: p.airsoft_games?.city || 'Lieu inconnu',
             image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
             role: p.role || 'Participant',
-            status: p.airsoft_games.date >= new Date().toISOString().split('T')[0] ? 'À venir' : 'Terminé',
+            status: p.airsoft_games?.date && p.airsoft_games.date >= new Date().toISOString().split('T')[0] ? 'À venir' : 'Terminé',
             team: 'Indéfini',
             result: p.status
           }));

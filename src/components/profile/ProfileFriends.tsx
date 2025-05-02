@@ -15,13 +15,13 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
 
   const fetchFriends = async () => {
     try {
-      // Récupérer les amis acceptés
+      // Récupérer les amis acceptés où l'utilisateur est "user_id"
       const { data: acceptedFriends, error: friendsError } = await supabase
         .from('friendships')
         .select(`
           id,
           friend_id,
-          profiles!friendships_friend_id_fkey (
+          profiles:friend_id (
             id,
             username,
             avatar,
@@ -40,7 +40,7 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
         .select(`
           id,
           user_id,
-          profiles!friendships_user_id_fkey (
+          profiles:user_id (
             id,
             username,
             avatar,
@@ -58,22 +58,22 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
       if (acceptedFriends) {
         allFriends = [...allFriends, ...acceptedFriends.map(f => ({
           friendshipId: f.id,
-          id: f.profiles.id,
-          username: f.profiles.username,
-          avatar: f.profiles.avatar,
-          team: f.profiles.team,
-          location: f.profiles.location
+          id: f.profiles?.id,
+          username: f.profiles?.username,
+          avatar: f.profiles?.avatar,
+          team: f.profiles?.team,
+          location: f.profiles?.location
         }))];
       }
 
       if (acceptedFriendsReverse) {
         allFriends = [...allFriends, ...acceptedFriendsReverse.map(f => ({
           friendshipId: f.id,
-          id: f.profiles.id,
-          username: f.profiles.username,
-          avatar: f.profiles.avatar,
-          team: f.profiles.team,
-          location: f.profiles.location
+          id: f.profiles?.id,
+          username: f.profiles?.username,
+          avatar: f.profiles?.avatar,
+          team: f.profiles?.team,
+          location: f.profiles?.location
         }))];
       }
 
@@ -86,7 +86,7 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
           .select(`
             id,
             user_id,
-            profiles!friendships_user_id_fkey (
+            profiles:user_id (
               id,
               username,
               avatar,
@@ -102,11 +102,11 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
         if (pending) {
           setPendingRequests(pending.map(p => ({
             friendshipId: p.id,
-            id: p.profiles.id,
-            username: p.profiles.username,
-            avatar: p.profiles.avatar,
-            team: p.profiles.team,
-            location: p.profiles.location
+            id: p.profiles?.id,
+            username: p.profiles?.username,
+            avatar: p.profiles?.avatar,
+            team: p.profiles?.team,
+            location: p.profiles?.location
           })));
         }
       }
@@ -196,7 +196,7 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
   };
 
   const navigateToSearch = () => {
-    navigate('/parties?tab=players');
+    navigate('/parties?tab=joueurs');
   };
 
   React.useEffect(() => {

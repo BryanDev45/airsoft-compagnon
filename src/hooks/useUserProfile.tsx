@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
-import { callRPC } from '@/utils/supabaseHelpers';
 
 export const useUserProfile = (username: string | undefined) => {
   const navigate = useNavigate();
@@ -58,26 +57,27 @@ export const useUserProfile = (username: string | undefined) => {
         }
 
         if (currentUserId) {
-          // Vérifier si on est amis
-          const { data: friendship, error: friendshipError } = await supabase
+          // Vérifier si on est amis avec la fonction SQL
+          const { data: friendshipStatus, error: friendshipError } = await supabase
             .rpc('check_friendship_status', { 
               p_user_id: currentUserId, 
               p_friend_id: userProfile.id 
             });
             
-          if (!friendshipError && friendship) {
-            setIsFollowing(friendship === 'accepted');
-            setFriendRequestSent(friendship === 'pending');
+          if (!friendshipError && friendshipStatus) {
+            setIsFollowing(friendshipStatus === 'accepted');
+            setFriendRequestSent(friendshipStatus === 'pending');
           }
           
           // Récupérer la note donnée
-          const { data: ratings, error: ratingsError } = await callRPC<number>('get_user_rating', { 
-            p_rater_id: currentUserId, 
-            p_rated_id: userProfile.id 
-          });
+          const { data: ratings, error: ratingsError } = await supabase
+            .rpc('get_user_rating', { 
+              p_rater_id: currentUserId, 
+              p_rated_id: userProfile.id 
+            });
             
           if (!ratingsError && ratings !== null) {
-            setUserRating(ratings);
+            setUserRating(Number(ratings));
             setHasRated(true);
           }
         }
@@ -116,7 +116,7 @@ export const useUserProfile = (username: string | undefined) => {
             role,
             game_id,
             user_id,
-            airsoft_games (*)
+            airsoft_games:game_id (*)
           `)
           .eq('user_id', userProfile.id);
 
@@ -146,12 +146,12 @@ export const useUserProfile = (username: string | undefined) => {
             .filter(p => p.airsoft_games)
             .map(p => ({
               id: p.game_id,
-              title: p.airsoft_games.title,
-              date: new Date(p.airsoft_games.date).toLocaleDateString('fr-FR'),
-              location: p.airsoft_games.city,
+              title: p.airsoft_games?.title || 'Titre inconnu',
+              date: p.airsoft_games?.date ? new Date(p.airsoft_games.date).toLocaleDateString('fr-FR') : 'Date inconnue',
+              location: p.airsoft_games?.city || 'Lieu inconnu',
               image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
               role: p.role || 'Participant',
-              status: p.airsoft_games.date >= new Date().toISOString().split('T')[0] ? 'À venir' : 'Terminé',
+              status: p.airsoft_games?.date && p.airsoft_games.date >= new Date().toISOString().split('T')[0] ? 'À venir' : 'Terminé',
               team: 'Indéfini',
               result: p.status
             }));
@@ -319,7 +319,7 @@ export const useUserProfile = (username: string | undefined) => {
 
     try {
       if (hasRated) {
-        const { error } = await callRPC('update_user_rating', { 
+        const { error } = await supabase.rpc('update_user_rating', { 
           p_rater_id: currentUserId, 
           p_rated_id: userData.id, 
           p_rating: rating 
@@ -327,7 +327,7 @@ export const useUserProfile = (username: string | undefined) => {
           
         if (error) throw error;
       } else {
-        const { error } = await callRPC('insert_user_rating', { 
+        const { error } = await supabase.rpc('insert_user_rating', { 
           p_rater_id: currentUserId, 
           p_rated_id: userData.id, 
           p_rating: rating 
@@ -340,7 +340,7 @@ export const useUserProfile = (username: string | undefined) => {
       setUserRating(rating);
       
       // Update average reputation
-      const { data: avgRating, error: avgError } = await callRPC<number>('get_average_rating', 
+      const { data: avgRating, error: avgError } = await supabase.rpc('get_average_rating', 
         { p_user_id: userData.id }
       );
       

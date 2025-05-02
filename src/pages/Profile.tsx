@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -108,6 +109,11 @@ const Profile = () => {
     navigate(`/game/${gameId}`);
   };
 
+  // Wrapped fetchProfileData to match the expected return type
+  const wrappedFetchProfileData = async () => {
+    await fetchProfileData();
+  };
+
   if (initialLoading || !readyToLoad || loading || !profileData) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -141,7 +147,7 @@ const Profile = () => {
               equipment={equipment}
               updateLocation={updateLocation}
               updateUserStats={updateUserStats}
-              fetchProfileData={fetchProfileData}
+              fetchProfileData={wrappedFetchProfileData}
               fetchEquipment={fetchEquipment}
               handleNavigateToTeam={handleNavigateToTeam}
               setSelectedGame={setSelectedGame}

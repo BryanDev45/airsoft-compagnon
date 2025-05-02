@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Calendar, Map as MapIcon, MapPin, Maximize, Navigation, Plus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -260,16 +261,7 @@ const MapSection = () => {
             </div>
             
             <div className="w-full md:w-3/4 h-[600px] relative">
-              {loading ? (
-                <div className="flex items-center justify-center h-full">
-                  <div className="text-center">
-                    <div className="h-12 w-12 border-4 border-airsoft-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-gray-500">Chargement de la carte...</p>
-                  </div>
-                </div>
-              ) : (
-                <MapComponent searchCenter={searchCenter} searchRadius={searchRadius[0]} filteredEvents={filteredEvents} />
-              )}
+              <MapComponent searchCenter={searchCenter} searchRadius={searchRadius[0]} filteredEvents={filteredEvents} />
             </div>
           </div>
         </div>
@@ -287,7 +279,7 @@ const MapSection = () => {
               </div>
             ))
           ) : filteredEvents.length > 0 ? (
-            filteredEvents.map(event => (
+            filteredEvents.slice(0, 6).map(event => (
               <EventCard key={event.id} event={event} />
             ))
           ) : (
