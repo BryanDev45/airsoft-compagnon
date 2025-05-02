@@ -3,11 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Shield, MessageCircle, UserPlus, Star } from 'lucide-react';
+import { MapPin, Shield, MessageCircle, UserPlus } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { useAuth } from '@/hooks/useAuth';
+import RatingStars from '../profile/RatingStars';
 
 interface UserSearchResultsProps {
   searchQuery: string;
@@ -31,7 +32,7 @@ const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
         
         let query = supabase
           .from('profiles')
-          .select('id, username, avatar, location, team, team_id, bio, is_verified, join_date');
+          .select('id, username, avatar, location, team, team_id, bio, is_verified, join_date, reputation');
         
         // Ignore current user
         if (user?.id) {
@@ -144,33 +145,6 @@ const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
       });
     }
   };
-
-  // Function to render rating stars
-  const renderRatingStars = (rating: number = 0) => {
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-    const stars = [];
-    
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(<Star key={`full-${i}`} className="h-4 w-4 fill-yellow-400 text-yellow-400" />);
-    }
-    
-    if (hasHalfStar) {
-      stars.push(
-        <span key="half" className="relative">
-          <Star className="h-4 w-4 text-gray-300" />
-          <Star className="absolute top-0 left-0 h-4 w-4 text-yellow-400 overflow-hidden" style={{ clipPath: 'inset(0 50% 0 0)' }} />
-        </span>
-      );
-    }
-    
-    const emptyStars = 5 - stars.length;
-    for (let i = 0; i < emptyStars; i++) {
-      stars.push(<Star key={`empty-${i}`} className="h-4 w-4 text-gray-300" />);
-    }
-    
-    return stars;
-  };
   
   if (loading) {
     return (
@@ -219,8 +193,12 @@ const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
               </div>
               
               <div className="flex items-center mb-2">
-                {renderRatingStars(0)}
-                <span className="ml-2 text-sm text-gray-600">0.0</span>
+                <RatingStars 
+                  rating={user.reputation || 0} 
+                  readonly={true} 
+                  size={16} 
+                />
+                <span className="ml-2 text-sm text-gray-600">{user.reputation?.toFixed(1) || "0.0"}</span>
               </div>
               
               <p className="text-sm text-gray-600 mb-2 line-clamp-2">{user.bio || "Aucune bio"}</p>
