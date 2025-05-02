@@ -4,7 +4,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Save } from 'lucide-react';
 import { useImageUpload } from '@/hooks/useImageUpload';
@@ -93,21 +93,21 @@ const CreateParty = () => {
               />
               
               {/* Terms and Conditions */}
-              <Form.Field
+              <FormField
                 control={form.control}
                 name="terms"
                 render={({ field }) => (
-                  <Form.Item className="flex flex-row items-start space-x-3 space-y-0">
-                    <Form.Control>
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
                       <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                    </Form.Control>
+                    </FormControl>
                     <div className="space-y-1 leading-none">
-                      <Form.Label>
+                      <FormLabel>
                         J'accepte les conditions générales et je certifie que cette partie respecte les lois en vigueur
-                      </Form.Label>
-                      <Form.Message />
+                      </FormLabel>
+                      <FormMessage />
                     </div>
-                  </Form.Item>
+                  </FormItem>
                 )}
               />
               
