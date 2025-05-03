@@ -137,6 +137,10 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
     navigate('/parties?tab=players');
   };
 
+  const navigateToUserProfile = (username) => {
+    navigate(`/user/${username}`);
+  };
+
   React.useEffect(() => {
     if (userId) {
       fetchFriends();
@@ -164,7 +168,10 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {pendingRequests.map((request) => (
               <div key={request.id} className="bg-white p-4 rounded-lg shadow-sm flex items-center justify-between">
-                <div className="flex items-center space-x-4">
+                <div 
+                  className="flex items-center space-x-4 cursor-pointer hover:text-airsoft-red"
+                  onClick={() => navigateToUserProfile(request.username)}
+                >
                   <Avatar>
                     <AvatarImage src={request.avatar || '/placeholder.svg'} alt={request.username} />
                     <AvatarFallback>{request.username?.[0]?.toUpperCase()}</AvatarFallback>
@@ -204,19 +211,26 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
         {friends.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {friends.map((friend) => (
-              <Card key={friend.id} className="p-4 flex items-center justify-between">
+              <Card 
+                key={friend.id} 
+                className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
+                onClick={() => navigateToUserProfile(friend.username)}
+              >
                 <div className="flex items-center space-x-4">
                   <Avatar>
                     <AvatarImage src={friend.avatar || '/placeholder.svg'} alt={friend.username} />
                     <AvatarFallback>{friend.username?.[0]?.toUpperCase()}</AvatarFallback>
                   </Avatar>
-                  <span>{friend.username}</span>
+                  <span className="hover:text-airsoft-red transition-colors">{friend.username}</span>
                 </div>
                 {isOwnProfile && (
                   <Button 
                     variant="destructive" 
                     size="sm"
-                    onClick={() => handleRemoveFriend(friend.id)}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent navigation when clicking the button
+                      handleRemoveFriend(friend.id);
+                    }}
                   >
                     <UserMinus className="h-4 w-4 mr-1" />
                     Retirer
