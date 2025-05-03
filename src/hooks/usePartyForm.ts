@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,17 +19,16 @@ const partyFormSchema = z.object({
     .date({
       required_error: "La date et l'heure de fin sont requises"
     })
-    .superRefine((endDate, ctx) => {
-      // Use getRootNode() to access parent object
-      const data = ctx.path ? ctx.getRootNode() : null;
-      const startDateTime = data && "startDateTime" in data ? data.startDateTime : null;
+    .refine((endDate, ctx) => {
+      const formData = ctx.path.length > 1 ? ctx.path[0] : undefined;
+      const startDateTime = formData ? (ctx as any).data?.startDateTime : undefined;
       
       if (startDateTime && endDate <= startDateTime) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "La date et l'heure de fin doivent être postérieures à la date et l'heure de début",
-        });
+        return false;
       }
+      return true;
+    }, {
+      message: "La date et l'heure de fin doivent être postérieures à la date et l'heure de début"
     }),
   address: z.string().min(5, "L'adresse doit comporter au moins 5 caractères"),
   city: z.string().min(2, "La ville est requise"),
