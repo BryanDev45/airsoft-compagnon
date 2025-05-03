@@ -6,9 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
+interface Game {
+  id: string;
+  title: string;
+  date: string;
+  status: string;
+  role: string;
+}
+
 interface ProfileGamesProps {
-  games: any[];
-  handleViewGameDetails: (game: any) => void;
+  games: Game[];
+  handleViewGameDetails: (game: Game) => void;
   handleViewAllGames: () => void;
 }
 
@@ -50,7 +58,7 @@ const ProfileGames = ({ games, handleViewGameDetails, handleViewAllGames }: Prof
                       <Calendar size={14} /> {game.date}
                     </span>
                     <span className="flex items-center gap-1">
-                      <User size={14} /> {game.role}
+                      <User size={14} /> {game.role || 'Participant'}
                     </span>
                   </div>
                 </div>
