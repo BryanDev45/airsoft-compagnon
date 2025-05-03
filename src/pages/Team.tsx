@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -130,11 +129,11 @@ const Team = () => {
         }
       }
 
-      // Get team games
+      // Get team games - Note: Use 'airsoft_games' instead of 'games'
       const { data: gamesData, error: gamesError } = await supabase
-        .from('games')
+        .from('airsoft_games')
         .select('*')
-        .eq('organizer_id', teamData.id)
+        .eq('created_by', teamData.id)
         .order('date', { ascending: true });
 
       if (gamesError) throw gamesError;
@@ -147,8 +146,8 @@ const Team = () => {
           id: game.id,
           title: game.title,
           date: new Date(game.date).toLocaleDateString('fr-FR'),
-          location: game.location,
-          participants: game.participants || 0
+          location: game.city,
+          participants: game.max_players || 0
         }));
 
       const pastGames = (gamesData || [])
@@ -157,9 +156,9 @@ const Team = () => {
           id: game.id,
           title: game.title,
           date: new Date(game.date).toLocaleDateString('fr-FR'),
-          location: game.location,
-          result: game.status,
-          participants: game.participants || 0
+          location: game.city,
+          result: "Terminé", // Default status since game.status may not exist
+          participants: game.max_players || 0
         }));
 
       // Check if the current user is a member of this team
