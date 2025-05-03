@@ -16,15 +16,18 @@ const partyFormSchema = z.object({
   startDateTime: z.date({
     required_error: "La date et l'heure de début sont requises"
   }),
-  endDateTime: z.date({
-    required_error: "La date et l'heure de fin sont requises"
-  }).refine(
-    (endDate, ctx) => {
-      const { startDateTime } = ctx.parent;
-      return startDateTime < endDate;
-    },
-    { message: "La date et l'heure de fin doivent être postérieures à la date et l'heure de début" }
-  ),
+  endDateTime: z
+    .date({
+      required_error: "La date et l'heure de fin sont requises"
+    })
+    .superRefine((endDate, ctx) => {
+      if (ctx.parent.startDateTime && endDate <= ctx.parent.startDateTime) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "La date et l'heure de fin doivent être postérieures à la date et l'heure de début",
+        });
+      }
+    }),
   address: z.string().min(5, "L'adresse doit comporter au moins 5 caractères"),
   city: z.string().min(2, "La ville est requise"),
   zipCode: z.string().min(5, "Le code postal est requis"),
