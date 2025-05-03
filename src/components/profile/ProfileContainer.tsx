@@ -15,12 +15,12 @@ interface ProfileContainerProps {
   profileData: any;
   userStats: any;
   equipment: any[];
-  games: any[];  // Added games array prop
+  games: any[];
   updateLocation: (location: string) => Promise<boolean>;
   updateUserStats: (gameType: string, role: string, level: string) => Promise<boolean>;
   fetchProfileData: () => Promise<void>;
   fetchEquipment: () => Promise<void>;
-  fetchUserGames?: () => Promise<void>;  // Made optional for backward compatibility
+  fetchUserGames?: () => Promise<void>;
   handleNavigateToTeam: () => void;
   setSelectedGame: (game: any) => void;
   setShowGameDialog: (show: boolean) => void;
@@ -36,7 +36,7 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
   profileData,
   userStats,
   equipment,
-  games = [],  // Default to empty array
+  games = [],
   updateLocation,
   updateUserStats,
   fetchProfileData,
