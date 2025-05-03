@@ -13,11 +13,18 @@ const partyFormSchema = z.object({
   title: z.string().min(5, "Le titre doit comporter au moins 5 caractères"),
   description: z.string().min(20, "La description doit comporter au moins 20 caractères"),
   rules: z.string().min(10, "Les règles doivent comporter au moins 10 caractères"),
-  date: z.date({
-    required_error: "Une date est requise"
+  startDateTime: z.date({
+    required_error: "La date et l'heure de début sont requises"
   }),
-  startTime: z.string().min(1, "L'heure de début est requise"),
-  endTime: z.string().min(1, "L'heure de fin est requise"),
+  endDateTime: z.date({
+    required_error: "La date et l'heure de fin sont requises"
+  }).refine(
+    (endDate, ctx) => {
+      const { startDateTime } = ctx.parent;
+      return startDateTime < endDate;
+    },
+    { message: "La date et l'heure de fin doivent être postérieures à la date et l'heure de début" }
+  ),
   address: z.string().min(5, "L'adresse doit comporter au moins 5 caractères"),
   city: z.string().min(2, "La ville est requise"),
   zipCode: z.string().min(5, "Le code postal est requis"),
@@ -51,14 +58,22 @@ export const usePartyForm = (images: File[]) => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const navigate = useNavigate();
   
+  // Calculer la date actuelle et les valeurs par défaut
+  const now = new Date();
+  const startDateTime = new Date(now);
+  startDateTime.setHours(10, 0, 0, 0); // 10:00 par défaut
+  
+  const endDateTime = new Date(now);
+  endDateTime.setHours(17, 0, 0, 0); // 17:00 par défaut
+  
   const form = useForm<PartyFormValues>({
     resolver: zodResolver(partyFormSchema),
     defaultValues: {
       title: "",
       description: "",
       rules: "",
-      startTime: "10:00",
-      endTime: "17:00",
+      startDateTime,
+      endDateTime,
       address: "",
       city: "",
       zipCode: "",
@@ -102,14 +117,19 @@ export const usePartyForm = (images: File[]) => {
         return;
       }
       
+      // Extraire la date, l'heure de début et l'heure de fin pour la base de données
+      const date = data.startDateTime.toISOString().split('T')[0];
+      const start_time = `${data.startDateTime.getHours().toString().padStart(2, '0')}:${data.startDateTime.getMinutes().toString().padStart(2, '0')}`;
+      const end_time = `${data.endDateTime.getHours().toString().padStart(2, '0')}:${data.endDateTime.getMinutes().toString().padStart(2, '0')}`;
+      
       // Préparer les données à enregistrer
       const gameData = {
         title: data.title,
         description: data.description,
         rules: data.rules,
-        date: data.date.toISOString().split('T')[0],  // Format YYYY-MM-DD
-        start_time: data.startTime,
-        end_time: data.endTime,
+        date: date, // Utilise la date de startDateTime
+        start_time: start_time,
+        end_time: end_time,
         address: data.address,
         city: data.city,
         zip_code: data.zipCode,
