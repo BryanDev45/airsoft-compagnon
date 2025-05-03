@@ -21,7 +21,11 @@ const partyFormSchema = z.object({
       required_error: "La date et l'heure de fin sont requises"
     })
     .superRefine((endDate, ctx) => {
-      if (ctx.parent.startDateTime && endDate <= ctx.parent.startDateTime) {
+      // Use getRootNode() to access parent object
+      const data = ctx.path ? ctx.getRootNode() : null;
+      const startDateTime = data && "startDateTime" in data ? data.startDateTime : null;
+      
+      if (startDateTime && endDate <= startDateTime) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "La date et l'heure de fin doivent être postérieures à la date et l'heure de début",
