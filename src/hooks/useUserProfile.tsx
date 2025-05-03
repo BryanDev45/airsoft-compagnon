@@ -99,7 +99,7 @@ export const useUserProfile = (username: string | undefined) => {
 
         if (equipmentError) throw equipmentError;
 
-        // Fetch game participants and related game data
+        // 1. First, fetch games where the user is a participant
         const { data: gameParticipants, error: gamesError } = await supabase
           .from('game_participants')
           .select(`
@@ -109,60 +109,61 @@ export const useUserProfile = (username: string | undefined) => {
             game_id,
             user_id
           `)
-          .eq('user_id', userProfile.id)
-          .limit(5);
+          .eq('user_id', userProfile.id);
 
         if (gamesError) throw gamesError;
 
-        // Fetch games created by user
+        // 2. Fetch games created by the user
         const { data: createdGames, error: createdGamesError } = await supabase
           .from('airsoft_games')
           .select('*')
-          .eq('created_by', userProfile.id)
-          .limit(5);
+          .eq('created_by', userProfile.id);
 
         if (createdGamesError) throw createdGamesError;
         
         console.log("Created games:", createdGames);
+        console.log("Game participants:", gameParticipants);
 
         let formattedGames: any[] = [];
 
-        // Format participated games
+        // 3. Format participated games
         if (gameParticipants && gameParticipants.length > 0) {
           // Fetch the actual game data for each participation
           const gameIds = gameParticipants.map(gp => gp.game_id);
           
-          const { data: games, error: gamesDataError } = await supabase
-            .from('airsoft_games')
-            .select('*')
-            .in('id', gameIds);
+          if (gameIds.length > 0) {
+            const { data: games, error: gamesDataError } = await supabase
+              .from('airsoft_games')
+              .select('*')
+              .in('id', gameIds);
+              
+            if (gamesDataError) throw gamesDataError;
             
-          if (gamesDataError) throw gamesDataError;
-          
-          if (games && games.length > 0) {
-            const participatedGames = gameParticipants.map(gp => {
-              const gameData = games.find(g => g.id === gp.game_id);
-              if (gameData) {
-                return {
-                  id: gameData.id,
-                  title: gameData.title,
-                  date: new Date(gameData.date).toLocaleDateString('fr-FR'),
-                  location: gameData.city,
-                  image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
-                  role: gp.role,
-                  status: 'À venir',
-                  team: 'Indéfini',
-                  result: gp.status
-                };
-              }
-              return null;
-            }).filter(Boolean);
-            
-            formattedGames.push(...participatedGames);
+            if (games && games.length > 0) {
+              const participatedGames = gameParticipants.map(gp => {
+                const gameData = games.find(g => g.id === gp.game_id);
+                if (gameData) {
+                  return {
+                    id: gameData.id,
+                    title: gameData.title,
+                    date: new Date(gameData.date).toLocaleDateString('fr-FR'),
+                    location: gameData.city,
+                    image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
+                    role: gp.role,
+                    status: new Date(gameData.date) > new Date() ? 'À venir' : 'Terminé',
+                    team: 'Indéfini',
+                    result: gp.status
+                  };
+                }
+                return null;
+              }).filter(Boolean);
+              
+              formattedGames = [...formattedGames, ...participatedGames];
+            }
           }
         }
 
-        // Format created games
+        // 4. Format created games
         if (createdGames && createdGames.length > 0) {
           const organizedGames = createdGames.map(game => ({
             id: game.id,
@@ -171,15 +172,29 @@ export const useUserProfile = (username: string | undefined) => {
             location: game.city,
             image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
             role: 'Organisateur',
-            status: 'À venir',
+            status: new Date(game.date) > new Date() ? 'À venir' : 'Terminé',
             team: 'Organisateur',
             result: 'Organisateur'
           }));
           
-          formattedGames.push(...organizedGames);
+          formattedGames = [...formattedGames, ...organizedGames];
         }
 
-        // Fetch user badges
+        // 5. Make sure we update the user_stats with the correct count of created games
+        if (createdGames && createdGames.length > 0 && stats) {
+          const { error: updateError } = await supabase
+            .from('user_stats')
+            .update({ games_organized: createdGames.length })
+            .eq('user_id', userProfile.id);
+            
+          if (updateError) {
+            console.error("Error updating games_organized count:", updateError);
+          } else {
+            // Update local state for user stats
+            stats.games_organized = createdGames.length;
+          }
+        }
+
         const { data: badges, error: badgesError } = await supabase
           .from('user_badges')
           .select(`
@@ -215,7 +230,7 @@ export const useUserProfile = (username: string | undefined) => {
           index === self.findIndex(g => g.id === game.id)
         );
 
-        console.log("Games found:", formattedGames);
+        console.log("Final formatted games:", formattedGames);
 
         const enrichedProfile = {
           ...userProfile,
@@ -229,6 +244,7 @@ export const useUserProfile = (username: string | undefined) => {
         setUserStats(stats || {
           user_id: userProfile.id,
           games_played: 0,
+          games_organized: createdGames?.length || 0,
           preferred_game_type: 'Indéfini',
           favorite_role: 'Indéfini',
           level: 'Débutant',

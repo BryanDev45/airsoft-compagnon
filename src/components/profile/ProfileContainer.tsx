@@ -15,10 +15,12 @@ interface ProfileContainerProps {
   profileData: any;
   userStats: any;
   equipment: any[];
+  games: any[];  // Added games array prop
   updateLocation: (location: string) => Promise<boolean>;
   updateUserStats: (gameType: string, role: string, level: string) => Promise<boolean>;
   fetchProfileData: () => Promise<void>;
   fetchEquipment: () => Promise<void>;
+  fetchUserGames?: () => Promise<void>;  // Made optional for backward compatibility
   handleNavigateToTeam: () => void;
   setSelectedGame: (game: any) => void;
   setShowGameDialog: (show: boolean) => void;
@@ -34,10 +36,12 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
   profileData,
   userStats,
   equipment,
+  games = [],  // Default to empty array
   updateLocation,
   updateUserStats,
   fetchProfileData,
   fetchEquipment,
+  fetchUserGames,
   handleNavigateToTeam,
   setSelectedGame,
   setShowGameDialog,
@@ -71,7 +75,7 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
         
         <TabsContent value="games" className="p-1">
           <ProfileGames 
-            games={profileData?.games || []} 
+            games={games.length > 0 ? games : (profileData?.games || [])} 
             handleViewGameDetails={game => {
               setSelectedGame(game);
               setShowGameDialog(true);
