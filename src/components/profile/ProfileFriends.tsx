@@ -15,43 +15,65 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
 
   const fetchFriends = async () => {
     try {
-      const { data: acceptedFriends, error: friendsError } = await supabase
+      // Récupérer les amis (statut accepté)
+      const { data: friendships, error: friendsError } = await supabase
         .from('friendships')
-        .select(`
-          friend_id,
-          profiles!friendships_friend_id_fkey (
-            id,
-            username,
-            avatar,
-            team,
-            location
-          )
-        `)
+        .select('friend_id')
         .eq('user_id', userId)
         .eq('status', 'accepted');
 
-      if (!friendsError && acceptedFriends) {
-        setFriends(acceptedFriends.map(f => f.profiles));
+      if (friendsError) throw friendsError;
+
+      // Récupérer aussi les amitiés où l'utilisateur est le friend_id
+      const { data: reverseFriendships, error: reverseFriendsError } = await supabase
+        .from('friendships')
+        .select('user_id')
+        .eq('friend_id', userId)
+        .eq('status', 'accepted');
+
+      if (reverseFriendsError) throw reverseFriendsError;
+
+      // Combiner les deux listes d'IDs d'amis
+      const friendIds = [
+        ...friendships.map(f => f.friend_id),
+        ...reverseFriendships.map(f => f.user_id)
+      ];
+
+      if (friendIds.length > 0) {
+        // Récupérer les profils des amis
+        const { data: friendProfiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('*')
+          .in('id', friendIds);
+
+        if (profilesError) throw profilesError;
+        setFriends(friendProfiles || []);
+      } else {
+        setFriends([]);
       }
 
+      // Si c'est le propre profil de l'utilisateur, récupérer les demandes d'amitié en attente
       if (isOwnProfile) {
-        const { data: pending, error: pendingError } = await supabase
+        const { data: pendingFriendships, error: pendingError } = await supabase
           .from('friendships')
-          .select(`
-            user_id,
-            profiles!friendships_user_id_fkey (
-              id,
-              username,
-              avatar,
-              team,
-              location
-            )
-          `)
+          .select('user_id')
           .eq('friend_id', userId)
           .eq('status', 'pending');
 
-        if (!pendingError && pending) {
-          setPendingRequests(pending.map(p => p.profiles));
+        if (pendingError) throw pendingError;
+
+        if (pendingFriendships && pendingFriendships.length > 0) {
+          const pendingUserIds = pendingFriendships.map(p => p.user_id);
+          
+          const { data: pendingProfiles, error: pendingProfilesError } = await supabase
+            .from('profiles')
+            .select('*')
+            .in('id', pendingUserIds);
+
+          if (pendingProfilesError) throw pendingProfilesError;
+          setPendingRequests(pendingProfiles || []);
+        } else {
+          setPendingRequests([]);
         }
       }
     } catch (error) {
@@ -116,7 +138,9 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
   };
 
   React.useEffect(() => {
-    fetchFriends();
+    if (userId) {
+      fetchFriends();
+    }
   }, [userId]);
 
   return (
