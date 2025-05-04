@@ -21,20 +21,11 @@ import SettingsSection from '@/components/party/SettingsSection';
 import ImageUploadSection from '@/components/party/ImageUploadSection';
 
 const gameTypes = [{
-  value: "cqb",
-  label: "CQB"
+  value: "dominicale",
+  label: "Dominicale"
 }, {
-  value: "woodland",
-  label: "Woodland"
-}, {
-  value: "milsim",
-  label: "Milsim"
-}, {
-  value: "speedsoft",
-  label: "Speedsoft"
-}, {
-  value: "scenario",
-  label: "Scénario"
+  value: "operation",
+  label: "Opé"
 }];
 
 const CreateParty = () => {

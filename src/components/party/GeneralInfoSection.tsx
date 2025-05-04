@@ -4,7 +4,6 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -13,6 +12,7 @@ import { fr } from "date-fns/locale";
 import { Calendar as CalendarIcon, Clock, Info } from 'lucide-react';
 import { useFormContext } from "react-hook-form";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface GameType {
   value: string;
@@ -256,29 +256,61 @@ const GeneralInfoSection = ({ gameTypes }: GeneralInfoSectionProps) => {
           />
         </div>
         
-        <FormField 
-          control={form.control} 
-          name="gameType" 
+        <FormField
+          control={form.control}
+          name="gameType"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Type de jeu</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionnez un type de jeu" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {gameTypes.map(type => (
-                    <SelectItem key={type.value} value={type.value}>
-                      {type.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FormLabel>Type de partie</FormLabel>
+              <FormControl>
+                <RadioGroup
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  className="grid grid-cols-2 gap-4"
+                >
+                  <FormItem>
+                    <FormControl>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem 
+                          value="dominicale" 
+                          id="dominicale"
+                          className="sr-only" 
+                        />
+                        <label
+                          htmlFor="dominicale"
+                          className={`flex-1 cursor-pointer rounded-md border p-4 text-center hover:bg-airsoft-red hover:text-white transition-colors ${
+                            field.value === 'dominicale' ? 'bg-airsoft-red text-white' : 'bg-gray-100'
+                          }`}
+                        >
+                          Dominicale
+                        </label>
+                      </div>
+                    </FormControl>
+                  </FormItem>
+                  <FormItem>
+                    <FormControl>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem 
+                          value="operation" 
+                          id="operation"
+                          className="sr-only" 
+                        />
+                        <label
+                          htmlFor="operation"
+                          className={`flex-1 cursor-pointer rounded-md border p-4 text-center hover:bg-airsoft-red hover:text-white transition-colors ${
+                            field.value === 'operation' ? 'bg-airsoft-red text-white' : 'bg-gray-100'
+                          }`}
+                        >
+                          Opé
+                        </label>
+                      </div>
+                    </FormControl>
+                  </FormItem>
+                </RadioGroup>
+              </FormControl>
               <FormMessage />
             </FormItem>
-          )} 
+          )}
         />
       </CardContent>
     </Card>
