@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Calendar, Map as MapIcon, MapPin, Maximize, Navigation, Plus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -100,12 +101,15 @@ const MapSection = () => {
   const filteredEvents = events.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                         event.location.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesType = selectedType === 'all' || 
+                        (selectedType === 'dominicale' && event.type === 'dominicale') ||
+                        (selectedType === 'operation' && event.type === 'operation');
     const matchesDepartment = selectedDepartment === 'all' || event.department === selectedDepartment;
     const matchesDate = !selectedDate || event.date.includes(selectedDate);
     const matchesCountry = selectedCountry === 'all' || event.country === selectedCountry;
     
     if (searchRadius[0] === 0) {
-      return matchesSearch && matchesDepartment && matchesDate && matchesCountry;
+      return matchesSearch && matchesType && matchesDepartment && matchesDate && matchesCountry;
     }
     
     if (searchCenter && searchRadius[0] > 0) {
@@ -116,11 +120,11 @@ const MapSection = () => {
         event.lng
       );
       
-      return matchesSearch && matchesDepartment && matchesDate && 
+      return matchesSearch && matchesType && matchesDepartment && matchesDate && 
              matchesCountry && distance <= searchRadius[0];
     }
     
-    return matchesSearch && matchesDepartment && matchesDate && matchesCountry;
+    return matchesSearch && matchesType && matchesDepartment && matchesDate && matchesCountry;
   });
 
   const geocodeLocation = async (locationName: string) => {
@@ -239,6 +243,9 @@ const MapSection = () => {
                 <div className="flex flex-wrap gap-2">
                   {searchQuery && <Badge className="bg-airsoft-red hover:bg-red-700" onClick={() => setSearchQuery('')}>
                       {searchQuery} ×
+                    </Badge>}
+                  {selectedType !== 'all' && <Badge className="bg-airsoft-red hover:bg-red-700" onClick={() => setSelectedType('all')}>
+                      {selectedType === 'dominicale' ? 'Dominicale' : 'Opération'} ×
                     </Badge>}
                   {selectedDepartment !== 'all' && <Badge className="bg-airsoft-red hover:bg-red-700" onClick={() => setSelectedDepartment('all')}>
                       Dép. {selectedDepartment} ×

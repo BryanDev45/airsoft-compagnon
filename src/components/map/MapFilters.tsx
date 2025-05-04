@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface MapFiltersProps {
   selectedCountry: string;
@@ -35,6 +36,21 @@ const MapFilters: React.FC<MapFiltersProps> = ({
 }) => {
   return (
     <div className="space-y-4">
+      <div className="mb-4">
+        <label className="block text-sm mb-2">Type de partie</label>
+        <ToggleGroup type="single" value={selectedType} onValueChange={value => value && setSelectedType(value)} className="grid grid-cols-2 gap-2">
+          <ToggleGroupItem value="dominicale" className="bg-gray-700 hover:bg-airsoft-red text-white data-[state=on]:bg-airsoft-red">
+            Dominicale
+          </ToggleGroupItem>
+          <ToggleGroupItem value="operation" className="bg-gray-700 hover:bg-airsoft-red text-white data-[state=on]:bg-airsoft-red">
+            Opé
+          </ToggleGroupItem>
+          <ToggleGroupItem value="all" className="bg-gray-700 hover:bg-airsoft-red text-white data-[state=on]:bg-airsoft-red col-span-2">
+            Tous les types
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+      
       <div>
         <label className="block text-sm mb-2">Pays</label>
         <Select value={selectedCountry} onValueChange={setSelectedCountry}>
