@@ -46,14 +46,18 @@ export const useUserGames = (userId: string | undefined) => {
             const participatedGames = gameParticipants.map(gp => {
               const gameData = games.find(g => g.id === gp.game_id);
               if (gameData) {
+                const gameDate = new Date(gameData.date);
+                const isUpcoming = gameDate > new Date();
+                
                 return {
                   id: gameData.id,
                   title: gameData.title,
                   date: new Date(gameData.date).toLocaleDateString('fr-FR'),
+                  rawDate: gameData.date, // Ajout de la date brute pour le tri
                   location: gameData.city,
                   image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
                   role: gp.role,
-                  status: new Date(gameData.date) > new Date() ? 'À venir' : 'Terminé',
+                  status: isUpcoming ? 'À venir' : 'Terminé',
                   team: 'Indéfini',
                   result: gp.status
                 };
@@ -68,17 +72,23 @@ export const useUserGames = (userId: string | undefined) => {
       
       // 4. Format created games
       if (createdGames && createdGames.length > 0) {
-        const organizedGames = createdGames.map(game => ({
-          id: game.id,
-          title: game.title,
-          date: new Date(game.date).toLocaleDateString('fr-FR'),
-          location: game.city,
-          image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
-          role: 'Organisateur',
-          status: new Date(game.date) > new Date() ? 'À venir' : 'Terminé',
-          team: 'Organisateur',
-          result: 'Organisateur'
-        }));
+        const organizedGames = createdGames.map(game => {
+          const gameDate = new Date(game.date);
+          const isUpcoming = gameDate > new Date();
+          
+          return {
+            id: game.id,
+            title: game.title,
+            date: new Date(game.date).toLocaleDateString('fr-FR'),
+            rawDate: game.date, // Ajout de la date brute pour le tri
+            location: game.city,
+            image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
+            role: 'Organisateur',
+            status: isUpcoming ? 'À venir' : 'Terminé',
+            team: 'Organisateur',
+            result: 'Organisateur'
+          };
+        });
         
         formattedGames = [...formattedGames, ...organizedGames];
       }
@@ -101,6 +111,16 @@ export const useUserGames = (userId: string | undefined) => {
       formattedGames = formattedGames.filter((game, index, self) => 
         index === self.findIndex(g => g.id === game.id)
       );
+      
+      // Sort games: upcoming first, then by date (newest first for each category)
+      formattedGames.sort((a, b) => {
+        // Upcoming games first
+        if (a.status === 'À venir' && b.status !== 'À venir') return -1;
+        if (a.status !== 'À venir' && b.status === 'À venir') return 1;
+        
+        // For games with the same status, sort by date
+        return new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime();
+      });
       
       console.log("Final formatted games:", formattedGames);
       setUserGames(formattedGames);

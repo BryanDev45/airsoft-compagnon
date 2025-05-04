@@ -7,11 +7,33 @@ import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 const ProfileFriends = ({ userId, isOwnProfile }) => {
   const [friends, setFriends] = React.useState([]);
   const [pendingRequests, setPendingRequests] = React.useState([]);
+  const [isFriendsListPublic, setIsFriendsListPublic] = React.useState(false);
   const navigate = useNavigate();
+
+  // Fetch profile data including friends list privacy setting
+  const fetchProfileSettings = async () => {
+    if (!userId) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('friends_list_public')
+        .eq('id', userId)
+        .single();
+        
+      if (!error && data) {
+        setIsFriendsListPublic(data.friends_list_public || false);
+      }
+    } catch (error) {
+      console.error("Error fetching profile settings:", error);
+    }
+  };
 
   const fetchFriends = async () => {
     try {
@@ -141,16 +163,54 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
     navigate(`/user/${username}`);
   };
 
+  const handleToggleFriendsListVisibility = async () => {
+    const newValue = !isFriendsListPublic;
+    const { error } = await supabase
+      .from('profiles')
+      .update({ friends_list_public: newValue })
+      .eq('id', userId);
+    
+    if (error) {
+      console.error("Error updating friends list visibility:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de modifier la visibilité de la liste d'amis",
+        variant: "destructive"
+      });
+    } else {
+      setIsFriendsListPublic(newValue);
+      toast({
+        title: "Paramètre mis à jour",
+        description: `Votre liste d'amis est maintenant ${newValue ? 'publique' : 'privée'}`,
+      });
+    }
+  };
+
   React.useEffect(() => {
     if (userId) {
       fetchFriends();
+      fetchProfileSettings();
     }
   }, [userId]);
+
+  // Si ce n'est pas le profil de l'utilisateur connecté et que la liste d'amis est privée, masquer le contenu
+  const shouldShowFriendsList = isOwnProfile || isFriendsListPublic;
 
   return (
     <div className="space-y-6">
       {isOwnProfile && (
-        <div className="flex justify-end mb-4">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center space-x-3">
+            <Switch 
+              id="public-friends-list"
+              checked={isFriendsListPublic} 
+              onCheckedChange={handleToggleFriendsListVisibility}
+            />
+            <Label htmlFor="public-friends-list" className="text-sm font-medium">
+              Liste d'amis publique
+            </Label>
+          </div>
+          
           <Button 
             variant="default"
             onClick={navigateToSearch}
@@ -208,7 +268,10 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
 
       <Card className="p-6">
         <h3 className="text-lg font-medium mb-4">Amis</h3>
-        {friends.length > 0 ? (
+        
+        {!shouldShowFriendsList ? (
+          <p className="text-center text-gray-500">Cette liste d'amis est privée</p>
+        ) : friends.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {friends.map((friend) => (
               <Card 

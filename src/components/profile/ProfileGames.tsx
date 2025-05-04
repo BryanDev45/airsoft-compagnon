@@ -21,6 +21,22 @@ interface ProfileGamesProps {
 }
 
 const ProfileGames = ({ games, handleViewGameDetails, handleViewAllGames }: ProfileGamesProps) => {
+  // Tri des parties : d'abord les parties à venir, puis les parties passées
+  const sortedGames = React.useMemo(() => {
+    if (!games || games.length === 0) return [];
+    
+    return [...games].sort((a, b) => {
+      // Parties "À venir" en premier
+      if (a.status === "À venir" && b.status !== "À venir") return -1;
+      if (a.status !== "À venir" && b.status === "À venir") return 1;
+      
+      // Si les deux sont à venir ou les deux sont passées, tri par date (du plus récent au plus ancien)
+      const dateA = a.date.split('/').reverse().join('-'); // Convertir format FR (jj/mm/aaaa) en format ISO (aaaa-mm-jj)
+      const dateB = b.date.split('/').reverse().join('-');
+      return dateB > dateA ? 1 : -1;
+    });
+  }, [games]);
+
   return (
     <Card>
       <CardHeader>
@@ -41,12 +57,12 @@ const ProfileGames = ({ games, handleViewGameDetails, handleViewAllGames }: Prof
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {games && games.length === 0 ? (
+          {sortedGames && sortedGames.length === 0 ? (
             <p className="text-center text-gray-500 py-6">
               Vous n'avez pas encore participé à des parties.
             </p>
           ) : (
-            games && games.map(game => (
+            sortedGames && sortedGames.map(game => (
               <div 
                 key={game.id} 
                 className="border rounded-lg p-4 hover:shadow-md transition-shadow flex justify-between items-center"
