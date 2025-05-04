@@ -312,6 +312,7 @@ export type Database = {
           created_at: string | null
           email: string | null
           firstname: string | null
+          friends_list_public: boolean | null
           id: string
           is_team_leader: boolean | null
           is_verified: boolean | null
@@ -332,6 +333,7 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           firstname?: string | null
+          friends_list_public?: boolean | null
           id: string
           is_team_leader?: boolean | null
           is_verified?: boolean | null
@@ -352,6 +354,7 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           firstname?: string | null
+          friends_list_public?: boolean | null
           id?: string
           is_team_leader?: boolean | null
           is_verified?: boolean | null
