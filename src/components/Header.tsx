@@ -10,16 +10,26 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose,
 import { NotificationList } from '@/components/notifications/NotificationList';
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+
+// Définir la structure pour les langues avec les drapeaux
+const languages = [
+  { code: 'fr', name: 'Français', flag: '🇫🇷' },
+  { code: 'en', name: 'English', flag: '🇬🇧' },
+  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+  { code: 'es', name: 'Español', flag: '🇪🇸' }
+];
+
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<{
-    id?: string; // Ajout de l'ID comme propriété optionnelle
+    id?: string;
     username: string;
     avatar: string;
     teamId?: string;
   } | null>(null);
+
   useEffect(() => {
     const checkAuth = async () => {
       const {
@@ -65,6 +75,7 @@ const Header = () => {
     });
     return () => subscription.unsubscribe();
   }, []);
+
   const handleLogout = () => {
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('user');
@@ -76,9 +87,11 @@ const Header = () => {
     });
     navigate('/login');
   };
+
   const handleLogin = () => {
     navigate('/login');
   };
+
   const handleNavigateToTeam = () => {
     if (user?.teamId) {
       navigate(`/team/${user.teamId}`);
@@ -89,9 +102,11 @@ const Header = () => {
       });
     }
   };
+
   const handleNavigateToToolbox = () => {
     navigate('/toolbox');
   };
+
   const {
     data: notificationCount = 0,
     isLoading: isLoadingNotifications
@@ -111,6 +126,7 @@ const Header = () => {
     },
     enabled: isAuthenticated && !!user?.id
   });
+
   return <header className="bg-gradient-to-r from-gray-600 to-gray-900 text-white sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex justify-between items-center py-4">
         <div className="flex items-center">
@@ -134,10 +150,12 @@ const Header = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>Français</DropdownMenuItem>
-              <DropdownMenuItem>English</DropdownMenuItem>
-              <DropdownMenuItem>Deutsch</DropdownMenuItem>
-              <DropdownMenuItem>Español</DropdownMenuItem>
+              {languages.map((language) => (
+                <DropdownMenuItem key={language.code} className="flex items-center gap-2">
+                  <span className="text-lg">{language.flag}</span>
+                  <span>{language.name}</span>
+                </DropdownMenuItem>
+              ))}
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -208,6 +226,26 @@ const Header = () => {
             <Wrench size={18} />
             <span>ToolBox</span>
           </Link>
+          
+          {/* Ajouter un menu de sélection de langue dans la version mobile */}
+          <div className="py-2 text-white">
+            <span className="flex items-center gap-2 mb-2">
+              <Globe size={18} />
+              <span>Langue</span>
+            </span>
+            <div className="grid grid-cols-2 gap-2 ml-6">
+              {languages.map((language) => (
+                <Button 
+                  key={language.code} 
+                  variant="ghost" 
+                  className="justify-start text-white hover:text-airsoft-red"
+                >
+                  <span className="mr-2 text-lg">{language.flag}</span>
+                  <span>{language.name}</span>
+                </Button>
+              ))}
+            </div>
+          </div>
 
           {isAuthenticated && <div className="flex items-center py-2">
               <Sheet>
@@ -255,4 +293,5 @@ const Header = () => {
         </div>}
     </header>;
 };
+
 export default Header;
