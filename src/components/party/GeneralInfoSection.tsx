@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -138,7 +137,11 @@ const GeneralInfoSection = ({ gameTypes }: GeneralInfoSectionProps) => {
                             field.onChange(newDate);
                           }
                         }} 
-                        disabled={(date) => date < new Date()} 
+                        disabled={(date) => {
+                          const today = new Date();
+                          today.setHours(0, 0, 0, 0);
+                          return date < today;
+                        }}
                         initialFocus
                         className="pointer-events-auto"
                       />
@@ -209,11 +212,16 @@ const GeneralInfoSection = ({ gameTypes }: GeneralInfoSectionProps) => {
                             }
                             field.onChange(newDate);
                           }
-                        }} 
+                        }}
                         disabled={(date) => {
                           const startDate = form.getValues("startDateTime");
-                          // Mise à jour: Autoriser la même date que la date de début
-                          return date < startDate;
+                          const startDateCopy = new Date(startDate);
+                          startDateCopy.setHours(0, 0, 0, 0);
+                          
+                          const dateToCheck = new Date(date);
+                          dateToCheck.setHours(0, 0, 0, 0);
+                          
+                          return dateToCheck < startDateCopy;
                         }}
                         initialFocus
                         className="pointer-events-auto"

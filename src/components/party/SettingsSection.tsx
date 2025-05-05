@@ -47,12 +47,12 @@ const SettingsSection = () => {
               <FormLabel>Prix par joueur (€)</FormLabel>
               <FormControl>
                 <div className="flex items-center">
-                  <Input type="number" min="0" step="0.5" className="w-full" {...field} />
+                  <Input type="number" min="5" step="0.5" className="w-full" {...field} />
                   <Euro className="ml-2 h-5 w-5 text-gray-400" />
                 </div>
               </FormControl>
               <FormMessage />
-              <p className="text-sm text-gray-500 mt-1">Laissez 0 si l'entrée est gratuite</p>
+              <p className="text-sm text-gray-500 mt-1">Le prix minimum est de 5€ (incluant 1€ de frais de gestion revenant à Airsoft Compagnon)</p>
             </FormItem>
           )} 
         />

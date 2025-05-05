@@ -23,7 +23,11 @@ const partyFormSchema = z.object({
   city: z.string().min(2, "La ville est requise"),
   zipCode: z.string().min(5, "Le code postal est requis"),
   maxPlayers: z.string().min(1, "Le nombre maximum de joueurs est requis"),
-  price: z.string(),
+  price: z.string()
+    .refine(val => {
+      const numVal = parseFloat(val);
+      return !isNaN(numVal) && numVal >= 5;
+    }, "Le prix minimum est de 5€ (incluant les frais de gestion)"),
   gameType: z.string().min(1, "Le type de jeu est requis"),
   manualValidation: z.boolean().default(false),
   hasToilets: z.boolean().default(false),
@@ -45,8 +49,6 @@ const partyFormSchema = z.object({
   }),
   isPrivate: z.boolean().default(false)
 }).refine((data) => {
-  // Mise à jour: Permettre à la date de fin d'être la même que la date de début
-  // On vérifie maintenant que la date de fin est >= à la date de début
   return data.endDateTime >= data.startDateTime;
 }, {
   message: "La date et l'heure de fin doivent être égales ou postérieures à la date et l'heure de début",
@@ -79,7 +81,7 @@ export const usePartyForm = (images: File[]) => {
       city: "",
       zipCode: "",
       maxPlayers: "20",
-      price: "0",
+      price: "5", // Modifié pour définir un prix minimum par défaut de 5€
       gameType: "",
       manualValidation: false,
       hasToilets: false,
