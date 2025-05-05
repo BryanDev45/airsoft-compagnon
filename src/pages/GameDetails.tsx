@@ -442,9 +442,9 @@ const GameDetails = () => {
                     <h2 className="text-xl font-semibold mb-4">Description</h2>
                     <p className="text-gray-700 mb-6">{gameData.description}</p>
                     
-                    <h3 className="text-lg font-semibold mb-3">Scénarios prévus</h3>
+                    
                     <ul className="list-disc list-inside space-y-2 text-gray-700 mb-6">
-                      {scenarios.map((scenario, idx) => <li key={idx}>{scenario}</li>)}
+                      {scenarios.map((scenario, idx) => {})}
                     </ul>
                     
                     <div className="bg-gray-100 p-4 rounded-lg">
