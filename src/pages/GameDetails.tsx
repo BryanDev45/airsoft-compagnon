@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -17,7 +16,6 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import type { Profile } from "@/types/profile";
-
 const ScrollToTop = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -55,7 +53,6 @@ interface GameData {
   dmr_fps_max: number | null;
   creator?: Profile | null;
 }
-
 interface GameParticipant {
   id: string;
   user_id: string;
@@ -65,50 +62,50 @@ interface GameParticipant {
   created_at: string | null;
   profile?: Profile | null;
 }
-
 interface GameImage {
   id: string;
   game_id: string;
   image_url: string;
 }
-
 const GameDetails = () => {
-  const { id } = useParams();
+  const {
+    id
+  } = useParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const [participantsOpen, setParticipantsOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [registrationDialogOpen, setRegistrationDialogOpen] = useState(false);
   const [loadingRegistration, setLoadingRegistration] = useState(false);
-
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: {
+          session
+        }
+      } = await supabase.auth.getSession();
       setIsAuthenticated(!!session);
-      
       if (session && id) {
         // Check if user is registered for this game
-        const { data: participation, error } = await supabase
-          .from('game_participants')
-          .select('*')
-          .eq('game_id', id)
-          .eq('user_id', session.user.id)
-          .single();
-          
+        const {
+          data: participation,
+          error
+        } = await supabase.from('game_participants').select('*').eq('game_id', id).eq('user_id', session.user.id).single();
         if (participation && !error) {
           setIsRegistered(true);
         }
       }
     };
-    
     checkAuth();
     window.scrollTo(0, 0);
   }, [id]);
 
   // Query for game details and creator profile separately
-  const { 
+  const {
     data: gameData,
     isLoading: isLoadingGame,
     error: gameError,
@@ -117,33 +114,29 @@ const GameDetails = () => {
     queryKey: ['gameDetails', id],
     queryFn: async () => {
       if (!id) throw new Error('Game ID is required');
-      
-      const { data: game, error: gameError } = await supabase
-        .from('airsoft_games')
-        .select('*')
-        .eq('id', id)
-        .single();
-        
+      const {
+        data: game,
+        error: gameError
+      } = await supabase.from('airsoft_games').select('*').eq('id', id).single();
       if (gameError) throw gameError;
-      
+
       // Fetch creator profile separately
       let creator = null;
       if (game) {
-        const { data: creatorData, error: creatorError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', game.created_by)
-          .single();
-          
+        const {
+          data: creatorData,
+          error: creatorError
+        } = await supabase.from('profiles').select('*').eq('id', game.created_by).single();
         if (!creatorError && creatorData) {
           creator = creatorData;
         }
       }
-      
-      return { ...game, creator } as GameData;
+      return {
+        ...game,
+        creator
+      } as GameData;
     }
   });
-
   const {
     data: gameImages,
     isLoading: isLoadingImages
@@ -151,12 +144,10 @@ const GameDetails = () => {
     queryKey: ['gameImages', id],
     queryFn: async () => {
       if (!id) throw new Error('Game ID is required');
-      
-      const { data, error } = await supabase
-        .from('airsoft_game_images')
-        .select('*')
-        .eq('game_id', id);
-        
+      const {
+        data,
+        error
+      } = await supabase.from('airsoft_game_images').select('*').eq('game_id', id);
       if (error) throw error;
       return data as GameImage[] || [];
     },
@@ -172,40 +163,36 @@ const GameDetails = () => {
     queryKey: ['gameParticipants', id],
     queryFn: async () => {
       if (!id) throw new Error('Game ID is required');
-      
+
       // First get participants
-      const { data: participantsData, error: participantsError } = await supabase
-        .from('game_participants')
-        .select('*')
-        .eq('game_id', id);
-        
+      const {
+        data: participantsData,
+        error: participantsError
+      } = await supabase.from('game_participants').select('*').eq('game_id', id);
       if (participantsError) throw participantsError;
-      
+
       // Then get their profiles
-      const participantsWithProfiles = await Promise.all((participantsData || []).map(async (participant) => {
-        if (!participant.user_id) return { ...participant, profile: null };
-        
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', participant.user_id)
-          .single();
-          
+      const participantsWithProfiles = await Promise.all((participantsData || []).map(async participant => {
+        if (!participant.user_id) return {
+          ...participant,
+          profile: null
+        };
+        const {
+          data: profileData,
+          error: profileError
+        } = await supabase.from('profiles').select('*').eq('id', participant.user_id).single();
         return {
           ...participant,
           profile: profileError ? null : profileData
         };
       }));
-      
       return participantsWithProfiles as GameParticipant[];
     },
     enabled: !!gameData
   });
-
   const handleShareGame = () => {
     setShareDialogOpen(true);
   };
-
   const copyToClipboard = (text, message) => {
     navigator.clipboard.writeText(text).then(() => {
       toast({
@@ -220,31 +207,30 @@ const GameDetails = () => {
       });
     });
   };
-
   const handleRegister = async () => {
     if (!isAuthenticated) {
       navigate('/login');
       return;
     }
-
     if (isRegistered) {
       setRegistrationDialogOpen(true);
       return;
     }
-
     setLoadingRegistration(true);
-    
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: {
+        session
+      }
+    } = await supabase.auth.getSession();
     if (session && id) {
-      const { error } = await supabase
-        .from('game_participants')
-        .insert({
-          game_id: id,
-          user_id: session.user.id,
-          role: 'Participant',
-          status: 'Confirmé'
-        });
-        
+      const {
+        error
+      } = await supabase.from('game_participants').insert({
+        game_id: id,
+        user_id: session.user.id,
+        role: 'Participant',
+        status: 'Confirmé'
+      });
       if (error) {
         toast({
           variant: "destructive",
@@ -261,21 +247,19 @@ const GameDetails = () => {
         });
       }
     }
-    
     setLoadingRegistration(false);
   };
-
   const handleUnregister = async () => {
     setLoadingRegistration(true);
-    
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: {
+        session
+      }
+    } = await supabase.auth.getSession();
     if (session && id) {
-      const { error } = await supabase
-        .from('game_participants')
-        .delete()
-        .eq('game_id', id)
-        .eq('user_id', session.user.id);
-        
+      const {
+        error
+      } = await supabase.from('game_participants').delete().eq('game_id', id).eq('user_id', session.user.id);
       if (error) {
         toast({
           variant: "destructive",
@@ -292,14 +276,11 @@ const GameDetails = () => {
         });
       }
     }
-    
     setLoadingRegistration(false);
     setRegistrationDialogOpen(false);
   };
-
   if (isLoadingGame) {
-    return (
-      <div className="min-h-screen flex flex-col">
+    return <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-grow bg-gray-50 flex items-center justify-center">
           <div className="text-center">
@@ -308,13 +289,10 @@ const GameDetails = () => {
           </div>
         </main>
         <Footer />
-      </div>
-    );
+      </div>;
   }
-
   if (gameError || !gameData) {
-    return (
-      <div className="min-h-screen flex flex-col">
+    return <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-grow bg-gray-50">
           <div className="max-w-6xl mx-auto px-4 py-12">
@@ -328,71 +306,52 @@ const GameDetails = () => {
           </div>
         </main>
         <Footer />
-      </div>
-    );
+      </div>;
   }
 
   // Format date from ISO to readable format
-  const formattedDate = gameData.date ? format(new Date(gameData.date), 'dd MMMM yyyy', { locale: fr }) : '';
-  
+  const formattedDate = gameData.date ? format(new Date(gameData.date), 'dd MMMM yyyy', {
+    locale: fr
+  }) : '';
+
   // Format time
-  const formatTime = (timeString) => {
+  const formatTime = timeString => {
     if (!timeString) return '';
     // Handle PostgreSQL time format (HH:MM:SS)
     const [hours, minutes] = timeString.split(':');
     return `${hours}:${minutes}`;
   };
-
   const formattedTimeRange = `${formatTime(gameData.start_time)} - ${formatTime(gameData.end_time)}`;
 
   // Prepare default images if no real images
-  const defaultImages = [
-    "https://images.unsplash.com/photo-1624881513483-c1f3760fe7ad?q=80&w=2070&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1624881514789-5a8a7a82b9b0?q=80&w=2070&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1625008928888-27fde18fd355?q=80&w=2069&auto=format&fit=crop"
-  ];
-
-  const gameImages1 = gameImages?.length > 0 
-    ? gameImages.map(img => img.image_url) 
-    : defaultImages;
+  const defaultImages = ["https://images.unsplash.com/photo-1624881513483-c1f3760fe7ad?q=80&w=2070&auto=format&fit=crop", "https://images.unsplash.com/photo-1624881514789-5a8a7a82b9b0?q=80&w=2070&auto=format&fit=crop", "https://images.unsplash.com/photo-1625008928888-27fde18fd355?q=80&w=2069&auto=format&fit=crop"];
+  const gameImages1 = gameImages?.length > 0 ? gameImages.map(img => img.image_url) : defaultImages;
 
   // Default scenarios if not available
-  const scenarios = [
-    "Capture de drapeaux", 
-    "Escorte VIP", 
-    "Défense de position", 
-    "Extraction d'otages"
-  ];
+  const scenarios = ["Capture de drapeaux", "Escorte VIP", "Défense de position", "Extraction d'otages"];
 
   // Comments will be static for now as they're not in database yet
-  const comments = [
-    {
-      author: "Airsoft_Pro",
-      avatar: "https://randomuser.me/api/portraits/men/45.jpg",
-      date: "Il y a 2 jours",
-      content: "Ça a l'air super ! J'ai participé à une partie similaire organisée par cette équipe et c'était vraiment bien géré."
-    }, 
-    {
-      author: "Sniper_Elite",
-      avatar: "https://randomuser.me/api/portraits/women/32.jpg",
-      date: "Il y a 3 jours",
-      content: "Est-ce que le terrain dispose d'un espace pour les snipers ?"
-    }
-  ];
+  const comments = [{
+    author: "Airsoft_Pro",
+    avatar: "https://randomuser.me/api/portraits/men/45.jpg",
+    date: "Il y a 2 jours",
+    content: "Ça a l'air super ! J'ai participé à une partie similaire organisée par cette équipe et c'était vraiment bien géré."
+  }, {
+    author: "Sniper_Elite",
+    avatar: "https://randomuser.me/api/portraits/women/32.jpg",
+    date: "Il y a 3 jours",
+    content: "Est-ce que le terrain dispose d'un espace pour les snipers ?"
+  }];
 
   // Prepare coordinates for map
-  const coordinates: [number, number] = gameData.longitude && gameData.latitude 
-    ? [gameData.longitude, gameData.latitude] 
-    : [2.3522, 48.8566];
+  const coordinates: [number, number] = gameData.longitude && gameData.latitude ? [gameData.longitude, gameData.latitude] : [2.3522, 48.8566];
 
   // Helper function to get initials from username
   const getInitials = (username: string | null): string => {
     if (!username) return '??';
     return username.substring(0, 2).toUpperCase();
   };
-
-  return (
-    <div className="min-h-screen flex flex-col">
+  return <div className="min-h-screen flex flex-col">
       <ScrollToTop />
       <Header />
       <main className="flex-grow bg-gray-50">
@@ -433,23 +392,13 @@ const GameDetails = () => {
                   <Share2 size={16} className="mr-2" />
                   Partager
                 </Button>
-                <Button 
-                  className={`${isRegistered ? 'bg-green-600 hover:bg-green-700' : 'bg-airsoft-red hover:bg-red-700'}`} 
-                  onClick={handleRegister}
-                  disabled={loadingRegistration || (gameData.max_players <= (participants?.length || 0) && !isRegistered)}
-                >
-                  {loadingRegistration ? (
-                    <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite] mr-2"></div>
-                  ) : isRegistered ? (
-                    <>
+                <Button className={`${isRegistered ? 'bg-green-600 hover:bg-green-700' : 'bg-airsoft-red hover:bg-red-700'}`} onClick={handleRegister} disabled={loadingRegistration || gameData.max_players <= (participants?.length || 0) && !isRegistered}>
+                  {loadingRegistration ? <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite] mr-2"></div> : isRegistered ? <>
                       <Check size={16} className="mr-2" />
                       Inscrit
-                    </>
-                  ) : (
-                    <>
+                    </> : <>
                       S'inscrire - {gameData.price}€
-                    </>
-                  )}
+                    </>}
                 </Button>
               </div>
             </div>
@@ -462,9 +411,7 @@ const GameDetails = () => {
               <div className="rounded-lg overflow-hidden mb-8">
                 <img src={gameImages1[0]} alt={gameData.title} className="w-full h-[300px] object-cover" />
                 <div className="bg-white p-2 grid grid-cols-3 gap-2">
-                  {gameImages1.slice(1, 4).map((img, idx) => (
-                    <img key={idx} src={img} alt={`${gameData.title} ${idx + 1}`} className="h-20 w-full object-cover rounded" />
-                  ))}
+                  {gameImages1.slice(1, 4).map((img, idx) => <img key={idx} src={img} alt={`${gameData.title} ${idx + 1}`} className="h-20 w-full object-cover rounded" />)}
                 </div>
               </div>
               
@@ -504,10 +451,7 @@ const GameDetails = () => {
                       <h3 className="text-lg font-semibold mb-2">Organisé par</h3>
                       <div className="flex items-center gap-3">
                         <Avatar>
-                          <AvatarImage 
-                            src={gameData.creator?.avatar || "https://randomuser.me/api/portraits/men/32.jpg"} 
-                            alt={gameData.creator?.username || "Organisateur"} 
-                          />
+                          <AvatarImage src={gameData.creator?.avatar || "https://randomuser.me/api/portraits/men/32.jpg"} alt={gameData.creator?.username || "Organisateur"} />
                           <AvatarFallback>{getInitials(gameData.creator?.username)}</AvatarFallback>
                         </Avatar>
                         <div>
@@ -517,12 +461,7 @@ const GameDetails = () => {
                             <span>4.8 / 5</span>
                           </div>
                         </div>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="ml-auto"
-                          onClick={() => navigate(`/profile/${gameData.creator?.username}`)}
-                        >
+                        <Button variant="ghost" size="sm" className="ml-auto" onClick={() => navigate(`/profile/${gameData.creator?.username}`)}>
                           Voir le profil <ChevronRight size={16} />
                         </Button>
                       </div>
@@ -547,11 +486,11 @@ const GameDetails = () => {
                         </h3>
                         <div className="space-y-2 text-gray-700">
                           <div className="flex items-center justify-between">
-                            <span>AEG / GBB:</span>
+                            <span>AEG / GBB :</span>
                             <Badge className="bg-amber-500">{gameData.aeg_fps_min} - {gameData.aeg_fps_max} FPS</Badge>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span>Sniper / DMR:</span>
+                            <span>Sniper / DMR :</span>
                             <Badge className="bg-amber-500">Max {gameData.dmr_fps_max} FPS</Badge>
                           </div>
                         </div>
@@ -564,13 +503,13 @@ const GameDetails = () => {
                         </h3>
                         <div className="space-y-2 text-gray-700">
                           <div className="flex items-center justify-between">
-                            <span>Protection oculaire:</span>
+                            <span>Protection oculaire :</span>
                             <Badge className={gameData.eye_protection_required ? "bg-green-500" : "bg-red-500"}>
                               {gameData.eye_protection_required ? "Obligatoire" : "Facultative"}
                             </Badge>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span>Protection intégrale:</span>
+                            <span className="text-left">Protection intégrale :</span>
                             <Badge className={gameData.full_face_protection_required ? "bg-green-500" : "bg-amber-500"}>
                               {gameData.full_face_protection_required ? "Obligatoire" : "Recommandée"}
                             </Badge>
@@ -587,19 +526,19 @@ const GameDetails = () => {
                         </h3>
                         <div className="space-y-2 text-gray-700">
                           <div className="flex items-center justify-between">
-                            <span>Toilettes:</span>
+                            <span>Toilettes :</span>
                             <Badge className={gameData.has_toilets ? "bg-green-500" : "bg-red-500"}>
                               {gameData.has_toilets ? "Disponibles" : "Non disponibles"}
                             </Badge>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span>Parking:</span>
+                            <span>Parking :</span>
                             <Badge className={gameData.has_parking ? "bg-green-500" : "bg-red-500"}>
                               {gameData.has_parking ? "Disponible" : "Non disponible"}
                             </Badge>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span>Location de matériel:</span>
+                            <span className="text-left">Location de matériel:</span>
                             <Badge className={gameData.has_equipment_rental ? "bg-green-500" : "bg-red-500"}>
                               {gameData.has_equipment_rental ? "Disponible" : "Non disponible"}
                             </Badge>
@@ -614,13 +553,13 @@ const GameDetails = () => {
                         </h3>
                         <div className="space-y-2 text-gray-700">
                           <div className="flex items-center justify-between">
-                            <span>Validation manuelle:</span>
+                            <span>Validation :</span>
                             <Badge className={gameData.manual_validation ? "bg-amber-500" : "bg-green-500"}>
                               {gameData.manual_validation ? "Requise" : "Automatique"}
                             </Badge>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span>Partie privée:</span>
+                            <span>Partie privée :</span>
                             <Badge className={gameData.is_private ? "bg-amber-500" : "bg-green-500"}>
                               {gameData.is_private ? "Oui" : "Non"}
                             </Badge>
@@ -691,23 +630,13 @@ const GameDetails = () => {
                   </div>
                   
                   <div className="mt-6">
-                    <Button 
-                      className={`w-full ${isRegistered ? 'bg-green-600 hover:bg-green-700' : 'bg-airsoft-red hover:bg-red-700'}`}
-                      onClick={handleRegister}
-                      disabled={loadingRegistration || (gameData.max_players <= (participants?.length || 0) && !isRegistered)}
-                    >
-                      {loadingRegistration ? (
-                        <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite] mr-2"></div>
-                      ) : isRegistered ? (
-                        <>
+                    <Button className={`w-full ${isRegistered ? 'bg-green-600 hover:bg-green-700' : 'bg-airsoft-red hover:bg-red-700'}`} onClick={handleRegister} disabled={loadingRegistration || gameData.max_players <= (participants?.length || 0) && !isRegistered}>
+                      {loadingRegistration ? <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite] mr-2"></div> : isRegistered ? <>
                           <Check size={16} className="mr-2" />
                           Inscrit - Gérer mon inscription
-                        </>
-                      ) : (
-                        <>
+                        </> : <>
                           S'inscrire à la partie
-                        </>
-                      )}
+                        </>}
                     </Button>
                   </div>
                 </CardContent>
@@ -717,10 +646,7 @@ const GameDetails = () => {
                 <CardContent className="pt-6">
                   <h3 className="text-lg font-semibold mb-4">Localisation</h3>
                   <div className="bg-gray-200 rounded-lg h-[200px] mb-4">
-                    <LocationMap 
-                      location={`${gameData.address}, ${gameData.zip_code} ${gameData.city}`} 
-                      coordinates={coordinates}
-                    />
+                    <LocationMap location={`${gameData.address}, ${gameData.zip_code} ${gameData.city}`} coordinates={coordinates} />
                   </div>
                   <div className="flex items-start gap-2">
                     <MapPin size={18} className="text-airsoft-red flex-shrink-0 mt-1" />
@@ -729,13 +655,9 @@ const GameDetails = () => {
                       <div className="text-gray-600 text-sm">{gameData.zip_code} {gameData.city}</div>
                     </div>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    className="w-full mt-4" 
-                    onClick={() => {
-                      window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${gameData.address}, ${gameData.zip_code} ${gameData.city}`)}`, '_blank');
-                    }}
-                  >
+                  <Button variant="outline" className="w-full mt-4" onClick={() => {
+                  window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${gameData.address}, ${gameData.zip_code} ${gameData.city}`)}`, '_blank');
+                }}>
                     <MapPin size={16} className="mr-2" />
                     Obtenir l'itinéraire
                   </Button>
@@ -746,49 +668,35 @@ const GameDetails = () => {
                 <CardContent className="pt-6">
                   <h3 className="text-lg font-semibold mb-4">Participants ({participants?.length || 0})</h3>
                   
-                  {isLoadingParticipants ? (
-                    <div className="flex justify-center py-4">
+                  {isLoadingParticipants ? <div className="flex justify-center py-4">
                       <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-airsoft-red border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
-                    </div>
-                  ) : participants?.length > 0 ? (
-                    <>
+                    </div> : participants?.length > 0 ? <>
                       <div className="flex flex-wrap gap-2">
-                        {participants.slice(0, 8).map((participant, idx) => (
-                          <div key={idx} className="flex flex-col items-center">
+                        {participants.slice(0, 8).map((participant, idx) => <div key={idx} className="flex flex-col items-center">
                             <div className="relative">
                               <Avatar>
-                                <AvatarImage 
-                                  src={participant.profile?.avatar || "https://randomuser.me/api/portraits/men/1.jpg"} 
-                                  alt={participant.profile?.username || "Participant"} 
-                                  className="w-10 h-10 object-cover" 
-                                />
+                                <AvatarImage src={participant.profile?.avatar || "https://randomuser.me/api/portraits/men/1.jpg"} alt={participant.profile?.username || "Participant"} className="w-10 h-10 object-cover" />
                                 <AvatarFallback>{getInitials(participant.profile?.username)}</AvatarFallback>
                               </Avatar>
                             </div>
-                          </div>
-                        ))}
+                          </div>)}
                         
-                        {participants.length > 8 && (
-                          <>
+                        {participants.length > 8 && <>
                             <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-200">
                               <User size={18} className="text-gray-500" />
                             </div>
                             <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-200">
                               <span className="text-sm text-gray-500 font-medium">+{participants.length - 9}</span>
                             </div>
-                          </>
-                        )}
+                          </>}
                       </div>
                       <Button variant="outline" className="w-full mt-4" onClick={() => setParticipantsOpen(true)}>
                         Voir tous les participants
                       </Button>
-                    </>
-                  ) : (
-                    <div className="text-center py-6 text-gray-500">
+                    </> : <div className="text-center py-6 text-gray-500">
                       <User size={48} className="mx-auto mb-2 opacity-30" />
                       <p>Aucun participant inscrit pour le moment</p>
-                    </div>
-                  )}
+                    </div>}
                 </CardContent>
               </Card>
             </div>
@@ -808,45 +716,28 @@ const GameDetails = () => {
           
           <div className="mt-4">
             <div className="space-y-4">
-              {isLoadingParticipants ? (
-                <div className="flex justify-center py-8">
+              {isLoadingParticipants ? <div className="flex justify-center py-8">
                   <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-airsoft-red border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {participants.map((participant, idx) => (
-                    <div key={idx} className="flex items-center gap-3 p-3 border rounded-md hover:bg-gray-50 transition-colors">
+                </div> : <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {participants.map((participant, idx) => <div key={idx} className="flex items-center gap-3 p-3 border rounded-md hover:bg-gray-50 transition-colors">
                       <Avatar>
-                        <AvatarImage 
-                          src={participant.profile?.avatar || "https://randomuser.me/api/portraits/men/1.jpg"} 
-                          alt={participant.profile?.username || "Participant"} 
-                          className="w-12 h-12 object-cover" 
-                        />
+                        <AvatarImage src={participant.profile?.avatar || "https://randomuser.me/api/portraits/men/1.jpg"} alt={participant.profile?.username || "Participant"} className="w-12 h-12 object-cover" />
                         <AvatarFallback>{getInitials(participant.profile?.username)}</AvatarFallback>
                       </Avatar>
                       <div className="flex-grow">
                         <div className="font-medium">{participant.profile?.username || "Participant"}</div>
                         <div className="text-xs text-gray-500 flex items-center">
-                          {participant.role === "Organisateur" && (
-                            <Badge variant="outline" className="text-xs border-airsoft-red text-airsoft-red">
+                          {participant.role === "Organisateur" && <Badge variant="outline" className="text-xs border-airsoft-red text-airsoft-red">
                               Organisateur
-                            </Badge>
-                          )}
+                            </Badge>}
                         </div>
                       </div>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="flex-shrink-0" 
-                        onClick={() => navigate(`/profile/${participant.profile?.username}`)}
-                      >
+                      <Button variant="ghost" size="sm" className="flex-shrink-0" onClick={() => navigate(`/profile/${participant.profile?.username}`)}>
                         <User size={14} className="mr-1" />
                         Profil
                       </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    </div>)}
+                </div>}
             </div>
           </div>
           
@@ -906,10 +797,10 @@ const GameDetails = () => {
                 </svg>
               </Button>
               <Button variant="outline" size="icon" onClick={() => {
-                const mailSubject = encodeURIComponent(`Partie d'airsoft: ${gameData.title}`);
-                const mailBody = encodeURIComponent(`Salut,\n\nJ'ai trouvé cette partie d'airsoft qui pourrait t'intéresser:\n\n${gameData.title}\nDate: ${formattedDate}\nLieu: ${gameData.address}, ${gameData.city}\n\nTu peux voir les détails ici: ${window.location.href}`);
-                window.location.href = `mailto:?subject=${mailSubject}&body=${mailBody}`;
-              }}>
+              const mailSubject = encodeURIComponent(`Partie d'airsoft: ${gameData.title}`);
+              const mailBody = encodeURIComponent(`Salut,\n\nJ'ai trouvé cette partie d'airsoft qui pourrait t'intéresser:\n\n${gameData.title}\nDate: ${formattedDate}\nLieu: ${gameData.address}, ${gameData.city}\n\nTu peux voir les détails ici: ${window.location.href}`);
+              window.location.href = `mailto:?subject=${mailSubject}&body=${mailBody}`;
+            }}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" className="text-gray-500 h-5 w-5">
                   <path d="M0 3v18h24v-18h-24zm6.623 7.929l-4.623 5.712v-9.458l4.623 3.746zm-4.141-5.929h19.035l-9.517 7.713-9.518-7.713zm5.694 7.188l3.824 3.099 3.83-3.104 5.612 6.817h-18.779l5.513-6.812zm9.208-1.264l4.616-3.741v9.348l-4.616-5.607z" />
                 </svg>
@@ -945,16 +836,8 @@ const GameDetails = () => {
             </p>
             
             <div className="flex flex-col gap-4">
-              <Button 
-                variant="destructive" 
-                onClick={handleUnregister}
-                disabled={loadingRegistration}
-              >
-                {loadingRegistration ? (
-                  <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite] mr-2"></div>
-                ) : (
-                  <X size={16} className="mr-2" />
-                )}
+              <Button variant="destructive" onClick={handleUnregister} disabled={loadingRegistration}>
+                {loadingRegistration ? <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite] mr-2"></div> : <X size={16} className="mr-2" />}
                 Se désinscrire
               </Button>
               <Button variant="outline" onClick={() => setRegistrationDialogOpen(false)}>
@@ -964,8 +847,6 @@ const GameDetails = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>;
 };
-
 export default GameDetails;
