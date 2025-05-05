@@ -467,7 +467,11 @@ const GameDetails = () => {
                             <span>{creatorRating ? creatorRating.toFixed(1) : '0'} / 5</span>
                           </div>
                         </div>
-                        <Button variant="ghost" size="sm" className="ml-auto" onClick={() => gameData.creator?.username ? navigate(`/profile/${gameData.creator.username}`) : null}>
+                        <Button variant="ghost" size="sm" className="ml-auto" onClick={() => {
+                          if (gameData.creator?.username) {
+                            navigate(`/profile/${gameData.creator.username}`);
+                          }
+                        }}>
                           Voir le profil <ChevronRight size={16} />
                         </Button>
                       </div>
