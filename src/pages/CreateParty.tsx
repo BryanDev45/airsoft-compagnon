@@ -4,7 +4,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Save } from 'lucide-react';
 import { useImageUpload } from '@/hooks/useImageUpload';
@@ -96,6 +96,9 @@ const CreateParty = () => {
                       <FormLabel>
                         J'accepte les conditions générales et je certifie que cette partie respecte les lois en vigueur
                       </FormLabel>
+                      <FormDescription className="text-xs text-gray-500 mt-1">
+                        Le prix minimum est de 5€ par joueur. 1€ de frais de gestion est inclus et revient à Airsoft Compagnon.
+                      </FormDescription>
                       <FormMessage />
                     </div>
                   </FormItem>

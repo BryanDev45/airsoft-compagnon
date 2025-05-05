@@ -37,14 +37,22 @@ const ImageUploadSection = ({
             multiple 
             onChange={handleImageChange} 
             className="hidden" 
+            disabled={images.length >= 5}
           />
           <label 
             htmlFor="images" 
-            className="flex items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-airsoft-red transition-colors"
+            className={`flex items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-airsoft-red transition-colors ${images.length >= 5 ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <ImageIcon className="h-5 w-5 text-gray-400" />
-            <span className="text-gray-500">Cliquez pour sélectionner des images</span>
+            <span className="text-gray-500">
+              {images.length >= 5 
+                ? "Limite de 5 images atteinte" 
+                : "Cliquez pour sélectionner des images"}
+            </span>
           </label>
+          <p className="text-xs text-gray-500 mt-1">
+            Les images seront affichées sur la page de la partie.
+          </p>
         </div>
         
         {preview.length > 0 && (

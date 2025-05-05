@@ -9,35 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      airsoft_game_images: {
-        Row: {
-          created_at: string | null
-          game_id: string
-          id: string
-          image_url: string
-        }
-        Insert: {
-          created_at?: string | null
-          game_id: string
-          id?: string
-          image_url: string
-        }
-        Update: {
-          created_at?: string | null
-          game_id?: string
-          id?: string
-          image_url?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "airsoft_game_images_game_id_fkey"
-            columns: ["game_id"]
-            isOneToOne: false
-            referencedRelation: "airsoft_games"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       airsoft_games: {
         Row: {
           address: string
@@ -64,6 +35,11 @@ export type Database = {
           longitude: number | null
           manual_validation: boolean | null
           max_players: number
+          Picture1: string | null
+          Picture2: string | null
+          Picture3: string | null
+          Picture4: string | null
+          Picture5: string | null
           polarstar_allowed: boolean | null
           price: number | null
           pyro_allowed: boolean | null
@@ -99,6 +75,11 @@ export type Database = {
           longitude?: number | null
           manual_validation?: boolean | null
           max_players: number
+          Picture1?: string | null
+          Picture2?: string | null
+          Picture3?: string | null
+          Picture4?: string | null
+          Picture5?: string | null
           polarstar_allowed?: boolean | null
           price?: number | null
           pyro_allowed?: boolean | null
@@ -134,6 +115,11 @@ export type Database = {
           longitude?: number | null
           manual_validation?: boolean | null
           max_players?: number
+          Picture1?: string | null
+          Picture2?: string | null
+          Picture3?: string | null
+          Picture4?: string | null
+          Picture5?: string | null
           polarstar_allowed?: boolean | null
           price?: number | null
           pyro_allowed?: boolean | null

@@ -43,40 +43,36 @@ export const createAirsoftGame = async (gameData: any) => {
 };
 
 /**
- * Upload game images to storage and link them to a game
+ * Upload game images to storage and return their public URLs
  */
 export const uploadGameImages = async (gameId: string, images: File[]) => {
   try {
-    const results = [];
+    const imageUrls: string[] = [];
     
-    for (const image of images) {
+    for (let i = 0; i < Math.min(images.length, 5); i++) {
+      const image = images[i];
       const fileExt = image.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-      const filePath = `game-images/${gameId}/${fileName}`;
+      const fileName = `${gameId}_${i + 1}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+      const filePath = `game-images/${fileName}`;
       
+      // Upload the image to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('games')
         .upload(filePath, image);
       
       if (uploadError) throw uploadError;
       
+      // Get the public URL of the uploaded image
       const { data: publicUrlData } = supabase.storage
         .from('games')
         .getPublicUrl(filePath);
         
-      const { error: dbError } = await supabase
-        .from('airsoft_game_images')
-        .insert({
-          game_id: gameId,
-          image_url: publicUrlData.publicUrl
-        });
-        
-      if (dbError) throw dbError;
-      
-      results.push(publicUrlData.publicUrl);
+      if (publicUrlData) {
+        imageUrls.push(publicUrlData.publicUrl);
+      }
     }
     
-    return { data: results, error: null };
+    return { data: imageUrls, error: null };
   } catch (error) {
     console.error('Error uploading game images:', error);
     return { data: null, error };

@@ -15,7 +15,9 @@ import { useQuery } from "@tanstack/react-query";
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { callRPC } from "@/utils/supabaseHelpers";
 import type { Profile } from "@/types/profile";
+
 const ScrollToTop = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -52,7 +54,13 @@ interface GameData {
   aeg_fps_max: number | null;
   dmr_fps_max: number | null;
   creator?: Profile | null;
+  Picture1?: string | null;
+  Picture2?: string | null;
+  Picture3?: string | null;
+  Picture4?: string | null;
+  Picture5?: string | null;
 }
+
 interface GameParticipant {
   id: string;
   user_id: string;
@@ -62,44 +70,39 @@ interface GameParticipant {
   created_at: string | null;
   profile?: Profile | null;
 }
-interface GameImage {
-  id: string;
-  game_id: string;
-  image_url: string;
-}
+
 const GameDetails = () => {
-  const {
-    id
-  } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
+  
   const [participantsOpen, setParticipantsOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [registrationDialogOpen, setRegistrationDialogOpen] = useState(false);
   const [loadingRegistration, setLoadingRegistration] = useState(false);
+  const [creatorRating, setCreatorRating] = useState<number | null>(0);
+  
   useEffect(() => {
     const checkAuth = async () => {
-      const {
-        data: {
-          session
-        }
-      } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       setIsAuthenticated(!!session);
       if (session && id) {
         // Check if user is registered for this game
-        const {
-          data: participation,
-          error
-        } = await supabase.from('game_participants').select('*').eq('game_id', id).eq('user_id', session.user.id).single();
+        const { data: participation, error } = await supabase
+          .from('game_participants')
+          .select('*')
+          .eq('game_id', id)
+          .eq('user_id', session.user.id)
+          .single();
+          
         if (participation && !error) {
           setIsRegistered(true);
         }
       }
     };
+    
     checkAuth();
     window.scrollTo(0, 0);
   }, [id]);
@@ -114,44 +117,43 @@ const GameDetails = () => {
     queryKey: ['gameDetails', id],
     queryFn: async () => {
       if (!id) throw new Error('Game ID is required');
-      const {
-        data: game,
-        error: gameError
-      } = await supabase.from('airsoft_games').select('*').eq('id', id).single();
+      
+      const { data: game, error: gameError } = await supabase
+        .from('airsoft_games')
+        .select('*')
+        .eq('id', id)
+        .single();
+        
       if (gameError) throw gameError;
 
       // Fetch creator profile separately
       let creator = null;
       if (game) {
-        const {
-          data: creatorData,
-          error: creatorError
-        } = await supabase.from('profiles').select('*').eq('id', game.created_by).single();
+        const { data: creatorData, error: creatorError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', game.created_by)
+          .single();
+          
         if (!creatorError && creatorData) {
           creator = creatorData;
+          
+          // Get creator's average rating
+          const { data: avgRating } = await callRPC<number>('get_average_rating', {
+            p_user_id: game.created_by
+          });
+          
+          if (avgRating !== null) {
+            setCreatorRating(avgRating);
+          }
         }
       }
+      
       return {
         ...game,
         creator
       } as GameData;
     }
-  });
-  const {
-    data: gameImages,
-    isLoading: isLoadingImages
-  } = useQuery({
-    queryKey: ['gameImages', id],
-    queryFn: async () => {
-      if (!id) throw new Error('Game ID is required');
-      const {
-        data,
-        error
-      } = await supabase.from('airsoft_game_images').select('*').eq('game_id', id);
-      if (error) throw error;
-      return data as GameImage[] || [];
-    },
-    enabled: !!gameData
   });
 
   // Query for participants and their profiles
@@ -165,34 +167,38 @@ const GameDetails = () => {
       if (!id) throw new Error('Game ID is required');
 
       // First get participants
-      const {
-        data: participantsData,
-        error: participantsError
-      } = await supabase.from('game_participants').select('*').eq('game_id', id);
+      const { data: participantsData, error: participantsError } = await supabase
+        .from('game_participants')
+        .select('*')
+        .eq('game_id', id);
+        
       if (participantsError) throw participantsError;
 
       // Then get their profiles
       const participantsWithProfiles = await Promise.all((participantsData || []).map(async participant => {
-        if (!participant.user_id) return {
-          ...participant,
-          profile: null
-        };
-        const {
-          data: profileData,
-          error: profileError
-        } = await supabase.from('profiles').select('*').eq('id', participant.user_id).single();
+        if (!participant.user_id) return { ...participant, profile: null };
+        
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', participant.user_id)
+          .single();
+          
         return {
           ...participant,
           profile: profileError ? null : profileData
         };
       }));
+      
       return participantsWithProfiles as GameParticipant[];
     },
     enabled: !!gameData
   });
+
   const handleShareGame = () => {
     setShareDialogOpen(true);
   };
+  
   const copyToClipboard = (text, message) => {
     navigator.clipboard.writeText(text).then(() => {
       toast({
@@ -207,6 +213,7 @@ const GameDetails = () => {
       });
     });
   };
+  
   const handleRegister = async () => {
     if (!isAuthenticated) {
       navigate('/login');
@@ -216,21 +223,19 @@ const GameDetails = () => {
       setRegistrationDialogOpen(true);
       return;
     }
+    
     setLoadingRegistration(true);
-    const {
-      data: {
-        session
-      }
-    } = await supabase.auth.getSession();
+    
+    const { data: { session } } = await supabase.auth.getSession();
+    
     if (session && id) {
-      const {
-        error
-      } = await supabase.from('game_participants').insert({
+      const { error } = await supabase.from('game_participants').insert({
         game_id: id,
         user_id: session.user.id,
         role: 'Participant',
         status: 'Confirmé'
       });
+      
       if (error) {
         toast({
           variant: "destructive",
@@ -247,19 +252,22 @@ const GameDetails = () => {
         });
       }
     }
+    
     setLoadingRegistration(false);
   };
+  
   const handleUnregister = async () => {
     setLoadingRegistration(true);
-    const {
-      data: {
-        session
-      }
-    } = await supabase.auth.getSession();
+    
+    const { data: { session } } = await supabase.auth.getSession();
+    
     if (session && id) {
-      const {
-        error
-      } = await supabase.from('game_participants').delete().eq('game_id', id).eq('user_id', session.user.id);
+      const { error } = await supabase
+        .from('game_participants')
+        .delete()
+        .eq('game_id', id)
+        .eq('user_id', session.user.id);
+        
       if (error) {
         toast({
           variant: "destructive",
@@ -276,11 +284,14 @@ const GameDetails = () => {
         });
       }
     }
+    
     setLoadingRegistration(false);
     setRegistrationDialogOpen(false);
   };
+
   if (isLoadingGame) {
-    return <div className="min-h-screen flex flex-col">
+    return (
+      <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-grow bg-gray-50 flex items-center justify-center">
           <div className="text-center">
@@ -289,10 +300,13 @@ const GameDetails = () => {
           </div>
         </main>
         <Footer />
-      </div>;
+      </div>
+    );
   }
+  
   if (gameError || !gameData) {
-    return <div className="min-h-screen flex flex-col">
+    return (
+      <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-grow bg-gray-50">
           <div className="max-w-6xl mx-auto px-4 py-12">
@@ -306,7 +320,8 @@ const GameDetails = () => {
           </div>
         </main>
         <Footer />
-      </div>;
+      </div>
+    );
   }
 
   // Format date from ISO to readable format
@@ -321,37 +336,60 @@ const GameDetails = () => {
     const [hours, minutes] = timeString.split(':');
     return `${hours}:${minutes}`;
   };
+  
   const formattedTimeRange = `${formatTime(gameData.start_time)} - ${formatTime(gameData.end_time)}`;
 
-  // Prepare default images if no real images
-  const defaultImages = ["https://images.unsplash.com/photo-1624881513483-c1f3760fe7ad?q=80&w=2070&auto=format&fit=crop", "https://images.unsplash.com/photo-1624881514789-5a8a7a82b9b0?q=80&w=2070&auto=format&fit=crop", "https://images.unsplash.com/photo-1625008928888-27fde18fd355?q=80&w=2069&auto=format&fit=crop"];
-  const gameImages1 = gameImages?.length > 0 ? gameImages.map(img => img.image_url) : defaultImages;
+  // Get game images or use defaults if none available
+  const defaultImages = [
+    "https://images.unsplash.com/photo-1624881513483-c1f3760fe7ad?q=80&w=2070&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1624881514789-5a8a7a82b9b0?q=80&w=2070&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1625008928888-27fde18fd355?q=80&w=2069&auto=format&fit=crop"
+  ];
+  
+  const gameImages = [];
+  
+  // Add available images from Picture1-5 fields
+  if (gameData.Picture1) gameImages.push(gameData.Picture1);
+  if (gameData.Picture2) gameImages.push(gameData.Picture2);
+  if (gameData.Picture3) gameImages.push(gameData.Picture3);
+  if (gameData.Picture4) gameImages.push(gameData.Picture4);
+  if (gameData.Picture5) gameImages.push(gameData.Picture5);
+  
+  // If no images are available, use default ones
+  const displayImages = gameImages.length > 0 ? gameImages : defaultImages;
 
   // Default scenarios if not available
   const scenarios = ["Capture de drapeaux", "Escorte VIP", "Défense de position", "Extraction d'otages"];
 
   // Comments will be static for now as they're not in database yet
-  const comments = [{
-    author: "Airsoft_Pro",
-    avatar: "https://randomuser.me/api/portraits/men/45.jpg",
-    date: "Il y a 2 jours",
-    content: "Ça a l'air super ! J'ai participé à une partie similaire organisée par cette équipe et c'était vraiment bien géré."
-  }, {
-    author: "Sniper_Elite",
-    avatar: "https://randomuser.me/api/portraits/women/32.jpg",
-    date: "Il y a 3 jours",
-    content: "Est-ce que le terrain dispose d'un espace pour les snipers ?"
-  }];
+  const comments = [
+    {
+      author: "Airsoft_Pro",
+      avatar: "https://randomuser.me/api/portraits/men/45.jpg",
+      date: "Il y a 2 jours",
+      content: "Ça a l'air super ! J'ai participé à une partie similaire organisée par cette équipe et c'était vraiment bien géré."
+    }, 
+    {
+      author: "Sniper_Elite",
+      avatar: "https://randomuser.me/api/portraits/women/32.jpg",
+      date: "Il y a 3 jours",
+      content: "Est-ce que le terrain dispose d'un espace pour les snipers ?"
+    }
+  ];
 
   // Prepare coordinates for map
-  const coordinates: [number, number] = gameData.longitude && gameData.latitude ? [gameData.longitude, gameData.latitude] : [2.3522, 48.8566];
+  const coordinates: [number, number] = gameData.longitude && gameData.latitude 
+    ? [gameData.longitude, gameData.latitude] 
+    : [2.3522, 48.8566];
 
   // Helper function to get initials from username
   const getInitials = (username: string | null): string => {
     if (!username) return '??';
     return username.substring(0, 2).toUpperCase();
   };
-  return <div className="min-h-screen flex flex-col">
+
+  return (
+    <div className="min-h-screen flex flex-col">
       <ScrollToTop />
       <Header />
       <main className="flex-grow bg-gray-50">
@@ -388,17 +426,31 @@ const GameDetails = () => {
                 </div>
               </div>
               <div className="flex gap-2 mt-4 md:mt-0">
-                <Button variant="outline" className="bg-airsoft-red text-white border-white hover:bg-white hover:text-airsoft-dark" onClick={handleShareGame}>
+                <Button 
+                  variant="outline" 
+                  className="bg-airsoft-red text-white border-white hover:bg-white hover:text-airsoft-dark" 
+                  onClick={handleShareGame}
+                >
                   <Share2 size={16} className="mr-2" />
                   Partager
                 </Button>
-                <Button className={`${isRegistered ? 'bg-green-600 hover:bg-green-700' : 'bg-airsoft-red hover:bg-red-700'}`} onClick={handleRegister} disabled={loadingRegistration || gameData.max_players <= (participants?.length || 0) && !isRegistered}>
-                  {loadingRegistration ? <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite] mr-2"></div> : isRegistered ? <>
+                <Button 
+                  className={`${isRegistered ? 'bg-green-600 hover:bg-green-700' : 'bg-airsoft-red hover:bg-red-700'}`} 
+                  onClick={handleRegister} 
+                  disabled={loadingRegistration || (gameData.max_players <= (participants?.length || 0) && !isRegistered)}
+                >
+                  {loadingRegistration ? (
+                    <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite] mr-2"></div>
+                  ) : isRegistered ? (
+                    <>
                       <Check size={16} className="mr-2" />
                       Inscrit
-                    </> : <>
+                    </>
+                  ) : (
+                    <>
                       S'inscrire - {gameData.price}€
-                    </>}
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
@@ -409,10 +461,24 @@ const GameDetails = () => {
           <div className="grid md:grid-cols-3 gap-8">
             <div className="md:col-span-2">
               <div className="rounded-lg overflow-hidden mb-8">
-                <img src={gameImages1[0]} alt={gameData.title} className="w-full h-[300px] object-cover" />
-                <div className="bg-white p-2 grid grid-cols-3 gap-2">
-                  {gameImages1.slice(1, 4).map((img, idx) => <img key={idx} src={img} alt={`${gameData.title} ${idx + 1}`} className="h-20 w-full object-cover rounded" />)}
-                </div>
+                <img 
+                  src={displayImages[0] || defaultImages[0]} 
+                  alt={gameData.title} 
+                  className="w-full h-[300px] object-cover" 
+                />
+                
+                {displayImages.length > 1 && (
+                  <div className="bg-white p-2 grid grid-cols-3 gap-2">
+                    {displayImages.slice(1, 4).map((img, idx) => (
+                      <img 
+                        key={idx} 
+                        src={img} 
+                        alt={`${gameData.title} ${idx + 1}`} 
+                        className="h-20 w-full object-cover rounded" 
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
               
               <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
@@ -443,7 +509,9 @@ const GameDetails = () => {
                     <p className="text-gray-700 mb-6">{gameData.description}</p>
                     
                     <ul className="list-disc list-inside space-y-2 text-gray-700 mb-6">
-                      {scenarios.map((scenario, idx) => {})}
+                      {scenarios.map((scenario, idx) => (
+                        <li key={idx}>{scenario}</li>
+                      ))}
                     </ul>
                     
                     <div className="bg-gray-100 p-4 rounded-lg">
@@ -457,10 +525,15 @@ const GameDetails = () => {
                           <div className="font-medium">{gameData.creator?.username || "Organisateur"}</div>
                           <div className="flex items-center text-sm text-gray-600">
                             <Star size={14} className="text-yellow-500 mr-1" />
-                            <span>4.8 / 5</span>
+                            <span>{creatorRating ? creatorRating.toFixed(1) : '0'} / 5</span>
                           </div>
                         </div>
-                        <Button variant="ghost" size="sm" className="ml-auto" onClick={() => navigate(`/profile/${gameData.creator?.username}`)}>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="ml-auto"
+                          onClick={() => gameData.creator?.username ? navigate(`/profile/${gameData.creator.username}`) : null}
+                        >
                           Voir le profil <ChevronRight size={16} />
                         </Button>
                       </div>
@@ -846,6 +919,8 @@ const GameDetails = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </div>;
+    </div>
+  );
 };
+
 export default GameDetails;

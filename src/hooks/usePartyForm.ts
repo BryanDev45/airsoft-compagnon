@@ -126,7 +126,7 @@ export const usePartyForm = (images: File[]) => {
       const end_time = `${data.endDateTime.getHours().toString().padStart(2, '0')}:${data.endDateTime.getMinutes().toString().padStart(2, '0')}`;
       
       // Préparer les données à enregistrer
-      const gameData = {
+      const gameData: any = {
         title: data.title,
         description: data.description,
         rules: data.rules,
@@ -158,6 +158,14 @@ export const usePartyForm = (images: File[]) => {
         created_by: userData.user.id
       };
       
+      // Si des images ont été téléchargées, préparer les URLs pour les enregistrer
+      if (images.length > 0) {
+        // Ajouter les images au gameData (jusqu'à 5)
+        for (let i = 0; i < Math.min(images.length, 5); i++) {
+          gameData[`Picture${i + 1}`] = ''; // Initialisé vide, sera mis à jour après upload
+        }
+      }
+      
       // Créer la partie dans la base de données
       const { data: gameResult, error } = await createAirsoftGame(gameData);
       
@@ -165,9 +173,9 @@ export const usePartyForm = (images: File[]) => {
         throw new Error(error?.message || "Erreur lors de la création de la partie");
       }
       
-      // Si des images ont été téléchargées, les enregistrer
+      // Si des images ont été téléchargées, les enregistrer et mettre à jour les URLs
       if (images.length > 0) {
-        const { error: imageError } = await uploadGameImages(gameResult.id, images);
+        const { data: imageUrls, error: imageError } = await uploadGameImages(gameResult.id, images);
         
         if (imageError) {
           console.error("Erreur lors du téléchargement des images:", imageError);
@@ -176,6 +184,23 @@ export const usePartyForm = (images: File[]) => {
             description: "La partie a été créée mais certaines images n'ont pas pu être téléchargées",
             variant: "destructive"
           });
+        } else if (imageUrls && imageUrls.length > 0) {
+          // Mettre à jour les champs Picture1 à Picture5 avec les URL des images
+          const updateData: Record<string, string> = {};
+          
+          for (let i = 0; i < Math.min(imageUrls.length, 5); i++) {
+            updateData[`Picture${i + 1}`] = imageUrls[i];
+          }
+          
+          // Mise à jour des URL des images dans la base de données
+          const { error: updateError } = await supabase
+            .from('airsoft_games')
+            .update(updateData)
+            .eq('id', gameResult.id);
+            
+          if (updateError) {
+            console.error("Erreur lors de la mise à jour des URL d'images:", updateError);
+          }
         }
       }
       
