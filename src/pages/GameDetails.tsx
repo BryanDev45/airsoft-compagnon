@@ -16,6 +16,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import type { Profile } from "@/types/profile";
+
 const ScrollToTop = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -442,9 +443,10 @@ const GameDetails = () => {
                     <h2 className="text-xl font-semibold mb-4">Description</h2>
                     <p className="text-gray-700 mb-6">{gameData.description}</p>
                     
-                    
                     <ul className="list-disc list-inside space-y-2 text-gray-700 mb-6">
-                      {scenarios.map((scenario, idx) => {})}
+                      {scenarios.map((scenario, idx) => (
+                        <li key={idx}>{scenario}</li>
+                      ))}
                     </ul>
                     
                     <div className="bg-gray-100 p-4 rounded-lg">
