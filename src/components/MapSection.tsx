@@ -42,6 +42,8 @@ const MapSection = () => {
       try {
         setLoading(true);
         
+        const today = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
+        
         const { data, error } = await supabase
           .from('airsoft_games')
           .select(`
@@ -59,6 +61,7 @@ const MapSection = () => {
             created_at,
             created_by
           `)
+          .gte('date', today) // Filtrer pour n'afficher que les parties à venir ou du jour même
           .order('date', { ascending: true });
         
         if (error) {

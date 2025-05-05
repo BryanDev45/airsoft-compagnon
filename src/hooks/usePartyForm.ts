@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -44,11 +45,12 @@ const partyFormSchema = z.object({
   }),
   isPrivate: z.boolean().default(false)
 }).refine((data) => {
-  // Validate that endDateTime is after startDateTime
-  return data.endDateTime > data.startDateTime;
+  // Mise à jour: Permettre à la date de fin d'être la même que la date de début
+  // On vérifie maintenant que la date de fin est >= à la date de début
+  return data.endDateTime >= data.startDateTime;
 }, {
-  message: "La date et l'heure de fin doivent être postérieures à la date et l'heure de début",
-  path: ["endDateTime"] // This specifies which field the error belongs to
+  message: "La date et l'heure de fin doivent être égales ou postérieures à la date et l'heure de début",
+  path: ["endDateTime"]
 });
 
 export type PartyFormValues = z.infer<typeof partyFormSchema>;
