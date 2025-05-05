@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -450,7 +451,9 @@ const GameDetails = () => {
                     <p className="text-gray-700 mb-6">{gameData.description}</p>
                     
                     <ul className="list-disc list-inside space-y-2 text-gray-700 mb-6">
-                      {scenarios.map((scenario, idx) => {})}
+                      {scenarios.map((scenario, idx) => (
+                        <li key={idx}>{scenario}</li>
+                      ))}
                     </ul>
                     
                     <div className="bg-gray-100 p-4 rounded-lg">
