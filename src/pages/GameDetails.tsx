@@ -15,6 +15,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import type { Profile } from "@/types/profile";
 
 const ScrollToTop = () => {
   useEffect(() => {
@@ -22,6 +24,53 @@ const ScrollToTop = () => {
   }, []);
   return null;
 };
+
+// Type definitions to handle the query results
+interface GameData {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+  address: string;
+  city: string;
+  zip_code: string;
+  max_players: number;
+  price: number | null;
+  created_by: string;
+  game_type: string;
+  rules: string;
+  latitude: number | null;
+  longitude: number | null;
+  has_toilets: boolean | null;
+  has_parking: boolean | null;
+  has_equipment_rental: boolean | null;
+  eye_protection_required: boolean | null;
+  full_face_protection_required: boolean | null;
+  is_private: boolean | null;
+  manual_validation: boolean | null;
+  aeg_fps_min: number | null;
+  aeg_fps_max: number | null;
+  dmr_fps_max: number | null;
+  creator?: Profile | null;
+}
+
+interface GameParticipant {
+  id: string;
+  user_id: string;
+  game_id: string;
+  role: string;
+  status: string;
+  created_at: string | null;
+  profile?: Profile | null;
+}
+
+interface GameImage {
+  id: string;
+  game_id: string;
+  image_url: string;
+}
 
 const GameDetails = () => {
   const { id } = useParams();
@@ -58,6 +107,7 @@ const GameDetails = () => {
     window.scrollTo(0, 0);
   }, [id]);
 
+  // Query for game details and creator profile separately
   const { 
     data: gameData,
     isLoading: isLoadingGame,
@@ -68,17 +118,29 @@ const GameDetails = () => {
     queryFn: async () => {
       if (!id) throw new Error('Game ID is required');
       
-      const { data, error } = await supabase
+      const { data: game, error: gameError } = await supabase
         .from('airsoft_games')
-        .select(`
-          *,
-          profiles:created_by (username, avatar)
-        `)
+        .select('*')
         .eq('id', id)
         .single();
         
-      if (error) throw error;
-      return data;
+      if (gameError) throw gameError;
+      
+      // Fetch creator profile separately
+      let creator = null;
+      if (game) {
+        const { data: creatorData, error: creatorError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', game.created_by)
+          .single();
+          
+        if (!creatorError && creatorData) {
+          creator = creatorData;
+        }
+      }
+      
+      return { ...game, creator } as GameData;
     }
   });
 
@@ -96,11 +158,12 @@ const GameDetails = () => {
         .eq('game_id', id);
         
       if (error) throw error;
-      return data || [];
+      return data as GameImage[] || [];
     },
     enabled: !!gameData
   });
 
+  // Query for participants and their profiles
   const {
     data: participants,
     isLoading: isLoadingParticipants,
@@ -110,16 +173,31 @@ const GameDetails = () => {
     queryFn: async () => {
       if (!id) throw new Error('Game ID is required');
       
-      const { data, error } = await supabase
+      // First get participants
+      const { data: participantsData, error: participantsError } = await supabase
         .from('game_participants')
-        .select(`
-          *,
-          profiles:user_id (username, avatar)
-        `)
+        .select('*')
         .eq('game_id', id);
         
-      if (error) throw error;
-      return data || [];
+      if (participantsError) throw participantsError;
+      
+      // Then get their profiles
+      const participantsWithProfiles = await Promise.all((participantsData || []).map(async (participant) => {
+        if (!participant.user_id) return { ...participant, profile: null };
+        
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', participant.user_id)
+          .single();
+          
+        return {
+          ...participant,
+          profile: profileError ? null : profileData
+        };
+      }));
+      
+      return participantsWithProfiles as GameParticipant[];
     },
     enabled: !!gameData
   });
@@ -178,7 +256,7 @@ const GameDetails = () => {
         refetchParticipants();
         toast({
           title: "Inscription confirmée !",
-          description: `Vous êtes inscrit à "${gameData.title}"`,
+          description: `Vous êtes inscrit à "${gameData?.title}"`,
           duration: 5000
         });
       }
@@ -307,6 +385,12 @@ const GameDetails = () => {
     ? [gameData.longitude, gameData.latitude] 
     : [2.3522, 48.8566];
 
+  // Helper function to get initials from username
+  const getInitials = (username: string | null): string => {
+    if (!username) return '??';
+    return username.substring(0, 2).toUpperCase();
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <ScrollToTop />
@@ -419,13 +503,15 @@ const GameDetails = () => {
                     <div className="bg-gray-100 p-4 rounded-lg">
                       <h3 className="text-lg font-semibold mb-2">Organisé par</h3>
                       <div className="flex items-center gap-3">
-                        <img 
-                          src={gameData.profiles?.avatar || "https://randomuser.me/api/portraits/men/32.jpg"} 
-                          alt={gameData.profiles?.username || "Organisateur"} 
-                          className="w-12 h-12 rounded-full object-cover"
-                        />
+                        <Avatar>
+                          <AvatarImage 
+                            src={gameData.creator?.avatar || "https://randomuser.me/api/portraits/men/32.jpg"} 
+                            alt={gameData.creator?.username || "Organisateur"} 
+                          />
+                          <AvatarFallback>{getInitials(gameData.creator?.username)}</AvatarFallback>
+                        </Avatar>
                         <div>
-                          <div className="font-medium">{gameData.profiles?.username || "Organisateur"}</div>
+                          <div className="font-medium">{gameData.creator?.username || "Organisateur"}</div>
                           <div className="flex items-center text-sm text-gray-600">
                             <Star size={14} className="text-yellow-500 mr-1" />
                             <span>4.8 / 5</span>
@@ -435,7 +521,7 @@ const GameDetails = () => {
                           variant="ghost" 
                           size="sm" 
                           className="ml-auto"
-                          onClick={() => navigate(`/profile/${gameData.profiles?.username}`)}
+                          onClick={() => navigate(`/profile/${gameData.creator?.username}`)}
                         >
                           Voir le profil <ChevronRight size={16} />
                         </Button>
@@ -670,11 +756,14 @@ const GameDetails = () => {
                         {participants.slice(0, 8).map((participant, idx) => (
                           <div key={idx} className="flex flex-col items-center">
                             <div className="relative">
-                              <img 
-                                src={participant.profiles?.avatar || "https://randomuser.me/api/portraits/men/1.jpg"} 
-                                alt={participant.profiles?.username || "Participant"} 
-                                className="w-10 h-10 rounded-full object-cover" 
-                              />
+                              <Avatar>
+                                <AvatarImage 
+                                  src={participant.profile?.avatar || "https://randomuser.me/api/portraits/men/1.jpg"} 
+                                  alt={participant.profile?.username || "Participant"} 
+                                  className="w-10 h-10 object-cover" 
+                                />
+                                <AvatarFallback>{getInitials(participant.profile?.username)}</AvatarFallback>
+                              </Avatar>
                             </div>
                           </div>
                         ))}
@@ -727,15 +816,16 @@ const GameDetails = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {participants.map((participant, idx) => (
                     <div key={idx} className="flex items-center gap-3 p-3 border rounded-md hover:bg-gray-50 transition-colors">
-                      <div className="relative">
-                        <img 
-                          src={participant.profiles?.avatar || "https://randomuser.me/api/portraits/men/1.jpg"} 
-                          alt={participant.profiles?.username || "Participant"} 
-                          className="w-12 h-12 rounded-full object-cover" 
+                      <Avatar>
+                        <AvatarImage 
+                          src={participant.profile?.avatar || "https://randomuser.me/api/portraits/men/1.jpg"} 
+                          alt={participant.profile?.username || "Participant"} 
+                          className="w-12 h-12 object-cover" 
                         />
-                      </div>
+                        <AvatarFallback>{getInitials(participant.profile?.username)}</AvatarFallback>
+                      </Avatar>
                       <div className="flex-grow">
-                        <div className="font-medium">{participant.profiles?.username || "Participant"}</div>
+                        <div className="font-medium">{participant.profile?.username || "Participant"}</div>
                         <div className="text-xs text-gray-500 flex items-center">
                           {participant.role === "Organisateur" && (
                             <Badge variant="outline" className="text-xs border-airsoft-red text-airsoft-red">
@@ -748,7 +838,7 @@ const GameDetails = () => {
                         variant="ghost" 
                         size="sm" 
                         className="flex-shrink-0" 
-                        onClick={() => navigate(`/profile/${participant.profiles?.username}`)}
+                        onClick={() => navigate(`/profile/${participant.profile?.username}`)}
                       >
                         <User size={14} className="mr-1" />
                         Profil
