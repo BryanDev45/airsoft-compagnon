@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -18,6 +17,7 @@ import { fr } from 'date-fns/locale';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { callRPC } from "@/utils/supabaseHelpers";
 import type { Profile } from "@/types/profile";
+
 const ScrollToTop = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -358,6 +358,20 @@ const GameDetails = () => {
     if (!username) return '??';
     return username.substring(0, 2).toUpperCase();
   };
+
+  // Helper function to check if the creator has a username
+  const navigateToCreatorProfile = () => {
+    if (gameData?.creator?.username) {
+      navigate(`/profile/${gameData.creator.username}`);
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible d'accéder au profil de l'organisateur"
+      });
+    }
+  };
+
   return <div className="min-h-screen flex flex-col">
       <ScrollToTop />
       <Header />
@@ -470,11 +484,7 @@ const GameDetails = () => {
                             <span>{creatorRating ? creatorRating.toFixed(1) : '0'} / 5</span>
                           </div>
                         </div>
-                        <Button variant="ghost" size="sm" className="ml-auto" onClick={() => {
-                          if (gameData.creator?.username) {
-                            navigate(`/profile/${gameData.creator.username}`);
-                          }
-                        }}>
+                        <Button variant="ghost" size="sm" className="ml-auto" onClick={navigateToCreatorProfile}>
                           Voir le profil <ChevronRight size={16} />
                         </Button>
                       </div>
