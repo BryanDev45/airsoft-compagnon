@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Calendar, Map as MapIcon, MapPin, Maximize, Navigation, Plus } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -13,9 +12,11 @@ import MapFilters from './components/map/MapFilters';
 import { calculateDistance } from './utils/mapUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 const MapSection = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const mapContainer = useRef(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState('all');
@@ -42,7 +43,9 @@ const MapSection = () => {
       try {
         setLoading(true);
         
-        const { data, error } = await supabase
+        const today = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
+        
+        let query = supabase
           .from('airsoft_games')
           .select(`
             id, 
@@ -59,7 +62,15 @@ const MapSection = () => {
             created_at,
             created_by
           `)
+          .gte('date', today) // Filtrer pour n'afficher que les parties à venir ou du jour même
           .order('date', { ascending: true });
+        
+        // Si l'utilisateur n'est pas connecté, on ne montre que les parties publiques
+        if (!user) {
+          query = query.eq('is_private', false);
+        }
+        
+        const { data, error } = await query;
         
         if (error) {
           throw error;
@@ -90,13 +101,16 @@ const MapSection = () => {
           description: "Impossible de charger les parties",
           variant: "destructive" 
         });
+        
+        // En cas d'erreur, on définit un tableau vide pour éviter le chargement infini
+        setEvents([]);
       } finally {
         setLoading(false);
       }
     };
     
     fetchGames();
-  }, [toast]);
+  }, [toast, user]);
 
   const filteredEvents = events.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
