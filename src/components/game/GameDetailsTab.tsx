@@ -7,7 +7,6 @@ import type { Profile } from "@/types/profile";
 
 interface GameDetailsTabProps {
   description: string;
-  scenarios: string[];
   creator: Profile | null | undefined;
   creatorRating: number | null;
   navigateToCreatorProfile: () => void;
@@ -15,7 +14,6 @@ interface GameDetailsTabProps {
 
 const GameDetailsTab: React.FC<GameDetailsTabProps> = ({
   description,
-  scenarios,
   creator,
   creatorRating,
   navigateToCreatorProfile
@@ -30,12 +28,6 @@ const GameDetailsTab: React.FC<GameDetailsTabProps> = ({
     <>
       <h2 className="text-xl font-semibold mb-4">Description</h2>
       <p className="text-gray-700 mb-6">{description}</p>
-      
-      <ul className="list-disc list-inside space-y-2 text-gray-700 mb-6">
-        {scenarios.map((scenario, idx) => (
-          <li key={idx}>{scenario}</li>
-        ))}
-      </ul>
       
       <div className="bg-gray-100 p-4 rounded-lg">
         <h3 className="text-lg font-semibold mb-2">Organisé par</h3>

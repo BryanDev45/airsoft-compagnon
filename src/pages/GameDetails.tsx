@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -264,7 +263,7 @@ const GameDetails = () => {
   // Helper function to navigate to creator profile
   const navigateToCreatorProfile = () => {
     if (gameData?.creator?.username) {
-      navigate(`/profile/${gameData.creator.username}`);
+      navigate(`/user/${gameData.creator.username}`);
     } else {
       toast({
         variant: "destructive",
@@ -403,7 +402,6 @@ const GameDetails = () => {
                   <TabsContent value="details" className="p-6">
                     <GameDetailsTab 
                       description={gameData.description}
-                      scenarios={scenarios}
                       creator={gameData.creator}
                       creatorRating={creatorRating}
                       navigateToCreatorProfile={navigateToCreatorProfile}
