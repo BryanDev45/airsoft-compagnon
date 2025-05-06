@@ -5,7 +5,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 
 export interface MapEvent {
-  id: number;
+  id: string; // Changed from number to string to match Supabase's UUID format
   title: string;
   date: string;
   location: string;

@@ -1,18 +1,11 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Users, Euro, Calendar, MapPin } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { MapEvent } from '@/hooks/useMapData';
 
 interface MarkerProps {
-  event: {
-    id: number;
-    title: string;
-    date: string;
-    location: string;
-    maxPlayers?: number;
-    price?: number;
-  };
+  event: MapEvent;
   onClose: () => void;
 }
 

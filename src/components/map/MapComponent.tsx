@@ -14,11 +14,12 @@ import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import Circle from 'ol/geom/Circle';
 import Overlay from 'ol/Overlay';
 import MapMarker from './MapMarker';
+import { MapEvent } from '@/hooks/useMapData';
 
 interface MapComponentProps {
   searchCenter: [number, number];
   searchRadius: number;
-  filteredEvents: any[];
+  filteredEvents: MapEvent[];
 }
 
 const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius, filteredEvents }) => {

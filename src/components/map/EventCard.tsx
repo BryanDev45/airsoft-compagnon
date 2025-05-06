@@ -1,18 +1,10 @@
-
 import { Calendar, MapPin, Users, Euro } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { MapEvent } from '@/hooks/useMapData';
 
 interface EventCardProps {
-  event: {
-    id: number;
-    title: string;
-    date: string;
-    location: string;
-    maxPlayers?: number;
-    price?: number;
-    image?: string;
-  };
+  event: MapEvent;
 }
 
 const EventCard = ({ event }: EventCardProps) => {
