@@ -6,6 +6,11 @@ import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
+// Type for Supabase selection errors
+interface SelectQueryError<T extends string> {
+  error: true;
+}
+
 export const useGameComments = (gameId: string | undefined) => {
   const [comments, setComments] = useState<GameComment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -32,13 +37,18 @@ export const useGameComments = (gameId: string | undefined) => {
       // Transformer les données pour s'assurer qu'elles correspondent au type GameComment[]
       const formattedComments = (data || []).map(item => {
         // Si profile a une erreur (relation non trouvée), définir profile à null
-        if (item.profile && typeof item.profile === 'object' && 'error' in item.profile) {
+        if (item.profile && typeof item.profile === 'object' && ('error' in item.profile)) {
           return {
             ...item,
             profile: null
           } as GameComment;
         }
-        return item as GameComment;
+        
+        // Type cast to handle the conversion properly
+        return {
+          ...item,
+          profile: item.profile || null 
+        } as GameComment;
       });
       
       setComments(formattedComments);

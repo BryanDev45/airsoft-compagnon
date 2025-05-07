@@ -20,6 +20,17 @@ import PowerLimitsSection from "@/components/party/PowerLimitsSection";
 import SettingsSection from "@/components/party/SettingsSection";
 import ImageUploadSection from "@/components/party/ImageUploadSection";
 
+// Import types with initialData props
+import {
+  GeneralInfoSectionProps,
+  LocationSectionProps,
+  ProtectionSectionProps,
+  ConsumablesSectionProps,
+  PowerLimitsSectionProps,
+  SettingsSectionProps,
+  ImageUploadSectionProps
+} from "@/types/party";
+
 // Formulaire schéma
 const gameFormSchema = z.object({
   title: z.string().min(5, "Le titre doit comporter au moins 5 caractères"),
