@@ -5,7 +5,14 @@ import { Input } from "@/components/ui/input";
 import { ImageIcon } from 'lucide-react';
 import { ImageUploadSectionProps } from "@/types/party";
 
-const ImageUploadSection = ({ updateFormData, initialData }: ImageUploadSectionProps) => {
+const ImageUploadSection = ({ 
+  updateFormData, 
+  initialData, 
+  images: externalImages, 
+  preview: externalPreview,
+  handleImageChange: externalHandleImageChange,
+  removeImage: externalRemoveImage
+}: ImageUploadSectionProps) => {
   const [images, setImages] = useState<File[]>([]);
   const [preview, setPreview] = useState<string[]>([]);
 
@@ -17,7 +24,13 @@ const ImageUploadSection = ({ updateFormData, initialData }: ImageUploadSectionP
     }
   }, [initialData]);
 
+  // Use external image handlers if provided
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (externalHandleImageChange) {
+      externalHandleImageChange(e);
+      return;
+    }
+
     if (e.target.files && e.target.files.length > 0) {
       const filesArray = Array.from(e.target.files);
       
@@ -70,6 +83,11 @@ const ImageUploadSection = ({ updateFormData, initialData }: ImageUploadSectionP
   };
   
   const removeImage = (index: number) => {
+    if (externalRemoveImage) {
+      externalRemoveImage(index);
+      return;
+    }
+
     const newImages = [...images];
     newImages.splice(index, 1);
     setImages(newImages);
@@ -89,6 +107,11 @@ const ImageUploadSection = ({ updateFormData, initialData }: ImageUploadSectionP
       updateFormData('images', { images: newImages });
     }
   };
+  
+  // Determine whether to use external state or internal state
+  const displayImages = externalImages || images;
+  const displayPreviews = externalPreview || preview;
+  const displayMaxImages = 5;
   
   return (
     <Card>
@@ -110,15 +133,15 @@ const ImageUploadSection = ({ updateFormData, initialData }: ImageUploadSectionP
             multiple 
             onChange={handleImageChange} 
             className="hidden" 
-            disabled={images.length >= 5}
+            disabled={displayPreviews.length >= displayMaxImages}
           />
           <label 
             htmlFor="images" 
-            className={`flex items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-airsoft-red transition-colors ${preview.length >= 5 ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`flex items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-airsoft-red transition-colors ${displayPreviews.length >= displayMaxImages ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <ImageIcon className="h-5 w-5 text-gray-400" />
             <span className="text-gray-500">
-              {preview.length >= 5 
+              {displayPreviews.length >= displayMaxImages 
                 ? "Limite de 5 images atteinte" 
                 : "Cliquez pour sélectionner des images"}
             </span>
@@ -128,9 +151,9 @@ const ImageUploadSection = ({ updateFormData, initialData }: ImageUploadSectionP
           </p>
         </div>
         
-        {preview.length > 0 && (
+        {displayPreviews.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-4">
-            {preview.map((src, index) => (
+            {displayPreviews.map((src, index) => (
               <div key={index} className="relative h-24 group">
                 <img 
                   src={src} 

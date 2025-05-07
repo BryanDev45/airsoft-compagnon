@@ -3,6 +3,7 @@
 export interface GeneralInfoSectionProps {
   updateFormData: (section: string, data: any) => void;
   initialData: any;
+  gameTypes?: { value: string; label: string }[];
 }
 
 export interface LocationSectionProps {
@@ -33,4 +34,8 @@ export interface SettingsSectionProps {
 export interface ImageUploadSectionProps {
   updateFormData: (section: string, data: any) => void;
   initialData: any;
+  images?: File[];
+  preview?: string[];
+  handleImageChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  removeImage?: (index: number) => void;
 }

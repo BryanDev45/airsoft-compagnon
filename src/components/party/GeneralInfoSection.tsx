@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -20,16 +19,19 @@ interface GameType {
   label: string;
 }
 
-const GeneralInfoSection = ({ updateFormData, initialData }: GeneralInfoSectionProps) => {
+const GeneralInfoSection = ({ updateFormData, initialData, gameTypes }: GeneralInfoSectionProps) => {
   const form = useFormContext();
   const [startTimeDialog, setStartTimeDialog] = useState(false);
   const [endTimeDialog, setEndTimeDialog] = useState(false);
   
-  // Define game types if not provided as props
-  const gameTypes: GameType[] = [
+  // Define default game types if not provided as props
+  const defaultGameTypes = [
     { value: "dominicale", label: "Dominicale" },
     { value: "operation", label: "Opé" }
   ];
+  
+  // Use provided gameTypes or default ones
+  const availableGameTypes = gameTypes || defaultGameTypes;
 
   // If we're in edit mode with initialData, update the form
   useEffect(() => {
@@ -337,44 +339,27 @@ const GeneralInfoSection = ({ updateFormData, initialData }: GeneralInfoSectionP
                   value={field.value}
                   className="grid grid-cols-2 gap-4"
                 >
-                  <FormItem>
-                    <FormControl>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem 
-                          value="dominicale" 
-                          id="dominicale"
-                          className="sr-only" 
-                        />
-                        <label
-                          htmlFor="dominicale"
-                          className={`flex-1 cursor-pointer rounded-md border p-4 text-center hover:bg-airsoft-red hover:text-white transition-colors ${
-                            field.value === 'dominicale' ? 'bg-airsoft-red text-white' : 'bg-gray-100'
-                          }`}
-                        >
-                          Dominicale
-                        </label>
-                      </div>
-                    </FormControl>
-                  </FormItem>
-                  <FormItem>
-                    <FormControl>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem 
-                          value="operation" 
-                          id="operation"
-                          className="sr-only" 
-                        />
-                        <label
-                          htmlFor="operation"
-                          className={`flex-1 cursor-pointer rounded-md border p-4 text-center hover:bg-airsoft-red hover:text-white transition-colors ${
-                            field.value === 'operation' ? 'bg-airsoft-red text-white' : 'bg-gray-100'
-                          }`}
-                        >
-                          Opé
-                        </label>
-                      </div>
-                    </FormControl>
-                  </FormItem>
+                  {availableGameTypes.map((gameType) => (
+                    <FormItem key={gameType.value}>
+                      <FormControl>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem 
+                            value={gameType.value}
+                            id={gameType.value}
+                            className="sr-only" 
+                          />
+                          <label
+                            htmlFor={gameType.value}
+                            className={`flex-1 cursor-pointer rounded-md border p-4 text-center hover:bg-airsoft-red hover:text-white transition-colors ${
+                              field.value === gameType.value ? 'bg-airsoft-red text-white' : 'bg-gray-100'
+                            }`}
+                          >
+                            {gameType.label}
+                          </label>
+                        </div>
+                      </FormControl>
+                    </FormItem>
+                  ))}
                 </RadioGroup>
               </FormControl>
               <FormMessage />
