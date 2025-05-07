@@ -41,14 +41,14 @@ const CreateParty = () => {
   const { form, isSubmitting, onSubmit } = usePartyForm(images);
   
   // Track form data in a state
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState<Record<string, any>>({});
   
   // Function to update form data from child components
   const updateFormData = (section: string, data: any) => {
     setFormData(prev => ({
       ...prev,
       [section]: {
-        ...(prev[section as keyof typeof prev] || {}),
+        ...(prev[section] || {}),
         ...data
       }
     }));
