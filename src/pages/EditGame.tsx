@@ -7,6 +7,17 @@ import { useAuth } from '@/hooks/useAuth';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
+// Import types
+import { 
+  GeneralInfoSectionProps,
+  LocationSectionProps,
+  PowerLimitsSectionProps,
+  ProtectionSectionProps,
+  ConsumablesSectionProps,
+  SettingsSectionProps,
+  ImageUploadSectionProps
+} from '@/types/party';
+
 // Formulaire de création/édition de partie
 import GeneralInfoSection from '@/components/party/GeneralInfoSection';
 import LocationSection from '@/components/party/LocationSection';

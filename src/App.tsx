@@ -1,8 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { ThemeProvider } from './components/ui/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 
 // Import pages
@@ -42,21 +41,24 @@ function App() {
   }, [location, navigate, isLoggedIn]);
 
   return (
-    <Routes>
-      <Route path="/" element={<Index />} />
-      <Route path="/parties" element={<Parties />} />
-      <Route path="/game/:id" element={<GameDetails />} />
-      <Route path="/edit-game/:id" element={<EditGame />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/profile" element={<Profile />} />
-      <Route path="/user/:username" element={<UserProfile />} />
-      <Route path="/create-party" element={<CreateParty />} />
-      <Route path="/team" element={<Team />} />
-      <Route path="/contact" element={<Contact />} />
-      <Route path="/about" element={<About />} />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <QueryClientProvider client={queryClient}>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/parties" element={<Parties />} />
+        <Route path="/game/:id" element={<GameDetails />} />
+        <Route path="/edit-game/:id" element={<EditGame />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/user/:username" element={<UserProfile />} />
+        <Route path="/create-party" element={<CreateParty />} />
+        <Route path="/team" element={<Team />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/about" element={<About />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      <Toaster />
+    </QueryClientProvider>
   );
 }
 
