@@ -1,14 +1,36 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Users, Euro } from 'lucide-react';
 import { useFormContext } from "react-hook-form";
+import { SettingsSectionProps } from "@/types/party";
 
-const SettingsSection = () => {
+const SettingsSection = ({ updateFormData, initialData }: SettingsSectionProps) => {
   const form = useFormContext();
+  
+  // If we're in edit mode with initialData, update the form
+  useEffect(() => {
+    if (initialData) {
+      // Update form with initialData if available
+      form.setValue('maxPlayers', initialData.maxPlayers || 0);
+      form.setValue('price', initialData.price || 0);
+      form.setValue('manualValidation', initialData.manualValidation || false);
+      form.setValue('hasToilets', initialData.hasToilets || false);
+      form.setValue('hasParking', initialData.hasParking || false);
+      form.setValue('hasEquipmentRental', initialData.hasEquipmentRental || false);
+      form.setValue('isPrivate', initialData.isPrivate || false);
+    }
+  }, [initialData, form]);
+
+  // Handle form changes to update parent component
+  const handleFieldChange = (field: string, value: any) => {
+    if (updateFormData) {
+      updateFormData('settings', { [field]: value });
+    }
+  };
   
   return (
     <Card>
@@ -30,7 +52,17 @@ const SettingsSection = () => {
               <FormLabel>Nombre maximum de joueurs</FormLabel>
               <FormControl>
                 <div className="flex items-center">
-                  <Input type="number" min="2" className="w-full" {...field} />
+                  <Input 
+                    type="number" 
+                    min="2" 
+                    className="w-full" 
+                    {...field} 
+                    onChange={(e) => {
+                      field.onChange(e);
+                      handleFieldChange('maxPlayers', e.target.value);
+                    }}
+                    value={field.value || ''}
+                  />
                   <Users className="ml-2 h-5 w-5 text-gray-400" />
                 </div>
               </FormControl>
@@ -47,7 +79,18 @@ const SettingsSection = () => {
               <FormLabel>Prix par joueur (€)</FormLabel>
               <FormControl>
                 <div className="flex items-center">
-                  <Input type="number" min="5" step="0.5" className="w-full" {...field} />
+                  <Input 
+                    type="number" 
+                    min="5" 
+                    step="0.5" 
+                    className="w-full" 
+                    {...field} 
+                    onChange={(e) => {
+                      field.onChange(e);
+                      handleFieldChange('price', e.target.value);
+                    }}
+                    value={field.value || ''}
+                  />
                   <Euro className="ml-2 h-5 w-5 text-gray-400" />
                 </div>
               </FormControl>
@@ -70,7 +113,13 @@ const SettingsSection = () => {
                   </p>
                 </div>
                 <FormControl>
-                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  <Switch 
+                    checked={field.value} 
+                    onCheckedChange={(checked) => {
+                      field.onChange(checked);
+                      handleFieldChange('manualValidation', checked);
+                    }} 
+                  />
                 </FormControl>
               </FormItem>
             )} 
@@ -88,7 +137,13 @@ const SettingsSection = () => {
                   </p>
                 </div>
                 <FormControl>
-                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  <Switch 
+                    checked={field.value} 
+                    onCheckedChange={(checked) => {
+                      field.onChange(checked);
+                      handleFieldChange('hasToilets', checked);
+                    }} 
+                  />
                 </FormControl>
               </FormItem>
             )} 
@@ -106,7 +161,13 @@ const SettingsSection = () => {
                   </p>
                 </div>
                 <FormControl>
-                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  <Switch 
+                    checked={field.value} 
+                    onCheckedChange={(checked) => {
+                      field.onChange(checked);
+                      handleFieldChange('hasParking', checked);
+                    }} 
+                  />
                 </FormControl>
               </FormItem>
             )} 
@@ -124,7 +185,13 @@ const SettingsSection = () => {
                   </p>
                 </div>
                 <FormControl>
-                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  <Switch 
+                    checked={field.value} 
+                    onCheckedChange={(checked) => {
+                      field.onChange(checked);
+                      handleFieldChange('hasEquipmentRental', checked);
+                    }} 
+                  />
                 </FormControl>
               </FormItem>
             )} 
@@ -142,7 +209,13 @@ const SettingsSection = () => {
                   </p>
                 </div>
                 <FormControl>
-                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  <Switch 
+                    checked={field.value} 
+                    onCheckedChange={(checked) => {
+                      field.onChange(checked);
+                      handleFieldChange('isPrivate', checked);
+                    }} 
+                  />
                 </FormControl>
               </FormItem>
             )} 

@@ -1,13 +1,31 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Timer } from 'lucide-react';
 import { useFormContext } from "react-hook-form";
+import { PowerLimitsSectionProps } from "@/types/party";
 
-const PowerLimitsSection = () => {
+const PowerLimitsSection = ({ updateFormData, initialData }: PowerLimitsSectionProps) => {
   const form = useFormContext();
+  
+  // If we're in edit mode with initialData, update the form
+  useEffect(() => {
+    if (initialData) {
+      // Update form with initialData if available
+      form.setValue('aeg_fps_min', initialData.aeg_fps_min || 0);
+      form.setValue('aeg_fps_max', initialData.aeg_fps_max || 0);
+      form.setValue('dmr_fps_max', initialData.dmr_fps_max || 0);
+    }
+  }, [initialData, form]);
+
+  // Handle form changes to update parent component
+  const handleFieldChange = (field: string, value: any) => {
+    if (updateFormData) {
+      updateFormData('powerLimits', { [field]: value });
+    }
+  };
   
   return (
     <Card>
@@ -32,7 +50,17 @@ const PowerLimitsSection = () => {
                   <FormItem className="flex-1">
                     <FormLabel>FPS Min</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} min="0" max="500" />
+                      <Input 
+                        type="number" 
+                        {...field} 
+                        min="0" 
+                        max="500" 
+                        onChange={(e) => {
+                          field.onChange(e);
+                          handleFieldChange('aeg_fps_min', e.target.value);
+                        }}
+                        value={field.value || ''}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -45,7 +73,17 @@ const PowerLimitsSection = () => {
                   <FormItem className="flex-1">
                     <FormLabel>FPS Max</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} min="0" max="500" />
+                      <Input 
+                        type="number" 
+                        {...field} 
+                        min="0" 
+                        max="500" 
+                        onChange={(e) => {
+                          field.onChange(e);
+                          handleFieldChange('aeg_fps_max', e.target.value);
+                        }}
+                        value={field.value || ''}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -61,7 +99,18 @@ const PowerLimitsSection = () => {
               <FormItem className="my-[45px]">
                 <FormLabel className="rounded-none">Sniper / DMR (FPS Max)</FormLabel>
                 <FormControl>
-                  <Input type="number" min="0" max="600" className="my-[52px]" {...field} />
+                  <Input 
+                    type="number" 
+                    min="0" 
+                    max="600" 
+                    className="my-[52px]" 
+                    {...field} 
+                    onChange={(e) => {
+                      field.onChange(e);
+                      handleFieldChange('dmr_fps_max', e.target.value);
+                    }}
+                    value={field.value || ''}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

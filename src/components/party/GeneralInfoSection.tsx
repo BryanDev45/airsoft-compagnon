@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useEffect, useState } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,27 +13,58 @@ import { Calendar as CalendarIcon, Clock, Info } from 'lucide-react';
 import { useFormContext } from "react-hook-form";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { GeneralInfoSectionProps } from "@/types/party";
 
 interface GameType {
   value: string;
   label: string;
 }
 
-interface GeneralInfoSectionProps {
-  gameTypes: GameType[];
-}
-
-const GeneralInfoSection = ({ gameTypes }: GeneralInfoSectionProps) => {
+const GeneralInfoSection = ({ updateFormData, initialData }: GeneralInfoSectionProps) => {
   const form = useFormContext();
-  const [startTimeDialog, setStartTimeDialog] = React.useState(false);
-  const [endTimeDialog, setEndTimeDialog] = React.useState(false);
+  const [startTimeDialog, setStartTimeDialog] = useState(false);
+  const [endTimeDialog, setEndTimeDialog] = useState(false);
+  
+  // Define game types if not provided as props
+  const gameTypes: GameType[] = [
+    { value: "dominicale", label: "Dominicale" },
+    { value: "operation", label: "Opé" }
+  ];
+
+  // If we're in edit mode with initialData, update the form
+  useEffect(() => {
+    if (initialData) {
+      // Update form with initialData if available
+      form.setValue('title', initialData.title || '');
+      form.setValue('description', initialData.description || '');
+      form.setValue('rules', initialData.rules || '');
+      form.setValue('startDateTime', initialData.startDateTime ? new Date(initialData.startDateTime) : null);
+      form.setValue('endDateTime', initialData.endDateTime ? new Date(initialData.endDateTime) : null);
+      form.setValue('gameType', initialData.gameType || 'dominicale');
+    }
+  }, [initialData, form]);
   
   // Fonction pour gérer la sélection de l'heure
   const handleTimeSelection = (field: any, hour: number, minute: number, closeDialog: () => void) => {
     const currentDate = field.value ? new Date(field.value) : new Date();
     const newDate = setMinutes(setHours(currentDate, hour), minute);
     field.onChange(newDate);
+    
+    // Notify parent component
+    if (field.name === 'startDateTime') {
+      updateFormData && updateFormData('generalInfo', { startDateTime: newDate });
+    } else if (field.name === 'endDateTime') {
+      updateFormData && updateFormData('generalInfo', { endDateTime: newDate });
+    }
+    
     closeDialog();
+  };
+  
+  // Handle form changes to update parent component
+  const handleFieldChange = (field: string, value: any) => {
+    if (updateFormData) {
+      updateFormData('generalInfo', { [field]: value });
+    }
   };
   
   // Fonction pour générer les options d'heures
@@ -71,7 +103,14 @@ const GeneralInfoSection = ({ gameTypes }: GeneralInfoSectionProps) => {
             <FormItem>
               <FormLabel>Titre de la partie</FormLabel>
               <FormControl>
-                <Input placeholder="Ex: Partie CQB au Bunker" {...field} />
+                <Input 
+                  placeholder="Ex: Partie CQB au Bunker" 
+                  {...field} 
+                  onChange={(e) => {
+                    field.onChange(e);
+                    handleFieldChange('title', e.target.value);
+                  }}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -85,7 +124,15 @@ const GeneralInfoSection = ({ gameTypes }: GeneralInfoSectionProps) => {
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea placeholder="Décrivez votre partie, les règles spéciales, etc." className="min-h-[120px]" {...field} />
+                <Textarea 
+                  placeholder="Décrivez votre partie, les règles spéciales, etc." 
+                  className="min-h-[120px]" 
+                  {...field} 
+                  onChange={(e) => {
+                    field.onChange(e);
+                    handleFieldChange('description', e.target.value);
+                  }}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -99,7 +146,15 @@ const GeneralInfoSection = ({ gameTypes }: GeneralInfoSectionProps) => {
             <FormItem>
               <FormLabel>Règles de la partie</FormLabel>
               <FormControl>
-                <Textarea placeholder="Décrivez les règles spécifiques de votre partie..." className="min-h-[120px]" {...field} />
+                <Textarea 
+                  placeholder="Décrivez les règles spécifiques de votre partie..." 
+                  className="min-h-[120px]" 
+                  {...field} 
+                  onChange={(e) => {
+                    field.onChange(e);
+                    handleFieldChange('rules', e.target.value);
+                  }}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -135,6 +190,7 @@ const GeneralInfoSection = ({ gameTypes }: GeneralInfoSectionProps) => {
                               newDate.setHours(field.value.getHours(), field.value.getMinutes());
                             }
                             field.onChange(newDate);
+                            handleFieldChange('startDateTime', newDate);
                           }
                         }} 
                         disabled={(date) => {
@@ -211,6 +267,7 @@ const GeneralInfoSection = ({ gameTypes }: GeneralInfoSectionProps) => {
                               newDate.setHours(field.value.getHours(), field.value.getMinutes());
                             }
                             field.onChange(newDate);
+                            handleFieldChange('endDateTime', newDate);
                           }
                         }}
                         disabled={(date) => {
@@ -273,7 +330,10 @@ const GeneralInfoSection = ({ gameTypes }: GeneralInfoSectionProps) => {
               <FormLabel>Type de partie</FormLabel>
               <FormControl>
                 <RadioGroup
-                  onValueChange={field.onChange}
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    handleFieldChange('gameType', value);
+                  }}
                   value={field.value}
                   className="grid grid-cols-2 gap-4"
                 >

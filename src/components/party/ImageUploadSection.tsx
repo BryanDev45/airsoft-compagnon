@@ -1,22 +1,95 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ImageIcon } from 'lucide-react';
+import { ImageUploadSectionProps } from "@/types/party";
 
-interface ImageUploadSectionProps {
-  images: File[];
-  preview: string[];
-  handleImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  removeImage: (index: number) => void;
-}
+const ImageUploadSection = ({ updateFormData, initialData }: ImageUploadSectionProps) => {
+  const [images, setImages] = useState<File[]>([]);
+  const [preview, setPreview] = useState<string[]>([]);
 
-const ImageUploadSection = ({ 
-  images, 
-  preview, 
-  handleImageChange, 
-  removeImage 
-}: ImageUploadSectionProps) => {
+  // Load initial images if available
+  useEffect(() => {
+    if (initialData && initialData.images) {
+      // If initialData contains image URLs, show those
+      setPreview(Array.isArray(initialData.images) ? initialData.images : []);
+    }
+  }, [initialData]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const filesArray = Array.from(e.target.files);
+      
+      // Check if adding these files would exceed the maximum (5)
+      if (images.length + filesArray.length > 5) {
+        // Only add files up to the maximum limit
+        const remainingSlots = Math.max(0, 5 - images.length);
+        const newImages = [...images, ...filesArray.slice(0, remainingSlots)];
+        setImages(newImages);
+        
+        // Generate previews for the new images
+        const newPreviews = newImages.map(file => URL.createObjectURL(file));
+        
+        // Revoke old previews to avoid memory leaks
+        preview.forEach(url => {
+          if (!url.startsWith('http')) {
+            URL.revokeObjectURL(url);
+          }
+        });
+        
+        setPreview(newPreviews);
+        
+        // Notify parent component about image changes
+        if (updateFormData) {
+          updateFormData('images', { images: newImages });
+        }
+      } else {
+        // We can add all the files
+        const newImages = [...images, ...filesArray];
+        setImages(newImages);
+        
+        // Generate previews for the new images
+        const newPreviews = newImages.map(file => URL.createObjectURL(file));
+        
+        // Revoke old previews to avoid memory leaks
+        preview.forEach(url => {
+          if (!url.startsWith('http')) {
+            URL.revokeObjectURL(url);
+          }
+        });
+        
+        setPreview(newPreviews);
+        
+        // Notify parent component about image changes
+        if (updateFormData) {
+          updateFormData('images', { images: newImages });
+        }
+      }
+    }
+  };
+  
+  const removeImage = (index: number) => {
+    const newImages = [...images];
+    newImages.splice(index, 1);
+    setImages(newImages);
+    
+    const newPreviews = [...preview];
+    
+    // Only revoke URL if it's an object URL, not a server URL
+    if (!newPreviews[index].startsWith('http')) {
+      URL.revokeObjectURL(newPreviews[index]);
+    }
+    
+    newPreviews.splice(index, 1);
+    setPreview(newPreviews);
+    
+    // Notify parent component about image changes
+    if (updateFormData) {
+      updateFormData('images', { images: newImages });
+    }
+  };
+  
   return (
     <Card>
       <CardHeader>
@@ -41,11 +114,11 @@ const ImageUploadSection = ({
           />
           <label 
             htmlFor="images" 
-            className={`flex items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-airsoft-red transition-colors ${images.length >= 5 ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`flex items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-airsoft-red transition-colors ${preview.length >= 5 ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <ImageIcon className="h-5 w-5 text-gray-400" />
             <span className="text-gray-500">
-              {images.length >= 5 
+              {preview.length >= 5 
                 ? "Limite de 5 images atteinte" 
                 : "Cliquez pour sélectionner des images"}
             </span>
