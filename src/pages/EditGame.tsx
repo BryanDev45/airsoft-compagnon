@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -476,38 +475,31 @@ const EditGame = () => {
             <h1 className="text-2xl font-bold mb-6">Modifier ma partie</h1>
             <FormProvider {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                <GeneralInfoSection 
-                  updateFormData={updateFormData} 
+                <GeneralInfoSection
                   initialData={gameData}
                   gameTypes={gameTypes}
                 />
-                <LocationSection 
-                  updateFormData={updateFormData} 
+                <LocationSection
                   initialData={gameData}
                 />
-                <PowerLimitsSection 
-                  updateFormData={updateFormData} 
+                <PowerLimitsSection
                   initialData={gameData}
                 />
-                <ProtectionSection 
-                  updateFormData={updateFormData} 
+                <ProtectionSection
                   initialData={gameData}
                 />
-                <ConsumablesSection 
-                  updateFormData={updateFormData} 
+                <ConsumablesSection
                   initialData={gameData}
                 />
-                <SettingsSection 
-                  updateFormData={updateFormData} 
+                <SettingsSection
                   initialData={gameData}
                 />
                 <div className="border-t border-gray-200 pt-8">
-                  <ImageUploadSection 
+                  <ImageUploadSection
                     images={images}
                     preview={preview}
                     handleImageChange={handleImageChange}
                     removeImage={removeImage}
-                    updateFormData={updateFormData}
                     initialData={gameData}
                   />
                 </div>

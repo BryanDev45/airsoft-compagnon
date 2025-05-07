@@ -32,11 +32,11 @@ export const useGameComments = (gameId: string | undefined) => {
       // Transformer les données pour s'assurer qu'elles correspondent au type GameComment[]
       const formattedComments = (data || []).map(item => {
         // Si profile a une erreur (relation non trouvée), définir profile à null
-        if (item.profile && 'error' in item.profile) {
+        if (item.profile && typeof item.profile === 'object' && 'error' in item.profile) {
           return {
             ...item,
             profile: null
-          };
+          } as GameComment;
         }
         return item as GameComment;
       });
