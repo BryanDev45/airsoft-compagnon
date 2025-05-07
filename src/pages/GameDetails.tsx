@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -23,6 +24,7 @@ import GameParticipantsCard from "@/components/game/GameParticipantsCard";
 import ParticipantsDialog from "@/components/game/ParticipantsDialog";
 import ShareDialog from "@/components/game/ShareDialog";
 import RegistrationDialog from "@/components/game/RegistrationDialog";
+import GameOrganizerActions from "@/components/game/GameOrganizerActions";
 
 // Types
 import type { GameData, GameParticipant, Comment } from '@/types/game';
@@ -44,10 +46,13 @@ const GameDetails = () => {
   const [participantsOpen, setParticipantsOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
+  const [isCurrentUserOrganizer, setIsCurrentUserOrganizer] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [registrationDialogOpen, setRegistrationDialogOpen] = useState(false);
   const [loadingRegistration, setLoadingRegistration] = useState(false);
   const [creatorRating, setCreatorRating] = useState<number | null>(0);
+  const [isGamePassed, setIsGamePassed] = useState(false);
 
   // Check authentication and registration status on mount
   useEffect(() => {
@@ -55,17 +60,21 @@ const GameDetails = () => {
       const { data: { session } } = await supabase.auth.getSession();
       setIsAuthenticated(!!session);
 
-      if (session && id) {
-        // Check if user is registered for this game
-        const { data: participation, error } = await supabase
-          .from('game_participants')
-          .select('*')
-          .eq('game_id', id)
-          .eq('user_id', session.user.id)
-          .single();
+      if (session) {
+        setCurrentUserId(session.user.id);
+        
+        if (id) {
+          // Check if user is registered for this game
+          const { data: participation, error } = await supabase
+            .from('game_participants')
+            .select('*')
+            .eq('game_id', id)
+            .eq('user_id', session.user.id)
+            .single();
 
-        if (participation && !error) {
-          setIsRegistered(true);
+          if (participation && !error) {
+            setIsRegistered(true);
+          }
         }
       }
     };
@@ -93,6 +102,16 @@ const GameDetails = () => {
 
       if (gameError) throw gameError;
 
+      // Check if game is passed
+      const today = new Date();
+      const gameDate = new Date(game.date);
+      setIsGamePassed(gameDate < today);
+
+      // Check if current user is the organizer
+      if (currentUserId && game.created_by === currentUserId) {
+        setIsCurrentUserOrganizer(true);
+      }
+
       // Fetch creator profile separately
       let creator = null;
       if (game) {
@@ -118,7 +137,8 @@ const GameDetails = () => {
       }
 
       return { ...game, creator } as GameData;
-    }
+    },
+    enabled: !!id
   });
 
   // Query for participants and their profiles
@@ -369,6 +389,16 @@ const GameDetails = () => {
         />
         
         <div className="max-w-6xl mx-auto px-4 py-8">
+          {isCurrentUserOrganizer && (
+            <div className="mb-6 flex justify-end">
+              <GameOrganizerActions 
+                gameId={gameData.id} 
+                gameDate={gameData.date}
+                isGamePassed={isGamePassed}
+              />
+            </div>
+          )}
+          
           <div className="grid md:grid-cols-3 gap-8">
             <div className="md:col-span-2">
               <GameImages 
