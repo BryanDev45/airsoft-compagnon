@@ -1,30 +1,13 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye } from 'lucide-react';
 import { useFormContext } from "react-hook-form";
-import { ProtectionSectionProps } from "@/types/party";
 
-const ProtectionSection = ({ updateFormData, initialData }: ProtectionSectionProps) => {
+const ProtectionSection = () => {
   const form = useFormContext();
-  
-  // If we're in edit mode with initialData, update the form
-  useEffect(() => {
-    if (initialData) {
-      // Update form with initialData if available
-      form.setValue('eyeProtectionRequired', initialData.eyeProtectionRequired || false);
-      form.setValue('fullFaceProtectionRequired', initialData.fullFaceProtectionRequired || false);
-    }
-  }, [initialData, form]);
-
-  // Handle form changes to update parent component
-  const handleFieldChange = (field: string, value: any) => {
-    if (updateFormData) {
-      updateFormData('protection', { [field]: value });
-    }
-  };
   
   return (
     <Card>
@@ -51,13 +34,7 @@ const ProtectionSection = ({ updateFormData, initialData }: ProtectionSectionPro
                   </p>
                 </div>
                 <FormControl>
-                  <Switch 
-                    checked={field.value} 
-                    onCheckedChange={(checked) => {
-                      field.onChange(checked);
-                      handleFieldChange('eyeProtectionRequired', checked);
-                    }} 
-                  />
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
                 </FormControl>
               </FormItem>
             )} 
@@ -75,13 +52,7 @@ const ProtectionSection = ({ updateFormData, initialData }: ProtectionSectionPro
                   </p>
                 </div>
                 <FormControl>
-                  <Switch 
-                    checked={field.value} 
-                    onCheckedChange={(checked) => {
-                      field.onChange(checked);
-                      handleFieldChange('fullFaceProtectionRequired', checked);
-                    }} 
-                  />
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
                 </FormControl>
               </FormItem>
             )} 

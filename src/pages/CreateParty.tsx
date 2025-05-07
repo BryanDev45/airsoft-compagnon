@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { useNavigate } from 'react-router-dom';
@@ -39,20 +39,6 @@ const CreateParty = () => {
   } = useImageUpload(5);
   
   const { form, isSubmitting, onSubmit } = usePartyForm(images);
-  
-  // Track form data in a state
-  const [formData, setFormData] = useState<Record<string, any>>({});
-  
-  // Function to update form data from child components
-  const updateFormData = (section: string, data: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [section]: {
-        ...(prev[section] || {}),
-        ...data
-      }
-    }));
-  };
 
   // Scroll to top on mount
   useEffect(() => {
@@ -72,46 +58,25 @@ const CreateParty = () => {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               {/* General Information Section */}
-              <GeneralInfoSection 
-                updateFormData={updateFormData} 
-                initialData={null} 
-                gameTypes={gameTypes} 
-              />
+              <GeneralInfoSection gameTypes={gameTypes} />
               
               {/* Location Section */}
-              <LocationSection 
-                updateFormData={updateFormData}
-                initialData={null}
-              />
+              <LocationSection />
               
               {/* Power Limits Section */}
-              <PowerLimitsSection 
-                updateFormData={updateFormData}
-                initialData={null}
-              />
+              <PowerLimitsSection />
               
               {/* Protection Section */}
-              <ProtectionSection 
-                updateFormData={updateFormData}
-                initialData={null}
-              />
+              <ProtectionSection />
               
               {/* Consumables Section */}
-              <ConsumablesSection 
-                updateFormData={updateFormData}
-                initialData={null}
-              />
+              <ConsumablesSection />
               
               {/* Settings Section */}
-              <SettingsSection 
-                updateFormData={updateFormData}
-                initialData={null}
-              />
+              <SettingsSection />
               
               {/* Image Upload Section */}
               <ImageUploadSection 
-                updateFormData={updateFormData}
-                initialData={null}
                 images={images}
                 preview={preview}
                 handleImageChange={handleImageChange}

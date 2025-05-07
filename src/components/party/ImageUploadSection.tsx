@@ -1,118 +1,22 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ImageIcon } from 'lucide-react';
-import { ImageUploadSectionProps } from "@/types/party";
+
+interface ImageUploadSectionProps {
+  images: File[];
+  preview: string[];
+  handleImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  removeImage: (index: number) => void;
+}
 
 const ImageUploadSection = ({ 
-  updateFormData, 
-  initialData, 
-  images: externalImages, 
-  preview: externalPreview,
-  handleImageChange: externalHandleImageChange,
-  removeImage: externalRemoveImage
+  images, 
+  preview, 
+  handleImageChange, 
+  removeImage 
 }: ImageUploadSectionProps) => {
-  const [images, setImages] = useState<File[]>([]);
-  const [preview, setPreview] = useState<string[]>([]);
-
-  // Load initial images if available
-  useEffect(() => {
-    if (initialData && initialData.images) {
-      // If initialData contains image URLs, show those
-      setPreview(Array.isArray(initialData.images) ? initialData.images : []);
-    }
-  }, [initialData]);
-
-  // Use external image handlers if provided
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (externalHandleImageChange) {
-      externalHandleImageChange(e);
-      return;
-    }
-
-    if (e.target.files && e.target.files.length > 0) {
-      const filesArray = Array.from(e.target.files);
-      
-      // Check if adding these files would exceed the maximum (5)
-      if (images.length + filesArray.length > 5) {
-        // Only add files up to the maximum limit
-        const remainingSlots = Math.max(0, 5 - images.length);
-        const newImages = [...images, ...filesArray.slice(0, remainingSlots)];
-        setImages(newImages);
-        
-        // Generate previews for the new images
-        const newPreviews = newImages.map(file => URL.createObjectURL(file));
-        
-        // Revoke old previews to avoid memory leaks
-        preview.forEach(url => {
-          if (!url.startsWith('http')) {
-            URL.revokeObjectURL(url);
-          }
-        });
-        
-        setPreview(newPreviews);
-        
-        // Notify parent component about image changes
-        if (updateFormData) {
-          updateFormData('images', { images: newImages });
-        }
-      } else {
-        // We can add all the files
-        const newImages = [...images, ...filesArray];
-        setImages(newImages);
-        
-        // Generate previews for the new images
-        const newPreviews = newImages.map(file => URL.createObjectURL(file));
-        
-        // Revoke old previews to avoid memory leaks
-        preview.forEach(url => {
-          if (!url.startsWith('http')) {
-            URL.revokeObjectURL(url);
-          }
-        });
-        
-        setPreview(newPreviews);
-        
-        // Notify parent component about image changes
-        if (updateFormData) {
-          updateFormData('images', { images: newImages });
-        }
-      }
-    }
-  };
-  
-  const removeImage = (index: number) => {
-    if (externalRemoveImage) {
-      externalRemoveImage(index);
-      return;
-    }
-
-    const newImages = [...images];
-    newImages.splice(index, 1);
-    setImages(newImages);
-    
-    const newPreviews = [...preview];
-    
-    // Only revoke URL if it's an object URL, not a server URL
-    if (!newPreviews[index].startsWith('http')) {
-      URL.revokeObjectURL(newPreviews[index]);
-    }
-    
-    newPreviews.splice(index, 1);
-    setPreview(newPreviews);
-    
-    // Notify parent component about image changes
-    if (updateFormData) {
-      updateFormData('images', { images: newImages });
-    }
-  };
-  
-  // Determine whether to use external state or internal state
-  const displayImages = externalImages || images;
-  const displayPreviews = externalPreview || preview;
-  const displayMaxImages = 5;
-  
   return (
     <Card>
       <CardHeader>
@@ -133,15 +37,15 @@ const ImageUploadSection = ({
             multiple 
             onChange={handleImageChange} 
             className="hidden" 
-            disabled={displayPreviews.length >= displayMaxImages}
+            disabled={images.length >= 5}
           />
           <label 
             htmlFor="images" 
-            className={`flex items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-airsoft-red transition-colors ${displayPreviews.length >= displayMaxImages ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`flex items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-airsoft-red transition-colors ${images.length >= 5 ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <ImageIcon className="h-5 w-5 text-gray-400" />
             <span className="text-gray-500">
-              {displayPreviews.length >= displayMaxImages 
+              {images.length >= 5 
                 ? "Limite de 5 images atteinte" 
                 : "Cliquez pour sélectionner des images"}
             </span>
@@ -151,9 +55,9 @@ const ImageUploadSection = ({
           </p>
         </div>
         
-        {displayPreviews.length > 0 && (
+        {preview.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-4">
-            {displayPreviews.map((src, index) => (
+            {preview.map((src, index) => (
               <div key={index} className="relative h-24 group">
                 <img 
                   src={src} 

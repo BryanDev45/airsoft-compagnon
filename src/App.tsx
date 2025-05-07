@@ -1,61 +1,106 @@
 
-import React, { useState, useEffect } from 'react';
-import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-import { Toaster } from '@/components/ui/toaster';
-
-// Import pages
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import './App.css';
 import Index from './pages/Index';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ResetPassword from './pages/ResetPassword';
+import NewPassword from './pages/NewPassword';
 import Profile from './pages/Profile';
+import UserProfile from './pages/UserProfile';
+import Contact from './pages/Contact';
 import Parties from './pages/Parties';
 import GameDetails from './pages/GameDetails';
-import EditGame from './pages/EditGame';
+import Partners from './pages/Partners';
 import NotFound from './pages/NotFound';
-import UserProfile from './pages/UserProfile';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfUse from './pages/TermsOfUse';
+import TermsOfSale from './pages/TermsOfSale';
+import CookiesPolicy from './pages/CookiesPolicy';
+import FAQ from './pages/FAQ';
 import CreateParty from './pages/CreateParty';
 import Team from './pages/Team';
-import Contact from './pages/Contact';
-import About from './pages/About';
+import Toolbox from './pages/Toolbox';
+import AuthGuard from './components/auth/AuthGuard';
+import CreateTeam from './pages/CreateTeam';
+import { useState, useEffect } from 'react';
+import { Toaster } from "@/components/ui/toaster";
+import CookieConsent from './components/CookieConsent';
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
+  const [cookiesAccepted, setCookiesAccepted] = useState<boolean | null>(null);
 
   useEffect(() => {
-    // Check if the user is logged in by verifying the presence of a token in local storage
-    const token = localStorage.getItem('sb-raolbrsijdjnilvkbvgj-auth-token');
-    setIsLoggedIn(!!token);
+    const handleRouteChange = () => {
+      window.scrollTo(0, 0);
+    };
 
-    // If the user is not logged in and tries to access a protected route, redirect to the login page
-    const publicRoutes = ['/login', '/register', '/', '/parties', '/game', '/contact', '/about'];
-    const isPublicRoute = publicRoutes.some(route => location.pathname.startsWith(route));
+    window.addEventListener('popstate', handleRouteChange);
+    handleRouteChange();
 
-    if (!isLoggedIn && !isPublicRoute) {
-      navigate('/login');
-    }
-  }, [location, navigate, isLoggedIn]);
+    return () => {
+      window.removeEventListener('popstate', handleRouteChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    const consentStatus = localStorage.getItem('cookieConsent');
+    setCookiesAccepted(consentStatus === 'accepted');
+  }, []);
+
+  const handleAcceptCookies = () => {
+    localStorage.setItem('cookieConsent', 'accepted');
+    setCookiesAccepted(true);
+  };
+
+  const handleDeclineCookies = () => {
+    localStorage.setItem('cookieConsent', 'declined');
+    setCookiesAccepted(false);
+  };
 
   return (
-    <>
+    <Router>
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/parties" element={<Parties />} />
-        <Route path="/game/:id" element={<GameDetails />} />
-        <Route path="/edit-game/:id" element={<EditGame />} />
+        <Route path="/parties/create" element={<CreateParty />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/partners" element={<Partners />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/new-password" element={<NewPassword />} />
+        <Route path="/faq" element={<FAQ />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-of-use" element={<TermsOfUse />} />
+        <Route path="/terms-of-sale" element={<TermsOfSale />} />
+        <Route path="/cookies-policy" element={<CookiesPolicy />} />
+        <Route path="/toolbox" element={<Toolbox />} />
+        <Route path="/game/:id" element={<GameDetails />} />
+        <Route path="/team/:id" element={<Team />} />
+        <Route path="/team/create" element={<CreateTeam />} />
         <Route path="/user/:username" element={<UserProfile />} />
-        <Route path="/create-party" element={<CreateParty />} />
-        <Route path="/team" element={<Team />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/about" element={<About />} />
+        <Route path="/search" element={<Parties />} />
+        <Route 
+          path="/profile" 
+          element={
+            <AuthGuard>
+              <Profile />
+            </AuthGuard>
+          } 
+        />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      
+      {cookiesAccepted === null && (
+        <CookieConsent 
+          onAccept={handleAcceptCookies}
+          onDecline={handleDeclineCookies}
+        />
+      )}
+      
       <Toaster />
-    </>
+    </Router>
   );
 }
 
