@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 
 // Import pages
@@ -18,8 +17,6 @@ import CreateParty from './pages/CreateParty';
 import Team from './pages/Team';
 import Contact from './pages/Contact';
 import About from './pages/About';
-
-const queryClient = new QueryClient();
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -41,7 +38,7 @@ function App() {
   }, [location, navigate, isLoggedIn]);
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <>
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/parties" element={<Parties />} />
@@ -58,7 +55,7 @@ function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster />
-    </QueryClientProvider>
+    </>
   );
 }
 
