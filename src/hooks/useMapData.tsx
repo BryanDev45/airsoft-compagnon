@@ -47,7 +47,8 @@ export function useMapData() {
             latitude,
             longitude,
             created_at,
-            created_by
+            created_by,
+            is_private
           `)
           .gte('date', today) // Filtrer pour n'afficher que les parties à venir ou du jour même
           .order('date', { ascending: true });

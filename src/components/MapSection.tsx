@@ -67,8 +67,14 @@ const MapSection: React.FC = () => {
                     <p className="text-gray-500">Chargement de la carte...</p>
                   </div>
                 </div>
-              ) : (
+              ) : filteredEvents.length > 0 ? (
                 <MapComponent searchCenter={searchCenter} searchRadius={searchRadius[0]} filteredEvents={filteredEvents} />
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center">
+                    <p className="text-gray-500">Aucune partie trouvée correspondant à vos critères</p>
+                  </div>
+                </div>
               )}
             </div>
           </div>
