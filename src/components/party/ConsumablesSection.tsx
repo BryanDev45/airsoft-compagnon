@@ -1,13 +1,24 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle } from 'lucide-react';
 import { useFormContext } from "react-hook-form";
+import { ConsumablesSectionProps } from '@/types/party';
 
-const ConsumablesSection = () => {
+const ConsumablesSection: React.FC<ConsumablesSectionProps> = ({ updateFormData, initialData }) => {
   const form = useFormContext();
+  
+  useEffect(() => {
+    if (initialData && updateFormData) {
+      updateFormData('consumables', {
+        grenadesAllowed: initialData.grenades_allowed,
+        smokesAllowed: initialData.smokes_allowed,
+        pyroAllowed: initialData.pyro_allowed
+      });
+    }
+  }, [initialData, updateFormData]);
   
   return (
     <Card>

@@ -1,13 +1,24 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin } from 'lucide-react';
 import { useFormContext } from "react-hook-form";
+import { LocationSectionProps } from '@/types/party';
 
-const LocationSection = () => {
+const LocationSection: React.FC<LocationSectionProps> = ({ updateFormData, initialData }) => {
   const form = useFormContext();
+  
+  useEffect(() => {
+    if (initialData && updateFormData) {
+      updateFormData('location', {
+        address: initialData.address,
+        city: initialData.city,
+        zipCode: initialData.zip_code
+      });
+    }
+  }, [initialData, updateFormData]);
   
   return (
     <Card>

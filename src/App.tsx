@@ -11,6 +11,7 @@ import UserProfile from './pages/UserProfile';
 import Contact from './pages/Contact';
 import Parties from './pages/Parties';
 import GameDetails from './pages/GameDetails';
+import EditGame from './pages/EditGame';
 import Partners from './pages/Partners';
 import NotFound from './pages/NotFound';
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -77,6 +78,7 @@ function App() {
         <Route path="/cookies-policy" element={<CookiesPolicy />} />
         <Route path="/toolbox" element={<Toolbox />} />
         <Route path="/game/:id" element={<GameDetails />} />
+        <Route path="/edit-game/:id" element={<EditGame />} />
         <Route path="/team/:id" element={<Team />} />
         <Route path="/team/create" element={<CreateTeam />} />
         <Route path="/user/:username" element={<UserProfile />} />

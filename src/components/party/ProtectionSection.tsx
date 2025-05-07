@@ -1,13 +1,23 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye } from 'lucide-react';
 import { useFormContext } from "react-hook-form";
+import { ProtectionSectionProps } from '@/types/party';
 
-const ProtectionSection = () => {
+const ProtectionSection: React.FC<ProtectionSectionProps> = ({ updateFormData, initialData }) => {
   const form = useFormContext();
+  
+  useEffect(() => {
+    if (initialData && updateFormData) {
+      updateFormData('protection', {
+        eyeProtectionRequired: initialData.eye_protection_required,
+        fullFaceProtectionRequired: initialData.full_face_protection_required
+      });
+    }
+  }, [initialData, updateFormData]);
   
   return (
     <Card>

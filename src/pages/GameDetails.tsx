@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -43,11 +44,14 @@ const GameDetails = () => {
   // State
   const [participantsOpen, setParticipantsOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isCreator, setIsCreator] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
   const [isRegistered, setIsRegistered] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [registrationDialogOpen, setRegistrationDialogOpen] = useState(false);
   const [loadingRegistration, setLoadingRegistration] = useState(false);
   const [creatorRating, setCreatorRating] = useState<number | null>(0);
+  const [isPastGame, setIsPastGame] = useState(false);
 
   // Check authentication and registration status on mount
   useEffect(() => {
@@ -55,17 +59,21 @@ const GameDetails = () => {
       const { data: { session } } = await supabase.auth.getSession();
       setIsAuthenticated(!!session);
 
-      if (session && id) {
-        // Check if user is registered for this game
-        const { data: participation, error } = await supabase
-          .from('game_participants')
-          .select('*')
-          .eq('game_id', id)
-          .eq('user_id', session.user.id)
-          .single();
+      if (session) {
+        setUserId(session.user.id);
+        
+        if (id) {
+          // Check if user is registered for this game
+          const { data: participation, error } = await supabase
+            .from('game_participants')
+            .select('*')
+            .eq('game_id', id)
+            .eq('user_id', session.user.id)
+            .single();
 
-        if (participation && !error) {
-          setIsRegistered(true);
+          if (participation && !error) {
+            setIsRegistered(true);
+          }
         }
       }
     };
@@ -92,6 +100,17 @@ const GameDetails = () => {
         .single();
 
       if (gameError) throw gameError;
+
+      // Check if game date is in the past
+      const gameDate = new Date(game.date);
+      const today = new Date();
+      setIsPastGame(gameDate < today);
+
+      // Check if user is creator
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session && game && session.user.id === game.created_by) {
+        setIsCreator(true);
+      }
 
       // Fetch creator profile separately
       let creator = null;
@@ -182,6 +201,12 @@ const GameDetails = () => {
 
   const handleShareGame = () => {
     setShareDialogOpen(true);
+  };
+
+  const handleEditGame = () => {
+    if (id && isCreator && !isPastGame) {
+      navigate(`/edit-game/${id}`);
+    }
   };
 
   const handleRegister = async () => {
@@ -366,6 +391,9 @@ const GameDetails = () => {
           loadingRegistration={loadingRegistration}
           onRegister={handleRegister}
           onShare={handleShareGame}
+          isCreator={isCreator}
+          isPastGame={isPastGame}
+          onEdit={handleEditGame}
         />
         
         <div className="max-w-6xl mx-auto px-4 py-8">

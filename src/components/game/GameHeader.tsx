@@ -2,7 +2,7 @@
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Share2, Calendar, Clock, MapPin, Users, Check } from 'lucide-react';
+import { Share2, Calendar, Clock, MapPin, Users, Check, Edit } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -22,6 +22,9 @@ interface GameHeaderProps {
   loadingRegistration: boolean;
   onRegister: () => void;
   onShare: () => void;
+  isCreator?: boolean;
+  isPastGame?: boolean;
+  onEdit?: () => void;
 }
 
 const GameHeader: React.FC<GameHeaderProps> = ({
@@ -39,7 +42,10 @@ const GameHeader: React.FC<GameHeaderProps> = ({
   isRegistered,
   loadingRegistration,
   onRegister,
-  onShare
+  onShare,
+  isCreator = false,
+  isPastGame = false,
+  onEdit
 }) => {
   // Format date from ISO to readable format
   const formattedDate = date ? format(new Date(date), 'dd MMMM yyyy', {
@@ -66,7 +72,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
                 {gameType === "dominicale" ? "Partie Dominicale" : "Opération"}
               </Badge>
               <Badge className="bg-airsoft-red">
-                {new Date(date) > new Date() ? "À venir" : "Terminé"}
+                {!isPastGame ? "À venir" : "Terminé"}
               </Badge>
             </div>
             <h1 className="text-3xl font-bold mb-2">{title}</h1>
@@ -90,6 +96,16 @@ const GameHeader: React.FC<GameHeaderProps> = ({
             </div>
           </div>
           <div className="flex gap-2 mt-4 md:mt-0">
+            {isCreator && !isPastGame && onEdit && (
+              <Button 
+                variant="outline" 
+                className="bg-blue-600 text-white border-white hover:bg-white hover:text-blue-600" 
+                onClick={onEdit}
+              >
+                <Edit size={16} className="mr-2" />
+                Modifier
+              </Button>
+            )}
             <Button 
               variant="outline" 
               className="bg-airsoft-red text-white border-white hover:bg-white hover:text-airsoft-dark" 
