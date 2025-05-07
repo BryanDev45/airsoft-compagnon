@@ -1,24 +1,13 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Timer } from 'lucide-react';
 import { useFormContext } from "react-hook-form";
-import { PowerLimitsSectionProps } from '@/types/party';
 
-const PowerLimitsSection: React.FC<PowerLimitsSectionProps> = ({ updateFormData, initialData }) => {
+const PowerLimitsSection = () => {
   const form = useFormContext();
-  
-  useEffect(() => {
-    if (initialData && updateFormData) {
-      updateFormData('powerLimits', {
-        aeg_fps_min: initialData.aeg_fps_min,
-        aeg_fps_max: initialData.aeg_fps_max,
-        dmr_fps_max: initialData.dmr_fps_max
-      });
-    }
-  }, [initialData, updateFormData]);
   
   return (
     <Card>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -26,7 +25,7 @@ import ShareDialog from "@/components/game/ShareDialog";
 import RegistrationDialog from "@/components/game/RegistrationDialog";
 
 // Types
-import type { GameData, GameParticipant, GameComment } from '@/types/game';
+import type { GameData, GameParticipant, Comment } from '@/types/game';
 import { Info, Shield, FileText, MessageSquare } from 'lucide-react';
 
 const ScrollToTop = () => {

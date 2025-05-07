@@ -12,14 +12,17 @@ import { Calendar as CalendarIcon, Clock, Info } from 'lucide-react';
 import { useFormContext } from "react-hook-form";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { GeneralInfoSectionProps } from '@/types/party';
 
 interface GameType {
   value: string;
   label: string;
 }
 
-const GeneralInfoSection: React.FC<GeneralInfoSectionProps> = ({ gameTypes, initialData }) => {
+interface GeneralInfoSectionProps {
+  gameTypes: GameType[];
+}
+
+const GeneralInfoSection = ({ gameTypes }: GeneralInfoSectionProps) => {
   const form = useFormContext();
   const [startTimeDialog, setStartTimeDialog] = React.useState(false);
   const [endTimeDialog, setEndTimeDialog] = React.useState(false);

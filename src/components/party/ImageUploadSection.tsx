@@ -3,15 +3,20 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ImageIcon } from 'lucide-react';
-import { ImageUploadSectionProps } from '@/types/party';
 
-const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({ 
-  images = [], 
-  preview = [], 
+interface ImageUploadSectionProps {
+  images: File[];
+  preview: string[];
+  handleImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  removeImage: (index: number) => void;
+}
+
+const ImageUploadSection = ({ 
+  images, 
+  preview, 
   handleImageChange, 
-  removeImage,
-  initialData 
-}) => {
+  removeImage 
+}: ImageUploadSectionProps) => {
   return (
     <Card>
       <CardHeader>
@@ -61,7 +66,7 @@ const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
                 />
                 <button 
                   type="button" 
-                  onClick={() => removeImage && removeImage(index)} 
+                  onClick={() => removeImage(index)} 
                   className="absolute top-1 right-1 bg-black/70 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

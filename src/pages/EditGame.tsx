@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -19,17 +20,6 @@ import ConsumablesSection from "@/components/party/ConsumablesSection";
 import PowerLimitsSection from "@/components/party/PowerLimitsSection";
 import SettingsSection from "@/components/party/SettingsSection";
 import ImageUploadSection from "@/components/party/ImageUploadSection";
-
-// Import types with initialData props
-import {
-  GeneralInfoSectionProps,
-  LocationSectionProps,
-  ProtectionSectionProps,
-  ConsumablesSectionProps,
-  PowerLimitsSectionProps,
-  SettingsSectionProps,
-  ImageUploadSectionProps
-} from "@/types/party";
 
 // Formulaire schéma
 const gameFormSchema = z.object({
@@ -486,31 +476,38 @@ const EditGame = () => {
             <h1 className="text-2xl font-bold mb-6">Modifier ma partie</h1>
             <FormProvider {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                <GeneralInfoSection
+                <GeneralInfoSection 
+                  updateFormData={updateFormData} 
                   initialData={gameData}
                   gameTypes={gameTypes}
                 />
-                <LocationSection
+                <LocationSection 
+                  updateFormData={updateFormData} 
                   initialData={gameData}
                 />
-                <PowerLimitsSection
+                <PowerLimitsSection 
+                  updateFormData={updateFormData} 
                   initialData={gameData}
                 />
-                <ProtectionSection
+                <ProtectionSection 
+                  updateFormData={updateFormData} 
                   initialData={gameData}
                 />
-                <ConsumablesSection
+                <ConsumablesSection 
+                  updateFormData={updateFormData} 
                   initialData={gameData}
                 />
-                <SettingsSection
+                <SettingsSection 
+                  updateFormData={updateFormData} 
                   initialData={gameData}
                 />
                 <div className="border-t border-gray-200 pt-8">
-                  <ImageUploadSection
+                  <ImageUploadSection 
                     images={images}
                     preview={preview}
                     handleImageChange={handleImageChange}
                     removeImage={removeImage}
+                    updateFormData={updateFormData}
                     initialData={gameData}
                   />
                 </div>
