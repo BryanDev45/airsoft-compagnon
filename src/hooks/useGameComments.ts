@@ -47,6 +47,7 @@ export const useGameComments = (gameId: string | undefined) => {
         // Type cast to handle the conversion properly
         return {
           ...item,
+          // Add a null check before accessing properties on item.profile
           profile: item.profile === null ? null : item.profile 
         } as unknown as GameComment;
       });

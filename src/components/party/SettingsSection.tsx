@@ -1,14 +1,29 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Users, Euro } from 'lucide-react';
 import { useFormContext } from "react-hook-form";
+import { SettingsSectionProps } from '@/types/party';
 
-const SettingsSection = () => {
+const SettingsSection: React.FC<SettingsSectionProps> = ({ updateFormData, initialData }) => {
   const form = useFormContext();
+  
+  useEffect(() => {
+    if (initialData && updateFormData) {
+      updateFormData('settings', {
+        maxPlayers: initialData.max_players,
+        price: initialData.price,
+        manualValidation: initialData.manual_validation,
+        hasToilets: initialData.has_toilets,
+        hasParking: initialData.has_parking,
+        hasEquipmentRental: initialData.has_equipment_rental,
+        isPrivate: initialData.is_private
+      });
+    }
+  }, [initialData, updateFormData]);
   
   return (
     <Card>
