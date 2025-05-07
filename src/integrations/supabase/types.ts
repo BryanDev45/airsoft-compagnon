@@ -225,6 +225,38 @@ export type Database = {
         }
         Relationships: []
       }
+      game_comments: {
+        Row: {
+          content: string
+          created_at: string
+          game_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          game_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          game_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_comments_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "airsoft_games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       game_participants: {
         Row: {
           created_at: string | null

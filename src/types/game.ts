@@ -46,9 +46,11 @@ export interface GameParticipant {
   profile?: Profile | null;
 }
 
-export interface Comment {
-  author: string;
-  avatar: string;
-  date: string;
+export interface GameComment {
+  id: string;
+  game_id: string;
+  user_id: string;
   content: string;
+  created_at: string;
+  profile?: Profile | null;
 }

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -349,22 +348,6 @@ const GameDetails = () => {
   // Default scenarios if not available
   const scenarios = ["Capture de drapeaux", "Escorte VIP", "Défense de position", "Extraction d'otages"];
 
-  // Comments will be static for now as they're not in database yet
-  const comments: Comment[] = [
-    {
-      author: "Airsoft_Pro",
-      avatar: "https://randomuser.me/api/portraits/men/45.jpg",
-      date: "Il y a 2 jours",
-      content: "Ça a l'air super ! J'ai participé à une partie similaire organisée par cette équipe et c'était vraiment bien géré."
-    },
-    {
-      author: "Sniper_Elite",
-      avatar: "https://randomuser.me/api/portraits/women/32.jpg",
-      date: "Il y a 3 jours",
-      content: "Est-ce que le terrain dispose d'un espace pour les snipers ?"
-    }
-  ];
-
   // Prepare coordinates for map
   const coordinates: [number, number] = gameData.longitude && gameData.latitude 
     ? [gameData.longitude, gameData.latitude] 
@@ -456,7 +439,7 @@ const GameDetails = () => {
                   </TabsContent>
                   
                   <TabsContent value="comments" className="p-6">
-                    <GameCommentsTab comments={comments} />
+                    <GameCommentsTab gameId={gameData.id} />
                   </TabsContent>
                 </Tabs>
               </div>
