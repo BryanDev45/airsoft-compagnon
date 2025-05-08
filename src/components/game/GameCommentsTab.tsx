@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { GameComment } from '@/types/game';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface GameCommentsTabProps {
   gameId: string;
@@ -44,6 +45,10 @@ const GameCommentsTab: React.FC<GameCommentsTabProps> = ({ gameId }) => {
     await deleteComment(commentId);
   };
 
+  const getInitials = (username: string) => {
+    return username?.substring(0, 2).toUpperCase() || 'US';
+  };
+
   return (
     <>
       <h2 className="text-xl font-semibold mb-4">Commentaires ({comments.length})</h2>
@@ -61,11 +66,13 @@ const GameCommentsTab: React.FC<GameCommentsTabProps> = ({ gameId }) => {
           ) : (
             comments.map((comment: GameComment) => (
               <div key={comment.id} className="flex gap-4">
-                <img 
-                  src={comment.profile?.avatar || '/placeholder.svg'} 
-                  alt={comment.profile?.username || 'Utilisateur'} 
-                  className="w-10 h-10 rounded-full object-cover flex-shrink-0" 
-                />
+                <Avatar className="w-10 h-10 rounded-full object-cover flex-shrink-0">
+                  <AvatarImage 
+                    src={comment.profile?.avatar || ''} 
+                    alt={comment.profile?.username || 'Utilisateur'} 
+                  />
+                  <AvatarFallback>{getInitials(comment.profile?.username || 'Utilisateur')}</AvatarFallback>
+                </Avatar>
                 <div className="flex-grow">
                   <div className="flex items-center justify-between">
                     <div>
