@@ -45,6 +45,12 @@ const CreateParty = () => {
     window.scrollTo(0, 0);
   }, []);
   
+  // Fonction pour mettre à jour les données du formulaire (non utilisée ici mais nécessaire pour les props)
+  const updateFormData = (section: string, data: any) => {
+    // Cette fonction n'est pas utilisée dans CreateParty mais est requise par les interfaces
+    console.log(`Updating section: ${section}`, data);
+  };
+  
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -58,22 +64,22 @@ const CreateParty = () => {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               {/* General Information Section */}
-              <GeneralInfoSection gameTypes={gameTypes} />
+              <GeneralInfoSection gameTypes={gameTypes} updateFormData={updateFormData} />
               
               {/* Location Section */}
-              <LocationSection />
+              <LocationSection updateFormData={updateFormData} />
               
               {/* Power Limits Section */}
-              <PowerLimitsSection />
+              <PowerLimitsSection updateFormData={updateFormData} />
               
               {/* Protection Section */}
-              <ProtectionSection />
+              <ProtectionSection updateFormData={updateFormData} />
               
               {/* Consumables Section */}
-              <ConsumablesSection />
+              <ConsumablesSection updateFormData={updateFormData} />
               
               {/* Settings Section */}
-              <SettingsSection />
+              <SettingsSection updateFormData={updateFormData} />
               
               {/* Image Upload Section */}
               <ImageUploadSection 

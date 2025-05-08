@@ -31,10 +31,10 @@ export interface GeneralInfoSectionProps {
 }
 
 export interface ImageUploadSectionProps {
-  updateFormData: (section: string, data: any) => void;
+  updateFormData?: (section: string, data: any) => void;
   initialData?: any;
-  images?: File[];
-  preview?: string[];
-  handleImageChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  removeImage?: (index: number) => void;
+  images: File[];
+  preview: string[];
+  handleImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  removeImage: (index: number) => void;
 }

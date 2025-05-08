@@ -13,13 +13,16 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
     "https://images.unsplash.com/photo-1625008928888-27fde18fd355?q=80&w=2069&auto=format&fit=crop"
   ];
 
-  // Use default images if no images are provided
-  const displayImages = images.length > 0 ? images : defaultImages;
+  // Filtrer les images null ou vides
+  const filteredImages = images.filter(img => img && img.trim() !== '');
+  
+  // N'utiliser les images par défaut que si aucune image valide n'est fournie
+  const displayImages = filteredImages.length > 0 ? filteredImages : defaultImages;
 
   return (
     <div className="rounded-lg overflow-hidden mb-8">
       <img 
-        src={displayImages[0] || defaultImages[0]} 
+        src={displayImages[0]} 
         alt={title} 
         className="w-full h-[300px] object-cover" 
       />

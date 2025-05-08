@@ -55,12 +55,17 @@ export const uploadGameImages = async (gameId: string, images: File[]) => {
       const fileName = `${gameId}_${i + 1}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `game-images/${fileName}`;
       
+      console.log(`Uploading image: ${fileName}`);
+      
       // Upload the image to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('games')
         .upload(filePath, image);
       
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error(`Error uploading image: ${fileName}`, uploadError);
+        throw uploadError;
+      }
       
       // Get the public URL of the uploaded image
       const { data: publicUrlData } = supabase.storage
@@ -68,10 +73,12 @@ export const uploadGameImages = async (gameId: string, images: File[]) => {
         .getPublicUrl(filePath);
         
       if (publicUrlData) {
+        console.log(`Image uploaded successfully: ${publicUrlData.publicUrl}`);
         imageUrls.push(publicUrlData.publicUrl);
       }
     }
     
+    console.log(`Uploaded ${imageUrls.length} images for game ${gameId}`);
     return { data: imageUrls, error: null };
   } catch (error) {
     console.error('Error uploading game images:', error);

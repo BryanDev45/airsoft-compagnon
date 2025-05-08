@@ -3,20 +3,23 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ImageIcon } from 'lucide-react';
-
-interface ImageUploadSectionProps {
-  images: File[];
-  preview: string[];
-  handleImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  removeImage: (index: number) => void;
-}
+import { ImageUploadSectionProps } from '@/types/party';
 
 const ImageUploadSection = ({ 
   images, 
   preview, 
   handleImageChange, 
-  removeImage 
+  removeImage,
+  updateFormData 
 }: ImageUploadSectionProps) => {
+  
+  // Si updateFormData est fourni, on peut l'utiliser pour mettre à jour les données du formulaire
+  React.useEffect(() => {
+    if (updateFormData) {
+      updateFormData('images', { images });
+    }
+  }, [images, updateFormData]);
+  
   return (
     <Card>
       <CardHeader>
