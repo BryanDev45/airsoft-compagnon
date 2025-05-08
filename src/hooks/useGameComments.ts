@@ -38,13 +38,13 @@ export const useGameComments = (gameId: string) => {
       if (error) throw error;
       
       // Transforme les données pour correspondre à notre structure GameComment
-      const formattedComments: GameComment[] = data.map((item) => ({
+      const formattedComments: GameComment[] = data.map((item: any) => ({
         id: item.id,
         game_id: item.game_id,
         user_id: item.user_id,
         content: item.content,
         created_at: item.created_at,
-        profile: item.profiles as Profile | null
+        profile: item.profiles as unknown as Profile | null
       }));
       
       setComments(formattedComments);

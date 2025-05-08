@@ -204,9 +204,28 @@ export const usePartyForm = (images: File[]) => {
         }
       }
       
+      // Inscrire automatiquement l'organisateur à la partie
+      const { error: participationError } = await supabase
+        .from('game_participants')
+        .insert({
+          game_id: gameResult.id,
+          user_id: userData.user.id,
+          role: 'Organisateur',
+          status: 'Confirmé'
+        });
+        
+      if (participationError) {
+        console.error("Erreur lors de l'inscription de l'organisateur:", participationError);
+        toast({
+          title: "Attention",
+          description: "La partie a été créée mais vous n'avez pas pu être inscrit automatiquement",
+          variant: "destructive"
+        });
+      }
+      
       toast({
         title: "Partie créée avec succès",
-        description: "Votre partie a été publiée et est maintenant visible par les autres joueurs"
+        description: "Votre partie a été publiée et vous y êtes automatiquement inscrit"
       });
       
       navigate('/parties');
