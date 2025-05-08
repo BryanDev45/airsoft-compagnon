@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { toast } from '@/components/ui/use-toast';
 import { GameComment } from '@/types/game';
+import { Profile } from '@/types/profile';
 
 export const useGameComments = (gameId: string) => {
   const [comments, setComments] = useState<GameComment[]>([]);
@@ -25,7 +26,7 @@ export const useGameComments = (gameId: string) => {
           game_id,
           content,
           created_at,
-          profiles!user_id (
+          profiles:user_id (
             id,
             username,
             avatar
@@ -43,7 +44,7 @@ export const useGameComments = (gameId: string) => {
         user_id: item.user_id,
         content: item.content,
         created_at: item.created_at,
-        profile: item.profiles || null
+        profile: item.profiles as Profile | null
       }));
       
       setComments(formattedComments);

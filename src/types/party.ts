@@ -27,7 +27,7 @@ export interface SettingsSectionProps {
 export interface GeneralInfoSectionProps {
   updateFormData: (section: string, data: any) => void;
   initialData?: any;
-  gameTypes?: { value: string; label: string; }[];
+  gameTypes: { value: string; label: string; }[];
 }
 
 export interface ImageUploadSectionProps {
