@@ -18,6 +18,18 @@ const GameLocationCard: React.FC<GameLocationCardProps> = ({
   city,
   coordinates
 }) => {
+  // Assurons-nous que les coordonnées sont des valeurs numériques valides
+  const validCoordinates: [number, number] = [
+    typeof coordinates[0] === 'number' ? coordinates[0] : parseFloat(String(coordinates[0])),
+    typeof coordinates[1] === 'number' ? coordinates[1] : parseFloat(String(coordinates[1]))
+  ];
+
+  // Si les coordonnées ne sont pas valides, utiliser des coordonnées par défaut
+  const finalCoordinates: [number, number] = 
+    (isNaN(validCoordinates[0]) || isNaN(validCoordinates[1])) ? 
+    [2.3522, 48.8566] : // Paris par défaut
+    validCoordinates;
+
   const openGoogleMaps = () => {
     window.open(
       `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
@@ -34,7 +46,7 @@ const GameLocationCard: React.FC<GameLocationCardProps> = ({
         <div className="bg-gray-200 rounded-lg h-[200px] mb-4">
           <LocationMap 
             location={`${address}, ${zipCode} ${city}`} 
-            coordinates={coordinates} 
+            coordinates={finalCoordinates} 
           />
         </div>
         <div className="flex items-start gap-2">

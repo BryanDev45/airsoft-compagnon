@@ -15,10 +15,10 @@ import { Style, Icon } from 'ol/style';
 
 interface LocationMapProps {
   location: string;
-  coordinates?: [number, number]; // Optional explicit coordinates
+  coordinates: [number, number]; // Les coordonnées sont obligatoires maintenant
 }
 
-const LocationMap: React.FC<LocationMapProps> = ({ location, coordinates = [2.3522, 48.8566] }) => {
+const LocationMap: React.FC<LocationMapProps> = ({ location, coordinates }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const map = useRef<Map | null>(null);
@@ -26,9 +26,17 @@ const LocationMap: React.FC<LocationMapProps> = ({ location, coordinates = [2.35
   useEffect(() => {
     if (!mapRef.current || map.current) return;
 
-    // Create marker for the location
+    // Assurons-nous que les coordonnées sont bien des nombres
+    const lng = typeof coordinates[0] === 'number' ? coordinates[0] : parseFloat(String(coordinates[0]));
+    const lat = typeof coordinates[1] === 'number' ? coordinates[1] : parseFloat(String(coordinates[1]));
+
+    // Vérifier que les coordonnées sont valides avant de créer la carte
+    const validCoordinates = !isNaN(lng) && !isNaN(lat);
+    const mapCoordinates = validCoordinates ? [lng, lat] : [2.3522, 48.8566]; // Paris par défaut si invalide
+
+    // Créer un marqueur pour l'emplacement
     const marker = new Feature({
-      geometry: new Point(fromLonLat(coordinates))
+      geometry: new Point(fromLonLat(mapCoordinates))
     });
 
     marker.setStyle(
@@ -59,13 +67,13 @@ const LocationMap: React.FC<LocationMapProps> = ({ location, coordinates = [2.35
         vectorLayer
       ],
       view: new View({
-        center: fromLonLat(coordinates),
+        center: fromLonLat(mapCoordinates),
         zoom: 15
       }),
       controls: []
     });
 
-    // Set map as loaded once it's rendered
+    // Marquer la carte comme chargée une fois qu'elle est rendue
     map.current.once('rendercomplete', () => {
       setMapLoaded(true);
     });
