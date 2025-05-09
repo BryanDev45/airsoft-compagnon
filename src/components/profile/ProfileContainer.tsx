@@ -27,6 +27,8 @@ interface ProfileContainerProps {
   setShowAllGamesDialog: (show: boolean) => void;
   setShowBadgesDialog: (show: boolean) => void;
   setShowAddEquipmentDialog: (show: boolean) => void;
+  setShowEditMediaDialog: (show: boolean) => void;
+  setShowEditBioDialog: (show: boolean) => void;
   isOwnProfile: boolean;
   equipmentTypes: string[];
 }
@@ -48,9 +50,21 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
   setShowAllGamesDialog,
   setShowBadgesDialog,
   setShowAddEquipmentDialog,
+  setShowEditMediaDialog,
+  setShowEditBioDialog,
   isOwnProfile,
   equipmentTypes
 }) => {
+  // Handler for when the user clicks on "Modifier le profil"
+  const handleEditProfile = () => {
+    setShowEditBioDialog(true);
+  };
+
+  // Handler pour les médias
+  const handleEditMedia = () => {
+    setShowEditMediaDialog(true);
+  };
+
   return (
     <div className="p-6">
       <Tabs defaultValue="profile" className="rounded-md">
