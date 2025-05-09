@@ -18,36 +18,38 @@ export const useGameComments = (gameId: string) => {
     try {
       setIsLoading(true);
       
-      const { data, error } = await supabase
+      // Modification de la requête pour éviter l'erreur de relation
+      const { data: commentsData, error: commentsError } = await supabase
         .from('game_comments')
         .select(`
           id,
           user_id,
           game_id,
           content,
-          created_at,
-          profiles:user_id (
-            id,
-            username,
-            avatar
-          )
+          created_at
         `)
         .eq('game_id', gameId)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (commentsError) throw commentsError;
       
-      // Transforme les données pour correspondre à notre structure GameComment
-      const formattedComments: GameComment[] = data.map((item: any) => ({
-        id: item.id,
-        game_id: item.game_id,
-        user_id: item.user_id,
-        content: item.content,
-        created_at: item.created_at,
-        profile: item.profiles as unknown as Profile | null
-      }));
+      // Récupérer les profils pour chaque commentaire
+      const commentsWithProfiles = await Promise.all(
+        commentsData.map(async (comment) => {
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('id, username, avatar')
+            .eq('id', comment.user_id)
+            .single();
+          
+          return {
+            ...comment,
+            profile: profileError ? null : (profileData as Profile)
+          } as GameComment;
+        })
+      );
       
-      setComments(formattedComments);
+      setComments(commentsWithProfiles);
     } catch (error) {
       console.error('Error fetching comments:', error);
       toast({
