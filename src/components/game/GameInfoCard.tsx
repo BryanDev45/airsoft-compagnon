@@ -43,6 +43,9 @@ const GameInfoCard: React.FC<GameInfoCardProps> = ({
   };
   
   const formattedTimeRange = `${formatTime(startTime)} - ${formatTime(endTime)}`;
+  
+  // Vérifie si la partie est déjà passée
+  const isPastGame = new Date(date) < new Date();
 
   return (
     <Card>
@@ -79,7 +82,7 @@ const GameInfoCard: React.FC<GameInfoCardProps> = ({
           <Button 
             className={`w-full ${isRegistered ? 'bg-green-600 hover:bg-green-700' : 'bg-airsoft-red hover:bg-red-700'}`} 
             onClick={onRegister} 
-            disabled={loadingRegistration || maxPlayers <= participantsCount && !isRegistered}
+            disabled={loadingRegistration || (maxPlayers <= participantsCount && !isRegistered) || isPastGame}
           >
             {loadingRegistration ? (
               <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite] mr-2"></div>
@@ -88,6 +91,8 @@ const GameInfoCard: React.FC<GameInfoCardProps> = ({
                 <Check size={16} className="mr-2" />
                 Inscrit - Gérer mon inscription
               </>
+            ) : isPastGame ? (
+              <>Partie terminée</>
             ) : (
               <>
                 S'inscrire à la partie

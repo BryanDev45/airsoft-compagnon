@@ -13,11 +13,10 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
     "https://images.unsplash.com/photo-1625008928888-27fde18fd355?q=80&w=2069&auto=format&fit=crop"
   ];
 
+  console.log("GameImages - Images reçues:", images);
+  
   // Filtrer les images null, vides ou undefined
   const filteredImages = images.filter(img => img && img.trim() !== '');
-  
-  // Log pour le débogage
-  console.log("GameImages - Images reçues:", images);
   console.log("GameImages - Images filtrées:", filteredImages);
   
   // N'utiliser les images par défaut que si aucune image valide n'est fournie
@@ -25,11 +24,17 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
 
   return (
     <div className="rounded-lg overflow-hidden mb-8">
-      <img 
-        src={displayImages[0]} 
-        alt={title} 
-        className="w-full h-[300px] object-cover" 
-      />
+      {displayImages.length > 0 && (
+        <img 
+          src={displayImages[0]} 
+          alt={title} 
+          className="w-full h-[300px] object-cover"
+          onError={(e) => {
+            console.error("Erreur de chargement de l'image:", displayImages[0]);
+            e.currentTarget.src = defaultImages[0];
+          }}
+        />
+      )}
       
       {displayImages.length > 1 && (
         <div className="bg-white p-2 grid grid-cols-3 gap-2">
@@ -38,7 +43,11 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
               key={idx} 
               src={img} 
               alt={`${title} ${idx + 1}`} 
-              className="h-20 w-full object-cover rounded" 
+              className="h-20 w-full object-cover rounded"
+              onError={(e) => {
+                console.error("Erreur de chargement de l'image:", img);
+                e.currentTarget.src = defaultImages[Math.min(idx+1, defaultImages.length-1)];
+              }}
             />
           ))}
         </div>

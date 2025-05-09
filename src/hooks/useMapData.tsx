@@ -32,6 +32,7 @@ export function useMapData() {
         
         const today = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
         
+        // Construction de la requête de base - ne filtre pas par is_private à ce stade
         let query = supabase
           .from('airsoft_games')
           .select(`
@@ -58,7 +59,7 @@ export function useMapData() {
           .gte('date', today) // Filtrer pour n'afficher que les parties à venir ou du jour même
           .order('date', { ascending: true });
         
-        // Si l'utilisateur n'est pas connecté, on ne montre que les parties publiques
+        // On ne filtre les parties privées que si l'utilisateur n'est pas connecté
         if (!user) {
           query = query.eq('is_private', false);
         }

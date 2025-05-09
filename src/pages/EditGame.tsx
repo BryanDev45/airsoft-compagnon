@@ -311,15 +311,11 @@ const EditGame = () => {
       };
 
       // Gestion des images existantes
+      // Réinitialisation des champs d'images pour n'inclure que les images existantes
       const pictureFields = ['Picture1', 'Picture2', 'Picture3', 'Picture4', 'Picture5'];
-      for (let i = 0; i < pictureFields.length; i++) {
-        const field = pictureFields[i];
-        if (i < existingImages.length) {
-          updateData[field] = existingImages[i];
-        } else {
-          updateData[field] = null;
-        }
-      }
+      pictureFields.forEach((field, index) => {
+        updateData[field] = index < existingImages.length ? existingImages[index] : null;
+      });
 
       console.log("Données de mise à jour initiales:", updateData);
 
@@ -346,21 +342,27 @@ const EditGame = () => {
         } else if (imageUrls && imageUrls.length > 0) {
           console.log("Images téléchargées avec succès, URLs:", imageUrls);
           
-          // Update picture fields with new image URLs
+          // Mettre à jour les champs d'images avec les nouvelles URLs
+          // en commençant à partir du premier champ d'image vide
           const updateImagesData: Record<string, string> = {};
           let pictureIndex = existingImages.length;
-          
+
+          // Log pour débogage
+          console.log("existingImages.length:", existingImages.length);
+          console.log("pictureIndex au début:", pictureIndex);
+
           for (let i = 0; i < imageUrls.length; i++) {
-            // Commencer à remplir à partir du premier champ vide
-            const fieldIndex = pictureIndex + i;
-            if (fieldIndex < 5) { // Ne pas dépasser Picture5
-              const fieldName = `Picture${fieldIndex + 1}`;
-              updateImagesData[fieldName] = imageUrls[i];
-              console.log(`Affectation de ${imageUrls[i]} à ${fieldName}`);
-            }
+            // S'assurer qu'on ne dépasse pas Picture5
+            if (pictureIndex >= 5) break;
+            
+            const fieldName = `Picture${pictureIndex + 1}`;
+            updateImagesData[fieldName] = imageUrls[i];
+            console.log(`Affectation de ${imageUrls[i]} à ${fieldName}`);
+            
+            pictureIndex++;
           }
           
-          console.log("Mise à jour des champs d'images dans la base de données:", updateImagesData);
+          console.log("Données de mise à jour des images:", updateImagesData);
           
           if (Object.keys(updateImagesData).length > 0) {
             const { error: updateImagesError } = await supabase

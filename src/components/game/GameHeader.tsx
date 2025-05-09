@@ -69,7 +69,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
           <div>
             <div className="flex items-center gap-2 text-sm mb-2">
               <Badge variant="outline" className="border-white text-white">
-                {gameType === "dominicale" ? "Partie Dominicale" : "Opération"}
+                {gameType === "dominicale" ? "Partie Dominicale" : gameType}
               </Badge>
               <Badge className="bg-airsoft-red">
                 {!isPastGame ? "À venir" : "Terminé"}
@@ -117,7 +117,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
             <Button 
               className={`${isRegistered ? 'bg-green-600 hover:bg-green-700' : 'bg-airsoft-red hover:bg-red-700'}`} 
               onClick={onRegister} 
-              disabled={loadingRegistration || maxPlayers <= participantsCount && !isRegistered}
+              disabled={loadingRegistration || (maxPlayers <= participantsCount && !isRegistered) || isPastGame}
             >
               {loadingRegistration ? (
                 <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite] mr-2"></div>
@@ -126,6 +126,8 @@ const GameHeader: React.FC<GameHeaderProps> = ({
                   <Check size={16} className="mr-2" />
                   Inscrit
                 </>
+              ) : isPastGame ? (
+                <>Partie terminée</>
               ) : (
                 <>S'inscrire - {price}€</>
               )}

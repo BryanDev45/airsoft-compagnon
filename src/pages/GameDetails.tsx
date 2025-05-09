@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -210,6 +209,16 @@ const GameDetails = () => {
   };
 
   const handleRegister = async () => {
+    // Vérifier si la partie est déjà passée
+    if (isPastGame) {
+      toast({
+        variant: "destructive",
+        title: "Partie terminée",
+        description: "Vous ne pouvez pas vous inscrire à une partie passée."
+      });
+      return;
+    }
+    
     if (!isAuthenticated) {
       navigate('/login');
       return;
@@ -340,11 +349,13 @@ const GameDetails = () => {
 
   // Prepare game images
   const gameImages = [];
-  if (gameData.Picture1) gameImages.push(gameData.Picture1);
-  if (gameData.Picture2) gameImages.push(gameData.Picture2);
-  if (gameData.Picture3) gameImages.push(gameData.Picture3);
-  if (gameData.Picture4) gameImages.push(gameData.Picture4);
-  if (gameData.Picture5) gameImages.push(gameData.Picture5);
+  if (gameData?.Picture1) gameImages.push(gameData.Picture1);
+  if (gameData?.Picture2) gameImages.push(gameData.Picture2);
+  if (gameData?.Picture3) gameImages.push(gameData.Picture3);
+  if (gameData?.Picture4) gameImages.push(gameData.Picture4);
+  if (gameData?.Picture5) gameImages.push(gameData.Picture5);
+  
+  console.log("Images de la partie:", gameImages);
 
   // Default scenarios if not available
   const scenarios = ["Capture de drapeaux", "Escorte VIP", "Défense de position", "Extraction d'otages"];
