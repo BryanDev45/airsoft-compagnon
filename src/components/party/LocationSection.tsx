@@ -28,7 +28,7 @@ const LocationSection: React.FC<LocationSectionProps> = ({ updateFormData, initi
           Lieu
         </CardTitle>
         <CardDescription>
-          L'adresse où se déroulera votre partie
+          Indiquez l'adresse précise où se déroule la partie
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

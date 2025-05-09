@@ -1,3 +1,4 @@
+
 export interface LocationSectionProps {
   updateFormData?: (section: string, data: any) => void;
   initialData?: any;
