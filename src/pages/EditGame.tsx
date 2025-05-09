@@ -331,30 +331,33 @@ const EditGame = () => {
 
       // Upload new images if any
       if (images.length > 0) {
-        console.log("Uploading new images:", images.length);
+        console.log("Téléchargement de nouvelles images:", images.length);
         const { data: imageUrls, error: imageError } = await uploadGameImages(id, images);
         
         if (imageError) {
-          console.error("Error uploading game images:", imageError);
+          console.error("Erreur lors du téléchargement des images du jeu:", imageError);
           toast({
             title: "Attention",
             description: "La partie a été modifiée mais certaines images n'ont pas pu être téléchargées",
             variant: "destructive"
           });
         } else if (imageUrls && imageUrls.length > 0) {
-          console.log("Successfully uploaded images, URLs:", imageUrls);
+          console.log("Images téléchargées avec succès, URLs:", imageUrls);
           
           // Update picture fields with new image URLs
           const updateImagesData: Record<string, string> = {};
           const startIndex = existingImages.length;
           
           for (let i = 0; i < imageUrls.length; i++) {
-            if (startIndex + i < 5) {
-              updateImagesData[`Picture${startIndex + i + 1}`] = imageUrls[i];
+            const fieldIndex = startIndex + i;
+            if (fieldIndex < 5) { // S'assurer de ne pas dépasser Picture5
+              const fieldName = `Picture${fieldIndex + 1}`;
+              updateImagesData[fieldName] = imageUrls[i];
+              console.log(`Affectation de ${imageUrls[i]} à ${fieldName}`);
             }
           }
           
-          console.log("Updating image fields in database:", updateImagesData);
+          console.log("Mise à jour des champs d'images dans la base de données:", updateImagesData);
           
           if (Object.keys(updateImagesData).length > 0) {
             const { error: updateImagesError } = await supabase
@@ -363,9 +366,9 @@ const EditGame = () => {
               .eq('id', id);
               
             if (updateImagesError) {
-              console.error("Error updating image URLs:", updateImagesError);
+              console.error("Erreur lors de la mise à jour des URLs d'images:", updateImagesError);
             } else {
-              console.log("Image URLs updated successfully");
+              console.log("Les URLs des images ont été mises à jour avec succès");
             }
           }
         }
@@ -378,7 +381,7 @@ const EditGame = () => {
       
       navigate(`/game/${id}`);
     } catch (error: any) {
-      console.error("Error updating game:", error);
+      console.error("Erreur lors de la mise à jour du jeu:", error);
       toast({
         title: "Erreur",
         description: error?.message || "Une erreur est survenue lors de la modification de la partie",

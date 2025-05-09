@@ -49,21 +49,35 @@ export const uploadGameImages = async (gameId: string, images: File[]) => {
   try {
     const imageUrls: string[] = [];
     
+    // Vérifier que le bucket existe
+    const { data: buckets } = await supabase.storage.listBuckets();
+    const gamesBucketExists = buckets?.some(bucket => bucket.name === 'games');
+    
+    if (!gamesBucketExists) {
+      console.error("Le bucket 'games' n'existe pas dans votre projet Supabase.");
+      return { data: null, error: new Error("Le bucket de stockage 'games' n'existe pas") };
+    }
+    
+    console.log(`Début de l'upload de ${images.length} images pour le jeu ${gameId}`);
+    
     for (let i = 0; i < Math.min(images.length, 5); i++) {
       const image = images[i];
       const fileExt = image.name.split('.').pop();
       const fileName = `${gameId}_${i + 1}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-      const filePath = `game-images/${fileName}`;
+      const filePath = `${fileName}`; // Important: Ne pas préfixer avec un dossier ici
       
-      console.log(`Uploading image: ${fileName}`);
+      console.log(`Uploading image ${i + 1}/${images.length}: ${fileName}`);
       
       // Upload the image to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('games')
-        .upload(filePath, image);
+        .upload(filePath, image, {
+          cacheControl: '3600',
+          upsert: true
+        });
       
       if (uploadError) {
-        console.error(`Error uploading image: ${fileName}`, uploadError);
+        console.error(`Erreur lors de l'upload de l'image ${fileName}:`, uploadError);
         throw uploadError;
       }
       
@@ -73,15 +87,17 @@ export const uploadGameImages = async (gameId: string, images: File[]) => {
         .getPublicUrl(filePath);
         
       if (publicUrlData) {
-        console.log(`Image uploaded successfully: ${publicUrlData.publicUrl}`);
+        console.log(`Image téléchargée avec succès: ${publicUrlData.publicUrl}`);
         imageUrls.push(publicUrlData.publicUrl);
+      } else {
+        console.error(`Impossible d'obtenir l'URL publique pour ${fileName}`);
       }
     }
     
-    console.log(`Uploaded ${imageUrls.length} images for game ${gameId}`);
+    console.log(`${imageUrls.length} images téléchargées pour le jeu ${gameId}`);
     return { data: imageUrls, error: null };
   } catch (error) {
-    console.error('Error uploading game images:', error);
+    console.error('Erreur lors du téléchargement des images du jeu:', error);
     return { data: null, error };
   }
 };
