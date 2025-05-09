@@ -1,3 +1,4 @@
+
 import React from 'react';
 import Header from '../Header';
 import Footer from '../Footer';
@@ -92,7 +93,8 @@ const ProfileLayout: React.FC<ProfileLayoutProps> = ({
       {/* All dialogs */}
       <ProfileSettingsDialog 
         open={dialogStates.showSettingsDialog} 
-        onOpenChange={dialogStates.setShowSettingsDialog} 
+        onOpenChange={dialogStates.setShowSettingsDialog}
+        user={user} 
       />
       
       <ProfileEditMediaDialog 

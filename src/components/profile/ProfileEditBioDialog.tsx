@@ -12,26 +12,35 @@ import { supabase } from "@/integrations/supabase/client";
 interface ProfileEditBioDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  currentBio: string;
-  currentUsername: string;
+  user?: any; // Made user optional
+  currentBio?: string;
+  currentUsername?: string;
+  onUpdate?: () => Promise<void>;
 }
 
-const ProfileEditBioDialog = ({ open, onOpenChange, currentBio, currentUsername }: ProfileEditBioDialogProps) => {
+const ProfileEditBioDialog = ({ 
+  open, 
+  onOpenChange, 
+  user,
+  currentBio, 
+  currentUsername,
+  onUpdate
+}: ProfileEditBioDialogProps) => {
   const [bio, setBio] = useState('');
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
-  const { user } = useAuth();
+  const { user: authUser } = useAuth();
 
   // Set default values when the dialog opens
   useEffect(() => {
     if (open) {
-      setBio(currentBio || '');
-      setUsername(currentUsername || '');
+      setBio(user?.bio || currentBio || '');
+      setUsername(user?.username || currentUsername || '');
     }
-  }, [open, currentBio, currentUsername]);
+  }, [open, currentBio, currentUsername, user]);
 
   const handleSave = async () => {
-    if (!user?.id) return;
+    if (!authUser?.id) return;
     
     setLoading(true);
     try {
@@ -41,7 +50,7 @@ const ProfileEditBioDialog = ({ open, onOpenChange, currentBio, currentUsername 
           bio,
           username 
         })
-        .eq('id', user.id);
+        .eq('id', authUser.id);
 
       if (error) throw error;
 
@@ -51,8 +60,14 @@ const ProfileEditBioDialog = ({ open, onOpenChange, currentBio, currentUsername 
       });
       
       onOpenChange(false);
-      // Recharge la page pour afficher les changements
-      window.location.reload();
+      
+      // Call the onUpdate callback if provided
+      if (onUpdate) {
+        await onUpdate();
+      } else {
+        // Recharge la page pour afficher les changements
+        window.location.reload();
+      }
     } catch (error: any) {
       toast({
         title: "Erreur",

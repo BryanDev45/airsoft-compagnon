@@ -35,6 +35,10 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
   const onEditBio = () => {
     // This is just a placeholder for the ProfileHeader component
   };
+  
+  const onEditMedia = () => {
+    // This is just a placeholder for the ProfileHeader component
+  };
 
   // Vérifier si l'utilisateur consulte son propre profil
   const isOwnProfile = currentUserId === userData?.id;
@@ -46,6 +50,7 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
         isOwnProfile={isOwnProfile}
         toggleProfileSettings={toggleProfileSettings}
         onEditBio={onEditBio}
+        onEditMedia={onEditMedia}
       />
       
       {!isOwnProfile && (

@@ -4,7 +4,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Settings, Edit, Star } from 'lucide-react';
 
-const ProfileHeader = ({
+interface ProfileHeaderProps {
+  user: any;
+  isOwnProfile?: boolean;
+  toggleProfileSettings?: () => void;
+  onEditBio?: () => void;
+  onEditMedia?: () => void;
+}
+
+const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   user,
   isOwnProfile = false,
   toggleProfileSettings,
