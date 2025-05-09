@@ -10,7 +10,8 @@ const ImageUploadSection = ({
   preview, 
   handleImageChange, 
   removeImage,
-  updateFormData 
+  updateFormData,
+  initialData 
 }: ImageUploadSectionProps) => {
   
   // Si updateFormData est fourni, on peut l'utiliser pour mettre à jour les données du formulaire
@@ -40,15 +41,15 @@ const ImageUploadSection = ({
             multiple 
             onChange={handleImageChange} 
             className="hidden" 
-            disabled={images.length >= 5}
+            disabled={preview.length >= 5}
           />
           <label 
             htmlFor="images" 
-            className={`flex items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-airsoft-red transition-colors ${images.length >= 5 ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`flex items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-airsoft-red transition-colors ${preview.length >= 5 ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <ImageIcon className="h-5 w-5 text-gray-400" />
             <span className="text-gray-500">
-              {images.length >= 5 
+              {preview.length >= 5 
                 ? "Limite de 5 images atteinte" 
                 : "Cliquez pour sélectionner des images"}
             </span>

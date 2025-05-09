@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -7,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { uploadGameImages } from "@/utils/supabaseHelpers";
 
 // Layout Components
 import Header from '../components/Header';
@@ -331,6 +331,7 @@ const EditGame = () => {
 
       // Upload new images if any
       if (images.length > 0) {
+        console.log("Uploading new images:", images.length);
         const { data: imageUrls, error: imageError } = await uploadGameImages(id, images);
         
         if (imageError) {
@@ -341,6 +342,8 @@ const EditGame = () => {
             variant: "destructive"
           });
         } else if (imageUrls && imageUrls.length > 0) {
+          console.log("Successfully uploaded images, URLs:", imageUrls);
+          
           // Update picture fields with new image URLs
           const updateImagesData: Record<string, string> = {};
           const startIndex = existingImages.length;
@@ -351,6 +354,8 @@ const EditGame = () => {
             }
           }
           
+          console.log("Updating image fields in database:", updateImagesData);
+          
           if (Object.keys(updateImagesData).length > 0) {
             const { error: updateImagesError } = await supabase
               .from('airsoft_games')
@@ -359,6 +364,8 @@ const EditGame = () => {
               
             if (updateImagesError) {
               console.error("Error updating image URLs:", updateImagesError);
+            } else {
+              console.log("Image URLs updated successfully");
             }
           }
         }
@@ -379,40 +386,6 @@ const EditGame = () => {
       });
     } finally {
       setSaving(false);
-    }
-  };
-
-  const uploadGameImages = async (gameId: string, imageFiles: File[]) => {
-    try {
-      const imageUrls: string[] = [];
-      
-      for (let i = 0; i < imageFiles.length; i++) {
-        const image = imageFiles[i];
-        const fileExt = image.name.split('.').pop();
-        const fileName = `${gameId}_${i + 1}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-        const filePath = `game-images/${fileName}`;
-        
-        // Upload the image to Supabase Storage
-        const { error: uploadError } = await supabase.storage
-          .from('games')
-          .upload(filePath, image);
-        
-        if (uploadError) throw uploadError;
-        
-        // Get the public URL of the uploaded image
-        const { data: publicUrlData } = supabase.storage
-          .from('games')
-          .getPublicUrl(filePath);
-          
-        if (publicUrlData) {
-          imageUrls.push(publicUrlData.publicUrl);
-        }
-      }
-      
-      return { data: imageUrls, error: null };
-    } catch (error) {
-      console.error('Error uploading game images:', error);
-      return { data: null, error };
     }
   };
 
