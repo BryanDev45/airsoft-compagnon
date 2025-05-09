@@ -49,44 +49,54 @@ export const uploadGameImages = async (gameId: string, images: File[]) => {
   try {
     const imageUrls: string[] = [];
     
-    // Vérifier que le bucket existe
-    const { data: buckets } = await supabase.storage.listBuckets();
-    const gamesBucketExists = buckets?.some(bucket => bucket.name === 'games');
-    
-    if (!gamesBucketExists) {
-      console.error("Le bucket 'games' n'existe pas dans votre projet Supabase.");
-      return { data: null, error: new Error("Le bucket de stockage 'games' n'existe pas") };
-    }
-    
     console.log(`Début de l'upload de ${images.length} images pour le jeu ${gameId}`);
     
+    // Vérifier que le bucket existe
+    try {
+      const { data: buckets, error } = await supabase.storage.listBuckets();
+      if (error) {
+        console.error("Erreur lors de la vérification des buckets:", error);
+        return { data: null, error };
+      }
+      
+      const gamesBucketExists = buckets?.some(bucket => bucket.name === 'games');
+      if (!gamesBucketExists) {
+        console.error("Le bucket 'games' n'existe pas dans votre projet Supabase");
+        return { data: null, error: new Error("Le bucket de stockage 'games' n'existe pas") };
+      }
+      console.log("Le bucket 'games' existe, on continue avec l'upload");
+    } catch (bucketError) {
+      console.error("Erreur lors de la vérification des buckets:", bucketError);
+      return { data: null, error: bucketError as Error };
+    }
+    
+    // Télécharger jusqu'à 5 images
     for (let i = 0; i < Math.min(images.length, 5); i++) {
       const image = images[i];
       const fileExt = image.name.split('.').pop();
       const fileName = `${gameId}_${i + 1}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-      const filePath = `${fileName}`; // Important: Ne pas préfixer avec un dossier ici
       
       console.log(`Uploading image ${i + 1}/${images.length}: ${fileName}`);
       
       // Upload the image to Supabase Storage
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError, data: uploadData } = await supabase.storage
         .from('games')
-        .upload(filePath, image, {
+        .upload(fileName, image, {
           cacheControl: '3600',
           upsert: true
         });
       
       if (uploadError) {
         console.error(`Erreur lors de l'upload de l'image ${fileName}:`, uploadError);
-        throw uploadError;
+        continue; // Continue with next image instead of failing completely
       }
       
       // Get the public URL of the uploaded image
       const { data: publicUrlData } = supabase.storage
         .from('games')
-        .getPublicUrl(filePath);
+        .getPublicUrl(fileName);
         
-      if (publicUrlData) {
+      if (publicUrlData && publicUrlData.publicUrl) {
         console.log(`Image téléchargée avec succès: ${publicUrlData.publicUrl}`);
         imageUrls.push(publicUrlData.publicUrl);
       } else {
@@ -94,7 +104,7 @@ export const uploadGameImages = async (gameId: string, images: File[]) => {
       }
     }
     
-    console.log(`${imageUrls.length} images téléchargées pour le jeu ${gameId}`);
+    console.log(`${imageUrls.length} images téléchargées pour le jeu ${gameId}:`, imageUrls);
     return { data: imageUrls, error: null };
   } catch (error) {
     console.error('Erreur lors du téléchargement des images du jeu:', error);

@@ -13,8 +13,12 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
     "https://images.unsplash.com/photo-1625008928888-27fde18fd355?q=80&w=2069&auto=format&fit=crop"
   ];
 
-  // Filtrer les images null ou vides
+  // Filtrer les images null, vides ou undefined
   const filteredImages = images.filter(img => img && img.trim() !== '');
+  
+  // Log pour le débogage
+  console.log("GameImages - Images reçues:", images);
+  console.log("GameImages - Images filtrées:", filteredImages);
   
   // N'utiliser les images par défaut que si aucune image valide n'est fournie
   const displayImages = filteredImages.length > 0 ? filteredImages : defaultImages;

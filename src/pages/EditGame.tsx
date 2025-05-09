@@ -310,16 +310,18 @@ const EditGame = () => {
         is_private: data.isPrivate,
       };
 
-      // Remove existing images that were deleted
+      // Gestion des images existantes
       const pictureFields = ['Picture1', 'Picture2', 'Picture3', 'Picture4', 'Picture5'];
       for (let i = 0; i < pictureFields.length; i++) {
-        // If we have fewer existing images than picture fields, clear the field
-        if (i >= existingImages.length) {
-          updateData[pictureFields[i]] = null;
+        const field = pictureFields[i];
+        if (i < existingImages.length) {
+          updateData[field] = existingImages[i];
         } else {
-          updateData[pictureFields[i]] = existingImages[i];
+          updateData[field] = null;
         }
       }
+
+      console.log("Données de mise à jour initiales:", updateData);
 
       // Update game data in the database
       const { error: updateError } = await supabase
@@ -346,11 +348,12 @@ const EditGame = () => {
           
           // Update picture fields with new image URLs
           const updateImagesData: Record<string, string> = {};
-          const startIndex = existingImages.length;
+          let pictureIndex = existingImages.length;
           
           for (let i = 0; i < imageUrls.length; i++) {
-            const fieldIndex = startIndex + i;
-            if (fieldIndex < 5) { // S'assurer de ne pas dépasser Picture5
+            // Commencer à remplir à partir du premier champ vide
+            const fieldIndex = pictureIndex + i;
+            if (fieldIndex < 5) { // Ne pas dépasser Picture5
               const fieldName = `Picture${fieldIndex + 1}`;
               updateImagesData[fieldName] = imageUrls[i];
               console.log(`Affectation de ${imageUrls[i]} à ${fieldName}`);
