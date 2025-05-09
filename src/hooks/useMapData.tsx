@@ -48,7 +48,12 @@ export function useMapData() {
             longitude,
             created_at,
             created_by,
-            is_private
+            is_private,
+            Picture1,
+            Picture2,
+            Picture3,
+            Picture4,
+            Picture5
           `)
           .gte('date', today) // Filtrer pour n'afficher que les parties à venir ou du jour même
           .order('date', { ascending: true });
@@ -70,6 +75,9 @@ export function useMapData() {
           const gameDate = new Date(game.date);
           const formattedDate = `${gameDate.getDate().toString().padStart(2, '0')}/${(gameDate.getMonth() + 1).toString().padStart(2, '0')}/${gameDate.getFullYear()}`;
           
+          // Get the first available image, or use default
+          const gameImage = game.Picture1 || game.Picture2 || game.Picture3 || game.Picture4 || game.Picture5 || "/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png";
+          
           return {
             id: game.id,
             title: game.title,
@@ -82,7 +90,7 @@ export function useMapData() {
             lng: game.longitude ? parseFloat(String(game.longitude)) : 2.3522,
             maxPlayers: game.max_players,
             price: game.price,
-            image: "/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png" // Image par défaut
+            image: gameImage
           };
         }) || [];
         

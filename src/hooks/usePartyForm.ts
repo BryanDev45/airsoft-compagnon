@@ -158,14 +158,6 @@ export const usePartyForm = (images: File[]) => {
         created_by: userData.user.id
       };
       
-      // Si des images ont été téléchargées, préparer les URLs pour les enregistrer
-      if (images.length > 0) {
-        // Ajouter les images au gameData (jusqu'à 5)
-        for (let i = 0; i < Math.min(images.length, 5); i++) {
-          gameData[`Picture${i + 1}`] = ''; // Initialisé vide, sera mis à jour après upload
-        }
-      }
-      
       // Créer la partie dans la base de données
       const { data: gameResult, error } = await createAirsoftGame(gameData);
       
@@ -173,7 +165,7 @@ export const usePartyForm = (images: File[]) => {
         throw new Error(error?.message || "Erreur lors de la création de la partie");
       }
       
-      // Si des images ont été téléchargées, les enregistrer et mettre à jour les URLs
+      // Si des images ont été téléchargées, les enregistrer
       if (images.length > 0) {
         const { data: imageUrls, error: imageError } = await uploadGameImages(gameResult.id, images);
         
@@ -189,7 +181,8 @@ export const usePartyForm = (images: File[]) => {
           const updateData: Record<string, string> = {};
           
           for (let i = 0; i < Math.min(imageUrls.length, 5); i++) {
-            updateData[`Picture${i + 1}`] = imageUrls[i];
+            const fieldName = `Picture${i + 1}`;
+            updateData[fieldName] = imageUrls[i];
           }
           
           // Mise à jour des URL des images dans la base de données
