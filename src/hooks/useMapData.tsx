@@ -65,20 +65,26 @@ export function useMapData() {
         }
 
         // Transformation des données pour correspondre au format attendu par les composants existants
-        const formattedEvents = data?.map(game => ({
-          id: game.id,
-          title: game.title,
-          date: new Date(game.date).toLocaleDateString('fr-FR'),
-          location: game.city,
-          department: game.zip_code?.substring(0, 2) || "",
-          type: game.game_type || "woodland",
-          country: "france", // Valeur par défaut, peut être étendue plus tard
-          lat: game.latitude ? parseFloat(String(game.latitude)) : 48.8566,
-          lng: game.longitude ? parseFloat(String(game.longitude)) : 2.3522,
-          maxPlayers: game.max_players,
-          price: game.price,
-          image: "/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png" // Image par défaut
-        })) || [];
+        const formattedEvents = data?.map(game => {
+          // Format date as DD/MM/YYYY for display
+          const gameDate = new Date(game.date);
+          const formattedDate = `${gameDate.getDate().toString().padStart(2, '0')}/${(gameDate.getMonth() + 1).toString().padStart(2, '0')}/${gameDate.getFullYear()}`;
+          
+          return {
+            id: game.id,
+            title: game.title,
+            date: formattedDate,
+            location: game.city,
+            department: game.zip_code?.substring(0, 2) || "",
+            type: game.game_type || "woodland",
+            country: "france", // Valeur par défaut, peut être étendue plus tard
+            lat: game.latitude ? parseFloat(String(game.latitude)) : 48.8566,
+            lng: game.longitude ? parseFloat(String(game.longitude)) : 2.3522,
+            maxPlayers: game.max_players,
+            price: game.price,
+            image: "/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png" // Image par défaut
+          };
+        }) || [];
         
         console.log("Formatted events:", formattedEvents);
         setEvents(formattedEvents);

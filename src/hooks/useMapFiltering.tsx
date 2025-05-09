@@ -45,7 +45,15 @@ export function useMapFiltering(events: MapEvent[]) {
                         (selectedType === 'dominicale' && event.type === 'dominicale') ||
                         (selectedType === 'operation' && event.type === 'operation');
     const matchesDepartment = selectedDepartment === 'all' || event.department === selectedDepartment;
-    const matchesDate = !selectedDate || event.date.includes(selectedDate);
+    
+    // Fix the date matching logic
+    let matchesDate = true;
+    if (selectedDate) {
+      // Compare only the date part (YYYY-MM-DD) without time
+      const eventDateStr = event.date.split('/').reverse().join('-'); // Convert DD/MM/YYYY to YYYY-MM-DD
+      matchesDate = eventDateStr === selectedDate;
+    }
+    
     const matchesCountry = selectedCountry === 'all' || event.country === selectedCountry;
     
     if (searchRadius[0] === 0) {

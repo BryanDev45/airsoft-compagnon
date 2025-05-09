@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Calendar, Navigation } from 'lucide-react';
 import { Input } from "@/components/ui/input";
@@ -34,6 +33,24 @@ const MapFilters: React.FC<MapFiltersProps> = ({
   selectedType,
   setSelectedType
 }) => {
+  // Format the date from French format to ISO format for display in the date picker
+  const formatDateForInput = (dateString: string) => {
+    if (!dateString) return '';
+    
+    // If the date is already in YYYY-MM-DD format, return it
+    if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return dateString;
+    }
+    
+    // Otherwise convert from DD/MM/YYYY to YYYY-MM-DD
+    const parts = dateString.split('/');
+    if (parts.length === 3) {
+      return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+    }
+    
+    return dateString;
+  };
+
   return (
     <div className="space-y-4">
       <div className="mb-4">
