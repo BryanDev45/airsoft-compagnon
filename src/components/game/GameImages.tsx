@@ -15,7 +15,7 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
 
   console.log("GameImages - Images reçues:", images);
   
-  // Filtrer les images null, vides ou undefined
+  // Filtrer les images null, undefined ou vides
   const filteredImages = images.filter(img => img && img.trim() !== '');
   console.log("GameImages - Images filtrées:", filteredImages);
   

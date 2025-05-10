@@ -64,10 +64,20 @@ export const uploadGameImages = async (gameId: string, images: File[]) => {
     
     if (!gamesBucketExists) {
       console.error("Le bucket 'games' n'existe pas dans votre projet Supabase");
-      return { data: null, error: new Error("Le bucket de stockage 'games' n'existe pas") };
+      // Tenter de créer le bucket s'il n'existe pas
+      const { error: createBucketError } = await supabase.storage.createBucket('games', {
+        public: true
+      });
+      
+      if (createBucketError) {
+        console.error("Erreur lors de la création du bucket 'games':", createBucketError);
+        return { data: null, error: createBucketError };
+      }
+      
+      console.log("Le bucket 'games' a été créé avec succès");
+    } else {
+      console.log("Le bucket 'games' existe, on continue avec l'upload");
     }
-    
-    console.log("Le bucket 'games' existe, on continue avec l'upload");
     
     // Télécharger jusqu'à 5 images
     for (let i = 0; i < Math.min(images.length, 5); i++) {

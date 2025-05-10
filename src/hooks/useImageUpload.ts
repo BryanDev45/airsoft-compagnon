@@ -55,6 +55,7 @@ export const useImageUpload = (maxImages: number = 5) => {
     preview,
     handleImageChange,
     removeImage,
-    setImages
+    setImages,
+    setPreview
   };
 };

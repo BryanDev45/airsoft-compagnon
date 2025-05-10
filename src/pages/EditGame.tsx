@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -212,6 +213,8 @@ const EditGame = () => {
         if (game.Picture3) images.push(game.Picture3);
         if (game.Picture4) images.push(game.Picture4);
         if (game.Picture5) images.push(game.Picture5);
+        
+        console.log("Images existantes chargées:", images);
         setExistingImages(images);
         setPreview(images);
 
@@ -249,28 +252,39 @@ const EditGame = () => {
       
       // Generate preview for new files
       const newPreviews = newFiles.map(file => URL.createObjectURL(file));
-      setPreview([...preview, ...newPreviews]);
+      
+      // Update preview with both existing and new images
+      setPreview([...existingImages, ...preview.slice(existingImages.length), ...newPreviews]);
     }
   };
 
   const removeImage = (index: number) => {
+    // Create a copy of the preview array
     const newPreview = [...preview];
+    
     // Check if we're removing an existing image or a new one
     if (index < existingImages.length) {
-      // Remove existing image
+      // Removing an existing image
       const newExistingImages = [...existingImages];
       newExistingImages.splice(index, 1);
       setExistingImages(newExistingImages);
+      
+      // Remove from preview
       newPreview.splice(index, 1);
+      setPreview(newPreview);
     } else {
-      // Remove new image
-      const newImages = [...images];
+      // Removing a new image
       const adjustedIndex = index - existingImages.length;
+      
+      // Remove from images array
+      const newImages = [...images];
       newImages.splice(adjustedIndex, 1);
       setImages(newImages);
+      
+      // Remove from preview
       newPreview.splice(index, 1);
+      setPreview(newPreview);
     }
-    setPreview(newPreview);
   };
 
   const onSubmit = async (data: GameFormValues) => {
@@ -310,16 +324,23 @@ const EditGame = () => {
         is_private: data.isPrivate,
       };
 
-      // Gestion des images existantes
-      // Réinitialisation des champs d'images pour n'inclure que les images existantes
+      // Gérer les images existantes d'abord
+      // Réinitialiser tous les champs d'image à null
       const pictureFields = ['Picture1', 'Picture2', 'Picture3', 'Picture4', 'Picture5'];
-      pictureFields.forEach((field, index) => {
-        updateData[field] = index < existingImages.length ? existingImages[index] : null;
+      pictureFields.forEach(field => {
+        updateData[field] = null;
+      });
+
+      // Puis ajouter les images existantes conservées
+      existingImages.forEach((img, index) => {
+        if (index < 5) {
+          updateData[`Picture${index + 1}`] = img;
+        }
       });
 
       console.log("Données de mise à jour initiales:", updateData);
 
-      // Update game data in the database
+      // Mettre à jour les données du jeu dans la base de données
       const { error: updateError } = await supabase
         .from('airsoft_games')
         .update(updateData)
@@ -327,13 +348,13 @@ const EditGame = () => {
 
       if (updateError) throw updateError;
 
-      // Upload new images if any
+      // Télécharger les nouvelles images si nécessaire
       if (images.length > 0) {
         console.log("Téléchargement de nouvelles images:", images.length);
         const { data: imageUrls, error: imageError } = await uploadGameImages(id, images);
         
         if (imageError) {
-          console.error("Erreur lors du téléchargement des images du jeu:", imageError);
+          console.error("Erreur lors du téléchargement des images:", imageError);
           toast({
             title: "Attention",
             description: "La partie a été modifiée mais certaines images n'ont pas pu être téléchargées",
@@ -343,23 +364,14 @@ const EditGame = () => {
           console.log("Images téléchargées avec succès, URLs:", imageUrls);
           
           // Mettre à jour les champs d'images avec les nouvelles URLs
-          // en commençant à partir du premier champ d'image vide
+          // en commençant après la dernière image existante
           const updateImagesData: Record<string, string> = {};
-          let pictureIndex = existingImages.length;
-
-          // Log pour débogage
-          console.log("existingImages.length:", existingImages.length);
-          console.log("pictureIndex au début:", pictureIndex);
-
-          for (let i = 0; i < imageUrls.length; i++) {
-            // S'assurer qu'on ne dépasse pas Picture5
-            if (pictureIndex >= 5) break;
-            
-            const fieldName = `Picture${pictureIndex + 1}`;
+          let startIndex = existingImages.length;
+          
+          // S'assurer qu'on ne dépasse pas les 5 images au total
+          for (let i = 0; i < imageUrls.length && startIndex + i < 5; i++) {
+            const fieldName = `Picture${startIndex + i + 1}`;
             updateImagesData[fieldName] = imageUrls[i];
-            console.log(`Affectation de ${imageUrls[i]} à ${fieldName}`);
-            
-            pictureIndex++;
           }
           
           console.log("Données de mise à jour des images:", updateImagesData);
