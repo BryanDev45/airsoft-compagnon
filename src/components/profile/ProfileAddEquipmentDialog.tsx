@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -11,9 +12,7 @@ import { Upload, Image as ImageIcon, RefreshCw } from 'lucide-react';
 interface ProfileAddEquipmentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddEquipment?: (equipment: any) => Promise<boolean>;
-  onEquipmentAdded?: (equipment: any) => Promise<boolean>; // Add this prop for compatibility
-  userId?: string;
+  onAddEquipment: (equipment: any) => Promise<boolean>;
   equipmentTypes: string[];
 }
 
@@ -21,8 +20,6 @@ const ProfileAddEquipmentDialog = ({
   open, 
   onOpenChange, 
   onAddEquipment,
-  onEquipmentAdded, // Handle both property names
-  userId,
   equipmentTypes 
 }: ProfileAddEquipmentDialogProps) => {
   const [type, setType] = useState('');
@@ -32,9 +29,6 @@ const ProfileAddEquipmentDialog = ({
   const [description, setDescription] = useState('');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  // Choose which callback to use (for backward compatibility)
-  const addEquipmentCallback = onEquipmentAdded || onAddEquipment;
 
   const resetForm = () => {
     setType('');
@@ -88,21 +82,12 @@ const ProfileAddEquipmentDialog = ({
         brand,
         power,
         description,
-        image: imagePreview,
-        user_id: userId
+        image: imagePreview
       };
 
-      if (addEquipmentCallback) {
-        const success = await addEquipmentCallback(newEquipment);
-        if (success) {
-          handleClose();
-        }
-      } else {
+      const success = await onAddEquipment(newEquipment);
+      if (success) {
         handleClose();
-        toast({
-          title: "Avertissement",
-          description: "Fonction d'ajout d'équipement non configurée",
-        });
       }
     } catch (error) {
       console.error("Erreur lors de l'ajout de l'équipement:", error);

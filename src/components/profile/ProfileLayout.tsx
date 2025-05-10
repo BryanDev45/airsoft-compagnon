@@ -40,10 +40,35 @@ const ProfileLayout: React.FC<ProfileLayoutProps> = ({
 }) => {
   const navigate = useNavigate();
   
+  const {
+    showSettingsDialog,
+    setShowSettingsDialog,
+    showEditMediaDialog,
+    setShowEditMediaDialog,
+    showEditBioDialog,
+    setShowEditBioDialog,
+    showAddEquipmentDialog,
+    setShowAddEquipmentDialog,
+    selectedGame,
+    setSelectedGame,
+    showGameDialog,
+    setShowGameDialog,
+    showAllGamesDialog,
+    setShowAllGamesDialog,
+    showBadgesDialog,
+    setShowBadgesDialog
+  } = dialogStates;
+
   const handleNavigateToTeam = () => {
     if (profileData?.team_id) {
       navigate(`/team/${profileData.team_id}`);
+    } else {
+      navigate('/team/create');
     }
+  };
+
+  const handleNavigateToGame = (gameId) => {
+    navigate(`/game/${gameId}`);
   };
 
   return (
@@ -54,77 +79,78 @@ const ProfileLayout: React.FC<ProfileLayoutProps> = ({
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <ProfileHeader 
               user={profileData}
-              isOwnProfile={true} 
-              toggleProfileSettings={() => dialogStates.setShowSettingsDialog(true)}
+              isOwnProfile={true}
+              setEditing={() => setShowEditMediaDialog(true)}
+              toggleProfileSettings={() => setShowSettingsDialog(true)}
+              onEditBio={() => setShowEditBioDialog(true)}
             />
-
-            <ProfileContainer 
+            
+            <ProfileContainer
               user={user}
               profileData={profileData}
               userStats={userStats}
               equipment={equipment}
-              games={userGames}
-              isOwnProfile={true}
-              equipmentTypes={equipmentTypes}
-              updateLocation={async (location) => {
-                console.log("Updating location to:", location);
-                return true;
+              games={userGames} 
+              updateLocation={(location) => {
+                // This is handled by useProfileData hook and passed to Profile.tsx
+                return Promise.resolve(false);
               }}
-              updateUserStats={async () => true}
+              updateUserStats={(gameType, role, level) => {
+                // This is handled by useProfileData hook and passed to Profile.tsx
+                return Promise.resolve(false);
+              }}
               fetchProfileData={fetchProfileData}
               fetchEquipment={fetchEquipment}
               fetchUserGames={fetchUserGames}
               handleNavigateToTeam={handleNavigateToTeam}
-              setSelectedGame={dialogStates.setSelectedGame}
-              setShowGameDialog={dialogStates.setShowGameDialog}
-              setShowAllGamesDialog={dialogStates.setShowAllGamesDialog}
-              setShowBadgesDialog={dialogStates.setShowBadgesDialog}
-              setShowAddEquipmentDialog={dialogStates.setShowAddEquipmentDialog}
-              setShowEditMediaDialog={dialogStates.setShowEditMediaDialog}
-              setShowEditBioDialog={dialogStates.setShowEditBioDialog}
+              setSelectedGame={setSelectedGame}
+              setShowGameDialog={setShowGameDialog}
+              setShowAllGamesDialog={setShowAllGamesDialog}
+              setShowBadgesDialog={setShowBadgesDialog}
+              setShowAddEquipmentDialog={setShowAddEquipmentDialog}
+              isOwnProfile={true}
+              equipmentTypes={equipmentTypes}
             />
           </div>
         </div>
       </main>
       <Footer />
 
-      {/* All dialogs */}
-      <ProfileSettingsDialog 
-        open={dialogStates.showSettingsDialog} 
-        onOpenChange={dialogStates.setShowSettingsDialog}
-        user={user} 
-      />
-      
-      <ProfileEditMediaDialog 
-        open={dialogStates.showEditMediaDialog} 
-        onOpenChange={dialogStates.setShowEditMediaDialog} 
-      />
-      
-      <ProfileEditBioDialog 
-        open={dialogStates.showEditBioDialog} 
-        onOpenChange={dialogStates.setShowEditBioDialog} 
+      <ProfileDialogs 
+        selectedGame={selectedGame}
+        showGameDialog={showGameDialog}
+        setShowGameDialog={setShowGameDialog}
+        showAllGamesDialog={showAllGamesDialog}
+        setShowAllGamesDialog={setShowAllGamesDialog}
+        showBadgesDialog={showBadgesDialog}
+        setShowBadgesDialog={setShowBadgesDialog}
         user={profileData}
-        onUpdate={fetchProfileData}
+        handleNavigateToGame={handleNavigateToGame}
+      />
+
+      <ProfileSettingsDialog
+        open={showSettingsDialog}
+        onOpenChange={setShowSettingsDialog}
+        user={profileData}
+      />
+
+      <ProfileEditMediaDialog
+        open={showEditMediaDialog}
+        onOpenChange={setShowEditMediaDialog}
       />
       
-      <ProfileAddEquipmentDialog 
-        open={dialogStates.showAddEquipmentDialog}
-        onOpenChange={dialogStates.setShowAddEquipmentDialog}
-        onEquipmentAdded={handleAddEquipment}
-        userId={user?.id}
+      <ProfileEditBioDialog
+        open={showEditBioDialog}
+        onOpenChange={setShowEditBioDialog}
+        currentBio={profileData?.bio || ''}
+        currentUsername={profileData?.username || ''}
+      />
+      
+      <ProfileAddEquipmentDialog
+        open={showAddEquipmentDialog}
+        onOpenChange={setShowAddEquipmentDialog}
+        onAddEquipment={handleAddEquipment}
         equipmentTypes={equipmentTypes}
-      />
-      
-      <ProfileDialogs
-        selectedGame={dialogStates.selectedGame}
-        showGameDialog={dialogStates.showGameDialog}
-        setShowGameDialog={dialogStates.setShowGameDialog}
-        showAllGamesDialog={dialogStates.showAllGamesDialog}
-        setShowAllGamesDialog={dialogStates.setShowAllGamesDialog}
-        showBadgesDialog={dialogStates.showBadgesDialog}
-        setShowBadgesDialog={dialogStates.setShowBadgesDialog}
-        handleNavigateToGame={() => {}}
-        user={profileData}
       />
     </div>
   );

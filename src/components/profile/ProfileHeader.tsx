@@ -2,26 +2,22 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Settings, Star } from 'lucide-react';
-
-interface ProfileHeaderProps {
-  user: any;
-  isOwnProfile?: boolean;
-  toggleProfileSettings?: () => void;
-  onEditBio?: () => void;
-  onEditMedia?: () => void;
-}
-
-const ProfileHeader: React.FC<ProfileHeaderProps> = ({
+import { Settings, Edit, Camera, Star } from 'lucide-react';
+const ProfileHeader = ({
   user,
   isOwnProfile = false,
+  setEditing,
   toggleProfileSettings,
-  onEditBio,
-  onEditMedia
+  onEditBio
 }) => {
   return <div className="relative">
       <div className="w-full h-64 md:h-72 bg-gray-200 overflow-hidden">
         {user?.banner ? <img src={user.banner} alt="Profile banner" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gradient-to-r from-gray-400 to-gray-300" />}
+        
+        {isOwnProfile && setEditing && <Button size="sm" onClick={setEditing} className="absolute top-4 right-4 bg-white/80 hover:bg-white text-slate-50">
+            <Camera className="h-4 w-4 mr-2" />
+            Modifier
+          </Button>}
       </div>
       
       <div className="px-6 pb-4 pt-16 relative">
@@ -45,6 +41,11 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           </div>
           
           {isOwnProfile && <div className="mt-4 md:mt-0 flex space-x-2">
+              {onEditBio && <Button variant="outline" size="sm" onClick={onEditBio}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Modifier le profil
+                </Button>}
+              
               {toggleProfileSettings && <Button variant="outline" size="sm" onClick={toggleProfileSettings}>
                   <Settings className="h-4 w-4 mr-2" />
                   Paramètres

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileInfo from './ProfileInfo';
@@ -26,8 +27,6 @@ interface ProfileContainerProps {
   setShowAllGamesDialog: (show: boolean) => void;
   setShowBadgesDialog: (show: boolean) => void;
   setShowAddEquipmentDialog: (show: boolean) => void;
-  setShowEditMediaDialog: (show: boolean) => void;
-  setShowEditBioDialog: (show: boolean) => void;
   isOwnProfile: boolean;
   equipmentTypes: string[];
 }
@@ -49,23 +48,9 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
   setShowAllGamesDialog,
   setShowBadgesDialog,
   setShowAddEquipmentDialog,
-  setShowEditMediaDialog,
-  setShowEditBioDialog,
   isOwnProfile,
   equipmentTypes
 }) => {
-  // Handler for when the user clicks on "Modifier le profil"
-  const handleEditProfile = () => {
-    // Ouvrir le dialogue d'édition du profil
-    setShowEditBioDialog(true);
-  };
-
-  // Handler for media editing button
-  const handleEditMedia = () => {
-    // Ouvrir le dialogue d'édition des médias
-    setShowEditMediaDialog(true);
-  };
-
   return (
     <div className="p-6">
       <Tabs defaultValue="profile" className="rounded-md">
@@ -84,9 +69,7 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
             profileData={profileData} 
             updateLocation={updateLocation} 
             handleNavigateToTeam={handleNavigateToTeam} 
-            isOwnProfile={isOwnProfile}
-            handleEditProfile={handleEditProfile}
-            handleEditMedia={handleEditMedia} 
+            isOwnProfile={isOwnProfile} 
           />
         </TabsContent>
         

@@ -13,7 +13,7 @@ import { Shield, Mail, Key, CheckCircle2, Upload } from 'lucide-react';
 interface ProfileSettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  user?: any; // Made user optional
+  user: any;
 }
 
 const ProfileSettingsDialog = ({

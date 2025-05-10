@@ -28,15 +28,15 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
   handleRatingChange
 }) => {
   // Mock functions that are called from ProfileHeader
+  const setEditing = () => {
+    // This is just a placeholder for the ProfileHeader component
+  };
+
   const toggleProfileSettings = () => {
     // This is just a placeholder for the ProfileHeader component
   };
 
   const onEditBio = () => {
-    // This is just a placeholder for the ProfileHeader component
-  };
-  
-  const onEditMedia = () => {
     // This is just a placeholder for the ProfileHeader component
   };
 
@@ -48,9 +48,9 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
       <ProfileHeader 
         user={profileData} 
         isOwnProfile={isOwnProfile}
+        setEditing={setEditing}
         toggleProfileSettings={toggleProfileSettings}
         onEditBio={onEditBio}
-        onEditMedia={onEditMedia}
       />
       
       {!isOwnProfile && (

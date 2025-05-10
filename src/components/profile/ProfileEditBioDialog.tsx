@@ -12,35 +12,26 @@ import { supabase } from "@/integrations/supabase/client";
 interface ProfileEditBioDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  user?: any; // Made user optional
-  currentBio?: string;
-  currentUsername?: string;
-  onUpdate?: () => Promise<void>;
+  currentBio: string;
+  currentUsername: string;
 }
 
-const ProfileEditBioDialog = ({ 
-  open, 
-  onOpenChange, 
-  user,
-  currentBio, 
-  currentUsername,
-  onUpdate
-}: ProfileEditBioDialogProps) => {
+const ProfileEditBioDialog = ({ open, onOpenChange, currentBio, currentUsername }: ProfileEditBioDialogProps) => {
   const [bio, setBio] = useState('');
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
-  const { user: authUser } = useAuth();
+  const { user } = useAuth();
 
   // Set default values when the dialog opens
   useEffect(() => {
     if (open) {
-      setBio(user?.bio || currentBio || '');
-      setUsername(user?.username || currentUsername || '');
+      setBio(currentBio || '');
+      setUsername(currentUsername || '');
     }
-  }, [open, currentBio, currentUsername, user]);
+  }, [open, currentBio, currentUsername]);
 
   const handleSave = async () => {
-    if (!authUser?.id) return;
+    if (!user?.id) return;
     
     setLoading(true);
     try {
@@ -50,7 +41,7 @@ const ProfileEditBioDialog = ({
           bio,
           username 
         })
-        .eq('id', authUser.id);
+        .eq('id', user.id);
 
       if (error) throw error;
 
@@ -60,14 +51,8 @@ const ProfileEditBioDialog = ({
       });
       
       onOpenChange(false);
-      
-      // Call the onUpdate callback if provided
-      if (onUpdate) {
-        await onUpdate();
-      } else {
-        // Recharge la page pour afficher les changements
-        window.location.reload();
-      }
+      // Recharge la page pour afficher les changements
+      window.location.reload();
     } catch (error: any) {
       toast({
         title: "Erreur",
