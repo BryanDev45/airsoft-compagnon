@@ -53,6 +53,17 @@ const UserProfile = () => {
     }
   };
 
+  // These are placeholder functions since we don't need actual editing functionality on the user profile view
+  const handleEditProfile = () => {
+    // Not implemented for user profiles - only for own profile
+    console.log("Edit profile not available in user profile view");
+  };
+
+  const handleEditMedia = () => {
+    // Not implemented for user profiles - only for own profile
+    console.log("Edit media not available in user profile view");
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -101,6 +112,9 @@ const UserProfile = () => {
                     profileData={profileData}
                     updateLocation={updateLocation}
                     handleNavigateToTeam={handleNavigateToTeam}
+                    isOwnProfile={false}
+                    handleEditProfile={handleEditProfile}
+                    handleEditMedia={handleEditMedia}
                   />
                 </TabsContent>
                 
