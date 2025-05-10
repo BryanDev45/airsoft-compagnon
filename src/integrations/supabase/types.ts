@@ -35,6 +35,11 @@ export type Database = {
           longitude: number | null
           manual_validation: boolean | null
           max_players: number
+          Picture1: string | null
+          Picture2: string | null
+          Picture3: string | null
+          Picture4: string | null
+          Picture5: string | null
           polarstar_allowed: boolean | null
           price: number | null
           pyro_allowed: boolean | null
@@ -70,6 +75,11 @@ export type Database = {
           longitude?: number | null
           manual_validation?: boolean | null
           max_players: number
+          Picture1?: string | null
+          Picture2?: string | null
+          Picture3?: string | null
+          Picture4?: string | null
+          Picture5?: string | null
           polarstar_allowed?: boolean | null
           price?: number | null
           pyro_allowed?: boolean | null
@@ -105,6 +115,11 @@ export type Database = {
           longitude?: number | null
           manual_validation?: boolean | null
           max_players?: number
+          Picture1?: string | null
+          Picture2?: string | null
+          Picture3?: string | null
+          Picture4?: string | null
+          Picture5?: string | null
           polarstar_allowed?: boolean | null
           price?: number | null
           pyro_allowed?: boolean | null
