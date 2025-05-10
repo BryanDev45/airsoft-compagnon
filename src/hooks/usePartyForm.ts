@@ -103,6 +103,67 @@ export const usePartyForm = (images: File[]) => {
     }
   });
 
+  const uploadImagesAndUpdateGame = async (gameId: string, images: File[]) => {
+    if (images.length === 0) {
+      return { success: true };
+    }
+    
+    try {
+      // Télécharger les images vers Supabase Storage
+      console.log(`Téléchargement de ${images.length} images pour la partie ${gameId}`);
+      const { data: imageUrls, error: uploadError } = await uploadGameImages(gameId, images);
+      
+      if (uploadError) {
+        console.error("Erreur lors du téléchargement des images:", uploadError);
+        return { 
+          success: false, 
+          error: uploadError,
+          errorMessage: "Certaines images n'ont pas pu être téléchargées" 
+        };
+      }
+      
+      if (!imageUrls || imageUrls.length === 0) {
+        console.warn("Aucune URL d'image n'a été retournée après le téléchargement");
+        return { success: true, imageUrls: [] };
+      }
+      
+      console.log("URLs des images téléchargées:", imageUrls);
+      
+      // Mettre à jour les champs Picture1 à Picture5 avec les URL des images
+      const updateData: Record<string, string> = {};
+      for (let i = 0; i < Math.min(imageUrls.length, 5); i++) {
+        const fieldName = `Picture${i + 1}`;
+        updateData[fieldName] = imageUrls[i];
+      }
+      
+      // Mise à jour des URL des images dans la base de données
+      const { error: updateError } = await supabase
+        .from('airsoft_games')
+        .update(updateData)
+        .eq('id', gameId);
+        
+      if (updateError) {
+        console.error("Erreur lors de la mise à jour des URL d'images:", updateError);
+        return { 
+          success: false, 
+          error: updateError,
+          errorMessage: "Les images ont été téléchargées mais n'ont pas pu être associées à la partie" 
+        };
+      }
+      
+      console.log("Les URLs des images ont été mises à jour avec succès");
+      return { success: true, imageUrls };
+      
+    } catch (error) {
+      console.error("Erreur inattendue lors du téléchargement des images:", error);
+      return { 
+        success: false, 
+        error, 
+        errorMessage: "Une erreur inattendue est survenue lors du téléchargement des images" 
+      };
+    }
+  };
+
   const onSubmit = async (data: PartyFormValues) => {
     setIsSubmitting(true);
     
@@ -165,35 +226,18 @@ export const usePartyForm = (images: File[]) => {
         throw new Error(error?.message || "Erreur lors de la création de la partie");
       }
       
+      console.log("Partie créée avec succès, ID:", gameResult.id);
+      
       // Si des images ont été téléchargées, les enregistrer
       if (images.length > 0) {
-        const { data: imageUrls, error: imageError } = await uploadGameImages(gameResult.id, images);
+        const uploadResult = await uploadImagesAndUpdateGame(gameResult.id, images);
         
-        if (imageError) {
-          console.error("Erreur lors du téléchargement des images:", imageError);
+        if (!uploadResult.success) {
           toast({
             title: "Attention",
-            description: "La partie a été créée mais certaines images n'ont pas pu être téléchargées",
+            description: uploadResult.errorMessage || "La partie a été créée mais les images n'ont pas pu être téléchargées",
             variant: "destructive"
           });
-        } else if (imageUrls && imageUrls.length > 0) {
-          // Mettre à jour les champs Picture1 à Picture5 avec les URL des images
-          const updateData: Record<string, string> = {};
-          
-          for (let i = 0; i < Math.min(imageUrls.length, 5); i++) {
-            const fieldName = `Picture${i + 1}`;
-            updateData[fieldName] = imageUrls[i];
-          }
-          
-          // Mise à jour des URL des images dans la base de données
-          const { error: updateError } = await supabase
-            .from('airsoft_games')
-            .update(updateData)
-            .eq('id', gameResult.id);
-            
-          if (updateError) {
-            console.error("Erreur lors de la mise à jour des URL d'images:", updateError);
-          }
         }
       }
       

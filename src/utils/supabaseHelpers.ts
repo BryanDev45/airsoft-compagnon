@@ -43,6 +43,44 @@ export const createAirsoftGame = async (gameData: any) => {
 };
 
 /**
+ * Ensure the 'games' bucket exists in Supabase Storage
+ */
+export const ensureGamesBucketExists = async () => {
+  try {
+    // Vérifier si le bucket 'games' existe
+    const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+    
+    if (listError) {
+      console.error("Erreur lors de la vérification des buckets:", listError);
+      return { success: false, error: listError };
+    }
+    
+    // Si le bucket existe déjà, on retourne simplement success
+    if (buckets?.some(bucket => bucket.name === 'games')) {
+      console.log("Le bucket 'games' existe déjà");
+      return { success: true };
+    }
+    
+    // Le bucket n'existe pas, on le crée
+    console.log("Le bucket 'games' n'existe pas, création en cours...");
+    const { error: createError } = await supabase.storage.createBucket('games', {
+      public: true // Rendre le bucket public pour accéder aux images
+    });
+    
+    if (createError) {
+      console.error("Erreur lors de la création du bucket 'games':", createError);
+      return { success: false, error: createError };
+    }
+    
+    console.log("Bucket 'games' créé avec succès");
+    return { success: true };
+  } catch (error) {
+    console.error("Erreur inattendue lors de la vérification/création du bucket:", error);
+    return { success: false, error };
+  }
+};
+
+/**
  * Upload game images to storage and return their public URLs
  */
 export const uploadGameImages = async (gameId: string, images: File[]) => {
@@ -51,32 +89,10 @@ export const uploadGameImages = async (gameId: string, images: File[]) => {
     
     console.log(`Début de l'upload de ${images.length} images pour le jeu ${gameId}`);
     
-    // Vérifie l'existence du bucket avant de tenter l'upload
-    const { data: buckets, error: bucketError } = await supabase.storage.listBuckets();
-    
-    if (bucketError) {
-      console.error("Erreur lors de la vérification des buckets:", bucketError);
-      return { data: null, error: bucketError };
-    }
-    
-    // Vérifie si le bucket 'games' existe
-    const gamesBucketExists = buckets?.some(bucket => bucket.name === 'games');
-    
-    if (!gamesBucketExists) {
-      console.error("Le bucket 'games' n'existe pas dans votre projet Supabase");
-      // Tenter de créer le bucket s'il n'existe pas
-      const { error: createBucketError } = await supabase.storage.createBucket('games', {
-        public: true
-      });
-      
-      if (createBucketError) {
-        console.error("Erreur lors de la création du bucket 'games':", createBucketError);
-        return { data: null, error: createBucketError };
-      }
-      
-      console.log("Le bucket 'games' a été créé avec succès");
-    } else {
-      console.log("Le bucket 'games' existe, on continue avec l'upload");
+    // S'assurer que le bucket 'games' existe
+    const bucketResult = await ensureGamesBucketExists();
+    if (!bucketResult.success) {
+      return { data: null, error: bucketResult.error };
     }
     
     // Télécharger jusqu'à 5 images
