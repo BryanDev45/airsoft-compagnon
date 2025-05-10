@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileInfo from './ProfileInfo';
@@ -57,11 +56,13 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
 }) => {
   // Handler for when the user clicks on "Modifier le profil"
   const handleEditProfile = () => {
+    // Ouvrir le dialogue d'édition du profil
     setShowEditBioDialog(true);
   };
 
-  // Handler pour les médias
+  // Handler for media editing button
   const handleEditMedia = () => {
+    // Ouvrir le dialogue d'édition des médias
     setShowEditMediaDialog(true);
   };
 
@@ -83,7 +84,9 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
             profileData={profileData} 
             updateLocation={updateLocation} 
             handleNavigateToTeam={handleNavigateToTeam} 
-            isOwnProfile={isOwnProfile} 
+            isOwnProfile={isOwnProfile}
+            handleEditProfile={handleEditProfile}
+            handleEditMedia={handleEditMedia} 
           />
         </TabsContent>
         

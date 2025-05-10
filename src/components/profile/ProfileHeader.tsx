@@ -2,7 +2,7 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Settings, Edit, Star } from 'lucide-react';
+import { Settings, Star } from 'lucide-react';
 
 interface ProfileHeaderProps {
   user: any;
@@ -45,11 +45,6 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           </div>
           
           {isOwnProfile && <div className="mt-4 md:mt-0 flex space-x-2">
-              {onEditBio && <Button variant="outline" size="sm" onClick={onEditBio}>
-                  <Edit className="h-4 w-4 mr-2" />
-                  Modifier le profil
-                </Button>}
-              
               {toggleProfileSettings && <Button variant="outline" size="sm" onClick={toggleProfileSettings}>
                   <Settings className="h-4 w-4 mr-2" />
                   Paramètres

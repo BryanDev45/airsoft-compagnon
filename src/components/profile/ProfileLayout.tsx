@@ -56,8 +56,6 @@ const ProfileLayout: React.FC<ProfileLayoutProps> = ({
               user={profileData}
               isOwnProfile={true} 
               toggleProfileSettings={() => dialogStates.setShowSettingsDialog(true)}
-              onEditBio={() => dialogStates.setShowEditBioDialog(true)}
-              onEditMedia={() => dialogStates.setShowEditMediaDialog(true)}
             />
 
             <ProfileContainer 
