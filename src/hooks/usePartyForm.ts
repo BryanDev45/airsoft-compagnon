@@ -81,7 +81,7 @@ export const usePartyForm = (images: File[]) => {
       city: "",
       zipCode: "",
       maxPlayers: "20",
-      price: "5", // Modifié pour définir un prix minimum par défaut de 5€
+      price: "5",
       gameType: "",
       manualValidation: false,
       hasToilets: false,
@@ -103,13 +103,14 @@ export const usePartyForm = (images: File[]) => {
     }
   });
 
-  const uploadImagesAndUpdateGame = async (gameId: string, images: File[]) => {
+  // Fonction pour gérer le téléchargement des images et la mise à jour du jeu
+  const handleImageUpload = async (gameId: string, images: File[]): Promise<{ success: boolean, imageUrls?: string[], error?: any, errorMessage?: string }> => {
     if (images.length === 0) {
-      return { success: true };
+      console.log("Aucune image à télécharger");
+      return { success: true, imageUrls: [] };
     }
     
     try {
-      // Télécharger les images vers Supabase Storage
       console.log(`Téléchargement de ${images.length} images pour la partie ${gameId}`);
       const { data: imageUrls, error: uploadError } = await uploadGameImages(gameId, images);
       
@@ -164,6 +165,47 @@ export const usePartyForm = (images: File[]) => {
     }
   };
 
+  // Fonction pour créer une partie
+  const createGame = async (gameData: any): Promise<{ success: boolean, gameId?: string, error?: any }> => {
+    try {
+      const { data: gameResult, error } = await createAirsoftGame(gameData);
+      
+      if (error || !gameResult) {
+        throw new Error(error?.message || "Erreur lors de la création de la partie");
+      }
+      
+      console.log("Partie créée avec succès, ID:", gameResult.id);
+      return { success: true, gameId: gameResult.id };
+    } catch (error) {
+      console.error("Erreur lors de la création de la partie:", error);
+      return { success: false, error };
+    }
+  };
+
+  // Fonction pour inscrire l'organisateur à la partie
+  const registerOrganizer = async (gameId: string, userId: string): Promise<{ success: boolean, error?: any }> => {
+    try {
+      const { error: participationError } = await supabase
+        .from('game_participants')
+        .insert({
+          game_id: gameId,
+          user_id: userId,
+          role: 'Organisateur',
+          status: 'Confirmé'
+        });
+        
+      if (participationError) {
+        console.error("Erreur lors de l'inscription de l'organisateur:", participationError);
+        return { success: false, error: participationError };
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error("Erreur lors de l'inscription de l'organisateur:", error);
+      return { success: false, error };
+    }
+  };
+
   const onSubmit = async (data: PartyFormValues) => {
     setIsSubmitting(true);
     
@@ -191,7 +233,7 @@ export const usePartyForm = (images: File[]) => {
         title: data.title,
         description: data.description,
         rules: data.rules,
-        date: date, // Utilise la date de startDateTime
+        date: date,
         start_time: start_time,
         end_time: end_time,
         address: data.address,
@@ -219,18 +261,16 @@ export const usePartyForm = (images: File[]) => {
         created_by: userData.user.id
       };
       
-      // Créer la partie dans la base de données
-      const { data: gameResult, error } = await createAirsoftGame(gameData);
+      // Créer la partie
+      const { success: gameCreated, gameId, error: gameError } = await createGame(gameData);
       
-      if (error || !gameResult) {
-        throw new Error(error?.message || "Erreur lors de la création de la partie");
+      if (!gameCreated || !gameId) {
+        throw new Error(gameError?.message || "Erreur lors de la création de la partie");
       }
       
-      console.log("Partie créée avec succès, ID:", gameResult.id);
-      
-      // Si des images ont été téléchargées, les enregistrer
+      // Télécharger les images s'il y en a
       if (images.length > 0) {
-        const uploadResult = await uploadImagesAndUpdateGame(gameResult.id, images);
+        const uploadResult = await handleImageUpload(gameId, images);
         
         if (!uploadResult.success) {
           toast({
@@ -241,18 +281,10 @@ export const usePartyForm = (images: File[]) => {
         }
       }
       
-      // Inscrire automatiquement l'organisateur à la partie
-      const { error: participationError } = await supabase
-        .from('game_participants')
-        .insert({
-          game_id: gameResult.id,
-          user_id: userData.user.id,
-          role: 'Organisateur',
-          status: 'Confirmé'
-        });
-        
-      if (participationError) {
-        console.error("Erreur lors de l'inscription de l'organisateur:", participationError);
+      // Inscrire l'organisateur
+      const { success: organizerRegistered, error: registerError } = await registerOrganizer(gameId, userData.user.id);
+      
+      if (!organizerRegistered) {
         toast({
           title: "Attention",
           description: "La partie a été créée mais vous n'avez pas pu être inscrit automatiquement",

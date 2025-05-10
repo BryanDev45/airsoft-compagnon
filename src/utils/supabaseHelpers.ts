@@ -92,6 +92,7 @@ export const uploadGameImages = async (gameId: string, images: File[]) => {
     // S'assurer que le bucket 'games' existe
     const bucketResult = await ensureGamesBucketExists();
     if (!bucketResult.success) {
+      console.error("Erreur avec le bucket:", bucketResult.error);
       return { data: null, error: bucketResult.error };
     }
     

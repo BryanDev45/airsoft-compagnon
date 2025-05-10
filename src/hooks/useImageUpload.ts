@@ -24,7 +24,11 @@ export const useImageUpload = (maxImages: number = 5) => {
         setImages(newImages);
         
         // Révoquer les anciens URLs pour éviter les fuites mémoire
-        preview.forEach(url => URL.revokeObjectURL(url));
+        preview.forEach(url => {
+          if (url.startsWith('blob:')) {
+            URL.revokeObjectURL(url);
+          }
+        });
         
         // Générer de nouvelles previews
         const newPreviews = newImages.map(file => URL.createObjectURL(file));
@@ -37,7 +41,11 @@ export const useImageUpload = (maxImages: number = 5) => {
         setImages(newImages);
         
         // Révoquer les anciens URLs pour éviter les fuites mémoire
-        preview.forEach(url => URL.revokeObjectURL(url));
+        preview.forEach(url => {
+          if (url.startsWith('blob:')) {
+            URL.revokeObjectURL(url);
+          }
+        });
         
         // Générer de nouvelles previews
         const newPreviews = newImages.map(file => URL.createObjectURL(file));
@@ -54,8 +62,8 @@ export const useImageUpload = (maxImages: number = 5) => {
       return;
     }
     
-    // Révoquer l'URL de l'image à supprimer
-    if (preview[index]) {
+    // Révoquer l'URL de l'image à supprimer si c'est un blob URL
+    if (preview[index] && preview[index].startsWith('blob:')) {
       URL.revokeObjectURL(preview[index]);
     }
     
@@ -73,8 +81,12 @@ export const useImageUpload = (maxImages: number = 5) => {
   };
   
   const clearImages = () => {
-    // Nettoyer toutes les previews pour éviter les fuites mémoire
-    preview.forEach(url => URL.revokeObjectURL(url));
+    // Nettoyer toutes les previews blob pour éviter les fuites mémoire
+    preview.forEach(url => {
+      if (url.startsWith('blob:')) {
+        URL.revokeObjectURL(url);
+      }
+    });
     setImages([]);
     setPreview([]);
     console.log('Toutes les images ont été supprimées');

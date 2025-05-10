@@ -21,6 +21,13 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
   useEffect(() => {
     console.log("GameImages - Images reçues:", images);
     
+    // Vérifier si images est défini et non nul
+    if (!images || !Array.isArray(images)) {
+      console.log("GameImages - Images non valides, utilisation des images par défaut");
+      setDisplayImages(defaultImages);
+      return;
+    }
+    
     // Filtrer les images null, undefined ou vides
     const filteredImages = images.filter(img => img && img.trim() !== '');
     console.log("GameImages - Images filtrées:", filteredImages);
