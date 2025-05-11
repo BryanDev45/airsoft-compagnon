@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
@@ -117,10 +116,13 @@ export const useProfileUpdates = (
       }
 
       // Update state
-      setProfileData(prev => prev ? {
-        ...prev,
-        newsletter_subscribed: subscribed,
-      } : null);
+      setProfileData(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          newsletter_subscribed: subscribed,
+        };
+      });
       
       toast({
         title: subscribed ? "Inscription réussie" : "Désinscription réussie",
