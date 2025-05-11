@@ -20,14 +20,14 @@ const TeamAbout = ({ team, handleContactTeam, handleShare }: TeamAboutProps) => 
       <CardContent>
         <p className="text-gray-700">{team.description}</p>
         
-        {team.organizationType && (
+        {team.is_association !== undefined && (
           <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
             <p className="text-sm flex items-center gap-2">
               <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">
-                {team.organizationType === 'association' ? 'Association déclarée' : 'Équipe simple'}
+                {team.is_association ? 'Association déclarée' : 'Équipe simple'}
               </Badge>
               <span className="text-blue-800">
-                {team.organizationType === 'association' 
+                {team.is_association 
                   ? 'Organisation officielle avec statuts déposés' 
                   : 'Groupe informel de joueurs'}
               </span>
