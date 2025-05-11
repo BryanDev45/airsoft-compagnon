@@ -53,7 +53,8 @@ export const useProfileFetch = (userId: string | undefined) => {
               team: null,
               team_id: null,
               is_team_leader: null,
-              is_verified: null
+              is_verified: null,
+              newsletter_subscribed: null
             };
             
             // Insert the new profile

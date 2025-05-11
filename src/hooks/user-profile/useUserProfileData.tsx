@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
+import { Profile } from '@/types/profile';
 
 /**
  * Hook for fetching user profile data
@@ -55,6 +55,12 @@ export const useUserProfileData = (username: string | undefined) => {
           navigate('/');
           return;
         }
+
+        // Ensure the profile has the newsletter_subscribed property
+        const profileWithNewsletter: Profile = {
+          ...userProfile,
+          newsletter_subscribed: userProfile.newsletter_subscribed ?? null
+        };
 
         const { data: stats, error: statsError } = await supabase
           .from('user_stats')
@@ -207,13 +213,13 @@ export const useUserProfileData = (username: string | undefined) => {
         console.log("Final formatted games:", formattedGames);
 
         const enrichedProfile = {
-          ...userProfile,
+          ...profileWithNewsletter,
           games: formattedGames,
           allGames: [...formattedGames],
           badges: formattedBadges
         };
 
-        setUserData({ id: userProfile.id, ...enrichedProfile });
+        setUserData({ id: profileWithNewsletter.id, ...enrichedProfile });
         setProfileData(enrichedProfile);
         setUserStats(stats || {
           user_id: userProfile.id,
