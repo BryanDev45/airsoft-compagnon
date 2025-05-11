@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { z } from 'zod';
@@ -103,6 +104,9 @@ export default function Register() {
       <main className="flex-1 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
         <div className="w-full max-w-md">
           <div className="text-center">
+            <div className="flex justify-center">
+              <img src="/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png" alt="Airsoft Compagnon Logo" className="h-24 mb-4" />
+            </div>
             <h1 className="text-3xl font-bold text-gray-900">Créer un compte</h1>
             <p className="mt-2 text-sm text-gray-600">
               Rejoignez la communauté Airsoft Compagnon dès aujourd'hui

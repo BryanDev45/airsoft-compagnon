@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -66,7 +67,10 @@ const Login = () => {
       <main className="flex-grow flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
-            <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Connexion</h2>
+            <div className="flex justify-center">
+              <img src="/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png" alt="Airsoft Compagnon Logo" className="h-24 mb-4" />
+            </div>
+            <h2 className="mt-4 text-3xl font-extrabold text-gray-900">Connexion</h2>
             <p className="mt-2 text-sm text-gray-600">
               Ou{' '}
               <Link to="/register" className="font-medium text-airsoft-red hover:text-red-500">
