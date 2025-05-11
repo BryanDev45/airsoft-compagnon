@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useProfileFetch } from './useProfileFetch';
 import { useProfileUpdates } from './useProfileUpdates';
@@ -76,10 +75,11 @@ export const useProfileData = (userId: string | undefined) => {
         }
       } else {
         // Ensure the profile has the newsletter_subscribed property
-        const profileWithNewsletter: Profile = {
+        const profileWithNewsletter = {
           ...profile,
           newsletter_subscribed: profile.newsletter_subscribed ?? null
-        };
+        } as Profile;
+        
         setProfileData(profileWithNewsletter);
       }
 

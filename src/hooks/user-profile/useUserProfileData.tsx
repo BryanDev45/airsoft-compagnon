@@ -57,10 +57,10 @@ export const useUserProfileData = (username: string | undefined) => {
         }
 
         // Ensure the profile has the newsletter_subscribed property
-        const profileWithNewsletter: Profile = {
+        const profileWithNewsletter = {
           ...userProfile,
           newsletter_subscribed: userProfile.newsletter_subscribed ?? null
-        };
+        } as Profile;
 
         const { data: stats, error: statsError } = await supabase
           .from('user_stats')

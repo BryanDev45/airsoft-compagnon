@@ -38,7 +38,7 @@ export const useGameComments = (gameId: string) => {
         commentsData.map(async (comment) => {
           const { data: profileData, error: profileError } = await supabase
             .from('profiles')
-            .select('id, username, avatar')
+            .select('id, username, avatar, newsletter_subscribed')
             .eq('id', comment.user_id)
             .single();
           

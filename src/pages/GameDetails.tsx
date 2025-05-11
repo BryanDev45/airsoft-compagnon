@@ -168,9 +168,15 @@ const GameDetails = () => {
             .eq('id', participant.user_id)
             .single();
 
+          // Make sure newsletter_subscribed is included
+          const profile = profileError ? null : {
+            ...profileData,
+            newsletter_subscribed: profileData?.newsletter_subscribed ?? null
+          };
+
           return {
             ...participant,
-            profile: profileError ? null : profileData
+            profile
           };
         })
       );
