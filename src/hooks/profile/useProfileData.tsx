@@ -75,7 +75,12 @@ export const useProfileData = (userId: string | undefined) => {
           setProfileData(newProfile);
         }
       } else {
-        setProfileData(profile as Profile);
+        // Ensure the profile has the newsletter_subscribed property
+        const profileWithNewsletter: Profile = {
+          ...profile,
+          newsletter_subscribed: profile.newsletter_subscribed ?? null
+        };
+        setProfileData(profileWithNewsletter);
       }
 
       const { data: stats, error: statsError } = await supabase
