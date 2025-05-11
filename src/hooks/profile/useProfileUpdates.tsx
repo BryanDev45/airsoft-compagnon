@@ -120,12 +120,10 @@ export const useProfileUpdates = (
       setProfileData(prev => {
         if (!prev) return null;
         
-        const updatedProfile: Profile = {
+        return {
           ...prev,
           newsletter_subscribed: subscribed
         };
-        
-        return updatedProfile;
       });
       
       toast({

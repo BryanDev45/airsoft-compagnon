@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useProfileFetch } from './useProfileFetch';
 import { useProfileUpdates } from './useProfileUpdates';
@@ -74,11 +75,11 @@ export const useProfileData = (userId: string | undefined) => {
           setProfileData(newProfile);
         }
       } else {
-        // Ensure the profile has the newsletter_subscribed property
-        const profileWithNewsletter = {
-          ...profile,
+        // Create a complete profile object including the newsletter_subscribed property
+        const profileWithNewsletter: Profile = {
+          ...profile as any,
           newsletter_subscribed: profile.newsletter_subscribed ?? null
-        } as Profile;
+        };
         
         setProfileData(profileWithNewsletter);
       }

@@ -164,13 +164,13 @@ const GameDetails = () => {
 
           const { data: profileData, error: profileError } = await supabase
             .from('profiles')
-            .select('*')
+            .select('*')  // Select all columns to include newsletter_subscribed
             .eq('id', participant.user_id)
             .single();
 
           // Make sure newsletter_subscribed is included
           const profile = profileError ? null : {
-            ...profileData,
+            ...profileData as any,
             newsletter_subscribed: profileData?.newsletter_subscribed ?? null
           };
 
