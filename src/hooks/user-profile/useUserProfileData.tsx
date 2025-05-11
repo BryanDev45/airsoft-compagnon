@@ -214,13 +214,13 @@ export const useUserProfileData = (username: string | undefined) => {
         console.log("Final formatted games:", formattedGames);
 
         const enrichedProfile = {
-          ...profileWithNewsletter,
+          ...completeProfile,
           games: formattedGames,
           allGames: [...formattedGames],
           badges: formattedBadges
         };
 
-        setUserData({ id: profileWithNewsletter.id, ...enrichedProfile });
+        setUserData({ id: completeProfile.id, ...enrichedProfile });
         setProfileData(enrichedProfile);
         setUserStats(stats || {
           user_id: userProfile.id,

@@ -42,10 +42,14 @@ export const useGameComments = (gameId: string) => {
             .eq('id', comment.user_id)
             .single();
           
-          const profile = profileError ? null : {
-            ...(profileData as any),
-            newsletter_subscribed: profileData?.newsletter_subscribed ?? null
-          } as Profile;
+          let profile: Profile | null = null;
+          
+          if (!profileError && profileData) {
+            profile = {
+              ...(profileData as any),
+              newsletter_subscribed: profileData.newsletter_subscribed ?? null
+            } as Profile;
+          }
           
           return {
             ...comment,
