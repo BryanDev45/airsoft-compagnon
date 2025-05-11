@@ -15,7 +15,7 @@ import GameParticipantsTab from '@/components/game/GameParticipantsTab';
 import GameDetailsTab from '@/components/game/GameDetailsTab';
 import GameRulesTab from '@/components/game/GameRulesTab';
 import GameEquipmentTab from '@/components/game/GameEquipmentTab';
-import { ShareDialog } from '@/components/game/ShareDialog';
+import ShareDialog from '@/components/game/ShareDialog';
 
 const GameDetails = () => {
   const { id } = useParams();
@@ -51,8 +51,8 @@ const GameDetails = () => {
       if (error) throw error;
       
       // Ensure creator profile has newsletter_subscribed property
-      const creator = data.creator ? {
-        ...(data.creator as any),
+      const creator = data.creator && typeof data.creator !== 'string' ? {
+        ...data.creator,
         newsletter_subscribed: data.creator.newsletter_subscribed ?? null
       } as Profile : null;
       
@@ -277,8 +277,13 @@ const GameDetails = () => {
         <ShareDialog 
           open={showShareDialog} 
           onOpenChange={setShowShareDialog}
-          gameId={id || ''}
-          gameTitle={gameData?.title || ''}
+          onCopyToClipboard={(text, message) => {
+            navigator.clipboard.writeText(text);
+            toast({
+              title: "Lien copié",
+              description: message
+            });
+          }}
         />
       )}
     </div>

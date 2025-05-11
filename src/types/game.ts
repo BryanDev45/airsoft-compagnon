@@ -51,7 +51,7 @@ export interface GameComment {
   created_at: string;
   game_id: string;
   user_id: string;
-  profile?: Profile | null;  // Adding profile property to match usage in GameCommentsTab
+  profile?: Profile | null;
   user?: {
     username: string;
     avatar: string;
