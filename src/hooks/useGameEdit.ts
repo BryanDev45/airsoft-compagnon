@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "@/components/ui/use-toast";
@@ -335,6 +334,8 @@ export const useGameEdit = (gameId: string | undefined) => {
       // Télécharger les nouvelles images si nécessaire
       if (images.length > 0) {
         console.log("Téléchargement de nouvelles images:", images.length);
+        
+        // CORRECTION: Utiliser directement uploadGameImages qui gère maintenant la mise à jour des champs Picture1-5
         const { data: imageUrls, error: imageError } = await uploadGameImages(gameId, images);
         
         if (imageError) {
@@ -344,34 +345,8 @@ export const useGameEdit = (gameId: string | undefined) => {
             description: "La partie a été modifiée mais certaines images n'ont pas pu être téléchargées",
             variant: "destructive"
           });
-        } else if (imageUrls && imageUrls.length > 0) {
-          console.log("Images téléchargées avec succès, URLs:", imageUrls);
-          
-          // Mettre à jour les champs d'images avec les nouvelles URLs
-          // en commençant après la dernière image existante
-          const updateImagesData: Record<string, string> = {};
-          let startIndex = existingImages.length;
-          
-          // S'assurer qu'on ne dépasse pas les 5 images au total
-          for (let i = 0; i < imageUrls.length && startIndex + i < 5; i++) {
-            const fieldName = `Picture${startIndex + i + 1}`;
-            updateImagesData[fieldName] = imageUrls[i];
-          }
-          
-          console.log("Données de mise à jour des images:", updateImagesData);
-          
-          if (Object.keys(updateImagesData).length > 0) {
-            const { error: updateImagesError } = await supabase
-              .from('airsoft_games')
-              .update(updateImagesData)
-              .eq('id', gameId);
-              
-            if (updateImagesError) {
-              console.error("Erreur lors de la mise à jour des URLs d'images:", updateImagesError);
-            } else {
-              console.log("Les URLs des images ont été mises à jour avec succès");
-            }
-          }
+        } else {
+          console.log("Images téléchargées et enregistrées avec succès");
         }
       }
 

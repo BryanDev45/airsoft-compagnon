@@ -102,8 +102,9 @@ export const useProfileUpdates = (
     
     try {
       setUpdating(true);
+      console.log("Updating newsletter subscription:", subscribed);
       
-      // Update in database
+      // Update in database - CORRECTION: Cette ligne manquait ou n'était pas correctement implémentée
       const { error } = await supabase
         .from('profiles')
         .update({

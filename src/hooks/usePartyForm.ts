@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -128,31 +127,8 @@ export const usePartyForm = (images: File[]) => {
         return { success: true, imageUrls: [] };
       }
       
-      console.log("URLs des images téléchargées:", imageUrls);
-      
-      // Mettre à jour les champs Picture1 à Picture5 avec les URL des images
-      const updateData: Record<string, string> = {};
-      for (let i = 0; i < Math.min(imageUrls.length, 5); i++) {
-        const fieldName = `Picture${i + 1}`;
-        updateData[fieldName] = imageUrls[i];
-      }
-      
-      // Mise à jour des URL des images dans la base de données
-      const { error: updateError } = await supabase
-        .from('airsoft_games')
-        .update(updateData)
-        .eq('id', gameId);
-        
-      if (updateError) {
-        console.error("Erreur lors de la mise à jour des URL d'images:", updateError);
-        return { 
-          success: false, 
-          error: updateError,
-          errorMessage: "Les images ont été téléchargées mais n'ont pas pu être associées à la partie" 
-        };
-      }
-      
-      console.log("Les URLs des images ont été mises à jour avec succès");
+      // Les mises à jour des URL dans la base de données sont maintenant gérées par uploadGameImages
+      console.log("URLs des images téléchargées avec succès");
       return { success: true, imageUrls };
       
     } catch (error) {

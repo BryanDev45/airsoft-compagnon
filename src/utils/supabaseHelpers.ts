@@ -131,6 +131,30 @@ export const uploadGameImages = async (gameId: string, images: File[]) => {
     }
     
     console.log(`${imageUrls.length} images téléchargées avec succès:`, imageUrls);
+    
+    // CORRECTION: Mettre à jour les champs Picture1, Picture2, etc. directement ici
+    if (imageUrls.length > 0) {
+      const updateData: Record<string, string> = {};
+      
+      // Mettre à jour les champs Picture1 à Picture5 avec les URL des images
+      for (let i = 0; i < Math.min(imageUrls.length, 5); i++) {
+        updateData[`Picture${i + 1}`] = imageUrls[i];
+      }
+      
+      // Mise à jour des URL des images dans la base de données
+      const { error: updateError } = await supabase
+        .from('airsoft_games')
+        .update(updateData)
+        .eq('id', gameId);
+      
+      if (updateError) {
+        console.error("Erreur lors de la mise à jour des URL d'images:", updateError);
+        return { data: imageUrls, error: updateError };
+      }
+      
+      console.log("Les URLs des images ont été mises à jour avec succès dans la base de données");
+    }
+    
     return { data: imageUrls, error: null };
   } catch (error) {
     console.error('Erreur lors du téléchargement des images du jeu:', error);

@@ -66,8 +66,24 @@ const ProfileSettingsDialog = ({
 
   const handleNewsletterChange = async (checked: boolean) => {
     setIsSubscribed(checked);
-    if (user && user.updateNewsletterSubscription) {
-      await user.updateNewsletterSubscription(checked);
+    
+    if (user && typeof user.updateNewsletterSubscription === 'function') {
+      try {
+        await user.updateNewsletterSubscription(checked);
+        toast({
+          title: checked ? "Newsletter activée" : "Newsletter désactivée",
+          description: checked ? "Vous recevrez désormais notre newsletter" : "Vous ne recevrez plus notre newsletter",
+        });
+      } catch (error) {
+        console.error("Erreur lors de la mise à jour de l'abonnement à la newsletter:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de mettre à jour vos préférences de newsletter",
+          variant: "destructive",
+        });
+      }
+    } else {
+      console.error("La méthode updateNewsletterSubscription n'est pas disponible sur l'objet user");
     }
   };
 
