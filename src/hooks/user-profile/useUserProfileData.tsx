@@ -58,8 +58,8 @@ export const useUserProfileData = (username: string | undefined) => {
         }
 
         // Ensure the profile has the newsletter_subscribed property
-        const profileWithNewsletter: Profile = {
-          ...userProfile as any,
+        const completeProfile: Profile = {
+          ...(userProfile as any),
           newsletter_subscribed: userProfile.newsletter_subscribed ?? null
         };
 

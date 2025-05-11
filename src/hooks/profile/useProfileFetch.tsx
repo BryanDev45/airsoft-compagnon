@@ -68,12 +68,12 @@ export const useProfileFetch = (userId: string | undefined) => {
           }
         } else if (isMounted) {
           // Create a complete profile object including the newsletter_subscribed property
-          const profileWithNewsletter: Profile = {
-            ...profile as any,
+          const completeProfile: Profile = {
+            ...(profile as any),
             newsletter_subscribed: profile.newsletter_subscribed ?? null
           };
           
-          setProfileData(profileWithNewsletter);
+          setProfileData(completeProfile);
         }
 
         if (isMounted) {

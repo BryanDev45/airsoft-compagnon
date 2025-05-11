@@ -337,6 +337,7 @@ export type Database = {
           join_date: string | null
           lastname: string | null
           location: string | null
+          newsletter_subscribed: boolean | null
           reputation: number | null
           team: string | null
           team_id: string | null
@@ -358,6 +359,7 @@ export type Database = {
           join_date?: string | null
           lastname?: string | null
           location?: string | null
+          newsletter_subscribed?: boolean | null
           reputation?: number | null
           team?: string | null
           team_id?: string | null
@@ -379,6 +381,7 @@ export type Database = {
           join_date?: string | null
           lastname?: string | null
           location?: string | null
+          newsletter_subscribed?: boolean | null
           reputation?: number | null
           team?: string | null
           team_id?: string | null

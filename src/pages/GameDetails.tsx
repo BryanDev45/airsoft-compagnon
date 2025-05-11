@@ -1,178 +1,88 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
-import { callRPC } from "@/utils/supabaseHelpers";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-// Layout Components
-import Header from '../components/Header';
-import Footer from '../components/Footer';
-
-// Game Detail Components
-import GameHeader from "@/components/game/GameHeader";
-import GameImages from "@/components/game/GameImages";
-import GameDetailsTab from "@/components/game/GameDetailsTab";
-import GameRulesTab from "@/components/game/GameRulesTab";
-import GameEquipmentTab from "@/components/game/GameEquipmentTab";
-import GameCommentsTab from "@/components/game/GameCommentsTab";
-import GameInfoCard from "@/components/game/GameInfoCard";
-import GameLocationCard from "@/components/game/GameLocationCard";
-import GameParticipantsCard from "@/components/game/GameParticipantsCard";
-import ParticipantsDialog from "@/components/game/ParticipantsDialog";
-import ShareDialog from "@/components/game/ShareDialog";
-import RegistrationDialog from "@/components/game/RegistrationDialog";
-
-// Types
-import type { GameData, GameParticipant, GameComment } from '@/types/game';
-import { Info, Shield, FileText, MessageSquare } from 'lucide-react';
-
-const ScrollToTop = () => {
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-  return null;
-};
+import { useParams } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from "@/components/ui/use-toast";
+import { GameData, GameParticipant } from '@/types/game';
+import { Profile } from '@/types/profile';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import GameHeader from '@/components/game/GameHeader';
+import GameTabs from '@/components/game/GameTabs';
+import GameCommentsTab from '@/components/game/GameCommentsTab';
+import GameParticipantsTab from '@/components/game/GameParticipantsTab';
+import GameDetailsTab from '@/components/game/GameDetailsTab';
 
 const GameDetails = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
-  const { toast } = useToast();
+  const [gameData, setGameData] = useState<GameData | null>(null);
+  const [participants, setParticipants] = useState<GameParticipant[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedTab, setSelectedTab] = useState('details');
 
-  // State
-  const [participantsOpen, setParticipantsOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isCreator, setIsCreator] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [isRegistered, setIsRegistered] = useState(false);
-  const [shareDialogOpen, setShareDialogOpen] = useState(false);
-  const [registrationDialogOpen, setRegistrationDialogOpen] = useState(false);
-  const [loadingRegistration, setLoadingRegistration] = useState(false);
-  const [creatorRating, setCreatorRating] = useState<number | null>(0);
-  const [isPastGame, setIsPastGame] = useState(false);
-
-  // Check authentication and registration status on mount
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setIsAuthenticated(!!session);
-
-      if (session) {
-        setUserId(session.user.id);
-        
-        if (id) {
-          // Check if user is registered for this game
-          const { data: participation, error } = await supabase
-            .from('game_participants')
-            .select('*')
-            .eq('game_id', id)
-            .eq('user_id', session.user.id)
-            .single();
-
-          if (participation && !error) {
-            setIsRegistered(true);
-          }
-        }
-      }
-    };
-
-    checkAuth();
-    window.scrollTo(0, 0);
+    if (id) {
+      loadGameData();
+      loadParticipants();
+    }
   }, [id]);
 
-  // Query for game details and creator profile
-  const {
-    data: gameData,
-    isLoading: isLoadingGame,
-    error: gameError,
-    refetch: refetchGame
-  } = useQuery({
-    queryKey: ['gameDetails', id],
-    queryFn: async () => {
-      if (!id) throw new Error('Game ID is required');
+  const loadGameData = async () => {
+    if (!id) return;
 
-      const { data: game, error: gameError } = await supabase
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
         .from('airsoft_games')
-        .select('*')
+        .select(`*, creator:created_by (
+          id,
+          username,
+          avatar,
+          firstname,
+          lastname,
+          newsletter_subscribed
+        )`)
         .eq('id', id)
         .single();
 
-      if (gameError) throw gameError;
-
-      // Check if game date is in the past
-      const gameDate = new Date(game.date);
-      const today = new Date();
-      setIsPastGame(gameDate < today);
-
-      // Check if user is creator
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session && game && session.user.id === game.created_by) {
-        setIsCreator(true);
-      }
-
-      // Fetch creator profile separately
-      let creator = null;
-      if (game) {
-        const { data: creatorData, error: creatorError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', game.created_by)
-          .single();
-
-        if (!creatorError && creatorData) {
-          creator = creatorData;
-
-          // Get creator's average rating
-          const { data: avgRating } = await callRPC<number>(
-            'get_average_rating',
-            { p_user_id: game.created_by }
-          );
-
-          if (avgRating !== null) {
-            setCreatorRating(avgRating);
-          }
-        }
-      }
-
-      return { ...game, creator } as GameData;
+      if (error) throw error;
+      setGameData(data as GameData);
+    } catch (error) {
+      console.error('Error loading game data:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de charger les informations de la partie."
+      });
+    } finally {
+      setLoading(false);
     }
-  });
+  };
 
-  // Query for participants and their profiles
-  const {
-    data: participants,
-    isLoading: isLoadingParticipants,
-    refetch: refetchParticipants
-  } = useQuery({
-    queryKey: ['gameParticipants', id],
-    queryFn: async () => {
-      if (!id) throw new Error('Game ID is required');
+  const loadParticipants = async () => {
+    if (!gameData) return;
 
-      // First get participants
-      const { data: participantsData, error: participantsError } = await supabase
+    try {
+      const { data: participants, error } = await supabase
         .from('game_participants')
         .select('*')
         .eq('game_id', id);
 
-      if (participantsError) throw participantsError;
+      if (error) throw error;
 
-      // Then get their profiles
+      // Get participant profiles
       const participantsWithProfiles = await Promise.all(
-        (participantsData || []).map(async participant => {
-          if (!participant.user_id) return { ...participant, profile: null };
-
+        participants.map(async (participant) => {
           const { data: profileData, error: profileError } = await supabase
             .from('profiles')
-            .select('*')  // Select all columns to include newsletter_subscribed
+            .select('*')
             .eq('id', participant.user_id)
             .single();
 
           // Make sure newsletter_subscribed is included
           const profile = profileError ? null : {
-            ...profileData as any,
+            ...(profileData as any),
             newsletter_subscribed: profileData?.newsletter_subscribed ?? null
-          };
+          } as Profile;
 
           return {
             ...participant,
@@ -181,340 +91,52 @@ const GameDetails = () => {
         })
       );
 
-      return participantsWithProfiles as GameParticipant[];
-    },
-    enabled: !!gameData
-  });
+      setParticipants(participantsWithProfiles as unknown as GameParticipant[]);
 
-  // Helper functions
-  const copyToClipboard = (text: string, message: string) => {
-    navigator.clipboard.writeText(text)
-      .then(() => {
-        toast({
-          title: "Copié !",
-          description: message
-        });
-      })
-      .catch(() => {
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Impossible de copier le lien"
-        });
-      });
-  };
-
-  const handleShareGame = () => {
-    setShareDialogOpen(true);
-  };
-
-  const handleEditGame = () => {
-    if (id && isCreator && !isPastGame) {
-      navigate(`/edit-game/${id}`);
-    }
-  };
-
-  const handleRegister = async () => {
-    // Vérifier si la partie est déjà passée
-    if (isPastGame) {
-      toast({
-        variant: "destructive",
-        title: "Partie terminée",
-        description: "Vous ne pouvez pas vous inscrire à une partie passée."
-      });
-      return;
-    }
-    
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
-    }
-
-    if (isRegistered) {
-      setRegistrationDialogOpen(true);
-      return;
-    }
-
-    setLoadingRegistration(true);
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (session && id) {
-      const { error } = await supabase
-        .from('game_participants')
-        .insert({
-          game_id: id,
-          user_id: session.user.id,
-          role: 'Participant',
-          status: 'Confirmé'
-        });
-
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Impossible de vous inscrire à cette partie."
-        });
-      } else {
-        setIsRegistered(true);
-        refetchParticipants();
-        toast({
-          title: "Inscription confirmée !",
-          description: `Vous êtes inscrit à "${gameData?.title}"`,
-          duration: 5000
-        });
-      }
-    }
-
-    setLoadingRegistration(false);
-  };
-
-  const handleUnregister = async () => {
-    setLoadingRegistration(true);
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (session && id) {
-      const { error } = await supabase
-        .from('game_participants')
-        .delete()
-        .eq('game_id', id)
-        .eq('user_id', session.user.id);
-
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Impossible de vous désinscrire de cette partie."
-        });
-      } else {
-        setIsRegistered(false);
-        refetchParticipants();
-        toast({
-          title: "Désinscription effectuée",
-          description: "Vous n'êtes plus inscrit à cette partie",
-          duration: 5000
-        });
-      }
-    }
-
-    setLoadingRegistration(false);
-    setRegistrationDialogOpen(false);
-  };
-
-  // Helper function to navigate to creator profile
-  const navigateToCreatorProfile = () => {
-    if (gameData?.creator?.username) {
-      navigate(`/user/${gameData.creator.username}`);
-    } else {
+    } catch (error) {
+      console.error('Error loading participants:', error);
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Impossible d'accéder au profil de l'organisateur"
+        description: "Impossible de charger la liste des participants."
       });
     }
   };
 
-  if (isLoadingGame) {
+  if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
-        <main className="flex-grow bg-gray-50 flex items-center justify-center">
-          <div className="text-center">
-            <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-airsoft-red border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
-            <p className="mt-4 text-lg">Chargement des détails de la partie...</p>
+        <main className="flex-grow flex items-center justify-center">
+          <div className="animate-pulse flex flex-col items-center">
+            <div className="h-12 w-12 bg-airsoft-red rounded-full animate-spin"></div>
+            <p className="mt-4 text-gray-600">Chargement des données de la partie...</p>
           </div>
         </main>
         <Footer />
       </div>
     );
   }
-
-  if (gameError || !gameData) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-grow bg-gray-50">
-          <div className="max-w-6xl mx-auto px-4 py-12">
-            <div className="bg-white p-6 rounded-lg shadow-md text-center">
-              <h1 className="text-2xl font-bold mb-4">Partie non trouvée</h1>
-              <p className="mb-6 text-gray-600">
-                Nous n'avons pas pu trouver les détails de cette partie. Elle a peut-être été supprimée ou l'identifiant est incorrect.
-              </p>
-              <button 
-                className="bg-airsoft-red text-white px-4 py-2 rounded hover:bg-red-700"
-                onClick={() => navigate('/parties')}
-              >
-                Retour à la recherche de parties
-              </button>
-            </div>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  // Prepare game images
-  const gameImages = [];
-  if (gameData?.Picture1) gameImages.push(gameData.Picture1);
-  if (gameData?.Picture2) gameImages.push(gameData.Picture2);
-  if (gameData?.Picture3) gameImages.push(gameData.Picture3);
-  if (gameData?.Picture4) gameImages.push(gameData.Picture4);
-  if (gameData?.Picture5) gameImages.push(gameData.Picture5);
-  
-  console.log("Images de la partie:", gameImages);
-
-  // Default scenarios if not available
-  const scenarios = ["Capture de drapeaux", "Escorte VIP", "Défense de position", "Extraction d'otages"];
-
-  // Prepare coordinates for map
-  const coordinates: [number, number] = gameData.longitude && gameData.latitude 
-    ? [gameData.longitude, gameData.latitude] 
-    : [2.3522, 48.8566];  // Default to Paris if no coordinates
 
   return (
     <div className="min-h-screen flex flex-col">
-      <ScrollToTop />
       <Header />
-      <main className="flex-grow bg-gray-50">
-        <GameHeader
-          title={gameData.title}
-          gameType={gameData.game_type}
-          date={gameData.date}
-          startTime={gameData.start_time}
-          endTime={gameData.end_time}
-          address={gameData.address}
-          zipCode={gameData.zip_code}
-          city={gameData.city}
-          participantsCount={participants?.length || 0}
-          maxPlayers={gameData.max_players}
-          price={gameData.price}
-          isRegistered={isRegistered}
-          loadingRegistration={loadingRegistration}
-          onRegister={handleRegister}
-          onShare={handleShareGame}
-          isCreator={isCreator}
-          isPastGame={isPastGame}
-          onEdit={handleEditGame}
-        />
-        
-        <div className="max-w-6xl mx-auto px-4 py-8">
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="md:col-span-2">
-              <GameImages 
-                images={gameImages} 
-                title={gameData.title} 
-              />
-              
-              <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8">
-                <Tabs defaultValue="details">
-                  <div className="px-6 pt-6">
-                    <TabsList className="w-full grid grid-cols-4">
-                      <TabsTrigger value="details">
-                        <Info size={16} className="mr-2" />
-                        <span className="hidden sm:inline">Détails</span>
-                      </TabsTrigger>
-                      <TabsTrigger value="rules">
-                        <Shield size={16} className="mr-2" />
-                        <span className="hidden sm:inline">Règles</span>
-                      </TabsTrigger>
-                      <TabsTrigger value="equipment">
-                        <FileText size={16} className="mr-2" />
-                        <span className="hidden sm:inline">Équipement</span>
-                      </TabsTrigger>
-                      <TabsTrigger value="comments">
-                        <MessageSquare size={16} className="mr-2" />
-                        <span className="hidden sm:inline">Commentaires</span>
-                      </TabsTrigger>
-                    </TabsList>
-                  </div>
-                  
-                  <TabsContent value="details" className="p-6">
-                    <GameDetailsTab 
-                      description={gameData.description}
-                      creator={gameData.creator}
-                      creatorRating={creatorRating}
-                      navigateToCreatorProfile={navigateToCreatorProfile}
-                    />
-                  </TabsContent>
-                  
-                  <TabsContent value="rules" className="p-6">
-                    <GameRulesTab rules={gameData.rules} />
-                  </TabsContent>
-                  
-                  <TabsContent value="equipment" className="p-6">
-                    <GameEquipmentTab 
-                      aegFpsMin={gameData.aeg_fps_min}
-                      aegFpsMax={gameData.aeg_fps_max}
-                      dmrFpsMax={gameData.dmr_fps_max}
-                      eyeProtectionRequired={gameData.eye_protection_required}
-                      fullFaceProtectionRequired={gameData.full_face_protection_required}
-                      hasToilets={gameData.has_toilets}
-                      hasParking={gameData.has_parking}
-                      hasEquipmentRental={gameData.has_equipment_rental}
-                      manualValidation={gameData.manual_validation}
-                      isPrivate={gameData.is_private}
-                    />
-                  </TabsContent>
-                  
-                  <TabsContent value="comments" className="p-6">
-                    <GameCommentsTab gameId={gameData.id} />
-                  </TabsContent>
-                </Tabs>
+      <main className="flex-grow bg-gray-50 py-6">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          {gameData && (
+            <>
+              <GameHeader game={gameData} />
+              <GameTabs selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
+              <div className="mt-4">
+                {selectedTab === 'details' && <GameDetailsTab game={gameData} />}
+                {selectedTab === 'participants' && <GameParticipantsTab participants={participants} />}
+                {selectedTab === 'comments' && <GameCommentsTab gameId={id} />}
               </div>
-            </div>
-            
-            <div className="space-y-6">
-              <GameInfoCard 
-                price={gameData.price}
-                date={gameData.date}
-                startTime={gameData.start_time}
-                endTime={gameData.end_time}
-                participantsCount={participants?.length || 0}
-                maxPlayers={gameData.max_players}
-                isRegistered={isRegistered}
-                loadingRegistration={loadingRegistration}
-                onRegister={handleRegister}
-              />
-              
-              <GameLocationCard 
-                address={gameData.address}
-                zipCode={gameData.zip_code}
-                city={gameData.city}
-                coordinates={coordinates}
-              />
-              
-              <GameParticipantsCard 
-                participants={participants || []}
-                isLoading={isLoadingParticipants}
-                onViewAllClick={() => setParticipantsOpen(true)}
-              />
-            </div>
-          </div>
+            </>
+          )}
         </div>
       </main>
       <Footer />
-
-      {/* Dialogs */}
-      <ParticipantsDialog 
-        open={participantsOpen}
-        onOpenChange={setParticipantsOpen}
-        participants={participants || []}
-        isLoading={isLoadingParticipants}
-      />
-
-      <ShareDialog 
-        open={shareDialogOpen}
-        onOpenChange={setShareDialogOpen}
-        onCopyToClipboard={copyToClipboard}
-      />
-
-      <RegistrationDialog 
-        open={registrationDialogOpen}
-        onOpenChange={setRegistrationDialogOpen}
-        gameData={gameData}
-        loadingRegistration={loadingRegistration}
-        onUnregister={handleUnregister}
-      />
     </div>
   );
 };
