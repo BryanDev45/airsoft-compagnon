@@ -16,7 +16,7 @@ export interface Profile {
   team_id: string | null;
   is_team_leader: boolean | null;
   is_verified: boolean | null;
-  newsletter_subscribed?: boolean;
+  newsletter_subscribed: boolean | null;
 }
 
 export interface UserStats {
