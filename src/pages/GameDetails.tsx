@@ -54,9 +54,11 @@ const GameDetails = () => {
       let creator: Profile | null = null;
       
       if (data.creator && typeof data.creator === 'object') {
+        // Use optional chaining to safely access newsletter_subscribed
+        const creatorData = data.creator as any;
         creator = {
-          ...(data.creator as Profile),
-          newsletter_subscribed: data.creator.newsletter_subscribed ?? null
+          ...(creatorData as Profile),
+          newsletter_subscribed: creatorData?.newsletter_subscribed ?? null
         };
       }
       
