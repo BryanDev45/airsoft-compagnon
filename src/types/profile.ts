@@ -16,55 +16,17 @@ export interface Profile {
   team_id: string | null;
   is_team_leader: boolean | null;
   is_verified: boolean | null;
+  newsletter_subscribed?: boolean;
 }
 
 export interface UserStats {
   user_id: string;
-  games_played: number | null;
-  games_organized: number | null;
-  reputation: number | null;
-  preferred_game_type: string | null;
-  favorite_role: string | null;
-  level: string | null;
-  updated_at: string | null;
-  created_at: string | null;
-}
-
-export interface Equipment {
-  id: string;
-  user_id: string | null;
-  type: string;
-  name: string | null;
-  brand: string | null;
-  power: string | null;
-  description: string | null;
-  image: string | null;
-  created_at: string | null;
-}
-
-export interface UserGame {
-  id: string;
-  title: string;
-  date: string;
-  location: string | null;
-  status: string | null;
-  image: string | null;
-  participants: number | null;
-  max_participants: number | null;
-}
-
-export interface UserBadge {
-  id: string;
-  badge_id: string | null;
-  user_id: string | null;
-  date: string | null;
-  created_at: string | null;
-  badge?: {
-    id: string;
-    name: string;
-    icon: string | null;
-    background_color: string | null;
-    border_color: string | null;
-    description: string | null;
-  };
+  games_played: number;
+  games_organized: number;
+  reputation: number;
+  preferred_game_type: string;
+  favorite_role: string;
+  level: string;
+  created_at: string;
+  updated_at: string;
 }

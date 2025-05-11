@@ -25,6 +25,7 @@ const Profile = () => {
     userStats,
     updateLocation,
     updateUserStats,
+    updateNewsletterSubscription,
     fetchProfileData
   } = useProfileData(readyToLoad ? user?.id : null);
 
@@ -43,9 +44,16 @@ const Profile = () => {
     return <ProfileLoading />;
   }
 
+  // Add updateNewsletterSubscription to the user object for ProfileSettingsDialog
+  const userWithUpdates = {
+    ...user,
+    ...profileData,
+    updateNewsletterSubscription
+  };
+
   return (
     <ProfileLayout
-      user={user}
+      user={userWithUpdates}
       profileData={profileData}
       userStats={userStats}
       equipment={equipment}

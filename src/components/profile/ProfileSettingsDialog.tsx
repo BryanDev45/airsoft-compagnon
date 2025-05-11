@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -7,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/use-toast";
-import { Shield, Mail, Key, CheckCircle2, Upload } from 'lucide-react';
+import { Shield, Mail, Key, CheckCircle2, Upload, Bell } from 'lucide-react';
 
 interface ProfileSettingsDialogProps {
   open: boolean;
@@ -25,6 +25,7 @@ const ProfileSettingsDialog = ({
   const [verificationRequested, setVerificationRequested] = useState(false);
   const [frontIdFile, setFrontIdFile] = useState<File | null>(null);
   const [backIdFile, setBackIdFile] = useState<File | null>(null);
+  const [isSubscribed, setIsSubscribed] = useState(user?.newsletter_subscribed || false);
 
   const handleRequestVerification = () => {
     if (!frontIdFile || !backIdFile) {
@@ -63,6 +64,13 @@ const ProfileSettingsDialog = ({
     }
   };
 
+  const handleNewsletterChange = async (checked: boolean) => {
+    setIsSubscribed(checked);
+    if (user && user.updateNewsletterSubscription) {
+      await user.updateNewsletterSubscription(checked);
+    }
+  };
+
   // Vérifier si l'utilisateur est null ou non défini
   if (!user) {
     return null;
@@ -79,10 +87,11 @@ const ProfileSettingsDialog = ({
         </DialogHeader>
 
         <Tabs value={currentTab} onValueChange={setCurrentTab} className="mt-4">
-          <TabsList className="grid grid-cols-3 mb-4">
+          <TabsList className="grid grid-cols-4 mb-4">
             <TabsTrigger value="account">Compte</TabsTrigger>
             <TabsTrigger value="password">Mot de passe</TabsTrigger>
             <TabsTrigger value="verification">Vérification</TabsTrigger>
+            <TabsTrigger value="notifications">Notifications</TabsTrigger>
           </TabsList>
           
           <TabsContent value="account" className="space-y-4">
@@ -214,6 +223,32 @@ const ProfileSettingsDialog = ({
                   </Button>
                 </>
               )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="notifications" className="space-y-4">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Bell size={20} />
+                  <h4 className="font-medium">Préférences de communication</h4>
+                </div>
+              </div>
+              
+              <div className="mt-4 space-y-4">
+                <div className="flex flex-row items-center justify-between rounded-lg border p-3">
+                  <div>
+                    <Label className="text-base">Newsletter</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Recevez nos actualités et événements par email
+                    </p>
+                  </div>
+                  <Switch 
+                    checked={isSubscribed}
+                    onCheckedChange={handleNewsletterChange}
+                  />
+                </div>
+              </div>
             </div>
           </TabsContent>
         </Tabs>

@@ -19,7 +19,8 @@ export const useProfileData = (userId: string | undefined) => {
   const { 
     updating, 
     updateLocation, 
-    updateUserStats 
+    updateUserStats,
+    updateNewsletterSubscription
   } = useProfileUpdates(userId, setProfileData, setUserStats);
 
   // Define the fetchProfileData function
@@ -126,6 +127,7 @@ export const useProfileData = (userId: string | undefined) => {
     userStats,
     updateLocation,
     updateUserStats,
+    updateNewsletterSubscription,
     fetchProfileData,
   };
 };

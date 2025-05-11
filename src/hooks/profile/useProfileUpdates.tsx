@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
@@ -97,9 +96,56 @@ export const useProfileUpdates = (
     }
   };
 
+  const updateNewsletterSubscription = async (subscribed: boolean): Promise<boolean> => {
+    if (!userId) return false;
+    
+    try {
+      setUpdating(true);
+      
+      // Update in database
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          newsletter_subscribed: subscribed,
+        })
+        .eq('id', userId);
+
+      if (error) {
+        console.error("Supabase Error:", error);
+        throw error;
+      }
+
+      // Update state
+      setProfileData(prev => prev ? {
+        ...prev,
+        newsletter_subscribed: subscribed,
+      } : null);
+      
+      toast({
+        title: subscribed ? "Inscription réussie" : "Désinscription réussie",
+        description: subscribed 
+          ? "Vous êtes maintenant inscrit à la newsletter" 
+          : "Vous êtes maintenant désinscrit de la newsletter",
+      });
+      
+      return true;
+    } catch (error: any) {
+      console.error("Error updating newsletter subscription:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour votre abonnement à la newsletter: " + error.message,
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   return {
     updating,
     updateLocation,
-    updateUserStats
+    updateUserStats,
+    updateNewsletterSubscription
   };
 };
