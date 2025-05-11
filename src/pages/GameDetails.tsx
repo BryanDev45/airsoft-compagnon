@@ -50,14 +50,18 @@ const GameDetails = () => {
 
       if (error) throw error;
       
-      // Ensure creator profile has newsletter_subscribed property
-      const creator = data.creator && typeof data.creator !== 'string' ? {
-        ...data.creator,
-        newsletter_subscribed: data.creator.newsletter_subscribed ?? null
-      } as Profile : null;
+      // Handle creator data safely
+      let creator: Profile | null = null;
+      
+      if (data.creator && typeof data.creator === 'object') {
+        creator = {
+          ...(data.creator as Profile),
+          newsletter_subscribed: data.creator.newsletter_subscribed ?? null
+        };
+      }
       
       const gameWithCreator: GameData = {
-        ...(data as any),
+        ...data,
         creator
       };
       
