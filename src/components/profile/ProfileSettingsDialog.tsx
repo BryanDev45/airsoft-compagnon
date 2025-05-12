@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,14 @@ const ProfileSettingsDialog = ({
   const [verificationRequested, setVerificationRequested] = useState(false);
   const [frontIdFile, setFrontIdFile] = useState<File | null>(null);
   const [backIdFile, setBackIdFile] = useState<File | null>(null);
-  const [isSubscribed, setIsSubscribed] = useState(user?.newsletter_subscribed || false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  
+  // Initialiser l'état isSubscribed avec la valeur correcte de user.newsletter_subscribed
+  useEffect(() => {
+    if (user && user.newsletter_subscribed !== undefined) {
+      setIsSubscribed(!!user.newsletter_subscribed);
+    }
+  }, [user, open]);
 
   const handleRequestVerification = () => {
     if (!frontIdFile || !backIdFile) {
@@ -67,23 +75,23 @@ const ProfileSettingsDialog = ({
   const handleNewsletterChange = async (checked: boolean) => {
     setIsSubscribed(checked);
     
+    // Utiliser la fonction updateNewsletterSubscription de l'objet user pour mettre à jour la base de données
     if (user && typeof user.updateNewsletterSubscription === 'function') {
-      try {
-        await user.updateNewsletterSubscription(checked);
-        toast({
-          title: checked ? "Newsletter activée" : "Newsletter désactivée",
-          description: checked ? "Vous recevrez désormais notre newsletter" : "Vous ne recevrez plus notre newsletter",
-        });
-      } catch (error) {
-        console.error("Erreur lors de la mise à jour de l'abonnement à la newsletter:", error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de mettre à jour vos préférences de newsletter",
-          variant: "destructive",
-        });
+      const success = await user.updateNewsletterSubscription(checked);
+      
+      if (!success) {
+        // Revenir à l'état précédent en cas d'erreur
+        setIsSubscribed(!checked);
       }
     } else {
       console.error("La méthode updateNewsletterSubscription n'est pas disponible sur l'objet user");
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour vos préférences de newsletter",
+        variant: "destructive",
+      });
+      // Revenir à l'état précédent en cas d'erreur
+      setIsSubscribed(!checked);
     }
   };
 

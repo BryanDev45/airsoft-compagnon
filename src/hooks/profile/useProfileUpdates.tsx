@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
@@ -104,11 +103,11 @@ export const useProfileUpdates = (
       setUpdating(true);
       console.log("Updating newsletter subscription:", subscribed);
       
-      // Update in database - CORRECTION: Cette ligne manquait ou n'était pas correctement implémentée
+      // Update in database
       const { error } = await supabase
         .from('profiles')
         .update({
-          newsletter_subscribed: subscribed,
+          newsletter_subscribed: subscribed
         })
         .eq('id', userId);
 
@@ -118,14 +117,10 @@ export const useProfileUpdates = (
       }
 
       // Update state
-      setProfileData(prev => {
-        if (!prev) return null;
-        
-        return {
-          ...prev,
-          newsletter_subscribed: subscribed
-        };
-      });
+      setProfileData(prev => prev ? {
+        ...prev,
+        newsletter_subscribed: subscribed
+      } : null);
       
       toast({
         title: subscribed ? "Inscription réussie" : "Désinscription réussie",

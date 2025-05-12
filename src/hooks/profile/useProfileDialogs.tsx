@@ -1,9 +1,11 @@
 
 import { useState } from 'react';
 
+/**
+ * Hook to manage all the dialog states in the profile page
+ */
 export const useProfileDialogs = () => {
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
-  const [showEditMediaDialog, setShowEditMediaDialog] = useState(false);
   const [showEditBioDialog, setShowEditBioDialog] = useState(false);
   const [showAddEquipmentDialog, setShowAddEquipmentDialog] = useState(false);
   const [selectedGame, setSelectedGame] = useState(null);
@@ -14,8 +16,6 @@ export const useProfileDialogs = () => {
   return {
     showSettingsDialog,
     setShowSettingsDialog,
-    showEditMediaDialog,
-    setShowEditMediaDialog,
     showEditBioDialog,
     setShowEditBioDialog,
     showAddEquipmentDialog,

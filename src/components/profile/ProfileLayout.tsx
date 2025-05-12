@@ -6,7 +6,6 @@ import ProfileHeader from './ProfileHeader';
 import ProfileContainer from './ProfileContainer';
 import ProfileDialogs from './ProfileDialogs';
 import ProfileSettingsDialog from './ProfileSettingsDialog';
-import ProfileEditMediaDialog from './ProfileEditMediaDialog';
 import ProfileEditBioDialog from './ProfileEditBioDialog';
 import ProfileAddEquipmentDialog from './ProfileAddEquipmentDialog';
 import { useNavigate } from 'react-router-dom';
@@ -43,8 +42,6 @@ const ProfileLayout: React.FC<ProfileLayoutProps> = ({
   const {
     showSettingsDialog,
     setShowSettingsDialog,
-    showEditMediaDialog,
-    setShowEditMediaDialog,
     showEditBioDialog,
     setShowEditBioDialog,
     showAddEquipmentDialog,
@@ -80,7 +77,6 @@ const ProfileLayout: React.FC<ProfileLayoutProps> = ({
             <ProfileHeader 
               user={profileData}
               isOwnProfile={true}
-              setEditing={() => setShowEditMediaDialog(true)}
               toggleProfileSettings={() => setShowSettingsDialog(true)}
               onEditBio={() => setShowEditBioDialog(true)}
             />
@@ -134,11 +130,6 @@ const ProfileLayout: React.FC<ProfileLayoutProps> = ({
         user={profileData}
       />
 
-      <ProfileEditMediaDialog
-        open={showEditMediaDialog}
-        onOpenChange={setShowEditMediaDialog}
-      />
-      
       <ProfileEditBioDialog
         open={showEditBioDialog}
         onOpenChange={setShowEditBioDialog}
