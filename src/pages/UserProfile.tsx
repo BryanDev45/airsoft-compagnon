@@ -10,6 +10,7 @@ import ProfileStats from '../components/profile/ProfileStats';
 import ProfileEquipment from '../components/profile/ProfileEquipment';
 import ProfileBadges from '../components/profile/ProfileBadges';
 import UserProfileHeader from '../components/profile/UserProfileHeader';
+import { useUserProfile } from '../hooks/useUserProfile';
 
 // Create a custom dialog component for user profiles
 const UserProfileDialogs = ({ 

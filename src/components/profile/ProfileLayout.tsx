@@ -62,7 +62,11 @@ const ProfileLayout = ({
 
       <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="md:col-span-1 space-y-8">
-          <SimpleContainer title="Informations">
+          <SimpleContainer 
+            title="Informations" 
+            buttonText="" 
+            onButtonClick={null}
+          >
             <ProfileInfo
               user={user}
               profileData={profileData}
@@ -72,7 +76,12 @@ const ProfileLayout = ({
             />
           </SimpleContainer>
 
-          <SimpleContainer title="Statistiques" className="bg-white rounded-lg shadow-md p-6">
+          <SimpleContainer 
+            title="Statistiques" 
+            className="bg-white rounded-lg shadow-md p-6" 
+            buttonText="" 
+            onButtonClick={null}
+          >
             <ProfileStats
               userStats={userStats}
               updateUserStats={updateUserStats}
@@ -82,7 +91,12 @@ const ProfileLayout = ({
             />
           </SimpleContainer>
 
-          <SimpleContainer title="Amis" className="bg-white rounded-lg shadow-md p-6">
+          <SimpleContainer 
+            title="Amis" 
+            className="bg-white rounded-lg shadow-md p-6" 
+            buttonText="" 
+            onButtonClick={null}
+          >
             <ProfileFriends
               userId={user.id}
               isOwnProfile={true}
