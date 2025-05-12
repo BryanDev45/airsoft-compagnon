@@ -11,7 +11,7 @@ import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
-import { Style, Icon } from 'ol/style';
+import { Style, Icon, Fill, Stroke, Circle as CircleStyle } from 'ol/style';
 
 interface LocationMapProps {
   location: string;
@@ -24,7 +24,13 @@ const LocationMap: React.FC<LocationMapProps> = ({ location, coordinates }) => {
   const map = useRef<Map | null>(null);
 
   useEffect(() => {
-    if (!mapRef.current || map.current) return;
+    if (!mapRef.current) return;
+
+    // Nettoyer la carte précédente si elle existe
+    if (map.current) {
+      map.current.setTarget(undefined);
+      map.current = null;
+    }
 
     // Assurons-nous que les coordonnées sont bien des nombres
     const lng = typeof coordinates[0] === 'number' ? coordinates[0] : parseFloat(String(coordinates[0]));
@@ -34,12 +40,33 @@ const LocationMap: React.FC<LocationMapProps> = ({ location, coordinates }) => {
     const validCoordinates = !isNaN(lng) && !isNaN(lat);
     const mapCoordinates = validCoordinates ? [lng, lat] : [2.3522, 48.8566]; // Paris par défaut si invalide
 
-    // Créer un marqueur pour l'emplacement
+    // Créer un marqueur pour l'emplacement avec un style amélioré
     const marker = new Feature({
       geometry: new Point(fromLonLat(mapCoordinates))
     });
 
+    // Style plus visible pour le marqueur avec un cercle d'ombre
     marker.setStyle(
+      new Style({
+        image: new CircleStyle({
+          radius: 12,
+          fill: new Fill({
+            color: 'rgba(234, 56, 76, 0.2)'
+          }),
+          stroke: new Stroke({
+            color: '#ea384c',
+            width: 2
+          })
+        })
+      })
+    );
+
+    // Ajouter un second marqueur au dessus avec l'icône
+    const pinMarker = new Feature({
+      geometry: new Point(fromLonLat(mapCoordinates))
+    });
+
+    pinMarker.setStyle(
       new Style({
         image: new Icon({
           anchor: [0.5, 1],
@@ -51,24 +78,28 @@ const LocationMap: React.FC<LocationMapProps> = ({ location, coordinates }) => {
     );
 
     const vectorSource = new VectorSource({
-      features: [marker]
+      features: [marker, pinMarker]
     });
 
     const vectorLayer = new VectorLayer({
-      source: vectorSource
+      source: vectorSource,
+      zIndex: 1
     });
 
     map.current = new Map({
       target: mapRef.current,
       layers: [
         new TileLayer({
-          source: new OSM()
+          source: new OSM(),
+          zIndex: 0
         }),
         vectorLayer
       ],
       view: new View({
         center: fromLonLat(mapCoordinates),
-        zoom: 15
+        zoom: 15,
+        maxZoom: 19,
+        minZoom: 3
       }),
       controls: []
     });
@@ -80,18 +111,28 @@ const LocationMap: React.FC<LocationMapProps> = ({ location, coordinates }) => {
 
     return () => {
       if (map.current) {
-        map.current.setTarget(null);
+        map.current.setTarget(undefined);
         map.current = null;
       }
     };
-  }, [coordinates]);
+  }, [coordinates, location]);
 
   return (
-    <div ref={mapRef} className="w-full h-full rounded-lg overflow-hidden">
+    <div ref={mapRef} className="w-full h-full rounded-lg overflow-hidden relative">
       {!mapLoaded && (
-        <div className="absolute inset-0 flex items-center justify-center flex-col bg-gray-200 z-10" style={{ pointerEvents: 'none' }}>
-          <MapPin size={24} className="text-gray-400 mb-2" />
-          <p className="text-center text-gray-500">Chargement de la carte...</p>
+        <div className="absolute inset-0 flex items-center justify-center flex-col bg-gray-100 z-10" style={{ pointerEvents: 'none' }}>
+          <div className="animate-pulse">
+            <MapPin size={32} className="text-airsoft-red mb-2" />
+          </div>
+          <p className="text-center text-gray-500 font-medium">Chargement de la carte...</p>
+        </div>
+      )}
+      
+      {/* Indication de l'adresse sur la carte */}
+      {mapLoaded && location && (
+        <div className="absolute bottom-3 left-3 bg-white bg-opacity-85 py-2 px-3 rounded shadow-md z-20 text-sm flex items-center max-w-[80%]">
+          <MapPin size={14} className="text-airsoft-red mr-1 flex-shrink-0" />
+          <span className="truncate">{location}</span>
         </div>
       )}
     </div>

@@ -4,7 +4,7 @@ import { useToast } from '@/components/ui/use-toast';
 
 export function useMapLocation(
   searchQuery: string, 
-  setSearchCenter: React.Dispatch<React.SetStateAction<[number, number]>>
+  setSearchCenter: React.Dispatch<React.SetStateAction<[number, number]>> | ((coords: [number, number]) => void)
 ) {
   const { toast } = useToast();
 
