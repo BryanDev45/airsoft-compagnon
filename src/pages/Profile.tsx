@@ -38,15 +38,22 @@ const Profile = () => {
       fetchEquipment();
       fetchUserGames();
     }
-  }, [readyToLoad, fetchEquipment, fetchUserGames]);
+  }, [readyToLoad]);
 
   if (initialLoading || !readyToLoad || loading || !profileData) {
     return <ProfileLoading />;
   }
 
+  // Add updateNewsletterSubscription to the user object for ProfileSettingsDialog
+  const userWithUpdates = {
+    ...user,
+    ...profileData,
+    updateNewsletterSubscription
+  };
+
   return (
     <ProfileLayout
-      user={user}
+      user={userWithUpdates}
       profileData={profileData}
       userStats={userStats}
       equipment={equipment}
@@ -57,9 +64,6 @@ const Profile = () => {
       fetchUserGames={fetchUserGames}
       fetchProfileData={fetchProfileData}
       handleAddEquipment={handleAddEquipment}
-      updateLocation={updateLocation}
-      updateUserStats={updateUserStats}
-      updateNewsletterSubscription={updateNewsletterSubscription}
     />
   );
 };

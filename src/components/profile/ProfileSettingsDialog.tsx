@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -14,23 +15,20 @@ interface ProfileSettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   user: any;
-  updateNewsletterSubscription: (subscribed: boolean) => Promise<boolean>;
 }
 
 const ProfileSettingsDialog = ({
   open,
   onOpenChange,
-  user,
-  updateNewsletterSubscription
+  user
 }: ProfileSettingsDialogProps) => {
   const [currentTab, setCurrentTab] = useState("account");
   const [verificationRequested, setVerificationRequested] = useState(false);
   const [frontIdFile, setFrontIdFile] = useState<File | null>(null);
   const [backIdFile, setBackIdFile] = useState<File | null>(null);
   const [isSubscribed, setIsSubscribed] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
   
-  // Initialize isSubscribed with the correct value from user.newsletter_subscribed
+  // Initialiser l'état isSubscribed avec la valeur correcte de user.newsletter_subscribed
   useEffect(() => {
     if (user && user.newsletter_subscribed !== undefined) {
       setIsSubscribed(!!user.newsletter_subscribed);
@@ -75,33 +73,29 @@ const ProfileSettingsDialog = ({
   };
 
   const handleNewsletterChange = async (checked: boolean) => {
-    setIsUpdating(true);
-    try {
-      const success = await updateNewsletterSubscription(checked);
+    setIsSubscribed(checked);
+    
+    // Utiliser la fonction updateNewsletterSubscription de l'objet user pour mettre à jour la base de données
+    if (user && typeof user.updateNewsletterSubscription === 'function') {
+      const success = await user.updateNewsletterSubscription(checked);
       
-      if (success) {
-        setIsSubscribed(checked);
-      } else {
-        // Revert to the previous state in case of error
-        toast({
-          title: "Erreur",
-          description: "Impossible de mettre à jour vos préférences de newsletter",
-          variant: "destructive",
-        });
+      if (!success) {
+        // Revenir à l'état précédent en cas d'erreur
+        setIsSubscribed(!checked);
       }
-    } catch (error) {
-      console.error("Error updating newsletter subscription:", error);
+    } else {
+      console.error("La méthode updateNewsletterSubscription n'est pas disponible sur l'objet user");
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de la mise à jour de vos préférences",
+        description: "Impossible de mettre à jour vos préférences de newsletter",
         variant: "destructive",
       });
-    } finally {
-      setIsUpdating(false);
+      // Revenir à l'état précédent en cas d'erreur
+      setIsSubscribed(!checked);
     }
   };
 
-  // Check if the user is null or undefined
+  // Vérifier si l'utilisateur est null ou non défini
   if (!user) {
     return null;
   }
@@ -276,7 +270,6 @@ const ProfileSettingsDialog = ({
                   <Switch 
                     checked={isSubscribed}
                     onCheckedChange={handleNewsletterChange}
-                    disabled={isUpdating}
                   />
                 </div>
               </div>
