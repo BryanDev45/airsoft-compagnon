@@ -9,9 +9,34 @@ import ProfileGames from '../components/profile/ProfileGames';
 import ProfileStats from '../components/profile/ProfileStats';
 import ProfileEquipment from '../components/profile/ProfileEquipment';
 import ProfileBadges from '../components/profile/ProfileBadges';
-import ProfileDialogs from '../components/profile/ProfileDialogs';
-import { useUserProfile } from '../hooks/useUserProfile';
 import UserProfileHeader from '../components/profile/UserProfileHeader';
+
+// Create a custom dialog component for user profiles
+const UserProfileDialogs = ({ 
+  selectedGame, 
+  showGameDialog, 
+  setShowGameDialog, 
+  showAllGamesDialog, 
+  setShowAllGamesDialog, 
+  showBadgesDialog, 
+  setShowBadgesDialog, 
+  handleNavigateToGame, 
+  user 
+}) => {
+  return (
+    <>
+      {/* Add your dialog components here */}
+      {/* For example:
+      <GameDetailsDialog 
+        open={showGameDialog}
+        onOpenChange={setShowGameDialog}
+        game={selectedGame}
+        onNavigate={handleNavigateToGame}
+      />
+      */}
+    </>
+  );
+};
 
 const UserProfile = () => {
   const { username } = useParams();
@@ -145,7 +170,7 @@ const UserProfile = () => {
       </main>
       <Footer />
 
-      <ProfileDialogs 
+      <UserProfileDialogs 
         selectedGame={selectedGame}
         showGameDialog={showGameDialog}
         setShowGameDialog={setShowGameDialog}

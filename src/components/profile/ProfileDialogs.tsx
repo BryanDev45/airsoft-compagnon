@@ -9,11 +9,11 @@ import ProfileSettingsDialog from './ProfileSettingsDialog';
 interface ProfileDialogsProps {
   dialogStates: any;
   user: any;
-  currentBio: any;
-  currentUsername: any;
-  equipmentTypes: any;
-  handleAddEquipment: any;
-  updateNewsletterSubscription: any;
+  currentBio: string;
+  currentUsername: string;
+  equipmentTypes: string[];
+  handleAddEquipment: (equipment: any) => Promise<boolean>;
+  updateNewsletterSubscription: (subscribed: boolean) => Promise<boolean>;
 }
 
 const ProfileDialogs = ({
@@ -59,7 +59,6 @@ const ProfileDialogs = ({
       <ProfileAddEquipmentDialog
         open={showAddEquipmentDialog}
         onOpenChange={setShowAddEquipmentDialog}
-        userId={user?.id}
         onAddEquipment={handleAddEquipment}
         equipmentTypes={equipmentTypes}
       />
@@ -69,12 +68,12 @@ const ProfileDialogs = ({
         onOpenChange={setShowEditEquipmentDialog}
         equipment={selectedEquipment}
         equipmentTypes={equipmentTypes}
+        onSave={() => {}} // Adding the required prop
       />
       
       <ProfileEditMediaDialog
         open={showEditMediaDialog}
         onOpenChange={setShowEditMediaDialog}
-        media={selectedMedia}
       />
     </>
   );

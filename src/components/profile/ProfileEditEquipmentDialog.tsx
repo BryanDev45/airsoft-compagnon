@@ -100,7 +100,7 @@ const ProfileEditEquipmentDialog = ({
         description: "Votre équipement a été mis à jour avec succès"
       });
 
-      onSave();
+      onSave(); // Call the onSave callback
       onOpenChange(false);
     } catch (error) {
       console.error("Erreur lors de la mise à jour de l'équipement:", error);

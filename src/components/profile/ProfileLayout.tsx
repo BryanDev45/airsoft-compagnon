@@ -1,13 +1,32 @@
 
 import React from 'react';
 import ProfileHeader from './ProfileHeader';
-import ProfileContainer from './ProfileContainer';
 import ProfileInfo from './ProfileInfo';
 import ProfileStats from './ProfileStats';
 import ProfileFriends from './ProfileFriends';
 import ProfileEquipment from './ProfileEquipment';
 import ProfileGames from './ProfileGames';
 import ProfileDialogs from './ProfileDialogs';
+
+// Define a simplified container component to replace ProfileContainer
+const SimpleContainer = ({ title, children, className = "bg-white rounded-lg shadow-md p-6", buttonText, onButtonClick }) => {
+  return (
+    <div className={className}>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold">{title}</h2>
+        {buttonText && onButtonClick && (
+          <button 
+            onClick={onButtonClick}
+            className="px-4 py-2 bg-airsoft-red text-white rounded-md hover:bg-red-700 transition-colors"
+          >
+            {buttonText}
+          </button>
+        )}
+      </div>
+      {children}
+    </div>
+  );
+};
 
 const ProfileLayout = ({
   user,
@@ -36,15 +55,14 @@ const ProfileLayout = ({
     <div className="bg-gray-50 min-h-screen">
       <ProfileHeader
         user={user}
-        profile={profileData}
-        openBioDialog={() => dialogStates.setShowEditBioDialog(true)}
-        openSettingsDialog={() => dialogStates.setShowSettingsDialog(true)}
-        openMediaDialog={() => dialogStates.setShowEditMediaDialog(true)}
+        isOwnProfile={true}
+        toggleProfileSettings={() => dialogStates.setShowSettingsDialog(true)}
+        onEditBio={() => dialogStates.setShowEditBioDialog(true)}
       />
 
       <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="md:col-span-1 space-y-8">
-          <ProfileContainer title="Informations">
+          <SimpleContainer title="Informations">
             <ProfileInfo
               user={user}
               profileData={profileData}
@@ -52,9 +70,9 @@ const ProfileLayout = ({
               handleNavigateToTeam={handleNavigateToTeam}
               isOwnProfile={true}
             />
-          </ProfileContainer>
+          </SimpleContainer>
 
-          <ProfileContainer title="Statistiques" className="bg-white rounded-lg shadow-md p-6">
+          <SimpleContainer title="Statistiques" className="bg-white rounded-lg shadow-md p-6">
             <ProfileStats
               userStats={userStats}
               updateUserStats={updateUserStats}
@@ -62,18 +80,18 @@ const ProfileLayout = ({
               isOwnProfile={true}
               profileData={profileData}
             />
-          </ProfileContainer>
+          </SimpleContainer>
 
-          <ProfileContainer title="Amis" className="bg-white rounded-lg shadow-md p-6">
+          <SimpleContainer title="Amis" className="bg-white rounded-lg shadow-md p-6">
             <ProfileFriends
               userId={user.id}
               isOwnProfile={true}
             />
-          </ProfileContainer>
+          </SimpleContainer>
         </div>
 
         <div className="md:col-span-2 space-y-8">
-          <ProfileContainer
+          <SimpleContainer
             title="Équipement"
             buttonText="Ajouter"
             onButtonClick={() => dialogStates.setShowAddEquipmentDialog(true)}
@@ -82,15 +100,11 @@ const ProfileLayout = ({
               equipment={equipment}
               equipmentTypes={equipmentTypes}
               readOnly={false}
-              onEditClick={(item) => {
-                dialogStates.setSelectedEquipment(item);
-                dialogStates.setShowEditEquipmentDialog(true);
-              }}
               fetchEquipment={fetchEquipment}
             />
-          </ProfileContainer>
+          </SimpleContainer>
 
-          <ProfileContainer
+          <SimpleContainer
             title="Mes parties"
             buttonText="Voir tout"
             onButtonClick={() => {}} 
@@ -101,7 +115,7 @@ const ProfileLayout = ({
               handleViewGameDetails={() => {}}
               handleViewAllGames={() => {}}
             />
-          </ProfileContainer>
+          </SimpleContainer>
         </div>
       </div>
 
