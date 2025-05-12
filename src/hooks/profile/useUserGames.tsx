@@ -29,6 +29,7 @@ export const useUserGames = (userId: string | undefined) => {
       console.log("Participated games:", gameParticipants);
       
       let formattedGames: any[] = [];
+      let pastGamesCount = 0; // Compteur pour les parties déjà jouées
       
       // 3. Format participated games
       if (gameParticipants && gameParticipants.length > 0) {
@@ -48,6 +49,11 @@ export const useUserGames = (userId: string | undefined) => {
               if (gameData) {
                 const gameDate = new Date(gameData.date);
                 const isUpcoming = gameDate > new Date();
+                
+                // Incrémenter le compteur si la partie est déjà passée
+                if (!isUpcoming) {
+                  pastGamesCount++;
+                }
                 
                 return {
                   id: gameData.id,
@@ -75,6 +81,8 @@ export const useUserGames = (userId: string | undefined) => {
         const organizedGames = createdGames.map(game => {
           const gameDate = new Date(game.date);
           const isUpcoming = gameDate > new Date();
+          
+          // Ne pas compter les parties organisées dans les parties "jouées"
           
           return {
             id: game.id,
@@ -105,6 +113,18 @@ export const useUserGames = (userId: string | undefined) => {
         } else {
           console.log("Updated games_organized count to:", createdGames.length);
         }
+      }
+      
+      // Mettre à jour le compteur de parties jouées
+      const { error: updateGamesPlayedError } = await supabase
+        .from('user_stats')
+        .update({ games_played: pastGamesCount })
+        .eq('user_id', userId);
+        
+      if (updateGamesPlayedError) {
+        console.error("Error updating games_played count:", updateGamesPlayedError);
+      } else {
+        console.log("Updated games_played count to:", pastGamesCount);
       }
       
       // Remove duplicates

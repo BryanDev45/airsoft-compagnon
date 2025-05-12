@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,9 +29,9 @@ const TeamField: React.FC<TeamFieldProps> = ({ field, isEditing, onEdit, onSave,
     coordinates: field?.coordinates || [2.3522, 48.8566], // Default Paris coordinates
   });
 
-  // Utiliser le hook useMapLocation pour géocoder l'adresse
+  // Utiliser le hook useMapLocation seulement pour l'adresse modifiée quand on est en édition
   const { getCurrentPosition } = useMapLocation(
-    isEditing ? editedField.address : field?.address || '', 
+    isEditing ? editedField.address : '', 
     (coords) => {
       if (coords) {
         setAddressCoordinates(coords);
@@ -64,15 +63,34 @@ const TeamField: React.FC<TeamFieldProps> = ({ field, isEditing, onEdit, onSave,
   };
 
   useEffect(() => {
-    // Mettre à jour les coordonnées si l'adresse change pendant l'édition
+    // Mettre à jour les coordonnées uniquement lorsque l'adresse change en édition
+    // et seulement après un délai
     if (isEditing && editedField.address) {
       const timerId = setTimeout(() => {
-        // Le hook useMapLocation s'occupera de la géocodification
+        // La géocodification est gérée par le hook
       }, 500);
       
       return () => clearTimeout(timerId);
     }
   }, [isEditing, editedField.address]);
+
+  // Au premier rendu, si nous avons un champ avec une adresse mais pas de coordonnées valides,
+  // nous initialisons les coordonnées (une seule fois)
+  useEffect(() => {
+    if (field && field.address && (!field.coordinates || !field.coordinates[0] || !field.coordinates[1])) {
+      const { geocodeLocation } = useMapLocation('', () => {});
+      
+      const initializeCoordinates = async () => {
+        const coords = await geocodeLocation(field.address);
+        if (coords) {
+          setAddressCoordinates(coords);
+          setEditedField(prev => ({ ...prev, coordinates: coords }));
+        }
+      };
+      
+      initializeCoordinates();
+    }
+  }, [field]);
 
   const addTerrainButton = (
     <Dialog>
@@ -208,10 +226,8 @@ const TeamField: React.FC<TeamFieldProps> = ({ field, isEditing, onEdit, onSave,
 
             <div className="h-[400px] rounded-lg overflow-hidden border border-gray-200 shadow-inner relative">
               <LocationMap 
-                location={isEditing ? editedField.address : field?.address} 
+                location={field?.address || ''} 
                 coordinates={
-                  isEditing && addressCoordinates ? 
-                  addressCoordinates : 
                   field?.coordinates?.[0] && field?.coordinates?.[1] ? 
                   [field.coordinates[0], field.coordinates[1]] : 
                   [2.3522, 48.8566]

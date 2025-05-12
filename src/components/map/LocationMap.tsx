@@ -21,22 +21,18 @@ interface LocationMapProps {
 const LocationMap: React.FC<LocationMapProps> = ({ location, coordinates }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
-  const map = useRef<Map | null>(null);
+  const mapInstance = useRef<Map | null>(null);
+  const [initialized, setInitialized] = useState(false);
 
+  // Créer la carte une seule fois au chargement initial
   useEffect(() => {
-    if (!mapRef.current) return;
-
-    // Nettoyer la carte précédente si elle existe
-    if (map.current) {
-      map.current.setTarget(undefined);
-      map.current = null;
-    }
+    if (!mapRef.current || initialized) return;
 
     // Assurons-nous que les coordonnées sont bien des nombres
     const lng = typeof coordinates[0] === 'number' ? coordinates[0] : parseFloat(String(coordinates[0]));
     const lat = typeof coordinates[1] === 'number' ? coordinates[1] : parseFloat(String(coordinates[1]));
 
-    // Vérifier que les coordonnées sont valides avant de créer la carte
+    // Vérifier que les coordonnées sont valides
     const validCoordinates = !isNaN(lng) && !isNaN(lat);
     const mapCoordinates = validCoordinates ? [lng, lat] : [2.3522, 48.8566]; // Paris par défaut si invalide
 
@@ -86,7 +82,7 @@ const LocationMap: React.FC<LocationMapProps> = ({ location, coordinates }) => {
       zIndex: 1
     });
 
-    map.current = new Map({
+    mapInstance.current = new Map({
       target: mapRef.current,
       layers: [
         new TileLayer({
@@ -105,17 +101,56 @@ const LocationMap: React.FC<LocationMapProps> = ({ location, coordinates }) => {
     });
 
     // Marquer la carte comme chargée une fois qu'elle est rendue
-    map.current.once('rendercomplete', () => {
+    mapInstance.current.once('rendercomplete', () => {
       setMapLoaded(true);
+      setInitialized(true);
     });
 
     return () => {
-      if (map.current) {
-        map.current.setTarget(undefined);
-        map.current = null;
+      if (mapInstance.current) {
+        mapInstance.current.setTarget(undefined);
+        mapInstance.current = null;
       }
     };
-  }, [coordinates, location]);
+  }, []);
+
+  // Uniquement mettre à jour la vue et le marqueur lorsque les coordonnées changent
+  useEffect(() => {
+    if (!mapInstance.current || !initialized) return;
+
+    // Assurons-nous que les coordonnées sont bien des nombres
+    const lng = typeof coordinates[0] === 'number' ? coordinates[0] : parseFloat(String(coordinates[0]));
+    const lat = typeof coordinates[1] === 'number' ? coordinates[1] : parseFloat(String(coordinates[1]));
+
+    // Vérifier que les coordonnées sont valides
+    const validCoordinates = !isNaN(lng) && !isNaN(lat);
+    if (!validCoordinates) return;
+
+    const mapCoordinates = [lng, lat];
+    
+    // Mettre à jour la position du centre de la vue
+    const view = mapInstance.current.getView();
+    view.setCenter(fromLonLat(mapCoordinates));
+    
+    // Mettre à jour la position des marqueurs
+    const vectorLayers = mapInstance.current.getLayers().getArray().filter(
+      layer => layer instanceof VectorLayer
+    ) as VectorLayer<VectorSource>[];
+    
+    if (vectorLayers.length > 0) {
+      const vectorSource = vectorLayers[0].getSource();
+      const features = vectorSource?.getFeatures();
+      
+      if (features && features.length) {
+        features.forEach(feature => {
+          const geometry = feature.getGeometry();
+          if (geometry && geometry instanceof Point) {
+            geometry.setCoordinates(fromLonLat(mapCoordinates));
+          }
+        });
+      }
+    }
+  }, [coordinates, initialized]);
 
   return (
     <div ref={mapRef} className="w-full h-full rounded-lg overflow-hidden relative">

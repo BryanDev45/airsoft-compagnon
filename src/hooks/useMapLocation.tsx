@@ -7,24 +7,40 @@ export function useMapLocation(
   setSearchCenter: React.Dispatch<React.SetStateAction<[number, number]>> | ((coords: [number, number]) => void)
 ) {
   const { toast } = useToast();
+  const [isSearching, setIsSearching] = useState(false);
 
   // Effect to handle search query geocoding
   useEffect(() => {
+    let isMounted = true;
+    
     const searchLocation = async () => {
-      if (searchQuery) {
+      if (searchQuery && !isSearching) {
+        setIsSearching(true);
         const coords = await geocodeLocation(searchQuery);
-        if (coords) {
+        if (coords && isMounted) {
           setSearchCenter(coords);
+        }
+        if (isMounted) {
+          setIsSearching(false);
         }
       }
     };
     
-    const timerId = setTimeout(() => {
-      searchLocation();
-    }, 500);
+    if (searchQuery) {
+      const timerId = setTimeout(() => {
+        searchLocation();
+      }, 500);
+      
+      return () => {
+        clearTimeout(timerId);
+        isMounted = false;
+      };
+    }
     
-    return () => clearTimeout(timerId);
-  }, [searchQuery, setSearchCenter]);
+    return () => {
+      isMounted = false;
+    };
+  }, [searchQuery, setSearchCenter, isSearching]);
 
   const geocodeLocation = async (locationName: string) => {
     if (!locationName) return null;
@@ -66,5 +82,5 @@ export function useMapLocation(
     }
   };
 
-  return { getCurrentPosition };
+  return { getCurrentPosition, geocodeLocation };
 }
