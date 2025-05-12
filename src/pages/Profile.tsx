@@ -44,7 +44,6 @@ const Profile = () => {
     return <ProfileLoading />;
   }
 
-  // Passer directement la fonction updateNewsletterSubscription au ProfileLayout
   return (
     <ProfileLayout
       user={user}
@@ -59,6 +58,8 @@ const Profile = () => {
       fetchProfileData={fetchProfileData}
       handleAddEquipment={handleAddEquipment}
       updateNewsletterSubscription={updateNewsletterSubscription}
+      updateLocation={updateLocation}
+      updateUserStats={updateUserStats}
     />
   );
 };

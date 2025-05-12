@@ -21,7 +21,9 @@ const ProfileLayout = ({
   fetchUserGames,
   fetchProfileData,
   handleAddEquipment,
-  updateNewsletterSubscription
+  updateNewsletterSubscription,
+  updateLocation,
+  updateUserStats
 }) => {
   return (
     <div className="container mx-auto py-6 px-4">
@@ -39,50 +41,63 @@ const ProfileLayout = ({
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Left column */}
         <div className="w-full lg:w-1/3">
-          <ProfileContainer title="Informations">
-            <ProfileInfo profileData={profileData} userStats={userStats} />
-          </ProfileContainer>
+          <div className="mb-6">
+            <ProfileInfo 
+              user={user} 
+              profileData={profileData} 
+              updateLocation={updateLocation}
+              handleNavigateToTeam={() => {}}
+              isOwnProfile={true}
+            />
+          </div>
           
-          <ProfileContainer title="Statistiques" className="mt-6">
-            <ProfileStats userStats={userStats} />
-          </ProfileContainer>
+          <div className="mb-6">
+            <ProfileStats 
+              userStats={userStats}
+              updateUserStats={updateUserStats}
+              fetchProfileData={fetchProfileData}
+              isOwnProfile={true}
+              profileData={profileData}
+            />
+          </div>
           
-          <ProfileContainer title="Amis" className="mt-6">
-            <ProfileFriends userId={user?.id} />
-          </ProfileContainer>
+          <div className="mb-6">
+            <ProfileFriends 
+              userId={user?.id}
+              isOwnProfile={true}
+            />
+          </div>
         </div>
         
         {/* Right column */}
         <div className="w-full lg:w-2/3">
-          <ProfileContainer 
-            title="Équipement"
-            buttonText="Ajouter"
-            onButtonClick={() => dialogStates.setShowAddEquipmentDialog(true)}
-          >
+          <div className="mb-6">
             <ProfileEquipment 
               equipment={equipment} 
-              userId={user?.id} 
-              onAddClick={() => dialogStates.setShowAddEquipmentDialog(true)}
+              readOnly={false}
               equipmentTypes={equipmentTypes}
               fetchEquipment={fetchEquipment}
             />
-          </ProfileContainer>
+            <div className="mt-4 flex justify-end">
+              <button 
+                className="bg-airsoft-red hover:bg-red-700 text-white px-4 py-2 rounded"
+                onClick={() => dialogStates.setShowAddEquipmentDialog(true)}
+              >
+                Ajouter un équipement
+              </button>
+            </div>
+          </div>
           
-          <ProfileContainer 
-            title="Mes parties" 
-            buttonText="Voir tout"
-            onButtonClick={() => dialogStates.setShowAllGamesDialog(true)}
-            className="mt-6"
-          >
+          <div>
             <ProfileGames 
-              userId={user?.id}
-              userGames={userGames}
-              onGameClick={(game) => {
+              games={userGames || []}
+              handleViewGameDetails={(game) => {
                 dialogStates.setSelectedGame(game);
                 dialogStates.setShowGameDialog(true);
-              }}
+              }} 
+              handleViewAllGames={() => dialogStates.setShowAllGamesDialog(true)} 
             />
-          </ProfileContainer>
+          </div>
         </div>
       </div>
       
