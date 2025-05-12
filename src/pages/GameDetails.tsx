@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,6 +16,9 @@ import GameDetailsTab from '@/components/game/GameDetailsTab';
 import GameRulesTab from '@/components/game/GameRulesTab';
 import GameEquipmentTab from '@/components/game/GameEquipmentTab';
 import ShareDialog from '@/components/game/ShareDialog';
+import GameImages from '@/components/game/GameImages';
+import GameInfoCard from '@/components/game/GameInfoCard';
+import GameLocationCard from '@/components/game/GameLocationCard';
 
 const GameDetails = () => {
   const { id } = useParams();
@@ -234,6 +238,15 @@ const GameDetails = () => {
   const isPastGame = gameData ? new Date(gameData.date) < new Date() : false;
   const isCreator = user && gameData ? user.id === gameData.created_by : false;
 
+  // Préparez les images pour le composant GameImages
+  const gameImages = gameData ? [
+    gameData.Picture1,
+    gameData.Picture2,
+    gameData.Picture3,
+    gameData.Picture4,
+    gameData.Picture5
+  ].filter(Boolean) : [];
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -241,6 +254,9 @@ const GameDetails = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {gameData && (
             <>
+              {/* Images de la partie */}
+              <GameImages images={gameImages} title={gameData.title} />
+              
               <GameHeader 
                 title={gameData.title}
                 gameType={gameData.game_type}
@@ -261,33 +277,58 @@ const GameDetails = () => {
                 isPastGame={isPastGame}
                 onEdit={isCreator ? handleEditGame : undefined}
               />
-              <GameTabs selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
-              <div className="mt-4">
-                {selectedTab === 'details' && (
-                  <GameDetailsTab 
-                    description={gameData.description} 
-                    creator={gameData.creator} 
-                    creatorRating={creatorRating}
-                    navigateToCreatorProfile={navigateToCreatorProfile}
+              
+              {/* Cartes d'info et de localisation */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                <div className="md:col-span-2">
+                  <GameTabs selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
+                  <div className="mt-4 bg-white rounded-lg shadow-sm p-6">
+                    {selectedTab === 'details' && (
+                      <GameDetailsTab 
+                        description={gameData.description} 
+                        creator={gameData.creator} 
+                        creatorRating={creatorRating}
+                        navigateToCreatorProfile={navigateToCreatorProfile}
+                      />
+                    )}
+                    {selectedTab === 'participants' && <GameParticipantsTab participants={participants} />}
+                    {selectedTab === 'comments' && <GameCommentsTab gameId={id || ''} />}
+                    {selectedTab === 'rules' && <GameRulesTab rules={gameData.rules} />}
+                    {selectedTab === 'equipment' && (
+                      <GameEquipmentTab
+                        aegFpsMin={gameData.aeg_fps_min}
+                        aegFpsMax={gameData.aeg_fps_max}
+                        dmrFpsMax={gameData.dmr_fps_max}
+                        eyeProtectionRequired={gameData.eye_protection_required}
+                        fullFaceProtectionRequired={gameData.full_face_protection_required}
+                        hasToilets={gameData.has_toilets}
+                        hasParking={gameData.has_parking}
+                        hasEquipmentRental={gameData.has_equipment_rental}
+                        manualValidation={gameData.manual_validation}
+                        isPrivate={gameData.is_private}
+                      />
+                    )}
+                  </div>
+                </div>
+                <div className="space-y-6">
+                  <GameInfoCard
+                    price={gameData.price}
+                    date={gameData.date}
+                    startTime={gameData.start_time}
+                    endTime={gameData.end_time}
+                    participantsCount={participants.length}
+                    maxPlayers={gameData.max_players}
+                    isRegistered={isRegistered}
+                    loadingRegistration={loadingRegistration}
+                    onRegister={handleRegistration}
                   />
-                )}
-                {selectedTab === 'participants' && <GameParticipantsTab participants={participants} />}
-                {selectedTab === 'comments' && <GameCommentsTab gameId={id || ''} />}
-                {selectedTab === 'rules' && <GameRulesTab rules={gameData.rules} />}
-                {selectedTab === 'equipment' && (
-                  <GameEquipmentTab
-                    aegFpsMin={gameData.aeg_fps_min}
-                    aegFpsMax={gameData.aeg_fps_max}
-                    dmrFpsMax={gameData.dmr_fps_max}
-                    eyeProtectionRequired={gameData.eye_protection_required}
-                    fullFaceProtectionRequired={gameData.full_face_protection_required}
-                    hasToilets={gameData.has_toilets}
-                    hasParking={gameData.has_parking}
-                    hasEquipmentRental={gameData.has_equipment_rental}
-                    manualValidation={gameData.manual_validation}
-                    isPrivate={gameData.is_private}
+                  <GameLocationCard
+                    address={gameData.address}
+                    zipCode={gameData.zip_code}
+                    city={gameData.city}
+                    coordinates={[gameData.longitude || 0, gameData.latitude || 0]}
                   />
-                )}
+                </div>
               </div>
             </>
           )}
