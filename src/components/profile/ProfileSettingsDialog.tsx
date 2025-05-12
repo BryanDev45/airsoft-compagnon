@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -14,14 +15,12 @@ interface ProfileSettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   user: any;
-  updateNewsletterSubscription?: (subscribed: boolean) => Promise<boolean>;
 }
 
 const ProfileSettingsDialog = ({
   open,
   onOpenChange,
-  user,
-  updateNewsletterSubscription
+  user
 }: ProfileSettingsDialogProps) => {
   const [currentTab, setCurrentTab] = useState("account");
   const [verificationRequested, setVerificationRequested] = useState(false);
@@ -76,16 +75,16 @@ const ProfileSettingsDialog = ({
   const handleNewsletterChange = async (checked: boolean) => {
     setIsSubscribed(checked);
     
-    // Utiliser la fonction updateNewsletterSubscription passée en prop
-    if (updateNewsletterSubscription) {
-      const success = await updateNewsletterSubscription(checked);
+    // Utiliser la fonction updateNewsletterSubscription de l'objet user pour mettre à jour la base de données
+    if (user && typeof user.updateNewsletterSubscription === 'function') {
+      const success = await user.updateNewsletterSubscription(checked);
       
       if (!success) {
         // Revenir à l'état précédent en cas d'erreur
         setIsSubscribed(!checked);
       }
     } else {
-      console.error("La fonction updateNewsletterSubscription n'est pas disponible");
+      console.error("La méthode updateNewsletterSubscription n'est pas disponible sur l'objet user");
       toast({
         title: "Erreur",
         description: "Impossible de mettre à jour vos préférences de newsletter",

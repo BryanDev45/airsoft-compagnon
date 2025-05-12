@@ -12,7 +12,6 @@ import ProfileBadges from '../components/profile/ProfileBadges';
 import ProfileDialogs from '../components/profile/ProfileDialogs';
 import { useUserProfile } from '../hooks/useUserProfile';
 import UserProfileHeader from '../components/profile/UserProfileHeader';
-import { useProfileDialogs } from '../hooks/profile/useProfileDialogs';
 
 const UserProfile = () => {
   const { username } = useParams();
@@ -37,20 +36,10 @@ const UserProfile = () => {
     fetchProfileData
   } = useUserProfile(username);
 
-  // Create a dialogStates object using the same hook as in Profile page
-  const dialogStates = useProfileDialogs();
-  
-  // Use these values from dialogStates instead
-  const {
-    selectedGame,
-    setSelectedGame,
-    showGameDialog,
-    setShowGameDialog,
-    showAllGamesDialog,
-    setShowAllGamesDialog,
-    showBadgesDialog,
-    setShowBadgesDialog
-  } = dialogStates;
+  const [selectedGame, setSelectedGame] = useState(null);
+  const [showGameDialog, setShowGameDialog] = useState(false);
+  const [showAllGamesDialog, setShowAllGamesDialog] = useState(false);
+  const [showBadgesDialog, setShowBadgesDialog] = useState(false);
   
   const equipmentTypes = ["Réplique principale", "Réplique secondaire", "Protection", "Accessoire"];
 
@@ -112,7 +101,6 @@ const UserProfile = () => {
                     profileData={profileData}
                     updateLocation={updateLocation}
                     handleNavigateToTeam={handleNavigateToTeam}
-                    isOwnProfile={false}
                   />
                 </TabsContent>
                 
@@ -133,7 +121,6 @@ const UserProfile = () => {
                     updateUserStats={updateUserStats}
                     fetchProfileData={fetchProfileData}
                     profileData={profileData}
-                    isOwnProfile={false}
                   />
                 </TabsContent>
                 
@@ -159,13 +146,15 @@ const UserProfile = () => {
       <Footer />
 
       <ProfileDialogs 
-        dialogStates={dialogStates}
-        user={userData}
-        currentBio={profileData?.bio}
-        currentUsername={profileData?.username}
-        equipmentTypes={equipmentTypes}
-        handleAddEquipment={() => {}} // Placeholder, not needed for user profile
-        updateNewsletterSubscription={() => {}} // Placeholder, not needed for user profile
+        selectedGame={selectedGame}
+        showGameDialog={showGameDialog}
+        setShowGameDialog={setShowGameDialog}
+        showAllGamesDialog={showAllGamesDialog}
+        setShowAllGamesDialog={setShowAllGamesDialog}
+        showBadgesDialog={showBadgesDialog}
+        setShowBadgesDialog={setShowBadgesDialog}
+        handleNavigateToGame={handleNavigateToGame}
+        user={profileData}
       />
     </div>
   );
