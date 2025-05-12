@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface GameImagesProps {
   images: string[];
@@ -16,6 +16,16 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
 
   // État local pour stocker les images filtrées
   const [displayImages, setDisplayImages] = useState<string[]>([]);
+  // Référence pour vérifier si le composant est monté
+  const isMounted = useRef(true);
+  
+  // Configurer isMounted lors du montage/démontage
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
   
   // Filtrer les images à chaque changement du tableau images
   useEffect(() => {
@@ -24,7 +34,9 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
     // Vérifier si images est défini et non nul
     if (!images || !Array.isArray(images)) {
       console.log("GameImages - Images non valides, utilisation des images par défaut");
-      setDisplayImages(defaultImages);
+      if (isMounted.current) {
+        setDisplayImages(defaultImages);
+      }
       return;
     }
     
@@ -33,7 +45,9 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
     console.log("GameImages - Images filtrées:", filteredImages);
     
     // N'utiliser les images par défaut que si aucune image valide n'est fournie
-    setDisplayImages(filteredImages.length > 0 ? filteredImages : defaultImages);
+    if (isMounted.current) {
+      setDisplayImages(filteredImages.length > 0 ? filteredImages : defaultImages);
+    }
   }, [images]);
 
   // Gérer les erreurs de chargement d'image
@@ -45,12 +59,19 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
     e.currentTarget.src = defaultImages[fallbackIndex];
     
     // Mettre à jour l'état pour ne pas réessayer de charger la même image
-    setDisplayImages(prevImages => {
-      const newImages = [...prevImages];
-      newImages[index] = defaultImages[fallbackIndex];
-      return newImages;
-    });
+    if (isMounted.current) {
+      setDisplayImages(prevImages => {
+        const newImages = [...prevImages];
+        newImages[index] = defaultImages[fallbackIndex];
+        return newImages;
+      });
+    }
   };
+
+  // Si aucune image n'est disponible, ne rien afficher
+  if (!displayImages.length) {
+    return null;
+  }
 
   return (
     <div className="rounded-lg overflow-hidden mb-8">

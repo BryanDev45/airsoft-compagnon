@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -254,9 +253,6 @@ const GameDetails = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {gameData && (
             <>
-              {/* Images de la partie */}
-              <GameImages images={gameImages} title={gameData.title} />
-              
               <GameHeader 
                 title={gameData.title}
                 gameType={gameData.game_type}
@@ -278,8 +274,12 @@ const GameDetails = () => {
                 onEdit={isCreator ? handleEditGame : undefined}
               />
               
+              <div className="my-6">
+                <GameImages images={gameImages} title={gameData.title} />
+              </div>
+              
               {/* Cartes d'info et de localisation */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="md:col-span-2">
                   <GameTabs selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
                   <div className="mt-4 bg-white rounded-lg shadow-sm p-6">

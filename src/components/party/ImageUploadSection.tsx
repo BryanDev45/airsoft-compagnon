@@ -17,6 +17,7 @@ const ImageUploadSection = ({
   // Si updateFormData est fourni, on peut l'utiliser pour mettre à jour les données du formulaire
   React.useEffect(() => {
     if (updateFormData) {
+      console.log("Mise à jour des images dans le formulaire:", images);
       updateFormData('images', { images });
     }
   }, [images, updateFormData]);

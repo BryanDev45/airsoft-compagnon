@@ -132,7 +132,7 @@ export const uploadGameImages = async (gameId: string, images: File[]) => {
     
     console.log(`${imageUrls.length} images téléchargées avec succès:`, imageUrls);
     
-    // CORRECTION: Mettre à jour les champs Picture1, Picture2, etc. directement ici
+    // Mettre à jour les champs Picture1, Picture2, etc. correctement
     if (imageUrls.length > 0) {
       const updateData: Record<string, string> = {};
       
@@ -142,6 +142,7 @@ export const uploadGameImages = async (gameId: string, images: File[]) => {
       }
       
       // Mise à jour des URL des images dans la base de données
+      console.log("Mise à jour des URL d'images pour le jeu:", gameId, updateData);
       const { error: updateError } = await supabase
         .from('airsoft_games')
         .update(updateData)
