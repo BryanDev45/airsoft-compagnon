@@ -44,16 +44,10 @@ const Profile = () => {
     return <ProfileLoading />;
   }
 
-  // Add updateNewsletterSubscription to the user object for ProfileSettingsDialog
-  const userWithUpdates = {
-    ...user,
-    ...profileData,
-    updateNewsletterSubscription
-  };
-
+  // Passer directement la fonction updateNewsletterSubscription au ProfileLayout
   return (
     <ProfileLayout
-      user={userWithUpdates}
+      user={user}
       profileData={profileData}
       userStats={userStats}
       equipment={equipment}
@@ -64,6 +58,7 @@ const Profile = () => {
       fetchUserGames={fetchUserGames}
       fetchProfileData={fetchProfileData}
       handleAddEquipment={handleAddEquipment}
+      updateNewsletterSubscription={updateNewsletterSubscription}
     />
   );
 };

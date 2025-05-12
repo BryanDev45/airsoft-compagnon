@@ -1,30 +1,15 @@
 
 import React from 'react';
-import Header from '../Header';
-import Footer from '../Footer';
-import ProfileHeader from './ProfileHeader';
 import ProfileContainer from './ProfileContainer';
+import ProfileHeader from './ProfileHeader';
+import ProfileInfo from './ProfileInfo';
+import ProfileStats from './ProfileStats';
+import ProfileEquipment from './ProfileEquipment';
+import ProfileGames from './ProfileGames';
+import ProfileFriends from './ProfileFriends';
 import ProfileDialogs from './ProfileDialogs';
-import ProfileSettingsDialog from './ProfileSettingsDialog';
-import ProfileEditBioDialog from './ProfileEditBioDialog';
-import ProfileAddEquipmentDialog from './ProfileAddEquipmentDialog';
-import { useNavigate } from 'react-router-dom';
 
-interface ProfileLayoutProps {
-  user: any;
-  profileData: any;
-  userStats: any;
-  equipment: any[];
-  userGames: any[];
-  dialogStates: any;
-  equipmentTypes: string[];
-  fetchEquipment: () => Promise<void>;
-  fetchUserGames: () => Promise<void>;
-  fetchProfileData: () => Promise<void>;
-  handleAddEquipment: (equipment: any) => Promise<boolean>;
-}
-
-const ProfileLayout: React.FC<ProfileLayoutProps> = ({
+const ProfileLayout = ({
   user,
   profileData,
   userStats,
@@ -35,113 +20,81 @@ const ProfileLayout: React.FC<ProfileLayoutProps> = ({
   fetchEquipment,
   fetchUserGames,
   fetchProfileData,
-  handleAddEquipment
+  handleAddEquipment,
+  updateNewsletterSubscription
 }) => {
-  const navigate = useNavigate();
-  
-  const {
-    showSettingsDialog,
-    setShowSettingsDialog,
-    showEditBioDialog,
-    setShowEditBioDialog,
-    showAddEquipmentDialog,
-    setShowAddEquipmentDialog,
-    selectedGame,
-    setSelectedGame,
-    showGameDialog,
-    setShowGameDialog,
-    showAllGamesDialog,
-    setShowAllGamesDialog,
-    showBadgesDialog,
-    setShowBadgesDialog
-  } = dialogStates;
-
-  const handleNavigateToTeam = () => {
-    if (profileData?.team_id) {
-      navigate(`/team/${profileData.team_id}`);
-    } else {
-      navigate('/team/create');
-    }
-  };
-
-  const handleNavigateToGame = (gameId) => {
-    navigate(`/game/${gameId}`);
-  };
-
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-grow bg-gray-50 py-12">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <ProfileHeader 
-              user={profileData}
-              isOwnProfile={true}
-              toggleProfileSettings={() => setShowSettingsDialog(true)}
-              onEditBio={() => setShowEditBioDialog(true)}
-            />
-            
-            <ProfileContainer
-              user={user}
-              profileData={profileData}
-              userStats={userStats}
-              equipment={equipment}
-              games={userGames} 
-              updateLocation={(location) => {
-                // This is handled by useProfileData hook and passed to Profile.tsx
-                return Promise.resolve(false);
-              }}
-              updateUserStats={(gameType, role, level) => {
-                // This is handled by useProfileData hook and passed to Profile.tsx
-                return Promise.resolve(false);
-              }}
-              fetchProfileData={fetchProfileData}
-              fetchEquipment={fetchEquipment}
-              fetchUserGames={fetchUserGames}
-              handleNavigateToTeam={handleNavigateToTeam}
-              setSelectedGame={setSelectedGame}
-              setShowGameDialog={setShowGameDialog}
-              setShowAllGamesDialog={setShowAllGamesDialog}
-              setShowBadgesDialog={setShowBadgesDialog}
-              setShowAddEquipmentDialog={setShowAddEquipmentDialog}
-              isOwnProfile={true}
-              equipmentTypes={equipmentTypes}
-            />
-          </div>
-        </div>
-      </main>
-      <Footer />
-
-      <ProfileDialogs 
-        selectedGame={selectedGame}
-        showGameDialog={showGameDialog}
-        setShowGameDialog={setShowGameDialog}
-        showAllGamesDialog={showAllGamesDialog}
-        setShowAllGamesDialog={setShowAllGamesDialog}
-        showBadgesDialog={showBadgesDialog}
-        setShowBadgesDialog={setShowBadgesDialog}
-        user={profileData}
-        handleNavigateToGame={handleNavigateToGame}
-      />
-
-      <ProfileSettingsDialog
-        open={showSettingsDialog}
-        onOpenChange={setShowSettingsDialog}
-        user={profileData}
-      />
-
-      <ProfileEditBioDialog
-        open={showEditBioDialog}
-        onOpenChange={setShowEditBioDialog}
-        currentBio={profileData?.bio || ''}
-        currentUsername={profileData?.username || ''}
-      />
+    <div className="container mx-auto py-6 px-4">
+      {/* Section Header */}
+      <div className="mb-6">
+        <ProfileHeader 
+          user={user}
+          isOwnProfile={true}
+          toggleProfileSettings={() => dialogStates.setShowSettingsDialog(true)}
+          onEditBio={() => dialogStates.setShowEditBioDialog(true)}
+        />
+      </div>
       
-      <ProfileAddEquipmentDialog
-        open={showAddEquipmentDialog}
-        onOpenChange={setShowAddEquipmentDialog}
-        onAddEquipment={handleAddEquipment}
+      {/* Main Content */}
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Left column */}
+        <div className="w-full lg:w-1/3">
+          <ProfileContainer title="Informations">
+            <ProfileInfo profileData={profileData} userStats={userStats} />
+          </ProfileContainer>
+          
+          <ProfileContainer title="Statistiques" className="mt-6">
+            <ProfileStats userStats={userStats} />
+          </ProfileContainer>
+          
+          <ProfileContainer title="Amis" className="mt-6">
+            <ProfileFriends userId={user?.id} />
+          </ProfileContainer>
+        </div>
+        
+        {/* Right column */}
+        <div className="w-full lg:w-2/3">
+          <ProfileContainer 
+            title="Équipement"
+            buttonText="Ajouter"
+            onButtonClick={() => dialogStates.setShowAddEquipmentDialog(true)}
+          >
+            <ProfileEquipment 
+              equipment={equipment} 
+              userId={user?.id} 
+              onAddClick={() => dialogStates.setShowAddEquipmentDialog(true)}
+              equipmentTypes={equipmentTypes}
+              fetchEquipment={fetchEquipment}
+            />
+          </ProfileContainer>
+          
+          <ProfileContainer 
+            title="Mes parties" 
+            buttonText="Voir tout"
+            onButtonClick={() => dialogStates.setShowAllGamesDialog(true)}
+            className="mt-6"
+          >
+            <ProfileGames 
+              userId={user?.id}
+              userGames={userGames}
+              onGameClick={(game) => {
+                dialogStates.setSelectedGame(game);
+                dialogStates.setShowGameDialog(true);
+              }}
+            />
+          </ProfileContainer>
+        </div>
+      </div>
+      
+      {/* All Dialogs */}
+      <ProfileDialogs 
+        dialogStates={dialogStates}
+        user={user}
+        currentBio={profileData?.bio}
+        currentUsername={profileData?.username}
         equipmentTypes={equipmentTypes}
+        handleAddEquipment={handleAddEquipment}
+        updateNewsletterSubscription={updateNewsletterSubscription}
       />
     </div>
   );
