@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -29,6 +28,7 @@ const GameDetails = () => {
   const [loadingRegistration, setLoadingRegistration] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [creatorRating, setCreatorRating] = useState<number | null>(null);
+  const [creatorProfile, setCreatorProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -42,40 +42,55 @@ const GameDetails = () => {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      // Get the game data first without trying to join with creator
+      const { data: gameData, error: gameError } = await supabase
         .from('airsoft_games')
-        .select(`*, creator:created_by (*)`)
+        .select('*')
         .eq('id', id)
         .single();
 
-      if (error) throw error;
-      
-      // Handle creator data safely
-      let creator: Profile | null = null;
-      
-      if (data.creator && typeof data.creator === 'object') {
-        // Use optional chaining to safely access newsletter_subscribed
-        const creatorData = data.creator as any;
-        creator = {
-          ...(creatorData as Profile),
-          newsletter_subscribed: creatorData?.newsletter_subscribed ?? null
-        };
+      if (gameError) {
+        throw gameError;
       }
       
+      // Then fetch the creator separately using the created_by field
+      let creator: Profile | null = null;
+      if (gameData.created_by) {
+        const { data: creatorData, error: creatorError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', gameData.created_by)
+          .single();
+          
+        if (creatorError) {
+          console.warn("Could not fetch creator profile:", creatorError);
+        } else {
+          // Use optional chaining to safely access newsletter_subscribed
+          creator = {
+            ...(creatorData as Profile),
+            newsletter_subscribed: creatorData?.newsletter_subscribed ?? null
+          };
+          
+          setCreatorProfile(creator);
+        }
+        
+        // Fetch creator's rating if available
+        if (gameData.created_by) {
+          const { data: ratingData } = await supabase
+            .rpc('get_average_rating', { p_user_id: gameData.created_by });
+            
+          setCreatorRating(ratingData);
+        }
+      }
+      
+      // Combine game data with creator
       const gameWithCreator: GameData = {
-        ...data,
+        ...gameData,
         creator
       };
       
       setGameData(gameWithCreator);
       
-      // Fetch creator's rating if available
-      if (creator && creator.id) {
-        const { data: ratingData } = await supabase
-          .rpc('get_average_rating', { p_user_id: creator.id });
-        
-        setCreatorRating(ratingData);
-      }
     } catch (error) {
       console.error('Error loading game data:', error);
       toast({
