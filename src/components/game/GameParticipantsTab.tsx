@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { GameParticipant } from '@/types/game';
 
@@ -8,6 +9,8 @@ interface GameParticipantsTabProps {
 }
 
 const GameParticipantsTab: React.FC<GameParticipantsTabProps> = ({ participants }) => {
+  const navigate = useNavigate();
+
   // Helper function to get initials from username
   const getInitials = (username: string | null): string => {
     if (!username) return '??';
@@ -25,6 +28,12 @@ const GameParticipantsTab: React.FC<GameParticipantsTabProps> = ({ participants 
     }
   };
 
+  const handleProfileClick = (username: string | null) => {
+    if (username) {
+      navigate(`/user/${username}`);
+    }
+  };
+
   return (
     <>
       <h2 className="text-xl font-semibold mb-4">Participants ({participants.length})</h2>
@@ -36,7 +45,11 @@ const GameParticipantsTab: React.FC<GameParticipantsTabProps> = ({ participants 
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {participants.map((participant) => (
-            <div key={participant.id} className="bg-white p-4 rounded-md border flex items-center gap-3">
+            <div 
+              key={participant.id} 
+              className="bg-white p-4 rounded-md border flex items-center gap-3 cursor-pointer hover:bg-gray-50 transition-colors"
+              onClick={() => handleProfileClick(participant.profile?.username)}
+            >
               <Avatar className="h-12 w-12">
                 <AvatarImage 
                   src={participant.profile?.avatar || ""} 

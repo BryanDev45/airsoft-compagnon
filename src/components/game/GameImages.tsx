@@ -16,6 +16,8 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
 
   // État local pour stocker les images filtrées
   const [displayImages, setDisplayImages] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
   // Référence pour vérifier si le composant est monté
   const isMounted = useRef(true);
   
@@ -29,6 +31,7 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
   
   // Filtrer les images à chaque changement du tableau images
   useEffect(() => {
+    setIsLoading(true);
     console.log("GameImages - Images reçues:", images);
     
     // Vérifier si images est défini et non nul
@@ -36,6 +39,7 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
       console.log("GameImages - Images non valides, utilisation des images par défaut");
       if (isMounted.current) {
         setDisplayImages(defaultImages);
+        setIsLoading(false);
       }
       return;
     }
@@ -47,6 +51,7 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
     // N'utiliser les images par défaut que si aucune image valide n'est fournie
     if (isMounted.current) {
       setDisplayImages(filteredImages.length > 0 ? filteredImages : defaultImages);
+      setIsLoading(false);
     }
   }, [images]);
 
@@ -57,20 +62,15 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
     // Remplacer l'image qui a échoué par une image par défaut
     const fallbackIndex = Math.min(index, defaultImages.length - 1);
     e.currentTarget.src = defaultImages[fallbackIndex];
-    
-    // Mettre à jour l'état pour ne pas réessayer de charger la même image
-    if (isMounted.current) {
-      setDisplayImages(prevImages => {
-        const newImages = [...prevImages];
-        newImages[index] = defaultImages[fallbackIndex];
-        return newImages;
-      });
-    }
   };
 
-  // Si aucune image n'est disponible, ne rien afficher
-  if (!displayImages.length) {
-    return null;
+  // Si aucune image n'est disponible ou si le chargement est en cours, afficher un placeholder
+  if (isLoading) {
+    return (
+      <div className="rounded-lg overflow-hidden mb-8 bg-gray-200 animate-pulse">
+        <div className="w-full h-[300px]"></div>
+      </div>
+    );
   }
 
   return (

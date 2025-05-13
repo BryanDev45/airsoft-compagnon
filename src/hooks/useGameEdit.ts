@@ -321,7 +321,7 @@ export const useGameEdit = (gameId: string | undefined) => {
         }
       });
 
-      console.log("Données de mise à jour initiales:", updateData);
+      console.log("Données de mise à jour initiales avec images existantes:", updateData);
 
       // Mettre à jour les données du jeu dans la base de données
       const { error: updateError } = await supabase
@@ -335,7 +335,7 @@ export const useGameEdit = (gameId: string | undefined) => {
       if (images.length > 0) {
         console.log("Téléchargement de nouvelles images:", images.length);
         
-        // CORRECTION: Utiliser directement uploadGameImages qui gère maintenant la mise à jour des champs Picture1-5
+        // Utiliser uploadGameImages qui gère maintenant la mise à jour des champs Picture1-5
         const { data: imageUrls, error: imageError } = await uploadGameImages(gameId, images);
         
         if (imageError) {

@@ -36,6 +36,13 @@ const LocationMap: React.FC<LocationMapProps> = ({ location, coordinates }) => {
     const validCoordinates = !isNaN(lng) && !isNaN(lat);
     const mapCoordinates = validCoordinates ? [lng, lat] : [2.3522, 48.8566]; // Paris par défaut si invalide
 
+    // Initialiser la source de tuiles OSM d'abord
+    const osmSource = new OSM();
+    const tileLayer = new TileLayer({
+      source: osmSource,
+      zIndex: 0
+    });
+
     // Créer un marqueur pour l'emplacement avec un style amélioré
     const marker = new Feature({
       geometry: new Point(fromLonLat(mapCoordinates))
@@ -82,14 +89,11 @@ const LocationMap: React.FC<LocationMapProps> = ({ location, coordinates }) => {
       zIndex: 1
     });
 
-    // Fix: Make sure to properly initialize the map with the OSM layer first, then add vector layer
+    // Créer la carte avec les couches spécifiées
     mapInstance.current = new Map({
       target: mapRef.current,
       layers: [
-        new TileLayer({
-          source: new OSM(),
-          zIndex: 0
-        }),
+        tileLayer,
         vectorLayer
       ],
       view: new View({

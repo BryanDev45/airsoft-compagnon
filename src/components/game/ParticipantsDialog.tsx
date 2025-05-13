@@ -37,6 +37,13 @@ const ParticipantsDialog: React.FC<ParticipantsDialogProps> = ({
     return username.substring(0, 2).toUpperCase();
   };
 
+  const handleProfileClick = (username: string | undefined) => {
+    if (username) {
+      navigate(`/user/${username}`);
+      onOpenChange(false); // Close dialog when navigating
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -58,7 +65,8 @@ const ParticipantsDialog: React.FC<ParticipantsDialogProps> = ({
                 {participants.map((participant, idx) => (
                   <div 
                     key={idx} 
-                    className="flex items-center gap-3 p-3 border rounded-md hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-3 p-3 border rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
+                    onClick={() => handleProfileClick(participant.profile?.username)}
                   >
                     <Avatar>
                       <AvatarImage 
@@ -81,8 +89,7 @@ const ParticipantsDialog: React.FC<ParticipantsDialogProps> = ({
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="flex-shrink-0" 
-                      onClick={() => navigate(`/profile/${participant.profile?.username}`)}
+                      className="flex-shrink-0"
                     >
                       <User size={14} className="mr-1" />
                       Profil
