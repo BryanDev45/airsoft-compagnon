@@ -62,7 +62,7 @@ export const useProfileData = (userId: string | undefined) => {
             team_id: null,
             is_team_leader: null,
             is_verified: null,
-            newsletter_subscribed: null
+            newsletter_subscribed: false // Initialize with default value
           };
           
           // Insert the new profile
@@ -78,7 +78,7 @@ export const useProfileData = (userId: string | undefined) => {
         // Create a complete profile object including the newsletter_subscribed property
         const completeProfile: Profile = {
           ...(profile as any),
-          newsletter_subscribed: profile.newsletter_subscribed ?? null
+          newsletter_subscribed: profile.newsletter_subscribed ?? false
         };
         
         setProfileData(completeProfile);

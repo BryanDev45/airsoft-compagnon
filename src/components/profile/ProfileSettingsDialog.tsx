@@ -28,7 +28,7 @@ const ProfileSettingsDialog = ({
   const [backIdFile, setBackIdFile] = useState<File | null>(null);
   const [isSubscribed, setIsSubscribed] = useState(false);
   
-  // Initialiser l'état isSubscribed avec la valeur correcte de user.newsletter_subscribed
+  // Initialize isSubscribed state with the correct value from user.newsletter_subscribed
   useEffect(() => {
     if (user && user.newsletter_subscribed !== undefined) {
       setIsSubscribed(!!user.newsletter_subscribed);
@@ -75,27 +75,40 @@ const ProfileSettingsDialog = ({
   const handleNewsletterChange = async (checked: boolean) => {
     setIsSubscribed(checked);
     
-    // Utiliser la fonction updateNewsletterSubscription de l'objet user pour mettre à jour la base de données
+    // Use the updateNewsletterSubscription function from the user object
     if (user && typeof user.updateNewsletterSubscription === 'function') {
-      const success = await user.updateNewsletterSubscription(checked);
-      
-      if (!success) {
-        // Revenir à l'état précédent en cas d'erreur
+      try {
+        console.log("Updating newsletter subscription to:", checked);
+        const success = await user.updateNewsletterSubscription(checked);
+        
+        if (!success) {
+          // Revert to previous state in case of error
+          setIsSubscribed(!checked);
+          throw new Error("Failed to update newsletter subscription");
+        }
+      } catch (error) {
+        console.error("Error updating newsletter subscription:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de mettre à jour vos préférences de newsletter",
+          variant: "destructive",
+        });
+        // Revert to previous state
         setIsSubscribed(!checked);
       }
     } else {
-      console.error("La méthode updateNewsletterSubscription n'est pas disponible sur l'objet user");
+      console.error("The updateNewsletterSubscription method is not available on the user object");
       toast({
         title: "Erreur",
         description: "Impossible de mettre à jour vos préférences de newsletter",
         variant: "destructive",
       });
-      // Revenir à l'état précédent en cas d'erreur
+      // Revert to previous state
       setIsSubscribed(!checked);
     }
   };
 
-  // Vérifier si l'utilisateur est null ou non défini
+  // Check if the user is null or undefined
   if (!user) {
     return null;
   }
