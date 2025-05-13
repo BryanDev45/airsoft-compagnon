@@ -1,8 +1,10 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
 import { Profile } from '@/types/profile';
+import { useProfileUpdates } from '@/hooks/profile/useProfileUpdates';
 
 export const useUserProfileData = (username?: string) => {
   const navigate = useNavigate();
@@ -24,6 +26,17 @@ export const useUserProfileData = (username?: string) => {
       }
     });
   }, []);
+
+  // Initialize profile updates functionality
+  const { 
+    updateLocation, 
+    updateUserStats, 
+    updateNewsletterSubscription 
+  } = useProfileUpdates(
+    currentUserId || undefined,
+    setProfileData,
+    setUserStats
+  );
 
   const fetchUserData = useCallback(async () => {
     if (!username) return setLoading(false);
@@ -215,8 +228,9 @@ export const useUserProfileData = (username?: string) => {
     userGames,
     userBadges,
     currentUserId,
-    updateLocation: async () => false,
-    updateUserStats: async () => false,
-    fetchProfileData: async () => true,
+    updateLocation,
+    updateUserStats,
+    updateNewsletterSubscription,
+    fetchProfileData: fetchUserData,
   };
 };

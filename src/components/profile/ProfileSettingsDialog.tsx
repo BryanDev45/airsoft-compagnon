@@ -27,6 +27,7 @@ const ProfileSettingsDialog = ({
   const [frontIdFile, setFrontIdFile] = useState<File | null>(null);
   const [backIdFile, setBackIdFile] = useState<File | null>(null);
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   
   // Initialize isSubscribed state with the correct value from user.newsletter_subscribed
   useEffect(() => {
@@ -73,38 +74,39 @@ const ProfileSettingsDialog = ({
   };
 
   const handleNewsletterChange = async (checked: boolean) => {
-    setIsSubscribed(checked);
+    // Prevent double execution
+    if (isUpdating) return;
     
-    // Use the updateNewsletterSubscription function from the user object
-    if (user && typeof user.updateNewsletterSubscription === 'function') {
-      try {
+    setIsUpdating(true);
+    try {
+      // First update the UI optimistically
+      setIsSubscribed(checked);
+      
+      // Then make the actual API call
+      if (user && typeof user.updateNewsletterSubscription === 'function') {
         console.log("Updating newsletter subscription to:", checked);
         const success = await user.updateNewsletterSubscription(checked);
         
         if (!success) {
-          // Revert to previous state in case of error
+          // Revert to previous state in case of failure
           setIsSubscribed(!checked);
           throw new Error("Failed to update newsletter subscription");
         }
-      } catch (error) {
-        console.error("Error updating newsletter subscription:", error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de mettre à jour vos préférences de newsletter",
-          variant: "destructive",
-        });
-        // Revert to previous state
-        setIsSubscribed(!checked);
+      } else {
+        console.error("updateNewsletterSubscription function is not available", user);
+        throw new Error("The update function is not available");
       }
-    } else {
-      console.error("The updateNewsletterSubscription method is not available on the user object");
+    } catch (error) {
+      console.error("Error updating newsletter subscription:", error);
       toast({
         title: "Erreur",
         description: "Impossible de mettre à jour vos préférences de newsletter",
         variant: "destructive",
       });
-      // Revert to previous state
+      // Revert UI state on error
       setIsSubscribed(!checked);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -283,6 +285,7 @@ const ProfileSettingsDialog = ({
                   <Switch 
                     checked={isSubscribed}
                     onCheckedChange={handleNewsletterChange}
+                    disabled={isUpdating}
                   />
                 </div>
               </div>

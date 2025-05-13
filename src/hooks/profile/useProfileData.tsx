@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { useProfileFetch } from './useProfileFetch';
 import { useProfileUpdates } from './useProfileUpdates';
@@ -125,13 +126,6 @@ export const useProfileData = (userId: string | undefined) => {
       });
     }
   }, [userId, setProfileData, setUserStats]);
-
-  // Retiré : on laisse le composant parent décider quand charger
-  // useEffect(() => {
-  //   if (userId) {
-  //     fetchProfileData();
-  //   }
-  // }, [userId, fetchProfileData]);
 
   return {
     loading,
