@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useProfileData } from '../hooks/profile/useProfileData';
@@ -10,13 +9,13 @@ import ProfileLayout from '../components/profile/ProfileLayout';
 
 const Profile = () => {
   const { user, initialLoading } = useAuth();
-  const [readyToLoad, setReadyToLoad] = useState(false);
+  const [canFetchData, setCanFetchData] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const equipmentTypes = ["Réplique principale", "Réplique secondaire", "Protection", "Accessoire"];
 
-  // Use effect to set readyToLoad when user is available
   useEffect(() => {
     if (!initialLoading && user?.id) {
-      setReadyToLoad(true);
+      setCanFetchData(true);
     }
   }, [initialLoading, user]);
 
@@ -27,31 +26,55 @@ const Profile = () => {
     updateLocation,
     updateUserStats,
     updateNewsletterSubscription,
-    fetchProfileData
-  } = useProfileData(readyToLoad ? user?.id : undefined);
+    fetchProfileData,
+    error: profileError
+  } = useProfileData(canFetchData ? user?.id : undefined);
 
-  const { equipment, fetchEquipment, handleAddEquipment } = useEquipmentActions(readyToLoad ? user?.id : undefined);
-  const { userGames, fetchUserGames } = useUserGames(readyToLoad ? user?.id : undefined);
+  const {
+    equipment,
+    fetchEquipment,
+    handleAddEquipment,
+    error: equipmentError
+  } = useEquipmentActions(canFetchData ? user?.id : undefined);
+
+  const {
+    userGames,
+    fetchUserGames,
+    error: gamesError
+  } = useUserGames(canFetchData ? user?.id : undefined);
+
   const dialogStates = useProfileDialogs();
 
-  // Only fetch equipment and games when ready to load
+  // Charger l'équipement et les parties après que les données utilisateur soient prêtes
   useEffect(() => {
-    if (readyToLoad && user?.id) {
+    if (canFetchData && user?.id) {
       fetchEquipment();
       fetchUserGames();
     }
-  }, [readyToLoad, user, fetchEquipment, fetchUserGames]);
+  }, [canFetchData, user?.id, fetchEquipment, fetchUserGames]);
 
-  // Show loading state if not ready or still loading
-  if (initialLoading || !readyToLoad || loading || !profileData) {
+  // Gestion d'erreur centralisée
+  useEffect(() => {
+    if (profileError || equipmentError || gamesError) {
+      console.error("Erreur lors du chargement du profil :", { profileError, equipmentError, gamesError });
+      setHasError(true);
+    }
+  }, [profileError, equipmentError, gamesError]);
+
+  if (initialLoading || !canFetchData || loading || !profileData) {
     return <ProfileLoading />;
   }
 
-  // Add updateNewsletterSubscription to the user object for ProfileSettingsDialog
+  if (hasError) {
+    return <div>Une erreur est survenue lors du chargement de votre profil. Veuillez réessayer plus tard.</div>;
+  }
+
+  // Fusion sécurisée des objets
   const userWithUpdates = {
-    ...user,
+    id: user?.id,
+    email: user?.email,
     ...profileData,
-    updateNewsletterSubscription
+    updateNewsletterSubscription,
   };
 
   return (
