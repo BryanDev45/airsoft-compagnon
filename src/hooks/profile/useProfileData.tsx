@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useProfileFetch } from './useProfileFetch';
 import { useProfileUpdates } from './useProfileUpdates';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,8 +23,8 @@ export const useProfileData = (userId: string | undefined) => {
     updateNewsletterSubscription
   } = useProfileUpdates(userId, setProfileData, setUserStats);
 
-  // Define the fetchProfileData function
-  const fetchProfileData = async (): Promise<void> => {
+  // Define the fetchProfileData function as a useCallback to prevent unnecessary re-renders
+  const fetchProfileData = useCallback(async (): Promise<void> => {
     if (!userId) {
       return;
     }
@@ -126,7 +126,14 @@ export const useProfileData = (userId: string | undefined) => {
         variant: "destructive",
       });
     }
-  };
+  }, [userId, setProfileData, setUserStats]);
+
+  // Load profile data when userId changes
+  useEffect(() => {
+    if (userId) {
+      fetchProfileData();
+    }
+  }, [userId, fetchProfileData]);
 
   return {
     loading,

@@ -1,6 +1,5 @@
-
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { getRandomAvatar, getAllDefaultAvatars } from '@/utils/avatarUtils';
@@ -10,28 +9,27 @@ export const useAuth = () => {
   const [initialLoading, setInitialLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    // First, check for an existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user || null);
-      setInitialLoading(false);
-    });
-
-    // Then set up the auth state listener
+    // First, set up the auth state listener to avoid missing auth events
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user || null);
 
         if (event === 'SIGNED_IN') {
-          // Utiliser setTimeout pour éviter les deadlocks potentiels
-          setTimeout(() => {
-            navigate('/profile');
-          }, 0);
+          // Only navigate to profile if we're on the login or register page
+          // This prevents the redirect loop issue
+          if (location.pathname === '/login' || location.pathname === '/register') {
+            // Use setTimeout to avoid potential deadlocks
+            setTimeout(() => {
+              navigate('/profile');
+            }, 0);
+          }
         }
         if (event === 'SIGNED_OUT') {
           setUser(null);
-          // Utiliser setTimeout pour éviter les deadlocks potentiels
+          // Use setTimeout to avoid potential deadlocks
           setTimeout(() => {
             navigate('/login');
           }, 0);
@@ -39,8 +37,14 @@ export const useAuth = () => {
       }
     );
 
+    // Then check for an existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user || null);
+      setInitialLoading(false);
+    });
+
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   const login = async (email: string, password: string, rememberMe: boolean = false) => {
     try {

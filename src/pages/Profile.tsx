@@ -13,6 +13,7 @@ const Profile = () => {
   const [readyToLoad, setReadyToLoad] = useState(false);
   const equipmentTypes = ["Réplique principale", "Réplique secondaire", "Protection", "Accessoire"];
 
+  // Use effect to set readyToLoad when user is available
   useEffect(() => {
     if (!initialLoading && user?.id) {
       setReadyToLoad(true);
@@ -27,19 +28,21 @@ const Profile = () => {
     updateUserStats,
     updateNewsletterSubscription,
     fetchProfileData
-  } = useProfileData(readyToLoad ? user?.id : null);
+  } = useProfileData(readyToLoad ? user?.id : undefined);
 
-  const { equipment, fetchEquipment, handleAddEquipment } = useEquipmentActions(user?.id);
-  const { userGames, fetchUserGames } = useUserGames(user?.id);
+  const { equipment, fetchEquipment, handleAddEquipment } = useEquipmentActions(readyToLoad ? user?.id : undefined);
+  const { userGames, fetchUserGames } = useUserGames(readyToLoad ? user?.id : undefined);
   const dialogStates = useProfileDialogs();
 
+  // Only fetch equipment and games when ready to load
   useEffect(() => {
-    if (readyToLoad) {
+    if (readyToLoad && user?.id) {
       fetchEquipment();
       fetchUserGames();
     }
-  }, [readyToLoad]);
+  }, [readyToLoad, user, fetchEquipment, fetchUserGames]);
 
+  // Show loading state if not ready or still loading
   if (initialLoading || !readyToLoad || loading || !profileData) {
     return <ProfileLoading />;
   }
