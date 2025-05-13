@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useProfileFetch } from './useProfileFetch';
 import { useProfileUpdates } from './useProfileUpdates';
@@ -7,29 +6,30 @@ import { toast } from "@/components/ui/use-toast";
 import { Profile, UserStats } from '@/types/profile';
 
 export const useProfileData = (userId: string | undefined) => {
-  // Use the separated hooks
-  const { 
-    loading, 
-    profileData, 
-    userStats, 
-    setProfileData, 
-    setUserStats 
+  const {
+    loading,
+    profileData,
+    userStats,
+    setProfileData,
+    setUserStats
   } = useProfileFetch(userId);
-  
-  const { 
-    updating, 
-    updateLocation, 
+
+  const {
+    updating,
+    updateLocation,
     updateUserStats,
     updateNewsletterSubscription
   } = useProfileUpdates(userId, setProfileData, setUserStats);
 
-  // Define the fetchProfileData function as a useCallback to prevent unnecessary re-renders
+  const [error, setError] = useState<Error | null>(null);
+
   const fetchProfileData = useCallback(async (): Promise<void> => {
-    if (!userId) {
-      return;
-    }
-    
+    if (!userId) return;
+
     try {
+      // Reset previous error
+      setError(null);
+
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
@@ -42,8 +42,8 @@ export const useProfileData = (userId: string | undefined) => {
 
       if (!profile) {
         const { data: userData } = await supabase.auth.getUser();
+
         if (userData?.user) {
-          // Create a new profile based on user metadata
           const metaData = userData.user.user_metadata;
           const newProfile: Profile = {
             id: userId,
@@ -62,25 +62,22 @@ export const useProfileData = (userId: string | undefined) => {
             team_id: null,
             is_team_leader: null,
             is_verified: null,
-            newsletter_subscribed: false // Initialize with default value
+            newsletter_subscribed: false
           };
-          
-          // Insert the new profile
+
           const { error: insertError } = await supabase
             .from('profiles')
             .insert(newProfile);
-            
+
           if (insertError) throw insertError;
-          
+
           setProfileData(newProfile);
         }
       } else {
-        // Create a complete profile object including the newsletter_subscribed property
         const completeProfile: Profile = {
           ...(profile as any),
           newsletter_subscribed: profile.newsletter_subscribed ?? false
         };
-        
         setProfileData(completeProfile);
       }
 
@@ -95,7 +92,6 @@ export const useProfileData = (userId: string | undefined) => {
       }
 
       if (!stats) {
-        // Create default statistics if they don't exist
         const defaultStats: UserStats = {
           user_id: userId,
           games_played: 0,
@@ -107,19 +103,21 @@ export const useProfileData = (userId: string | undefined) => {
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };
-        
+
         const { error: insertStatsError } = await supabase
           .from('user_stats')
           .insert(defaultStats);
-          
+
         if (insertStatsError) throw insertStatsError;
-        
+
         setUserStats(defaultStats);
       } else {
         setUserStats(stats as UserStats);
       }
-    } catch (error: any) {
-      console.error("Error loading data:", error);
+
+    } catch (err: any) {
+      console.error("Erreur lors du chargement des données de profil:", err);
+      setError(err);
       toast({
         title: "Erreur",
         description: "Impossible de charger les données du profil",
@@ -128,12 +126,12 @@ export const useProfileData = (userId: string | undefined) => {
     }
   }, [userId, setProfileData, setUserStats]);
 
-  // Load profile data when userId changes
-  useEffect(() => {
-    if (userId) {
-      fetchProfileData();
-    }
-  }, [userId, fetchProfileData]);
+  // Retiré : on laisse le composant parent décider quand charger
+  // useEffect(() => {
+  //   if (userId) {
+  //     fetchProfileData();
+  //   }
+  // }, [userId, fetchProfileData]);
 
   return {
     loading,
@@ -143,5 +141,6 @@ export const useProfileData = (userId: string | undefined) => {
     updateUserStats,
     updateNewsletterSubscription,
     fetchProfileData,
+    error,
   };
 };
