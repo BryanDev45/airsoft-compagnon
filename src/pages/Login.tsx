@@ -47,7 +47,7 @@ const Login = () => {
 
   const onSubmit = async (data) => {
     try {
-      await login(data.email, data.password, rememberMe);
+      await login(data.email, data.password);
     } catch (error) {
       console.error("Erreur de connexion:", error);
     }

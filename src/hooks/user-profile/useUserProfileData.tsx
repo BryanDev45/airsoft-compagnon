@@ -181,7 +181,10 @@ export const useUserProfileData = (username?: string) => {
         badges: formattedBadges,
       };
 
-      setUserData({ id: profile.id, ...enrichedProfile });
+      // Utiliser une valeur par défaut pour reputation si elle n'existe pas
+      const userReputation = userProfile.reputation || 0;
+      
+      setUserData({ id: profile.id, ...enrichedProfile, reputation: userReputation });
       setProfileData(enrichedProfile);
       setUserStats(stats || {
         user_id: profile.id,
@@ -190,7 +193,7 @@ export const useUserProfileData = (username?: string) => {
         preferred_game_type: 'Indéfini',
         favorite_role: 'Indéfini',
         level: 'Débutant',
-        reputation: profile.reputation || 0,
+        reputation: userReputation,
         win_rate: '0%',
         accuracy: '0%',
         time_played: '0h',
