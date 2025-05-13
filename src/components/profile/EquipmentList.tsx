@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Rifle, ShieldCheck, ShieldIcon, ShirtIcon } from "lucide-react";
+import { Package, ShieldCheck, Shield, Shirt } from "lucide-react";
 
 interface EquipmentListProps {
   equipment: any[];
@@ -23,17 +22,17 @@ export const EquipmentList: React.FC<EquipmentListProps> = ({ equipment }) => {
     switch (type?.toLowerCase()) {
       case 'weapon':
       case 'réplique':
-        return <Rifle className="h-5 w-5" />;
+        return <Package className="h-5 w-5" />;
       case 'protection':
         return <ShieldCheck className="h-5 w-5" />;
       case 'gear':
       case 'équipement':
-        return <ShieldIcon className="h-5 w-5" />;
+        return <Shield className="h-5 w-5" />;
       case 'clothing':
       case 'vêtement':
-        return <ShirtIcon className="h-5 w-5" />;
+        return <Shirt className="h-5 w-5" />;
       default:
-        return <ShieldIcon className="h-5 w-5" />;
+        return <Shield className="h-5 w-5" />;
     }
   };
 
