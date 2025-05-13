@@ -32,10 +32,13 @@ export default function ProfilePage() {
   } = useUserGames(userId);
 
   const {
-    equipment: userEquipment,
-    fetchEquipment: fetchUserEquipment,
+    userEquipment,
     loading: equipmentLoading,
     error: equipmentError,
+    fetchUserEquipment,
+    addUserEquipment,
+    updateUserEquipment,
+    deleteUserEquipment
   } = useEquipmentActions(userId);
 
   // Initial data load
