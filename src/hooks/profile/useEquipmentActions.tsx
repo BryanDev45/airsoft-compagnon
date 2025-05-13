@@ -1,15 +1,21 @@
+
 import { useCallback, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 
 export const useEquipmentActions = (userId: string | undefined) => {
-  const [equipment, setEquipment] = useState<any[]>([]);
+  const [userEquipment, setUserEquipment] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchEquipment = useCallback(async () => {
-    if (!userId) return;
+  const fetchUserEquipment = useCallback(async () => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
 
     try {
+      setLoading(true);
       const { data, error } = await supabase
         .from('equipment')
         .select('*')
@@ -17,20 +23,22 @@ export const useEquipmentActions = (userId: string | undefined) => {
 
       if (error) throw error;
 
-      setEquipment(data || []);
+      setUserEquipment(data || []);
       setError(null);
     } catch (err) {
       console.error("Erreur lors de la récupération de l'équipement:", err);
       setError(err as Error);
+    } finally {
+      setLoading(false);
     }
   }, [userId]);
 
-  const handleAddEquipment = useCallback(async (newEquipment: any) => {
+  const addUserEquipment = useCallback(async (equipmentData: any) => {
     try {
       const { error } = await supabase
         .from('equipment')
         .insert({
-          ...newEquipment,
+          ...equipmentData,
           user_id: userId
         });
 
@@ -41,7 +49,7 @@ export const useEquipmentActions = (userId: string | undefined) => {
         description: "Votre équipement a été ajouté avec succès"
       });
 
-      await fetchEquipment();
+      await fetchUserEquipment();
       return true;
     } catch (err) {
       console.error("Erreur lors de l'ajout de l'équipement:", err);
@@ -53,12 +61,73 @@ export const useEquipmentActions = (userId: string | undefined) => {
       setError(err as Error);
       return false;
     }
-  }, [userId, fetchEquipment]);
+  }, [userId, fetchUserEquipment]);
+
+  const updateUserEquipment = useCallback(async (id: string, equipmentData: any) => {
+    try {
+      const { error } = await supabase
+        .from('equipment')
+        .update(equipmentData)
+        .eq('id', id)
+        .eq('user_id', userId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Équipement mis à jour",
+        description: "Votre équipement a été mis à jour avec succès"
+      });
+
+      await fetchUserEquipment();
+      return true;
+    } catch (err) {
+      console.error("Erreur lors de la mise à jour de l'équipement:", err);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour l'équipement",
+        variant: "destructive"
+      });
+      setError(err as Error);
+      return false;
+    }
+  }, [userId, fetchUserEquipment]);
+
+  const deleteUserEquipment = useCallback(async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('equipment')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', userId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Équipement supprimé",
+        description: "Votre équipement a été supprimé avec succès"
+      });
+
+      await fetchUserEquipment();
+      return true;
+    } catch (err) {
+      console.error("Erreur lors de la suppression de l'équipement:", err);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer l'équipement",
+        variant: "destructive"
+      });
+      setError(err as Error);
+      return false;
+    }
+  }, [userId, fetchUserEquipment]);
 
   return {
-    equipment,
-    fetchEquipment,
-    handleAddEquipment,
+    userEquipment,
+    loading,
     error,
+    fetchUserEquipment,
+    addUserEquipment,
+    updateUserEquipment,
+    deleteUserEquipment,
   };
 };
