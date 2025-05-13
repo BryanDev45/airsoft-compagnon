@@ -1,94 +1,83 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useUserGames = (userId: string | undefined) => {
   const [userGames, setUserGames] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<Error | null>(null);
 
   const fetchUserGames = async () => {
     if (!userId) return;
-    
+
+    setLoading(true);
+    setError(null);
+
     try {
-      // 1. Fetch games where the user is a participant
+      // 1. Parties auxquelles l'utilisateur a participé
       const { data: gameParticipants, error: participantsError } = await supabase
         .from('game_participants')
         .select('*, game_id')
         .eq('user_id', userId);
-        
+
       if (participantsError) throw participantsError;
-      
-      // 2. Fetch games created by the user
+
+      // 2. Parties organisées par l'utilisateur
       const { data: createdGames, error: createdGamesError } = await supabase
         .from('airsoft_games')
         .select('*')
         .eq('created_by', userId);
-        
+
       if (createdGamesError) throw createdGamesError;
-      
-      console.log("Created games:", createdGames);
-      console.log("Participated games:", gameParticipants);
-      
+
       let formattedGames: any[] = [];
-      let pastGamesCount = 0; // Compteur pour les parties déjà jouées
-      
-      // 3. Format participated games
-      if (gameParticipants && gameParticipants.length > 0) {
+      let pastGamesCount = 0;
+
+      // 3. Format des parties jouées
+      if (gameParticipants?.length > 0) {
         const gameIds = gameParticipants.map(gp => gp.game_id);
-        
-        if (gameIds.length > 0) {
-          const { data: games, error: gamesDataError } = await supabase
-            .from('airsoft_games')
-            .select('*')
-            .in('id', gameIds);
-            
-          if (gamesDataError) throw gamesDataError;
-          
-          if (games && games.length > 0) {
-            const participatedGames = gameParticipants.map(gp => {
-              const gameData = games.find(g => g.id === gp.game_id);
-              if (gameData) {
-                const gameDate = new Date(gameData.date);
-                const isUpcoming = gameDate > new Date();
-                
-                // Incrémenter le compteur si la partie est déjà passée
-                if (!isUpcoming) {
-                  pastGamesCount++;
-                }
-                
-                return {
-                  id: gameData.id,
-                  title: gameData.title,
-                  date: new Date(gameData.date).toLocaleDateString('fr-FR'),
-                  rawDate: gameData.date, // Ajout de la date brute pour le tri
-                  location: gameData.city,
-                  image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
-                  role: gp.role,
-                  status: isUpcoming ? 'À venir' : 'Terminé',
-                  team: 'Indéfini',
-                  result: gp.status
-                };
-              }
-              return null;
-            }).filter(Boolean);
-            
-            formattedGames = [...formattedGames, ...participatedGames];
-          }
-        }
-      }
-      
-      // 4. Format created games
-      if (createdGames && createdGames.length > 0) {
-        const organizedGames = createdGames.map(game => {
+        const { data: games, error: gamesDataError } = await supabase
+          .from('airsoft_games')
+          .select('*')
+          .in('id', gameIds);
+
+        if (gamesDataError) throw gamesDataError;
+
+        const participatedGames = gameParticipants.map(gp => {
+          const game = games?.find(g => g.id === gp.game_id);
+          if (!game) return null;
+
           const gameDate = new Date(game.date);
           const isUpcoming = gameDate > new Date();
-          
-          // Ne pas compter les parties organisées dans les parties "jouées"
-          
+          if (!isUpcoming) pastGamesCount++;
+
           return {
             id: game.id,
             title: game.title,
-            date: new Date(game.date).toLocaleDateString('fr-FR'),
-            rawDate: game.date, // Ajout de la date brute pour le tri
+            date: gameDate.toLocaleDateString('fr-FR'),
+            rawDate: game.date,
+            location: game.city,
+            image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
+            role: gp.role,
+            status: isUpcoming ? 'À venir' : 'Terminé',
+            team: 'Indéfini',
+            result: gp.status
+          };
+        }).filter(Boolean);
+
+        formattedGames.push(...participatedGames);
+      }
+
+      // 4. Format des parties organisées
+      if (createdGames?.length > 0) {
+        const organizedGames = createdGames.map(game => {
+          const gameDate = new Date(game.date);
+          const isUpcoming = gameDate > new Date();
+
+          return {
+            id: game.id,
+            title: game.title,
+            date: gameDate.toLocaleDateString('fr-FR'),
+            rawDate: game.date,
             location: game.city,
             image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
             role: 'Organisateur',
@@ -97,61 +86,51 @@ export const useUserGames = (userId: string | undefined) => {
             result: 'Organisateur'
           };
         });
-        
-        formattedGames = [...formattedGames, ...organizedGames];
+
+        formattedGames.push(...organizedGames);
       }
-      
-      // 5. Update the games_organized count in user_stats if needed
-      if (createdGames && createdGames.length > 0) {
-        const { error: updateError } = await supabase
+
+      // 5. Mise à jour des stats utilisateur
+      if (createdGames?.length > 0) {
+        const { error: updateOrganizedError } = await supabase
           .from('user_stats')
           .update({ games_organized: createdGames.length })
           .eq('user_id', userId);
-          
-        if (updateError) {
-          console.error("Error updating games_organized count:", updateError);
-        } else {
-          console.log("Updated games_organized count to:", createdGames.length);
-        }
+
+        if (updateOrganizedError) console.error("Erreur maj games_organized:", updateOrganizedError);
       }
-      
-      // Mettre à jour le compteur de parties jouées
-      const { error: updateGamesPlayedError } = await supabase
+
+      const { error: updatePlayedError } = await supabase
         .from('user_stats')
         .update({ games_played: pastGamesCount })
         .eq('user_id', userId);
-        
-      if (updateGamesPlayedError) {
-        console.error("Error updating games_played count:", updateGamesPlayedError);
-      } else {
-        console.log("Updated games_played count to:", pastGamesCount);
-      }
-      
-      // Remove duplicates
-      formattedGames = formattedGames.filter((game, index, self) => 
-        index === self.findIndex(g => g.id === game.id)
+
+      if (updatePlayedError) console.error("Erreur maj games_played:", updatePlayedError);
+
+      // 6. Dé-duplication & tri
+      const uniqueGames = formattedGames.filter(
+        (game, index, self) => index === self.findIndex(g => g.id === game.id)
       );
-      
-      // Sort games: upcoming first, then by date (newest first for each category)
-      formattedGames.sort((a, b) => {
-        // Upcoming games first
+
+      uniqueGames.sort((a, b) => {
         if (a.status === 'À venir' && b.status !== 'À venir') return -1;
         if (a.status !== 'À venir' && b.status === 'À venir') return 1;
-        
-        // For games with the same status, sort by date
         return new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime();
       });
-      
-      console.log("Final formatted games:", formattedGames);
-      setUserGames(formattedGames);
-      
-    } catch (error) {
-      console.error("Erreur lors de la récupération des parties:", error);
+
+      setUserGames(uniqueGames);
+    } catch (err: any) {
+      console.error("Erreur lors de la récupération des parties:", err);
+      setError(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   return {
     userGames,
-    fetchUserGames
+    fetchUserGames,
+    loading,
+    error
   };
 };
