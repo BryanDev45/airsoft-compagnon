@@ -32,8 +32,8 @@ export default function ProfilePage() {
   } = useUserGames(userId);
 
   const {
-    userEquipment,
-    fetchUserEquipment,
+    equipment: userEquipment,
+    fetchEquipment: fetchUserEquipment,
     loading: equipmentLoading,
     error: equipmentError,
   } = useEquipmentActions(userId);
@@ -75,7 +75,13 @@ export default function ProfilePage() {
       <ProfileHeader user={profileData} isOwnProfile={true} onEditBio={() => {}} toggleProfileSettings={() => {}} />
 
       {/* Stats utilisateur */}
-      {userStats && <ProfileStats stats={userStats} />}
+      {userStats && <ProfileStats 
+        userStats={userStats} 
+        updateUserStats={updateUserStats}
+        fetchProfileData={fetchProfileData}
+        isOwnProfile={true}
+        profileData={profileData}
+      />}
 
       {/* Liste des parties */}
       <section>

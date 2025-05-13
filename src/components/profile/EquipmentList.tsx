@@ -1,12 +1,12 @@
 
 import React from 'react';
 import { 
-  Gun, 
+  Check, 
   Shield,
   Battery, 
   Glasses,
   Radio, 
-  ShirtFolded, 
+  Shirt, 
   Backpack,
   MoreHorizontal
 } from 'lucide-react';
@@ -48,7 +48,7 @@ const EquipmentList: React.FC<EquipmentListProps> = ({
       case 'réplique':
       case 'replique':
       case 'replica':
-        return <Gun className="h-6 w-6" />;
+        return <Check className="h-6 w-6" />; // Replaced Gun with Check
       case 'protection':
         return <Shield className="h-6 w-6" />;
       case 'batterie':
@@ -63,7 +63,7 @@ const EquipmentList: React.FC<EquipmentListProps> = ({
       case 'tenue':
       case 'outfit':
       case 'clothing':
-        return <ShirtFolded className="h-6 w-6" />;
+        return <Shirt className="h-6 w-6" />; // Replaced ShirtFolded with Shirt
       case 'accessoire':
       case 'accessory':
       default:

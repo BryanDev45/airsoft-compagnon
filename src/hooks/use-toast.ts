@@ -2,13 +2,16 @@
 import * as React from "react"
 import {
   ToastActionElement,
-  ToastProps,
 } from "@/components/ui/toast"
 
 const TOAST_LIMIT = 20
 const TOAST_REMOVE_DELAY = 1000000
 
-type ToasterToastProps = ToastProps & {
+// Import toast props but rename to avoid conflict
+import { ToastProps as UIToastProps } from "@/components/ui/toast"
+
+// Define ToasterToast props
+type ToasterToast = UIToastProps & {
   id: string
   title?: React.ReactNode
   description?: React.ReactNode
@@ -34,23 +37,23 @@ type ActionType = typeof actionTypes
 type Action =
   | {
       type: ActionType["ADD_TOAST"]
-      toast: ToasterToastProps
+      toast: ToasterToast
     }
   | {
       type: ActionType["UPDATE_TOAST"]
-      toast: Partial<ToasterToastProps>
+      toast: Partial<ToasterToast>
     }
   | {
       type: ActionType["DISMISS_TOAST"]
-      toastId?: ToasterToastProps["id"]
+      toastId?: ToasterToast["id"]
     }
   | {
       type: ActionType["REMOVE_TOAST"]
-      toastId?: ToasterToastProps["id"]
+      toastId?: ToasterToast["id"]
     }
 
 interface State {
-  toasts: ToasterToastProps[]
+  toasts: ToasterToast[]
 }
 
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
@@ -137,12 +140,13 @@ function dispatch(action: Action) {
   })
 }
 
-type ToastProps = Omit<ToasterToastProps, "id">
+// Define type for toast props
+type Toast = Omit<ToasterToast, "id">
 
-function toast({ ...props }: ToastProps) {
+function toast({ ...props }: Toast) {
   const id = genId()
 
-  const update = (props: ToastProps) =>
+  const update = (props: Toast) =>
     dispatch({
       type: "UPDATE_TOAST",
       toast: { ...props, id },
