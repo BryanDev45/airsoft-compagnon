@@ -1,14 +1,14 @@
-import { useCallback, useState } from 'react';
+
+import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 
 export const useEquipmentActions = (userId: string | undefined) => {
   const [equipment, setEquipment] = useState<any[]>([]);
-  const [error, setError] = useState<Error | null>(null);
 
-  const fetchEquipment = useCallback(async () => {
+  const fetchEquipment = async () => {
     if (!userId) return;
-
+    
     try {
       const { data, error } = await supabase
         .from('equipment')
@@ -16,16 +16,13 @@ export const useEquipmentActions = (userId: string | undefined) => {
         .eq('user_id', userId);
 
       if (error) throw error;
-
       setEquipment(data || []);
-      setError(null);
-    } catch (err) {
-      console.error("Erreur lors de la récupération de l'équipement:", err);
-      setError(err as Error);
+    } catch (error) {
+      console.error("Erreur lors de la récupération de l'équipement:", error);
     }
-  }, [userId]);
+  };
 
-  const handleAddEquipment = useCallback(async (newEquipment: any) => {
+  const handleAddEquipment = async (newEquipment: any) => {
     try {
       const { error } = await supabase
         .from('equipment')
@@ -43,22 +40,20 @@ export const useEquipmentActions = (userId: string | undefined) => {
 
       await fetchEquipment();
       return true;
-    } catch (err) {
-      console.error("Erreur lors de l'ajout de l'équipement:", err);
+    } catch (error) {
+      console.error("Erreur lors de l'ajout de l'équipement:", error);
       toast({
         title: "Erreur",
         description: "Impossible d'ajouter l'équipement",
         variant: "destructive"
       });
-      setError(err as Error);
       return false;
     }
-  }, [userId, fetchEquipment]);
+  };
 
   return {
     equipment,
     fetchEquipment,
-    handleAddEquipment,
-    error,
+    handleAddEquipment
   };
 };
