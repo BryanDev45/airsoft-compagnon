@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { toast } from "@/components/ui/use-toast";
 
 export const useImageUpload = (maxImages: number = 5) => {
   const [images, setImages] = useState<File[]>([]);
@@ -9,49 +10,63 @@ export const useImageUpload = (maxImages: number = 5) => {
     if (e.target.files && e.target.files.length > 0) {
       const filesArray = Array.from(e.target.files);
       
-      // Vérifier que l'ajout des nouvelles images ne dépasse pas la limite
+      // Verify that the added images don't exceed the limit
       if (images.length + filesArray.length > maxImages) {
-        // Prendre seulement le nombre d'images qui permettra d'atteindre la limite
+        // Take only the number of images that will reach the limit
         const remainingSlots = Math.max(0, maxImages - images.length);
         const newFiles = filesArray.slice(0, remainingSlots);
         
         if (newFiles.length === 0) {
-          console.warn(`Limite maximum de ${maxImages} images déjà atteinte`);
+          toast({
+            title: "Limite atteinte",
+            description: `Vous ne pouvez pas ajouter plus de ${maxImages} images`,
+            variant: "destructive"
+          });
           return;
         }
         
         const newImages = [...images, ...newFiles];
         setImages(newImages);
         
-        // Révoquer les anciens URLs pour éviter les fuites mémoire
+        // Revoke old URLs to avoid memory leaks
         preview.forEach(url => {
           if (url.startsWith('blob:')) {
             URL.revokeObjectURL(url);
           }
         });
         
-        // Générer de nouvelles previews
+        // Generate new previews
         const newPreviews = newImages.map(file => URL.createObjectURL(file));
         setPreview(newPreviews);
         
-        console.log(`Limite maximum de ${maxImages} images atteinte après ajout de ${newFiles.length} images`);
+        if (remainingSlots < filesArray.length) {
+          toast({
+            title: "Limite d'images atteinte",
+            description: `Seules ${remainingSlots} image(s) ont été ajoutées pour atteindre la limite de ${maxImages} images`,
+            variant: "default"
+          });
+        }
       } else {
-        // Ajouter toutes les nouvelles images
+        // Add all new images
         const newImages = [...images, ...filesArray];
         setImages(newImages);
         
-        // Révoquer les anciens URLs pour éviter les fuites mémoire
+        // Revoke old URLs to avoid memory leaks
         preview.forEach(url => {
           if (url.startsWith('blob:')) {
             URL.revokeObjectURL(url);
           }
         });
         
-        // Générer de nouvelles previews
+        // Generate new previews
         const newPreviews = newImages.map(file => URL.createObjectURL(file));
         setPreview(newPreviews);
         
-        console.log(`${filesArray.length} images ajoutées, total: ${newImages.length}/${maxImages}`);
+        toast({
+          title: "Images ajoutées",
+          description: `${filesArray.length} image(s) ajoutée(s)`,
+          variant: "default"
+        });
       }
     }
   };
@@ -62,12 +77,12 @@ export const useImageUpload = (maxImages: number = 5) => {
       return;
     }
     
-    // Révoquer l'URL de l'image à supprimer si c'est un blob URL
+    // Revoke the URL of the image to remove if it's a blob URL
     if (preview[index] && preview[index].startsWith('blob:')) {
       URL.revokeObjectURL(preview[index]);
     }
     
-    // Supprimer l'image et sa preview
+    // Remove the image and its preview
     const newImages = [...images];
     newImages.splice(index, 1);
     
@@ -77,11 +92,15 @@ export const useImageUpload = (maxImages: number = 5) => {
     setImages(newImages);
     setPreview(newPreviews);
     
-    console.log(`Image à l'index ${index} supprimée, ${newImages.length} images restantes`);
+    toast({
+      title: "Image supprimée",
+      description: `Image supprimée, ${newImages.length}/${maxImages} images restantes`,
+      variant: "default"
+    });
   };
   
   const clearImages = () => {
-    // Nettoyer toutes les previews blob pour éviter les fuites mémoire
+    // Clean all blob previews to avoid memory leaks
     preview.forEach(url => {
       if (url.startsWith('blob:')) {
         URL.revokeObjectURL(url);
@@ -89,7 +108,11 @@ export const useImageUpload = (maxImages: number = 5) => {
     });
     setImages([]);
     setPreview([]);
-    console.log('Toutes les images ont été supprimées');
+    toast({
+      title: "Images réinitialisées",
+      description: "Toutes les images ont été supprimées",
+      variant: "default"
+    });
   };
   
   return {

@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ImageIcon } from 'lucide-react';
 import { ImageUploadSectionProps } from '@/types/party';
+import { toast } from "@/components/ui/use-toast";
 
 const ImageUploadSection = ({ 
   images, 
@@ -15,9 +16,10 @@ const ImageUploadSection = ({
 }: ImageUploadSectionProps) => {
   
   // Si updateFormData est fourni, on peut l'utiliser pour mettre à jour les données du formulaire
-  React.useEffect(() => {
+  useEffect(() => {
     if (updateFormData) {
       console.log("Mise à jour des images dans le formulaire:", images);
+      // Ensure we're passing the File objects directly so they can be uploaded
       updateFormData('images', { images });
     }
   }, [images, updateFormData]);

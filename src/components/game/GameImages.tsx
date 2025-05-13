@@ -85,8 +85,8 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
       )}
       
       {displayImages.length > 1 && (
-        <div className="bg-white p-2 grid grid-cols-3 gap-2">
-          {displayImages.slice(1, 4).map((img, idx) => (
+        <div className="bg-white p-2 grid grid-cols-4 gap-2">
+          {displayImages.slice(1, 5).map((img, idx) => (
             <img 
               key={idx} 
               src={img} 

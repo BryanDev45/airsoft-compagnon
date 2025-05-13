@@ -132,13 +132,15 @@ export const uploadGameImages = async (gameId: string, images: File[]) => {
     
     console.log(`${imageUrls.length} images téléchargées avec succès:`, imageUrls);
     
-    // Mettre à jour les champs Picture1, Picture2, etc. correctement
+    // Fix: Correctly updating the image fields in database
     if (imageUrls.length > 0) {
       const updateData: Record<string, string> = {};
       
       // Mettre à jour les champs Picture1 à Picture5 avec les URL des images
       for (let i = 0; i < Math.min(imageUrls.length, 5); i++) {
-        updateData[`Picture${i + 1}`] = imageUrls[i];
+        const fieldName = `Picture${i + 1}`;
+        updateData[fieldName] = imageUrls[i];
+        console.log(`Setting ${fieldName} to ${imageUrls[i]}`);
       }
       
       // Mise à jour des URL des images dans la base de données

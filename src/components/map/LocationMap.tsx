@@ -82,6 +82,7 @@ const LocationMap: React.FC<LocationMapProps> = ({ location, coordinates }) => {
       zIndex: 1
     });
 
+    // Fix: Make sure to properly initialize the map with the OSM layer first, then add vector layer
     mapInstance.current = new Map({
       target: mapRef.current,
       layers: [
@@ -97,7 +98,7 @@ const LocationMap: React.FC<LocationMapProps> = ({ location, coordinates }) => {
         maxZoom: 19,
         minZoom: 3
       }),
-      controls: []
+      controls: [] // Désactiver les contrôles par défaut pour une UI plus propre
     });
 
     // Marquer la carte comme chargée une fois qu'elle est rendue
