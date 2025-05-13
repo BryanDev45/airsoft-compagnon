@@ -17,7 +17,6 @@ export interface Profile {
   is_team_leader: boolean | null;
   is_verified: boolean | null;
   newsletter_subscribed: boolean | null;
-  reputation: number | null;
 }
 
 export interface UserStats {

@@ -1,18 +1,14 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useUserGames = (userId: string | undefined) => {
   const [userGames, setUserGames] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<Error | null>(null);
 
   const fetchUserGames = async () => {
     if (!userId) return;
     
     try {
-      setLoading(true);
-      setError(null);
-      
       // 1. Fetch games where the user is a participant
       const { data: gameParticipants, error: participantsError } = await supabase
         .from('game_participants')
@@ -131,16 +127,11 @@ export const useUserGames = (userId: string | undefined) => {
       
     } catch (error) {
       console.error("Erreur lors de la récupération des parties:", error);
-      setError(error as Error);
-    } finally {
-      setLoading(false);
     }
   };
 
   return {
     userGames,
-    fetchUserGames,
-    loading,
-    error
+    fetchUserGames
   };
 };

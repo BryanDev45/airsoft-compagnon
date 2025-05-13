@@ -1,112 +1,97 @@
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../hooks/useAuth';
+import { useProfileData } from '../hooks/profile/useProfileData';
+import { useEquipmentActions } from '../hooks/profile/useEquipmentActions';
+import { useUserGames } from '../hooks/profile/useUserGames';
+import { useProfileDialogs } from '../hooks/profile/useProfileDialogs';
+import ProfileLoading from '../components/profile/ProfileLoading';
+import ProfileLayout from '../components/profile/ProfileLayout';
 
-import { useEffect } from 'react';
-import { useSession } from '@supabase/auth-helpers-react';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useProfileData } from '@/hooks/useProfileData';
-import { useUserGames } from '@/hooks/useUserGames';
-import { useEquipmentActions } from '@/hooks/useEquipmentActions';
-import ProfileHeader from '@/components/profile/ProfileHeader';
-import ProfileStats from '@/components/profile/ProfileStats';
-import { GameList } from '@/components/profile/GameList';
-import { EquipmentList } from '@/components/profile/EquipmentList';
-import { toast } from '@/components/ui/use-toast';
+const Profile = () => {
+  const { user, initialLoading } = useAuth();
+  const [canFetchData, setCanFetchData] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const equipmentTypes = ["Réplique principale", "Réplique secondaire", "Protection", "Accessoire"];
 
-export default function ProfilePage() {
-  const session = useSession();
-  const userId = session?.user?.id;
+  useEffect(() => {
+    if (!initialLoading && user?.id) {
+      setCanFetchData(true);
+    }
+  }, [initialLoading, user]);
 
-  // Hooks
   const {
-    loading: profileLoading,
+    loading,
     profileData,
     userStats,
-    fetchProfileData,
     updateLocation,
     updateUserStats,
     updateNewsletterSubscription,
-  } = useProfileData(userId);
+    fetchProfileData,
+    error: profileError
+  } = useProfileData(canFetchData ? user?.id : undefined);
+
+  const {
+    equipment,
+    fetchEquipment,
+    handleAddEquipment,
+    error: equipmentError
+  } = useEquipmentActions(canFetchData ? user?.id : undefined);
 
   const {
     userGames,
     fetchUserGames,
-  } = useUserGames(userId);
+    error: gamesError
+  } = useUserGames(canFetchData ? user?.id : undefined);
 
-  const {
-    userEquipment,
-    fetchUserEquipment,
-    loading: equipmentLoading,
-    error: equipmentError,
-  } = useEquipmentActions(userId);
+  const dialogStates = useProfileDialogs();
 
-  // Initial data load
+  // Charger l'équipement et les parties après que les données utilisateur soient prêtes
   useEffect(() => {
-    if (userId) {
-      fetchProfileData();
+    if (canFetchData && user?.id) {
+      fetchEquipment();
       fetchUserGames();
-      fetchUserEquipment();
     }
-  }, [userId]);
+  }, [canFetchData, user?.id, fetchEquipment, fetchUserGames]);
 
-  // Global error handling (optionnel)
+  // Gestion d'erreur centralisée
   useEffect(() => {
-    if (equipmentError) {
-      toast({
-        title: "Erreur de chargement",
-        description: "Impossible de charger toutes les données du profil",
-        variant: "destructive",
-      });
+    if (profileError || equipmentError || gamesError) {
+      console.error("Erreur lors du chargement du profil :", { profileError, equipmentError, gamesError });
+      setHasError(true);
     }
-  }, [equipmentError]);
+  }, [profileError, equipmentError, gamesError]);
 
-  // Affichage en attendant le chargement
-  if (!userId || profileLoading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="w-full h-40" />
-        <Skeleton className="w-1/2 h-6" />
-        <Skeleton className="w-full h-20" />
-      </div>
-    );
+  if (initialLoading || !canFetchData || loading || !profileData) {
+    return <ProfileLoading />;
   }
 
+  if (hasError) {
+    return <div>Une erreur est survenue lors du chargement de votre profil. Veuillez réessayer plus tard.</div>;
+  }
+
+  // Fusion sécurisée des objets
+  const userWithUpdates = {
+    id: user?.id,
+    email: user?.email,
+    ...profileData,
+    updateNewsletterSubscription,
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <ProfileHeader 
-        user={profileData} 
-        isOwnProfile={true} 
-        toggleProfileSettings={() => {}} 
-        onEditBio={() => {}}
-      />
-
-      {/* Stats utilisateur */}
-      {userStats && <ProfileStats 
-        userStats={userStats} 
-        updateUserStats={updateUserStats} 
-        fetchProfileData={fetchProfileData} 
-        isOwnProfile={true} 
-        profileData={profileData}
-      />}
-
-      {/* Liste des parties */}
-      <section>
-        <h2 className="text-xl font-semibold mb-2">Mes parties</h2>
-        {profileLoading ? (
-          <Skeleton className="w-full h-32" />
-        ) : (
-          <GameList games={userGames} />
-        )}
-      </section>
-
-      {/* Liste du matériel */}
-      <section>
-        <h2 className="text-xl font-semibold mb-2">Mon équipement</h2>
-        {equipmentLoading ? (
-          <Skeleton className="w-full h-32" />
-        ) : (
-          <EquipmentList equipment={userEquipment} />
-        )}
-      </section>
-    </div>
+    <ProfileLayout
+      user={userWithUpdates}
+      profileData={profileData}
+      userStats={userStats}
+      equipment={equipment}
+      userGames={userGames}
+      dialogStates={dialogStates}
+      equipmentTypes={equipmentTypes}
+      fetchEquipment={fetchEquipment}
+      fetchUserGames={fetchUserGames}
+      fetchProfileData={fetchProfileData}
+      handleAddEquipment={handleAddEquipment}
+    />
   );
-}
+};
+
+export default Profile;

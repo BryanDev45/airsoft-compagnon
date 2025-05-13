@@ -62,8 +62,7 @@ export const useProfileData = (userId: string | undefined) => {
             team_id: null,
             is_team_leader: null,
             is_verified: null,
-            newsletter_subscribed: false,
-            reputation: 0 // Add the missing reputation property with default value 0
+            newsletter_subscribed: false
           };
 
           const { error: insertError } = await supabase

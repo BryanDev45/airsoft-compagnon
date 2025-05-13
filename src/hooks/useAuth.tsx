@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
@@ -11,52 +11,70 @@ export const useAuth = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleAuthChange = useCallback(
-    (event: string, session: any) => {
-      const currentUser = session?.user || null;
-      setUser(currentUser);
-
-      switch (event) {
-        case 'SIGNED_IN':
-          if (['/login', '/register'].includes(location.pathname)) {
-            setTimeout(() => navigate('/profile'), 0);
-          }
-          break;
-        case 'SIGNED_OUT':
-          setTimeout(() => navigate('/login'), 0);
-          break;
-      }
-    },
-    [navigate, location.pathname]
-  );
-
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthChange);
+    // First, set up the auth state listener to avoid missing auth events
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user || null);
 
+        if (event === 'SIGNED_IN') {
+          // Only navigate to profile if we're on the login or register page
+          // This prevents the redirect loop issue
+          if (location.pathname === '/login' || location.pathname === '/register') {
+            // Use setTimeout to avoid potential deadlocks
+            setTimeout(() => {
+              navigate('/profile');
+            }, 0);
+          }
+        }
+        if (event === 'SIGNED_OUT') {
+          setUser(null);
+          // Use setTimeout to avoid potential deadlocks
+          setTimeout(() => {
+            navigate('/login');
+          }, 0);
+        }
+      }
+    );
+
+    // Then check for an existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user || null);
       setInitialLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, [handleAuthChange]);
+  }, [navigate, location.pathname]);
 
-  const login = async (email: string, password: string) => {
-    setLoading(true);
+  const login = async (email: string, password: string, rememberMe: boolean = false) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      setLoading(true);
+      const { data, error } = await supabase.auth.signInWithPassword({ 
+        email, 
+        password
+      });
 
-      if (error) throw error;
-      if (!data.user) throw new Error("Aucune donnée utilisateur retournée");
+      if (error) {
+        throw error;
+      }
 
-      setUser(data.user);
-      toast({ title: "Connexion réussie", description: "Bienvenue sur Airsoft Compagnon" });
-      navigate('/profile');
-      return true;
+      if (data && data.user) {
+        setUser(data.user);
+        toast({
+          title: "Connexion réussie",
+          description: "Bienvenue sur Airsoft Compagnon",
+        });
+        // Naviguer directement au lieu de laisser l'événement onAuthStateChange le faire
+        // Cela assure que la navigation se produise, même en cas de problème avec l'événement
+        navigate('/profile');
+        return true;
+      } else {
+        throw new Error("Aucune donnée utilisateur retournée");
+      }
     } catch (error: any) {
       toast({
         title: "Erreur de connexion",
-        description: error.message || "Une erreur est survenue.",
+        description: error.message,
         variant: "destructive",
       });
       return false;
@@ -66,9 +84,12 @@ export const useAuth = () => {
   };
 
   const register = async (email: string, password: string, userData: any) => {
-    setLoading(true);
     try {
-      const userDataWithAvatar = { ...userData, avatar: getRandomAvatar() };
+      setLoading(true);
+      const userDataWithAvatar = {
+        ...userData,
+        avatar: getRandomAvatar(),
+      };
 
       const { data: existingUser, error: checkError } = await supabase
         .from('profiles')
@@ -77,23 +98,33 @@ export const useAuth = () => {
         .maybeSingle();
 
       if (checkError && checkError.code !== 'PGRST116') {
-        throw new Error(`Erreur de vérification: ${checkError.message}`);
+        throw new Error(`Erreur lors de la vérification de l'email: ${checkError.message}`);
       }
 
       if (existingUser) {
-        throw new Error("Cette adresse email est déjà utilisée.");
+        throw new Error('Cette adresse email est déjà utilisée.');
       }
 
+      // Create the user in the auth system with metadata
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: userDataWithAvatar },
+        options: {
+          data: userDataWithAvatar, // This metadata will be used by the trigger to create the profile
+        },
       });
 
       if (error) throw error;
       if (!data.user) throw new Error("Erreur lors de la création du compte");
 
-      toast({ title: "Inscription réussie", description: "Votre compte a été créé avec succès." });
+      // No need to manually insert into profiles table - it's handled by the database trigger
+      // The handle_new_user function will create the profile entry automatically
+
+      toast({
+        title: "Inscription réussie",
+        description: "Votre compte a été créé avec succès.",
+      });
+
       navigate('/profile');
     } catch (error: any) {
       console.error("Erreur d'inscription:", error);
@@ -108,18 +139,23 @@ export const useAuth = () => {
   };
 
   const logout = async () => {
-    setLoading(true);
     try {
+      setLoading(true);
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-
+      
       setUser(null);
-      toast({ title: "Déconnexion réussie", description: "À bientôt !" });
+      // Navigate to login page after successful logout
       navigate('/login');
+      
+      toast({
+        title: "Déconnexion réussie",
+        description: "À bientôt !",
+      });
     } catch (error: any) {
       toast({
         title: "Erreur de déconnexion",
-        description: error.message || "Une erreur est survenue.",
+        description: error.message,
         variant: "destructive",
       });
     } finally {
@@ -130,9 +166,12 @@ export const useAuth = () => {
   const handleSocialLogin = async (provider: 'google' | 'facebook') => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: { redirectTo: `${window.location.origin}/profile` },
+        provider: provider,
+        options: {
+          redirectTo: window.location.origin + '/profile',
+        },
       });
+      
       if (error) throw error;
     } catch (error: any) {
       toast({
@@ -143,14 +182,5 @@ export const useAuth = () => {
     }
   };
 
-  return {
-    user,
-    loading,
-    initialLoading,
-    login,
-    register,
-    logout,
-    handleSocialLogin,
-    getAllDefaultAvatars,
-  };
+  return { user, loading, initialLoading, login, register, logout, handleSocialLogin, getAllDefaultAvatars };
 };
