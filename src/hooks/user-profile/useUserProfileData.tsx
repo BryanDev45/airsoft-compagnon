@@ -1,10 +1,8 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
 import { Profile } from '@/types/profile';
-import { useProfileUpdates } from '@/hooks/profile/useProfileUpdates';
 
 export const useUserProfileData = (username?: string) => {
   const navigate = useNavigate();
@@ -26,17 +24,6 @@ export const useUserProfileData = (username?: string) => {
       }
     });
   }, []);
-
-  // Initialize profile updates functionality
-  const { 
-    updateLocation, 
-    updateUserStats, 
-    updateNewsletterSubscription 
-  } = useProfileUpdates(
-    currentUserId || undefined,
-    setProfileData,
-    setUserStats
-  );
 
   const fetchUserData = useCallback(async () => {
     if (!username) return setLoading(false);
@@ -181,10 +168,7 @@ export const useUserProfileData = (username?: string) => {
         badges: formattedBadges,
       };
 
-      // Utiliser une valeur par défaut pour reputation si elle n'existe pas
-      const userReputation = userProfile.reputation || 0;
-      
-      setUserData({ id: profile.id, ...enrichedProfile, reputation: userReputation });
+      setUserData({ id: profile.id, ...enrichedProfile });
       setProfileData(enrichedProfile);
       setUserStats(stats || {
         user_id: profile.id,
@@ -193,7 +177,7 @@ export const useUserProfileData = (username?: string) => {
         preferred_game_type: 'Indéfini',
         favorite_role: 'Indéfini',
         level: 'Débutant',
-        reputation: userReputation,
+        reputation: profile.reputation || 0,
         win_rate: '0%',
         accuracy: '0%',
         time_played: '0h',
@@ -231,9 +215,8 @@ export const useUserProfileData = (username?: string) => {
     userGames,
     userBadges,
     currentUserId,
-    updateLocation,
-    updateUserStats,
-    updateNewsletterSubscription,
-    fetchProfileData: fetchUserData,
+    updateLocation: async () => false,
+    updateUserStats: async () => false,
+    fetchProfileData: async () => true,
   };
 };

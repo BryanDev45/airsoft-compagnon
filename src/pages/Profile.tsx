@@ -1,14 +1,13 @@
-
 import { useEffect } from 'react';
 import { useSession } from '@supabase/auth-helpers-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProfileData } from '@/hooks/useProfileData';
 import { useUserGames } from '@/hooks/useUserGames';
-import useEquipmentActions from '@/hooks/useEquipmentActions';
-import ProfileHeader from '@/components/profile/ProfileHeader';
-import ProfileStats from '@/components/profile/ProfileStats';
-import GameList from '@/components/profile/GameList';
-import EquipmentList from '@/components/profile/EquipmentList';
+import { useEquipmentActions } from '@/hooks/useEquipmentActions';
+import { ProfileHeader } from '@/components/profile/ProfileHeader';
+import { ProfileStats } from '@/components/profile/ProfileStats';
+import { GameList } from '@/components/profile/GameList';
+import { EquipmentList } from '@/components/profile/EquipmentList';
 import { toast } from '@/components/ui/use-toast';
 
 export default function ProfilePage() {
@@ -29,16 +28,15 @@ export default function ProfilePage() {
   const {
     userGames,
     fetchUserGames,
+    loading: gamesLoading,
+    error: gamesError,
   } = useUserGames(userId);
 
   const {
     userEquipment,
+    fetchUserEquipment,
     loading: equipmentLoading,
     error: equipmentError,
-    fetchUserEquipment,
-    addUserEquipment,
-    updateUserEquipment,
-    deleteUserEquipment
   } = useEquipmentActions(userId);
 
   // Initial data load
@@ -48,18 +46,18 @@ export default function ProfilePage() {
       fetchUserGames();
       fetchUserEquipment();
     }
-  }, [userId, fetchProfileData, fetchUserGames, fetchUserEquipment]);
+  }, [userId]);
 
-  // Global error handling
+  // Global error handling (optionnel)
   useEffect(() => {
-    if (equipmentError) {
+    if (gamesError || equipmentError) {
       toast({
         title: "Erreur de chargement",
         description: "Impossible de charger toutes les données du profil",
         variant: "destructive",
       });
     }
-  }, [equipmentError]);
+  }, [gamesError, equipmentError]);
 
   // Affichage en attendant le chargement
   if (!userId || profileLoading) {
@@ -75,21 +73,15 @@ export default function ProfilePage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <ProfileHeader user={profileData} isOwnProfile={true} onEditBio={() => {}} toggleProfileSettings={() => {}} />
+      <ProfileHeader profile={profileData} updateLocation={updateLocation} />
 
       {/* Stats utilisateur */}
-      {userStats && <ProfileStats 
-        userStats={userStats} 
-        updateUserStats={updateUserStats}
-        fetchProfileData={fetchProfileData}
-        isOwnProfile={true}
-        profileData={profileData}
-      />}
+      {userStats && <ProfileStats stats={userStats} />}
 
       {/* Liste des parties */}
       <section>
         <h2 className="text-xl font-semibold mb-2">Mes parties</h2>
-        {profileLoading ? (
+        {gamesLoading ? (
           <Skeleton className="w-full h-32" />
         ) : (
           <GameList games={userGames} />
