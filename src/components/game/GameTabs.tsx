@@ -18,18 +18,6 @@ const GameTabs: React.FC<GameTabsProps> = ({ selectedTab, setSelectedTab }) => {
           Détails
         </TabsTrigger>
         <TabsTrigger 
-          value="participants" 
-          className={`px-4 py-2 ${selectedTab === 'participants' ? 'border-b-2 border-airsoft-red' : ''}`}
-        >
-          Participants
-        </TabsTrigger>
-        <TabsTrigger 
-          value="comments" 
-          className={`px-4 py-2 ${selectedTab === 'comments' ? 'border-b-2 border-airsoft-red' : ''}`}
-        >
-          Commentaires
-        </TabsTrigger>
-        <TabsTrigger 
           value="rules" 
           className={`px-4 py-2 ${selectedTab === 'rules' ? 'border-b-2 border-airsoft-red' : ''}`}
         >
@@ -40,6 +28,18 @@ const GameTabs: React.FC<GameTabsProps> = ({ selectedTab, setSelectedTab }) => {
           className={`px-4 py-2 ${selectedTab === 'equipment' ? 'border-b-2 border-airsoft-red' : ''}`}
         >
           Équipement
+        </TabsTrigger>
+        <TabsTrigger 
+          value="participants" 
+          className={`px-4 py-2 ${selectedTab === 'participants' ? 'border-b-2 border-airsoft-red' : ''}`}
+        >
+          Participants
+        </TabsTrigger>
+        <TabsTrigger 
+          value="comments" 
+          className={`px-4 py-2 ${selectedTab === 'comments' ? 'border-b-2 border-airsoft-red' : ''}`}
+        >
+          Commentaires
         </TabsTrigger>
       </TabsList>
     </Tabs>

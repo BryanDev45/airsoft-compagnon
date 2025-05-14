@@ -1,5 +1,13 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious
+} from "@/components/ui/carousel";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 interface GameImagesProps {
   images: string[];
@@ -74,25 +82,41 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
   }
 
   return (
-    <div className="rounded-lg overflow-hidden mb-8">
+    <div className="mb-8">
       {displayImages.length > 0 && (
-        <img 
-          src={displayImages[0]} 
-          alt={title} 
-          className="w-full h-[300px] object-cover"
-          onError={(e) => handleImageError(0, e)}
-        />
+        <Carousel className="relative rounded-lg overflow-hidden">
+          <CarouselContent>
+            {displayImages.map((img, idx) => (
+              <CarouselItem key={idx}>
+                <AspectRatio ratio={16/9} className="bg-gray-100">
+                  <img 
+                    src={img} 
+                    alt={`${title} - image ${idx + 1}`} 
+                    className="w-full h-full object-cover"
+                    onError={(e) => handleImageError(idx, e)}
+                  />
+                </AspectRatio>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          {displayImages.length > 1 && (
+            <>
+              <CarouselPrevious className="absolute left-2 bg-black/50 hover:bg-black/70 text-white border-none" />
+              <CarouselNext className="absolute right-2 bg-black/50 hover:bg-black/70 text-white border-none" />
+            </>
+          )}
+        </Carousel>
       )}
       
       {displayImages.length > 1 && (
-        <div className="bg-white p-2 grid grid-cols-4 gap-2">
-          {displayImages.slice(1, 5).map((img, idx) => (
+        <div className="bg-white p-2 grid grid-cols-5 gap-2 mt-2 rounded-lg">
+          {displayImages.slice(0, 5).map((img, idx) => (
             <img 
               key={idx} 
               src={img} 
               alt={`${title} ${idx + 1}`} 
-              className="h-20 w-full object-cover rounded"
-              onError={(e) => handleImageError(idx + 1, e)}
+              className="h-20 w-full object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
+              onError={(e) => handleImageError(idx, e)}
             />
           ))}
         </div>
