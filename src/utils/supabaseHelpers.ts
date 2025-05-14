@@ -43,44 +43,6 @@ export const createAirsoftGame = async (gameData: any) => {
 };
 
 /**
- * Ensure the 'games' bucket exists in Supabase Storage
- */
-export const ensureGamesBucketExists = async () => {
-  try {
-    // Vérifier si le bucket 'games' existe
-    const { data: buckets, error: listError } = await supabase.storage.listBuckets();
-    
-    if (listError) {
-      console.error("Erreur lors de la vérification des buckets:", listError);
-      return { success: false, error: listError };
-    }
-    
-    // Si le bucket existe déjà, on retourne simplement success
-    if (buckets?.some(bucket => bucket.name === 'games')) {
-      console.log("Le bucket 'games' existe déjà");
-      return { success: true };
-    }
-    
-    // Le bucket n'existe pas, on le crée
-    console.log("Le bucket 'games' n'existe pas, création en cours...");
-    const { error: createError } = await supabase.storage.createBucket('games', {
-      public: true // Rendre le bucket public pour accéder aux images
-    });
-    
-    if (createError) {
-      console.error("Erreur lors de la création du bucket 'games':", createError);
-      return { success: false, error: createError };
-    }
-    
-    console.log("Bucket 'games' créé avec succès");
-    return { success: true };
-  } catch (error) {
-    console.error("Erreur inattendue lors de la vérification/création du bucket:", error);
-    return { success: false, error };
-  }
-};
-
-/**
  * Upload game images to storage and return their public URLs
  */
 export const uploadGameImages = async (gameId: string, images: File[]) => {
@@ -88,13 +50,6 @@ export const uploadGameImages = async (gameId: string, images: File[]) => {
     const imageUrls: string[] = [];
     
     console.log(`Début de l'upload de ${images.length} images pour le jeu ${gameId}`);
-    
-    // S'assurer que le bucket 'games' existe
-    const bucketResult = await ensureGamesBucketExists();
-    if (!bucketResult.success) {
-      console.error("Erreur avec le bucket:", bucketResult.error);
-      return { data: null, error: bucketResult.error };
-    }
     
     // Télécharger jusqu'à 5 images
     for (let i = 0; i < Math.min(images.length, 5); i++) {
