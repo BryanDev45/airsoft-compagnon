@@ -25,6 +25,7 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
   // État local pour stocker les images filtrées
   const [displayImages, setDisplayImages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeIndex, setActiveIndex] = useState(0);
   
   // Référence pour vérifier si le composant est monté
   const isMounted = useRef(true);
@@ -72,6 +73,10 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
     e.currentTarget.src = defaultImages[fallbackIndex];
   };
 
+  const handleThumbnailClick = (index: number) => {
+    setActiveIndex(index);
+  };
+
   // Si aucune image n'est disponible ou si le chargement est en cours, afficher un placeholder
   if (isLoading) {
     return (
@@ -84,17 +89,20 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
   return (
     <div className="mb-8">
       {displayImages.length > 0 && (
-        <Carousel className="relative rounded-lg overflow-hidden">
+        <Carousel className="relative rounded-lg overflow-hidden" value={activeIndex} onValueChange={setActiveIndex}>
           <CarouselContent>
             {displayImages.map((img, idx) => (
               <CarouselItem key={idx}>
                 <AspectRatio ratio={16/9} className="bg-gray-100">
-                  <img 
-                    src={img} 
-                    alt={`${title} - image ${idx + 1}`} 
-                    className="w-full h-full object-cover"
-                    onError={(e) => handleImageError(idx, e)}
-                  />
+                  <div className="w-full h-full relative">
+                    <img 
+                      src={img} 
+                      alt={`${title} - image ${idx + 1}`} 
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                      onError={(e) => handleImageError(idx, e)}
+                    />
+                    <div className="absolute inset-0 pointer-events-none border-8 border-white/10 shadow-[inset_0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[inset_0_0_30px_rgba(139,92,246,0.4)] transition-all duration-300"></div>
+                  </div>
                 </AspectRatio>
               </CarouselItem>
             ))}
@@ -111,13 +119,18 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
       {displayImages.length > 1 && (
         <div className="bg-white p-2 grid grid-cols-5 gap-2 mt-2 rounded-lg">
           {displayImages.slice(0, 5).map((img, idx) => (
-            <img 
-              key={idx} 
-              src={img} 
-              alt={`${title} ${idx + 1}`} 
-              className="h-20 w-full object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
-              onError={(e) => handleImageError(idx, e)}
-            />
+            <div 
+              key={idx}
+              className={`h-20 relative cursor-pointer overflow-hidden rounded border-2 transition-all duration-200 ${activeIndex === idx ? 'border-airsoft-red scale-[1.03]' : 'border-transparent hover:border-airsoft-red/50'}`}
+              onClick={() => handleThumbnailClick(idx)}
+            >
+              <img 
+                src={img} 
+                alt={`${title} ${idx + 1}`} 
+                className="h-full w-full object-cover hover:opacity-90 transition-opacity"
+                onError={(e) => handleImageError(idx, e)}
+              />
+            </div>
           ))}
         </div>
       )}
