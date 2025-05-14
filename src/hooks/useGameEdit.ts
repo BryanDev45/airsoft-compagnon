@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "@/components/ui/use-toast";
@@ -214,14 +215,14 @@ export const useGameEdit = (gameId: string | undefined) => {
     };
 
     fetchGameData();
-  }, [gameId, navigate, toast, form]);
+  }, [gameId, navigate, form]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files);
-      const totalImages = images.length + newFiles.length + existingImages.length;
+      const totalImagesCount = images.length + newFiles.length + existingImages.length;
       
-      if (totalImages > 5) {
+      if (totalImagesCount > 5) {
         toast({
           title: "Limite atteinte",
           description: "Vous ne pouvez pas ajouter plus de 5 images au total",
@@ -231,13 +232,16 @@ export const useGameEdit = (gameId: string | undefined) => {
       }
       
       // Add files to images state
-      setImages([...images, ...newFiles]);
+      const updatedImages = [...images, ...newFiles];
+      setImages(updatedImages);
       
       // Generate preview for new files
       const newPreviews = newFiles.map(file => URL.createObjectURL(file));
       
       // Update preview with both existing and new images
       setPreview([...existingImages, ...preview.slice(existingImages.length), ...newPreviews]);
+      
+      console.log(`${newFiles.length} nouvelles images ajoutées, total maintenant: ${updatedImages.length} + ${existingImages.length} existantes`);
     }
   };
 
@@ -255,6 +259,8 @@ export const useGameEdit = (gameId: string | undefined) => {
       // Remove from preview
       newPreview.splice(index, 1);
       setPreview(newPreview);
+      
+      console.log(`Image existante supprimée à l'index ${index}, restantes: ${newExistingImages.length}`);
     } else {
       // Removing a new image
       const adjustedIndex = index - existingImages.length;
@@ -267,6 +273,8 @@ export const useGameEdit = (gameId: string | undefined) => {
       // Remove from preview
       newPreview.splice(index, 1);
       setPreview(newPreview);
+      
+      console.log(`Nouvelle image supprimée à l'index ajusté ${adjustedIndex}, restantes: ${newImages.length}`);
     }
   };
 
@@ -333,7 +341,7 @@ export const useGameEdit = (gameId: string | undefined) => {
 
       // Télécharger les nouvelles images si nécessaire
       if (images.length > 0) {
-        console.log("Téléchargement de nouvelles images:", images.length);
+        console.log(`Téléchargement de ${images.length} nouvelles images`);
         
         // Utiliser uploadGameImages qui gère maintenant la mise à jour des champs Picture1-5
         const { data: imageUrls, error: imageError } = await uploadGameImages(gameId, images);
@@ -346,7 +354,7 @@ export const useGameEdit = (gameId: string | undefined) => {
             variant: "destructive"
           });
         } else {
-          console.log("Images téléchargées et enregistrées avec succès");
+          console.log("Images téléchargées et enregistrées avec succès:", imageUrls);
         }
       }
 

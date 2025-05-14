@@ -87,16 +87,47 @@ export const uploadGameImages = async (gameId: string, images: File[]) => {
     
     console.log(`${imageUrls.length} images téléchargées avec succès:`, imageUrls);
     
-    // Mettre à jour les champs Picture1-Picture5 dans la base de données
     if (imageUrls.length > 0) {
+      // Récupération des URLs d'images existantes pour ce jeu
+      const { data: gameData, error: fetchError } = await supabase
+        .from('airsoft_games')
+        .select('Picture1, Picture2, Picture3, Picture4, Picture5')
+        .eq('id', gameId)
+        .single();
+      
+      if (fetchError) {
+        console.error("Erreur lors de la récupération des données du jeu:", fetchError);
+      }
+      
+      // Collecter toutes les URLs d'images existantes qui ne sont pas null
+      const existingImages: string[] = [];
+      if (gameData) {
+        if (gameData.Picture1) existingImages.push(gameData.Picture1);
+        if (gameData.Picture2) existingImages.push(gameData.Picture2);
+        if (gameData.Picture3) existingImages.push(gameData.Picture3);
+        if (gameData.Picture4) existingImages.push(gameData.Picture4);
+        if (gameData.Picture5) existingImages.push(gameData.Picture5);
+      }
+      
+      console.log("Images existantes:", existingImages);
+      
+      // Combiner les images existantes avec les nouvelles (max 5)
+      const allImages = [...existingImages, ...imageUrls].slice(0, 5);
+      console.log("Images combinées (max 5):", allImages);
+      
+      // Mettre à jour les champs Picture1-Picture5 dans la base de données
       const updateData: Record<string, string> = {};
       
-      // Assigner chaque URL d'image à son champ correspondant
-      for (let i = 0; i < Math.min(imageUrls.length, 5); i++) {
-        const fieldName = `Picture${i + 1}`;
-        updateData[fieldName] = imageUrls[i];
-        console.log(`Setting ${fieldName} to ${imageUrls[i]}`);
+      // Réinitialiser tous les champs d'image à null d'abord
+      for (let i = 1; i <= 5; i++) {
+        updateData[`Picture${i}`] = null;
       }
+      
+      // Assigner chaque URL d'image à son champ correspondant
+      allImages.forEach((url, idx) => {
+        const fieldName = `Picture${idx + 1}`;
+        updateData[fieldName] = url;
+      });
       
       // Mise à jour des URL des images dans la base de données
       console.log("Mise à jour des URL d'images pour le jeu:", gameId, updateData);
@@ -111,6 +142,7 @@ export const uploadGameImages = async (gameId: string, images: File[]) => {
       }
       
       console.log("Les URLs des images ont été mises à jour avec succès dans la base de données");
+      return { data: allImages, error: null };
     }
     
     return { data: imageUrls, error: null };

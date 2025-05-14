@@ -24,6 +24,25 @@ const ImageUploadSection = ({
     }
   }, [images, updateFormData]);
   
+  const handleMultipleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      // Vérifier si nous dépassons la limite de 5 images avec le total actuel + nouvelles
+      const totalImagesAfterAdd = preview.length + e.target.files.length;
+      
+      if (totalImagesAfterAdd > 5) {
+        toast({
+          title: "Limite atteinte",
+          description: "Vous ne pouvez pas ajouter plus de 5 images au total",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Si tout est ok, transmettre au gestionnaire d'images du parent
+      handleImageChange(e);
+    }
+  };
+  
   return (
     <Card>
       <CardHeader>
@@ -42,7 +61,7 @@ const ImageUploadSection = ({
             id="images" 
             accept="image/*" 
             multiple 
-            onChange={handleImageChange} 
+            onChange={handleMultipleImageChange} 
             className="hidden" 
             disabled={preview.length >= 5}
           />
