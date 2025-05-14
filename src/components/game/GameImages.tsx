@@ -8,6 +8,7 @@ import {
   CarouselPrevious
 } from "@/components/ui/carousel";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { useToast } from "@/components/ui/use-toast";
 
 interface GameImagesProps {
   images: string[];
@@ -26,6 +27,7 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
   const [displayImages, setDisplayImages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
+  const { toast } = useToast();
   
   // Référence pour vérifier si le composant est monté
   const isMounted = useRef(true);
@@ -76,6 +78,14 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
   const handleThumbnailClick = (index: number) => {
     setActiveIndex(index);
   };
+  
+  const handlePrevious = () => {
+    setActiveIndex(prev => (prev === 0 ? displayImages.length - 1 : prev - 1));
+  };
+  
+  const handleNext = () => {
+    setActiveIndex(prev => (prev === displayImages.length - 1 ? 0 : prev + 1));
+  };
 
   // Si aucune image n'est disponible ou si le chargement est en cours, afficher un placeholder
   if (isLoading) {
@@ -111,11 +121,11 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
             <>
               <CarouselPrevious 
                 className="absolute left-2 bg-black/50 hover:bg-black/70 text-white border-none" 
-                onClick={() => setActiveIndex((prev) => (prev === 0 ? displayImages.length - 1 : prev - 1))}
+                onClick={handlePrevious}
               />
               <CarouselNext 
                 className="absolute right-2 bg-black/50 hover:bg-black/70 text-white border-none"
-                onClick={() => setActiveIndex((prev) => (prev === displayImages.length - 1 ? 0 : prev + 1))}
+                onClick={handleNext}
               />
             </>
           )}

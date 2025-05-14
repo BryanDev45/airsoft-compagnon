@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,6 +19,7 @@ import ShareDialog from '@/components/game/ShareDialog';
 import GameImages from '@/components/game/GameImages';
 import GameInfoCard from '@/components/game/GameInfoCard';
 import GameLocationCard from '@/components/game/GameLocationCard';
+import RegistrationDialog from '@/components/game/RegistrationDialog';
 
 const GameDetails = () => {
   const { id } = useParams();
@@ -30,6 +32,7 @@ const GameDetails = () => {
   const [isRegistered, setIsRegistered] = useState(false);
   const [loadingRegistration, setLoadingRegistration] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [showRegistrationDialog, setShowRegistrationDialog] = useState(false);
   const [creatorRating, setCreatorRating] = useState<number | null>(null);
   const [creatorProfile, setCreatorProfile] = useState<Profile | null>(null);
 
@@ -170,8 +173,7 @@ const GameDetails = () => {
       
       if (isRegistered) {
         // Open registration management dialog
-        console.log("Manage registration");
-        // This would be implemented later
+        setShowRegistrationDialog(true);
       } else {
         // Register for the game
         const { error } = await supabase
@@ -207,6 +209,45 @@ const GameDetails = () => {
   
   const handleShareGame = () => {
     setShowShareDialog(true);
+  };
+  
+  const handleUnregister = async () => {
+    if (!user || !id) return;
+    
+    try {
+      setLoadingRegistration(true);
+      
+      // Delete the participant entry
+      const { error } = await supabase
+        .from('game_participants')
+        .delete()
+        .eq('game_id', id)
+        .eq('user_id', user.id);
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Désinscription réussie",
+        description: "Vous avez été désinscrit de cette partie."
+      });
+      
+      // Close the dialog and reload participants
+      setShowRegistrationDialog(false);
+      setIsRegistered(false);
+      
+      // Reload participants to update the list and status
+      await loadParticipants();
+      
+    } catch (error) {
+      console.error('Error unregistering:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de vous désinscrire de cette partie."
+      });
+    } finally {
+      setLoadingRegistration(false);
+    }
   };
   
   const navigateToCreatorProfile = () => {
@@ -346,6 +387,15 @@ const GameDetails = () => {
               description: message
             });
           }}
+        />
+      )}
+      {showRegistrationDialog && gameData && (
+        <RegistrationDialog
+          open={showRegistrationDialog}
+          onOpenChange={setShowRegistrationDialog}
+          gameData={gameData}
+          loadingRegistration={loadingRegistration}
+          onUnregister={handleUnregister}
         />
       )}
     </div>

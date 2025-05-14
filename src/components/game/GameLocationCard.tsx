@@ -1,16 +1,15 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { MapPin } from 'lucide-react';
-import LocationMap from '../map/LocationMap';
-import { calculateDistance } from '@/utils/mapUtils';
+import 'mapbox-gl/dist/mapbox-gl.css';
+import mapboxgl from 'mapbox-gl';
 
 interface GameLocationCardProps {
   address: string;
   zipCode: string;
   city: string;
-  coordinates: [number, number];
+  coordinates: [number, number]; // [longitude, latitude]
 }
 
 const GameLocationCard: React.FC<GameLocationCardProps> = ({
@@ -19,95 +18,107 @@ const GameLocationCard: React.FC<GameLocationCardProps> = ({
   city,
   coordinates
 }) => {
-  const [finalCoordinates, setFinalCoordinates] = useState<[number, number]>([0, 0]);
-  const [isLoading, setIsLoading] = useState(true);
-
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<mapboxgl.Map | null>(null);
+  const marker = useRef<mapboxgl.Marker | null>(null);
+  const [validCoordinates, setValidCoordinates] = useState<[number, number]>([0, 0]);
+  
+  // Verify if coordinates are valid (not null, not 0,0 or close to it)
   useEffect(() => {
-    // Vérifie si les coordonnées sont des valeurs numériques valides
-    const validLng = typeof coordinates[0] === 'number' ? coordinates[0] : parseFloat(String(coordinates[0]));
-    const validLat = typeof coordinates[1] === 'number' ? coordinates[1] : parseFloat(String(coordinates[1]));
-
-    // Vérifier si les coordonnées sont valides et dans des limites raisonnables (sur la terre)
-    const isValidLng = !isNaN(validLng) && validLng >= -180 && validLng <= 180;
-    const isValidLat = !isNaN(validLat) && validLat >= -90 && validLat <= 90;
-    
-    // Si les coordonnées sont valides, on les utilise, sinon on essaie de géocoder l'adresse
-    if (isValidLng && isValidLat) {
-      // Vérifier si les coordonnées sont au milieu de l'océan (coordonnées proches de 0,0)
-      const distanceToEquator = calculateDistance(validLat, validLng, 0, 0);
-      if (distanceToEquator < 1000) { // Si les coordonnées sont à moins de 1000km du point 0,0
-        geocodeAddress();
-      } else {
-        setFinalCoordinates([validLng, validLat]);
-        setIsLoading(false);
-      }
-    } else {
+    // Check if coordinates are close to 0,0 (null island)
+    const isCloseToZero = 
+      Math.abs(coordinates[0]) < 0.1 && Math.abs(coordinates[1]) < 0.1;
+      
+    if (isCloseToZero || !coordinates[0] || !coordinates[1]) {
+      // If coordinates are invalid, try to geocode the address
       geocodeAddress();
+    } else {
+      // Use provided coordinates
+      setValidCoordinates(coordinates);
     }
   }, [coordinates, address, zipCode, city]);
 
   const geocodeAddress = async () => {
     try {
-      const fullAddress = encodeURIComponent(`${address}, ${zipCode} ${city}`);
-      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${fullAddress}`);
+      const fullAddress = `${address}, ${zipCode} ${city}`;
+      
+      // Use MapBox Geocoding API to get coordinates from address
+      const geocodingUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(fullAddress)}.json?access_token=pk.eyJ1IjoibG92YWJsZS1kZXYiLCJhIjoiY2xvM2R5bXRsMGUzeDJsbnJ3YTRvbzltZSJ9.ib8DQKmUzRPBRVdta1inYQ`;
+      
+      const response = await fetch(geocodingUrl);
       const data = await response.json();
       
-      if (data && data.length > 0) {
-        const { lon, lat } = data[0];
-        setFinalCoordinates([parseFloat(lon), parseFloat(lat)]);
+      if (data.features && data.features.length > 0) {
+        const [lng, lat] = data.features[0].center;
+        setValidCoordinates([lng, lat]);
       } else {
-        // Si aucun résultat, utilisez des coordonnées par défaut pour la France
-        setFinalCoordinates([2.3522, 48.8566]); // Paris
+        // Fallback to France coordinates if geocoding fails
+        setValidCoordinates([2.3522, 48.8566]);
       }
     } catch (error) {
-      console.error('Erreur de géocodage:', error);
-      setFinalCoordinates([2.3522, 48.8566]); // Paris par défaut
-    } finally {
-      setIsLoading(false);
+      console.error("Error geocoding address:", error);
+      // Fallback to France coordinates
+      setValidCoordinates([2.3522, 48.8566]);
     }
   };
 
-  const openGoogleMaps = () => {
-    window.open(
-      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-        `${address}, ${zipCode} ${city}`
-      )}`,
-      '_blank'
-    );
-  };
+  // Initialize map once coordinates are valid
+  useEffect(() => {
+    if (!mapContainer.current || !validCoordinates[0] || !validCoordinates[1]) return;
+    
+    // Initialize the map
+    mapboxgl.accessToken = 'pk.eyJ1IjoibG92YWJsZS1kZXYiLCJhIjoiY2xvM2R5bXRsMGUzeDJsbnJ3YTRvbzltZSJ9.ib8DQKmUzRPBRVdta1inYQ';
+    
+    if (!map.current) {
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/streets-v11',
+        center: validCoordinates,
+        zoom: 14,
+      });
+      
+      // Add controls
+      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+      
+      // Add marker
+      marker.current = new mapboxgl.Marker({ color: '#E53E3E' })
+        .setLngLat(validCoordinates)
+        .addTo(map.current);
+    } else {
+      // Update marker and map if coordinates change
+      marker.current?.setLngLat(validCoordinates);
+      map.current.flyTo({
+        center: validCoordinates,
+        zoom: 14,
+        speed: 1.5
+      });
+    }
+    
+    // Clean up on unmount
+    return () => {
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+    };
+  }, [validCoordinates]);
 
   return (
     <Card>
       <CardContent className="pt-6">
-        <h3 className="text-lg font-semibold mb-4">Localisation</h3>
-        <div className="bg-gray-200 rounded-lg h-[200px] mb-4 overflow-hidden relative">
-          {isLoading ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="animate-spin rounded-full h-10 w-10 border-4 border-airsoft-red border-t-transparent"></div>
-            </div>
-          ) : (
-            <LocationMap 
-              location={`${address}, ${zipCode} ${city}`} 
-              coordinates={finalCoordinates} 
-            />
-          )}
-          <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_15px_rgba(0,0,0,0.2)]"></div>
+        <h3 className="text-lg font-semibold mb-4 flex items-center">
+          <MapPin className="mr-2 text-airsoft-red" size={18} />
+          Localisation
+        </h3>
+        
+        <div className="bg-gray-100 rounded-lg overflow-hidden h-[200px] mb-4">
+          <div ref={mapContainer} className="w-full h-full" />
         </div>
-        <div className="flex items-start gap-2">
-          <MapPin size={18} className="text-airsoft-red flex-shrink-0 mt-1" />
-          <div>
-            <div className="font-medium">{address}</div>
-            <div className="text-gray-600 text-sm">{zipCode} {city}</div>
-          </div>
+        
+        <div className="text-sm">
+          <p className="font-medium">{address}</p>
+          <p>{zipCode} {city}</p>
         </div>
-        <Button 
-          variant="outline" 
-          className="w-full mt-4" 
-          onClick={openGoogleMaps}
-        >
-          <MapPin size={16} className="mr-2" />
-          Obtenir l'itinéraire
-        </Button>
       </CardContent>
     </Card>
   );
