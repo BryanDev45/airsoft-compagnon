@@ -89,10 +89,10 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
   return (
     <div className="mb-8">
       {displayImages.length > 0 && (
-        <Carousel className="relative rounded-lg overflow-hidden" value={activeIndex} onValueChange={setActiveIndex}>
+        <Carousel className="relative rounded-lg overflow-hidden">
           <CarouselContent>
             {displayImages.map((img, idx) => (
-              <CarouselItem key={idx}>
+              <CarouselItem key={idx} className={activeIndex === idx ? 'block' : 'hidden'}>
                 <AspectRatio ratio={16/9} className="bg-gray-100">
                   <div className="w-full h-full relative">
                     <img 
@@ -109,8 +109,14 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
           </CarouselContent>
           {displayImages.length > 1 && (
             <>
-              <CarouselPrevious className="absolute left-2 bg-black/50 hover:bg-black/70 text-white border-none" />
-              <CarouselNext className="absolute right-2 bg-black/50 hover:bg-black/70 text-white border-none" />
+              <CarouselPrevious 
+                className="absolute left-2 bg-black/50 hover:bg-black/70 text-white border-none" 
+                onClick={() => setActiveIndex((prev) => (prev === 0 ? displayImages.length - 1 : prev - 1))}
+              />
+              <CarouselNext 
+                className="absolute right-2 bg-black/50 hover:bg-black/70 text-white border-none"
+                onClick={() => setActiveIndex((prev) => (prev === displayImages.length - 1 ? 0 : prev + 1))}
+              />
             </>
           )}
         </Carousel>
