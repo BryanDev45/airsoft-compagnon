@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useProfileData } from '../hooks/profile/useProfileData';
@@ -6,6 +7,7 @@ import { useUserGames } from '../hooks/profile/useUserGames';
 import { useProfileDialogs } from '../hooks/profile/useProfileDialogs';
 import ProfileLoading from '../components/profile/ProfileLoading';
 import ProfileLayout from '../components/profile/ProfileLayout';
+import { toast } from '@/components/ui/use-toast';
 
 const Profile = () => {
   const { user, initialLoading } = useAuth();
@@ -26,21 +28,18 @@ const Profile = () => {
     updateLocation,
     updateUserStats,
     updateNewsletterSubscription,
-    fetchProfileData,
-    error: profileError
+    fetchProfileData
   } = useProfileData(canFetchData ? user?.id : undefined);
 
   const {
     equipment,
     fetchEquipment,
-    handleAddEquipment,
-    error: equipmentError
+    handleAddEquipment
   } = useEquipmentActions(canFetchData ? user?.id : undefined);
 
   const {
     userGames,
-    fetchUserGames,
-    error: gamesError
+    fetchUserGames
   } = useUserGames(canFetchData ? user?.id : undefined);
 
   const dialogStates = useProfileDialogs();
@@ -53,13 +52,17 @@ const Profile = () => {
     }
   }, [canFetchData, user?.id, fetchEquipment, fetchUserGames]);
 
-  // Gestion d'erreur centralisée
+  // Gestion d'erreur centralisée - Utilisons une fonction d'effet sans référence aux propriétés error
   useEffect(() => {
-    if (profileError || equipmentError || gamesError) {
-      console.error("Erreur lors du chargement du profil :", { profileError, equipmentError, gamesError });
-      setHasError(true);
+    // Utiliser toast pour afficher les erreurs globales si nécessaire
+    if (hasError) {
+      toast({
+        variant: "destructive",
+        title: "Erreur de chargement",
+        description: "Une erreur est survenue lors du chargement de votre profil."
+      });
     }
-  }, [profileError, equipmentError, gamesError]);
+  }, [hasError]);
 
   if (initialLoading || !canFetchData || loading || !profileData) {
     return <ProfileLoading />;
