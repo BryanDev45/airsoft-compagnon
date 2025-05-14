@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Calendar, Clock, MapPin } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users } from 'lucide-react';
 
 const ProfileDialogs = ({ 
   selectedGame,
@@ -51,8 +52,27 @@ const ProfileDialogs = ({
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="text-gray-500" size={16} />
-                <span>{selectedGame.location}</span>
+                <span>{selectedGame.location || 'Lieu non spécifié'}</span>
               </div>
+              {selectedGame.address && (
+                <div className="flex items-start gap-2">
+                  <MapPin className="text-gray-500 mt-1" size={16} />
+                  <div>
+                    <p>{selectedGame.address}</p>
+                    {selectedGame.zip_code && selectedGame.city && (
+                      <p>{selectedGame.zip_code} {selectedGame.city}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+              {(selectedGame.max_players || selectedGame.participantsCount) && (
+                <div className="flex items-center gap-2">
+                  <Users className="text-gray-500" size={16} />
+                  <span>
+                    {selectedGame.participantsCount || '0'} / {selectedGame.max_players || '?'} participants
+                  </span>
+                </div>
+              )}
               <div className="flex items-center gap-2">
                 <Badge className={selectedGame.status === 'À venir' ? 'bg-green-600' : 'bg-gray-600'}>
                   {selectedGame.status}

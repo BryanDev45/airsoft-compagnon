@@ -55,6 +55,11 @@ export const useUserGames = (userId: string | undefined) => {
                   date: new Date(gameData.date).toLocaleDateString('fr-FR'),
                   rawDate: gameData.date, // Ajout de la date brute pour le tri
                   location: gameData.city,
+                  address: gameData.address,
+                  zip_code: gameData.zip_code,
+                  city: gameData.city,
+                  max_players: gameData.max_players,
+                  participantsCount: null, // Sera compté plus tard si nécessaire
                   image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
                   role: gp.role,
                   status: isUpcoming ? 'À venir' : 'Terminé',
@@ -82,6 +87,11 @@ export const useUserGames = (userId: string | undefined) => {
             date: new Date(game.date).toLocaleDateString('fr-FR'),
             rawDate: game.date, // Ajout de la date brute pour le tri
             location: game.city,
+            address: game.address,
+            zip_code: game.zip_code,
+            city: game.city,
+            max_players: game.max_players,
+            participantsCount: null, // Sera compté plus tard si nécessaire
             image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
             role: 'Organisateur',
             status: isUpcoming ? 'À venir' : 'Terminé',
