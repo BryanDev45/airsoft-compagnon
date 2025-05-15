@@ -1,8 +1,7 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { MapPin } from 'lucide-react';
-import { LocationMap } from '@/components/map/LocationMap';
+import LocationMap from '@/components/map/LocationMap';
 
 interface GameLocationCardProps {
   address: string;
