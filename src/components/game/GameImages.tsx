@@ -99,37 +99,46 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
   return (
     <div className="mb-8">
       {displayImages.length > 0 && (
-        <Carousel className="relative rounded-lg overflow-hidden">
-          <CarouselContent>
-            {displayImages.map((img, idx) => (
-              <CarouselItem key={idx} className={activeIndex === idx ? 'block' : 'hidden'}>
-                <AspectRatio ratio={16/9} className="bg-gray-100">
-                  <div className="w-full h-full relative">
-                    <img 
-                      src={img} 
-                      alt={`${title} - image ${idx + 1}`} 
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                      onError={(e) => handleImageError(idx, e)}
-                    />
-                    <div className="absolute inset-0 pointer-events-none border-8 border-white/10 shadow-[inset_0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[inset_0_0_30px_rgba(139,92,246,0.4)] transition-all duration-300"></div>
-                  </div>
-                </AspectRatio>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
+        <div className="relative">
+          {displayImages.map((img, idx) => (
+            <div key={idx} className={`${activeIndex === idx ? 'block' : 'hidden'}`}>
+              <AspectRatio ratio={16/9} className="bg-gray-100">
+                <div className="w-full h-full relative">
+                  <img 
+                    src={img} 
+                    alt={`${title} - image ${idx + 1}`} 
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    onError={(e) => handleImageError(idx, e)}
+                  />
+                  <div className="absolute inset-0 pointer-events-none border-8 border-white/10 shadow-[inset_0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[inset_0_0_30px_rgba(139,92,246,0.4)] transition-all duration-300"></div>
+                </div>
+              </AspectRatio>
+            </div>
+          ))}
+          
           {displayImages.length > 1 && (
             <>
-              <CarouselPrevious 
-                className="absolute left-2 bg-black/50 hover:bg-black/70 text-white border-none" 
+              <button 
                 onClick={handlePrevious}
-              />
-              <CarouselNext 
-                className="absolute right-2 bg-black/50 hover:bg-black/70 text-white border-none"
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full"
+                aria-label="Image précédente"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m15 18-6-6 6-6"/>
+                </svg>
+              </button>
+              <button 
                 onClick={handleNext}
-              />
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full"
+                aria-label="Image suivante"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m9 18 6-6-6-6"/>
+                </svg>
+              </button>
             </>
           )}
-        </Carousel>
+        </div>
       )}
       
       {displayImages.length > 1 && (

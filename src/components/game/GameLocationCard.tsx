@@ -2,8 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { MapPin } from 'lucide-react';
-import 'mapbox-gl/dist/mapbox-gl.css';
-import mapboxgl from 'mapbox-gl';
+import { LocationMap } from '@/components/map/LocationMap';
 
 interface GameLocationCardProps {
   address: string;
@@ -18,9 +17,6 @@ const GameLocationCard: React.FC<GameLocationCardProps> = ({
   city,
   coordinates
 }) => {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const marker = useRef<mapboxgl.Marker | null>(null);
   const [validCoordinates, setValidCoordinates] = useState<[number, number]>([0, 0]);
   
   // Verify if coordinates are valid (not null, not 0,0 or close to it)
@@ -42,15 +38,19 @@ const GameLocationCard: React.FC<GameLocationCardProps> = ({
     try {
       const fullAddress = `${address}, ${zipCode} ${city}`;
       
-      // Use MapBox Geocoding API to get coordinates from address
-      const geocodingUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(fullAddress)}.json?access_token=pk.eyJ1IjoibG92YWJsZS1kZXYiLCJhIjoiY2xvM2R5bXRsMGUzeDJsbnJ3YTRvbzltZSJ9.ib8DQKmUzRPBRVdta1inYQ`;
+      // Use OpenStreetMap Nominatim API to geocode the address
+      const geocodingUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}`;
       
-      const response = await fetch(geocodingUrl);
+      const response = await fetch(geocodingUrl, {
+        headers: {
+          'User-Agent': 'AirsoftCommunityApp/1.0'
+        }
+      });
       const data = await response.json();
       
-      if (data.features && data.features.length > 0) {
-        const [lng, lat] = data.features[0].center;
-        setValidCoordinates([lng, lat]);
+      if (data && data.length > 0) {
+        const { lon, lat } = data[0];
+        setValidCoordinates([parseFloat(lon), parseFloat(lat)]);
       } else {
         // Fallback to France coordinates if geocoding fails
         setValidCoordinates([2.3522, 48.8566]);
@@ -62,46 +62,7 @@ const GameLocationCard: React.FC<GameLocationCardProps> = ({
     }
   };
 
-  // Initialize map once coordinates are valid
-  useEffect(() => {
-    if (!mapContainer.current || !validCoordinates[0] || !validCoordinates[1]) return;
-    
-    // Initialize the map
-    mapboxgl.accessToken = 'pk.eyJ1IjoibG92YWJsZS1kZXYiLCJhIjoiY2xvM2R5bXRsMGUzeDJsbnJ3YTRvbzltZSJ9.ib8DQKmUzRPBRVdta1inYQ';
-    
-    if (!map.current) {
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/streets-v11',
-        center: validCoordinates,
-        zoom: 14,
-      });
-      
-      // Add controls
-      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-      
-      // Add marker
-      marker.current = new mapboxgl.Marker({ color: '#E53E3E' })
-        .setLngLat(validCoordinates)
-        .addTo(map.current);
-    } else {
-      // Update marker and map if coordinates change
-      marker.current?.setLngLat(validCoordinates);
-      map.current.flyTo({
-        center: validCoordinates,
-        zoom: 14,
-        speed: 1.5
-      });
-    }
-    
-    // Clean up on unmount
-    return () => {
-      if (map.current) {
-        map.current.remove();
-        map.current = null;
-      }
-    };
-  }, [validCoordinates]);
+  const locationString = `${address}, ${zipCode} ${city}`;
 
   return (
     <Card>
@@ -112,7 +73,7 @@ const GameLocationCard: React.FC<GameLocationCardProps> = ({
         </h3>
         
         <div className="bg-gray-100 rounded-lg overflow-hidden h-[200px] mb-4">
-          <div ref={mapContainer} className="w-full h-full" />
+          <LocationMap location={locationString} coordinates={validCoordinates} />
         </div>
         
         <div className="text-sm">
