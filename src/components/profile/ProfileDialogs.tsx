@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Calendar, Clock, MapPin, Users } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, Euro } from 'lucide-react';
 
 const ProfileDialogs = ({ 
   selectedGame,
@@ -70,6 +70,14 @@ const ProfileDialogs = ({
                   <Users className="text-gray-500" size={16} />
                   <span>
                     {selectedGame.participantsCount || '0'} / {selectedGame.max_players || '?'} participants
+                  </span>
+                </div>
+              )}
+              {selectedGame.price !== undefined && selectedGame.price !== null && (
+                <div className="flex items-center gap-2">
+                  <Euro className="text-gray-500" size={16} />
+                  <span>
+                    {selectedGame.price === 0 ? 'Gratuit' : `${selectedGame.price}€`}
                   </span>
                 </div>
               )}

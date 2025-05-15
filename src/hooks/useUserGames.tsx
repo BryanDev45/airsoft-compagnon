@@ -60,6 +60,7 @@ export const useUserGames = (userId: string | undefined) => {
                   city: gameData.city,
                   max_players: gameData.max_players,
                   participantsCount: null, // Sera compté plus tard si nécessaire
+                  price: gameData.price, // Ajout du prix
                   image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
                   role: gp.role,
                   status: isUpcoming ? 'À venir' : 'Terminé',
@@ -92,6 +93,7 @@ export const useUserGames = (userId: string | undefined) => {
             city: game.city,
             max_players: game.max_players,
             participantsCount: null, // Sera compté plus tard si nécessaire
+            price: game.price, // Ajout du prix
             image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
             role: 'Organisateur',
             status: isUpcoming ? 'À venir' : 'Terminé',
