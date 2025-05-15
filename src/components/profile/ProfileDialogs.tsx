@@ -76,24 +76,20 @@ const ProfileDialogs = ({
                   </div>
                 )}
                 
-                {(selectedGame.max_players !== undefined || selectedGame.participantsCount !== undefined) && (
-                  <div className="flex items-center gap-2 text-gray-700">
-                    <Users className="text-airsoft-red flex-shrink-0" size={18} />
-                    <span>
-                      <span className="font-medium">{selectedGame.participantsCount || '0'}</span>
-                      <span className="text-gray-500">/{selectedGame.max_players || '?'}</span> participants
-                    </span>
-                  </div>
-                )}
+                <div className="flex items-center gap-2 text-gray-700">
+                  <Users className="text-airsoft-red flex-shrink-0" size={18} />
+                  <span>
+                    <span className="font-medium">{selectedGame.participantsCount !== undefined ? selectedGame.participantsCount : '0'}</span>
+                    <span className="text-gray-500">/{selectedGame.max_players || '?'}</span> participants
+                  </span>
+                </div>
                 
-                {selectedGame.price !== undefined && selectedGame.price !== null && (
-                  <div className="flex items-center gap-2 text-gray-700">
-                    <Euro className="text-airsoft-red flex-shrink-0" size={18} />
-                    <span>
-                      {selectedGame.price === 0 ? 'Gratuit' : `${selectedGame.price}€`}
-                    </span>
-                  </div>
-                )}
+                <div className="flex items-center gap-2 text-gray-700">
+                  <Euro className="text-airsoft-red flex-shrink-0" size={18} />
+                  <span>
+                    {selectedGame.price === 0 || selectedGame.price === null ? 'Gratuit' : `${selectedGame.price}€`}
+                  </span>
+                </div>
                 
                 <div className="flex items-center gap-2 mt-2">
                   <Badge className={`${

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/use-toast";
 import { Shield, Mail, Key, CheckCircle2, Upload, Bell } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProfileSettingsDialogProps {
   open: boolean;
@@ -26,6 +28,7 @@ const ProfileSettingsDialog = ({
   const [frontIdFile, setFrontIdFile] = useState<File | null>(null);
   const [backIdFile, setBackIdFile] = useState<File | null>(null);
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   
   // Initialize isSubscribed state with the correct value from user.newsletter_subscribed
   useEffect(() => {
@@ -72,38 +75,44 @@ const ProfileSettingsDialog = ({
   };
 
   const handleNewsletterChange = async (checked: boolean) => {
-    setIsSubscribed(checked);
+    if (!user || !user.id) {
+      toast({
+        title: "Erreur",
+        description: "Impossible d'identifier l'utilisateur",
+        variant: "destructive",
+      });
+      return;
+    }
     
-    // Use the updateNewsletterSubscription function from the user object
-    if (user && typeof user.updateNewsletterSubscription === 'function') {
-      try {
-        console.log("Updating newsletter subscription to:", checked);
-        const success = await user.updateNewsletterSubscription(checked);
-        
-        if (!success) {
-          // Revert to previous state in case of error
-          setIsSubscribed(!checked);
-          throw new Error("Failed to update newsletter subscription");
-        }
-      } catch (error) {
-        console.error("Error updating newsletter subscription:", error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de mettre à jour vos préférences de newsletter",
-          variant: "destructive",
-        });
-        // Revert to previous state
-        setIsSubscribed(!checked);
+    setIsUpdating(true);
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ newsletter_subscribed: checked })
+        .eq('id', user.id);
+      
+      if (error) {
+        throw error;
       }
-    } else {
-      console.error("The updateNewsletterSubscription method is not available on the user object");
+      
+      setIsSubscribed(checked);
+      
+      toast({
+        title: checked ? "Inscription réussie" : "Désinscription réussie",
+        description: checked 
+          ? "Vous êtes maintenant inscrit à la newsletter" 
+          : "Vous êtes maintenant désinscrit de la newsletter",
+      });
+    } catch (error: any) {
+      console.error("Error updating newsletter subscription:", error);
       toast({
         title: "Erreur",
         description: "Impossible de mettre à jour vos préférences de newsletter",
         variant: "destructive",
       });
-      // Revert to previous state
-      setIsSubscribed(!checked);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -282,6 +291,7 @@ const ProfileSettingsDialog = ({
                   <Switch 
                     checked={isSubscribed}
                     onCheckedChange={handleNewsletterChange}
+                    disabled={isUpdating}
                   />
                 </div>
               </div>
