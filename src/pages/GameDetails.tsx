@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -35,6 +34,7 @@ const GameDetails = () => {
   const [showRegistrationDialog, setShowRegistrationDialog] = useState(false);
   const [creatorRating, setCreatorRating] = useState<number | null>(null);
   const [creatorProfile, setCreatorProfile] = useState<Profile | null>(null);
+  const [deletingGame, setDeletingGame] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -259,6 +259,63 @@ const GameDetails = () => {
   const handleEditGame = () => {
     navigate(`/edit-game/${id}`);
   };
+  
+  const handleDeleteGame = async () => {
+    if (!user || !id || !gameData || user.id !== gameData.created_by) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Vous n'êtes pas autorisé à supprimer cette partie."
+      });
+      return;
+    }
+    
+    try {
+      setDeletingGame(true);
+      
+      // Delete participants first (due to foreign key constraints)
+      const { error: participantsError } = await supabase
+        .from('game_participants')
+        .delete()
+        .eq('game_id', id);
+      
+      if (participantsError) throw participantsError;
+      
+      // Then delete comments if they exist
+      const { error: commentsError } = await supabase
+        .from('game_comments')
+        .delete()
+        .eq('game_id', id);
+        
+      if (commentsError) throw commentsError;
+      
+      // Finally delete the game itself
+      const { error: gameError } = await supabase
+        .from('airsoft_games')
+        .delete()
+        .eq('id', id);
+        
+      if (gameError) throw gameError;
+      
+      toast({
+        title: "Partie supprimée",
+        description: "La partie a été supprimée avec succès."
+      });
+      
+      // Navigate back to parties list
+      navigate('/parties');
+      
+    } catch (error) {
+      console.error('Error deleting game:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de supprimer la partie. Veuillez réessayer."
+      });
+    } finally {
+      setDeletingGame(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -313,6 +370,7 @@ const GameDetails = () => {
                 isCreator={isCreator}
                 isPastGame={isPastGame}
                 onEdit={isCreator ? handleEditGame : undefined}
+                onDelete={isCreator && !isPastGame ? handleDeleteGame : undefined}
               />
               
               <div className="my-6">
