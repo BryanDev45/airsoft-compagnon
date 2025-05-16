@@ -16,6 +16,7 @@ interface Friend {
   status?: string;
   friend_id?: string;
   user_id?: string;
+  friendship_id?: string; // Add this property to the Friend interface
 }
 
 interface UserFriendsListProps {
@@ -107,7 +108,7 @@ const UserFriendsList: React.FC<UserFriendsListProps> = ({ userId }) => {
         return {
           ...profile,
           status: friendship?.status,
-          friendship_id: friendship?.id
+          friendship_id: friendship?.id // Store the friendship ID for removal functionality
         };
       });
       
