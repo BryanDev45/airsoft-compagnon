@@ -2,7 +2,6 @@ import React from 'react';
 import { Users, Calendar, Search, Shield, Clock, BadgePercent, Trophy, Crosshair, Target, Download, Facebook, Instagram, Mail, MessageSquare, MapPin, CreditCard, Award } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
-
 const BenefitCard = ({
   title,
   description,
@@ -20,7 +19,6 @@ const BenefitCard = ({
     <h3 className="text-xl font-bold mb-3 text-gray-800">{title}</h3>
     <p className="text-gray-600 leading-relaxed">{description}</p>
   </div>;
-
 const BenefitsSection = () => {
   return <div className="bg-gray-100 py-0">
       <div className="max-w-7xl mx-auto px-4">
@@ -54,10 +52,7 @@ const BenefitsSection = () => {
                   <p className="text-lg opacity-90">
                     Vous en avez assez de gaspiller votre temps dans la gestion des inscriptions ?
                   </p>
-                  <p className="text-lg opacity-90">
-                    Airsoft Compagnon s'occupe de tout pour vous. Déposez simplement votre annonce et c'est tout !
-                    Les joueurs trouvent automatiquement votre annonce grâce à nos filtres et tous les paiements de PAF sont gérés par l'application.
-                  </p>
+                  <p className="text-lg opacity-90">Airsoft Companion s'occupe de tout pour vous. Déposez simplement votre annonce et c'est tout ! Les joueurs trouvent automatiquement votre annonce grâce à nos filtres et tous les paiements de PAF sont gérés par l'application.</p>
                   <p className="text-lg font-semibold bg-airsoft-red/20 p-4 rounded-lg border border-airsoft-red/30">
                     Réduisez le taux d'absentéisme grâce à la validation des inscriptions après le paiement de la PAF.
                   </p>
@@ -119,5 +114,4 @@ const BenefitsSection = () => {
       </div>
     </div>;
 };
-
 export default BenefitsSection;
