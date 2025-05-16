@@ -55,9 +55,6 @@ const RatingStars: React.FC<RatingStarsProps> = ({
       return;
     }
     
-    // Immediately update UI to provide feedback
-    setCurrentRating(newRating);
-    
     try {
       setIsSaving(true);
       
@@ -89,6 +86,9 @@ const RatingStars: React.FC<RatingStarsProps> = ({
       
       if (result.error) throw result.error;
       
+      // Update UI
+      setCurrentRating(newRating);
+      
       // Call callback if provided
       if (onRatingChange) {
         onRatingChange(newRating);
@@ -113,8 +113,6 @@ const RatingStars: React.FC<RatingStarsProps> = ({
         description: "Une erreur est survenue lors de l'enregistrement de l'évaluation",
         variant: "destructive"
       });
-      // Reset to original rating if saving fails
-      setCurrentRating(rating);
     } finally {
       setIsSaving(false);
     }

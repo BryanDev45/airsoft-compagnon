@@ -17,7 +17,6 @@ import { Check, X, UserMinus, LogOut } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
 
 interface Profile {
   id: string;
@@ -57,7 +56,6 @@ const TeamSettingsMembers = ({
   onClose
 }: TeamSettingsMembersProps) => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [pendingMembers, setPendingMembers] = useState<TeamMember[]>([]);
 
@@ -73,10 +71,10 @@ const TeamSettingsMembers = ({
     try {
       console.log("Fetching team members for team:", team.id);
       
-      // Fetch team members
+      // Fetch team members and join with profiles separately to avoid relationship issues
       const { data: membersData, error: membersError } = await supabase
         .from('team_members')
-        .select('id, user_id, role, status, team_id')
+        .select('id, user_id, team_id, role, status')
         .eq('team_id', team.id);
         
       if (membersError) {
@@ -89,6 +87,8 @@ const TeamSettingsMembers = ({
         return;
       }
 
+      console.log("Team members data:", membersData);
+      
       if (!Array.isArray(membersData) || membersData.length === 0) {
         console.log('No team members found');
         setTeamMembers([]);
@@ -97,11 +97,9 @@ const TeamSettingsMembers = ({
       }
       
       // Get all user IDs from team members
-      const userIds = membersData
-        .map(member => member.user_id)
-        .filter(id => id !== null) as string[];
+      const userIds = membersData.map(member => member.user_id).filter(Boolean);
       
-      // Fetch profiles for these users separately
+      // Fetch profiles for these users
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('id, username, avatar')
@@ -109,19 +107,13 @@ const TeamSettingsMembers = ({
         
       if (profilesError) {
         console.error('Error fetching profiles:', profilesError);
-        toast({
-          title: "Erreur",
-          description: "Impossible de charger les profils des membres: " + profilesError.message,
-          variant: "destructive"
-        });
       }
       
-      // Combine member data with profiles
-      const membersWithProfiles = membersData.map(member => {
-        // Find matching profile
+      // Map profiles to team members
+      const membersWithProfiles: TeamMember[] = membersData.map(member => {
         const profile = profilesData?.find(p => p.id === member.user_id) || {
           id: member.user_id || '',
-          username: 'Utilisateur inconnu',
+          username: 'Utilisateur',
           avatar: null
         };
         
@@ -132,8 +124,11 @@ const TeamSettingsMembers = ({
       });
       
       // Filter confirmed and pending members
-      const confirmed = membersWithProfiles.filter(m => m.status === 'confirmed');
-      const pending = membersWithProfiles.filter(m => m.status === 'pending');
+      const confirmed = membersWithProfiles.filter(m => m.status === 'confirmed') || [];
+      const pending = membersWithProfiles.filter(m => m.status === 'pending') || [];
+      
+      console.log("Confirmed members:", confirmed);
+      console.log("Pending members:", pending);
       
       setTeamMembers(confirmed);
       setPendingMembers(pending);
@@ -148,12 +143,11 @@ const TeamSettingsMembers = ({
   };
 
   const handleAcceptMember = async (memberId: string) => {
-    if (!isTeamLeader || !team?.id) return;
+    if (!isTeamLeader) return;
     
     setLoading(true);
     
     try {
-      // Update the member status to confirmed
       const { error } = await supabase
         .from('team_members')
         .update({ status: 'confirmed' })
@@ -161,15 +155,12 @@ const TeamSettingsMembers = ({
         
       if (error) throw error;
       
+      await fetchTeamMembers();
+      
       toast({
         title: "Membre accepté",
         description: "Le membre a été accepté dans l'équipe.",
       });
-      
-      // Rafraîchir les données
-      await fetchTeamMembers();
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
-      
     } catch (error: any) {
       console.error("Erreur lors de l'acceptation du membre:", error);
       toast({
@@ -183,12 +174,11 @@ const TeamSettingsMembers = ({
   };
   
   const handleRejectMember = async (memberId: string) => {
-    if (!isTeamLeader || !team?.id) return;
+    if (!isTeamLeader) return;
     
     setLoading(true);
     
     try {
-      // Delete the member request
       const { error } = await supabase
         .from('team_members')
         .delete()
@@ -196,20 +186,17 @@ const TeamSettingsMembers = ({
         
       if (error) throw error;
       
+      await fetchTeamMembers();
+      
       toast({
-        title: "Demande rejetée",
+        title: "Membre rejeté",
         description: "La demande d'adhésion a été rejetée.",
       });
-      
-      // Rafraîchir les données
-      await fetchTeamMembers();
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
-      
     } catch (error: any) {
       console.error("Erreur lors du rejet du membre:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de rejeter la demande: " + error.message,
+        description: "Impossible de rejeter le membre: " + error.message,
         variant: "destructive",
       });
     } finally {
@@ -218,7 +205,7 @@ const TeamSettingsMembers = ({
   };
   
   const handleRemoveMember = async (memberId: string) => {
-    if (!isTeamLeader || !team?.id) return;
+    if (!isTeamLeader) return;
     
     if (!confirm("Êtes-vous sûr de vouloir supprimer ce membre de l'équipe ?")) {
       return;
@@ -234,15 +221,12 @@ const TeamSettingsMembers = ({
         
       if (error) throw error;
       
+      await fetchTeamMembers();
+      
       toast({
         title: "Membre supprimé",
         description: "Le membre a été supprimé de l'équipe.",
       });
-      
-      // Rafraîchir les données
-      await fetchTeamMembers();
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
-      
     } catch (error: any) {
       console.error("Erreur lors de la suppression du membre:", error);
       toast({
@@ -256,7 +240,7 @@ const TeamSettingsMembers = ({
   };
   
   const handleUpdateMemberRole = async (memberId: string, newRole: string) => {
-    if (!isTeamLeader || !team?.id) return;
+    if (!isTeamLeader) return;
     
     setLoading(true);
     
@@ -268,14 +252,12 @@ const TeamSettingsMembers = ({
         
       if (error) throw error;
       
+      await fetchTeamMembers();
+      
       toast({
         title: "Rôle mis à jour",
         description: "Le rôle du membre a été mis à jour avec succès.",
       });
-      
-      // Rafraîchir les données
-      await fetchTeamMembers();
-      
     } catch (error: any) {
       console.error("Erreur lors de la mise à jour du rôle:", error);
       toast({

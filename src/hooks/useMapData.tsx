@@ -5,7 +5,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 
 export interface MapEvent {
-  id: string;
+  id: string; // Changed from number to string to match Supabase's UUID format
   title: string;
   date: string;
   location: string;
@@ -32,7 +32,7 @@ export function useMapData() {
         
         const today = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
         
-        // Construction de la requête pour obtenir toutes les parties (publiques ou privées selon l'utilisateur)
+        // Construction de la requête de base
         let query = supabase
           .from('airsoft_games')
           .select(`
@@ -59,13 +59,12 @@ export function useMapData() {
           .gte('date', today) // Filtrer pour n'afficher que les parties à venir ou du jour même
           .order('date', { ascending: true });
         
-        // Ajuster la requête selon que l'utilisateur est connecté ou non
-        if (user) {
-          // Pour les utilisateurs connectés, montrer les parties publiques et celles qu'ils ont créées
-          query = query.or(`is_private.eq.false,created_by.eq.${user.id}`);
-        } else {
-          // Pour les visiteurs non connectés, montrer uniquement les parties publiques
+        // Ne montrons que les parties publiques aux utilisateurs non connectés
+        // Pour les utilisateurs connectés, afficher aussi leurs parties privées
+        if (!user) {
           query = query.eq('is_private', false);
+        } else {
+          query = query.or(`is_private.eq.false,created_by.eq.${user.id}`);
         }
         
         const { data, error } = await query;
@@ -74,7 +73,7 @@ export function useMapData() {
           throw error;
         }
 
-        // Transformation des données pour correspondre au format attendu
+        // Transformation des données pour correspondre au format attendu par les composants existants
         const formattedEvents = data?.map(game => {
           // Format date as DD/MM/YYYY for display
           const gameDate = new Date(game.date);
@@ -99,6 +98,7 @@ export function useMapData() {
           };
         }) || [];
         
+        console.log("Formatted events:", formattedEvents);
         setEvents(formattedEvents);
       } catch (error: any) {
         console.error("Erreur lors du chargement des parties:", error);

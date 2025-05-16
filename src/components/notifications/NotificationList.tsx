@@ -1,217 +1,288 @@
 
-import React, { useState, useEffect } from 'react';
-import { X, BellRing } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
-import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
-import { Button } from '@/components/ui/button';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Bell, BellOff, UserCheck, UserMinus, Trash2 } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "@/components/ui/use-toast";
 
 interface Notification {
   id: string;
   title: string;
   message: string;
-  created_at: string;
-  read: boolean;
   type: string;
-  link?: string;
-  related_id?: string;
+  link: string | null;
+  read: boolean;
+  created_at: string;
+  related_id: string | null;
 }
 
-export function NotificationList() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [deleting, setDeleting] = useState<string | null>(null);
-  const { toast } = useToast();
+export const NotificationList = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
 
-  // Charger les notifications au chargement du composant
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
-
-  const fetchNotifications = async () => {
-    setLoading(true);
-    try {
-      const { data: userData } = await supabase.auth.getUser();
-      
-      if (!userData.user) {
-        return;
-      }
+  const { data: notifications = [], isLoading } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: async () => {
+      if (!user?.id) return [];
       
       const { data, error } = await supabase
         .from('notifications')
         .select('*')
-        .eq('user_id', userData.user.id)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
-      
-      if (error) {
-        throw error;
-      }
-      
-      setNotifications(data || []);
-    } catch (error) {
-      console.error("Erreur lors du chargement des notifications:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les notifications",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  const markAsRead = async (notificationId: string) => {
+
+      if (error) throw error;
+      return data as Notification[];
+    },
+    enabled: !!user,
+  });
+
+  const handleMarkAsRead = async (notificationId: string) => {
     try {
       const { error } = await supabase
         .from('notifications')
         .update({ read: true })
         .eq('id', notificationId);
-      
-      if (error) {
-        throw error;
-      }
-      
-      // Mise à jour locale de l'état
-      setNotifications(prevState => 
-        prevState.map(notif => 
-          notif.id === notificationId ? { ...notif, read: true } : notif
-        )
-      );
-      
+
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['unreadNotifications'] });
     } catch (error) {
-      console.error("Erreur lors du marquage de la notification comme lue:", error);
+      console.error('Error marking notification as read:', error);
     }
   };
-  
-  const deleteNotification = async (notificationId: string) => {
-    setDeleting(notificationId);
+
+  const handleMarkAllAsRead = async () => {
     try {
+      if (!user?.id) return;
+      
+      const { error } = await supabase
+        .from('notifications')
+        .update({ read: true })
+        .eq('user_id', user.id)
+        .eq('read', false);
+
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['unreadNotifications'] });
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+    }
+  };
+
+  const handleDeleteNotification = async (notificationId: string) => {
+    try {
+      console.log("Deleting notification:", notificationId);
+      
+      // Stop event propagation to prevent navigating when clicking delete
       const { error } = await supabase
         .from('notifications')
         .delete()
         .eq('id', notificationId);
-      
+
       if (error) {
+        console.error('Error deleting notification:', error);
         throw error;
       }
       
-      // Mise à jour locale de l'état
-      setNotifications(prevState => 
-        prevState.filter(notif => notif.id !== notificationId)
-      );
+      // Refetch notifications after successful deletion
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['unreadNotifications'] });
       
       toast({
         title: "Notification supprimée",
-        description: "La notification a été supprimée avec succès",
+        description: "La notification a été supprimée avec succès"
       });
-      
     } catch (error) {
-      console.error("Erreur lors de la suppression de la notification:", error);
+      console.error('Error deleting notification:', error);
       toast({
         title: "Erreur",
         description: "Impossible de supprimer la notification",
-        variant: "destructive",
+        variant: "destructive"
       });
-    } finally {
-      setDeleting(null);
-    }
-  };
-  
-  // Obtenir le type d'icône en fonction du type de notification
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case 'friend_request':
-        return <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-          <BellRing className="h-4 w-4 text-blue-500" />
-        </div>;
-      default:
-        return <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center">
-          <BellRing className="h-4 w-4 text-gray-500" />
-        </div>;
     }
   };
 
-  // Format de date relative (par ex. "il y a 2 heures")
-  const formatRelativeDate = (dateStr: string) => {
+  const handleDeleteAllRead = async () => {
     try {
-      return formatDistanceToNow(new Date(dateStr), { 
-        addSuffix: true,
-        locale: fr
+      if (!user?.id) return;
+      
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('read', true);
+
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      toast({
+        title: "Notifications supprimées",
+        description: "Les notifications lues ont été supprimées"
       });
-    } catch (e) {
-      return "Date inconnue";
+    } catch (error) {
+      console.error('Error deleting read notifications:', error);
     }
   };
+
+  const handleAcceptFriendRequest = async (notification: Notification) => {
+    try {
+      const { error } = await supabase
+        .from('friendships')
+        .update({ status: 'accepted' })
+        .eq('id', notification.related_id);
+
+      if (error) throw error;
+      
+      // Mark notification as read
+      await handleMarkAsRead(notification.id);
+      
+      toast({
+        title: "Demande acceptée",
+        description: "Vous êtes maintenant amis",
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    } catch (error) {
+      console.error('Error accepting friend request:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'accepter la demande d'ami",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleRejectFriendRequest = async (notification: Notification) => {
+    try {
+      const { error } = await supabase
+        .from('friendships')
+        .update({ status: 'rejected' })
+        .eq('id', notification.related_id);
+
+      if (error) throw error;
+      
+      // Mark notification as read
+      await handleMarkAsRead(notification.id);
+      
+      toast({
+        title: "Demande rejetée",
+        description: "La demande d'ami a été rejetée",
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    } catch (error) {
+      console.error('Error rejecting friend request:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de rejeter la demande d'ami",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleNotificationClick = async (notification: Notification) => {
+    await handleMarkAsRead(notification.id);
+    if (notification.link) {
+      navigate(notification.link);
+    }
+  };
+
+  if (isLoading) {
+    return <div className="text-center py-4">Chargement...</div>;
+  }
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold">Notifications</h2>
-        {notifications.length > 0 && (
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => {
-              notifications.forEach(notif => {
-                if (!notif.read) markAsRead(notif.id);
-              });
-            }}
-          >
-            Marquer tout comme lu
-          </Button>
-        )}
-      </div>
-      
-      {loading ? (
-        <div className="flex flex-col items-center justify-center py-8">
-          <div className="h-8 w-8 border-4 border-gray-200 border-t-gray-500 rounded-full animate-spin mb-4"></div>
-          <p className="text-gray-500">Chargement des notifications...</p>
-        </div>
-      ) : notifications.length > 0 ? (
-        <div className="space-y-4">
-          {notifications.map(notification => (
-            <div 
-              key={notification.id}
-              className={`relative flex items-start p-4 rounded-md border ${notification.read ? 'bg-white' : 'bg-blue-50'}`}
-              onClick={() => !notification.read && markAsRead(notification.id)}
+    <div className="max-h-[calc(100vh-120px)] overflow-y-auto pr-2">
+      {notifications.length > 0 ? (
+        <>
+          <div className="mb-4 flex justify-between">
+            <Button 
+              variant="ghost" 
+              className="text-sm h-8 px-2"
+              onClick={handleDeleteAllRead}
             >
-              {getNotificationIcon(notification.type)}
-              <div className="ml-3 flex-1">
-                <div className="flex justify-between items-start">
-                  <h3 className="text-sm font-medium">{notification.title}</h3>
-                  <button 
-                    className="text-gray-400 hover:text-gray-600"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteNotification(notification.id);
-                    }}
-                    disabled={deleting === notification.id}
-                  >
-                    {deleting === notification.id ? (
-                      <div className="h-4 w-4 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin"></div>
-                    ) : (
-                      <X className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
-                <p className="mt-1 text-sm text-gray-600">{notification.message}</p>
-                <p className="mt-1 text-xs text-gray-500">{formatRelativeDate(notification.created_at)}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-8">
-          <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 mb-4">
-            <BellRing className="h-6 w-6 text-gray-500" />
+              <Trash2 className="h-4 w-4 mr-1" />
+              Supprimer les lues
+            </Button>
+            <Button 
+              variant="ghost" 
+              className="text-sm h-8 px-2"
+              onClick={handleMarkAllAsRead}
+            >
+              Tout marquer comme lu
+            </Button>
           </div>
-          <h3 className="mb-1 text-sm font-medium">Pas de notifications</h3>
-          <p className="text-xs text-gray-500">Vous n'avez aucune notification pour le moment.</p>
+          <div className="space-y-4">
+            {notifications.map(notification => (
+              <div 
+                key={notification.id} 
+                className={`p-4 rounded-lg border ${notification.read ? 'bg-gray-50 border-gray-200' : 'bg-blue-50 border-blue-200'} transition-colors hover:bg-gray-100`}
+              >
+                <div className="flex justify-between items-start mb-1">
+                  <h3 className="font-medium text-gray-900">{notification.title}</h3>
+                  <div className="flex gap-1">
+                    <p className="text-xs text-gray-500 mt-1">
+                      {new Date(notification.created_at).toLocaleDateString('fr-FR', {
+                        day: 'numeric',
+                        month: 'short',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
+                      onClick={() => handleDeleteNotification(notification.id)}
+                    >
+                      <Trash2 size={14} />
+                    </Button>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-2">{notification.message}</p>
+                
+                {notification.type === 'friend_request' && !notification.read ? (
+                  <div className="flex mt-2 space-x-2 justify-end">
+                    <Button 
+                      variant="default"
+                      size="sm"
+                      className="bg-airsoft-red hover:bg-red-700"
+                      onClick={() => handleAcceptFriendRequest(notification)}
+                    >
+                      <UserCheck className="h-4 w-4 mr-1" />
+                      Accepter
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleRejectFriendRequest(notification)}
+                    >
+                      <UserMinus className="h-4 w-4 mr-1" />
+                      Refuser
+                    </Button>
+                  </div>
+                ) : (
+                  <div 
+                    className="cursor-pointer" 
+                    onClick={() => handleNotificationClick(notification)}
+                  >
+                    {/* Clickable area for standard notifications */}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </>
+      ) : (
+        <div className="text-center py-10">
+          <BellOff className="mx-auto h-12 w-12 text-gray-400 mb-3" />
+          <p className="text-gray-500">Vous n'avez aucune notification</p>
         </div>
       )}
     </div>
   );
-}
-
-export default NotificationList;
+};

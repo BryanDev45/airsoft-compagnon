@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 const ProfileFriends = ({ userId, isOwnProfile }) => {
   const [friends, setFriends] = useState([]);
   const [pendingRequests, setPendingRequests] = useState([]);
-  const [isFriendsListPublic, setIsFriendsListPublic] = useState(true);
+  const [isFriendsListPublic, setIsFriendsListPublic] = useState(false);
   const navigate = useNavigate();
 
   // Fetch profile data including friends list privacy setting
@@ -248,8 +248,7 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
     }
   }, [userId]);
 
-  // Correction: Afficher les amis si la liste est publique OU si c'est le profil de l'utilisateur connecté
-  // Cette ligne était le problème principal - la condition était inversée
+  // Si ce n'est pas le profil de l'utilisateur connecté et que la liste d'amis est privée, masquer le contenu
   const shouldShowFriendsList = isOwnProfile || isFriendsListPublic;
 
   return (
