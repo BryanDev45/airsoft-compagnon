@@ -84,9 +84,9 @@ export const useUserGames = (userId: string | undefined) => {
                   address: gameData.address,
                   zip_code: gameData.zip_code,
                   city: gameData.city,
-                  max_players: gameData.max_players,
+                  max_players: gameData.max_players || 0,
                   participantsCount: participantCountMap[gameData.id] || 0,
-                  price: gameData.price, // Ajout du prix
+                  price: gameData.price || 0, // Ajout du prix
                   image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
                   role: gp.role,
                   status: isUpcoming ? 'À venir' : 'Terminé',
@@ -137,9 +137,9 @@ export const useUserGames = (userId: string | undefined) => {
             address: game.address,
             zip_code: game.zip_code,
             city: game.city,
-            max_players: game.max_players,
+            max_players: game.max_players || 0,
             participantsCount: createdGameCountMap[game.id] || 0,
-            price: game.price, // Ajout du prix
+            price: game.price || 0, // Ajout du prix
             image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
             role: 'Organisateur',
             status: isUpcoming ? 'À venir' : 'Terminé',
