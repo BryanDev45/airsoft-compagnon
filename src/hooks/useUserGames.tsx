@@ -43,6 +43,26 @@ export const useUserGames = (userId: string | undefined) => {
           if (gamesDataError) throw gamesDataError;
           
           if (games && games.length > 0) {
+            // For each game, get the participant count
+            const gameParticipantCounts = await Promise.all(
+              games.map(async (game) => {
+                const { count, error } = await supabase
+                  .from('game_participants')
+                  .select('id', { count: 'exact', head: true })
+                  .eq('game_id', game.id);
+                  
+                return { 
+                  gameId: game.id, 
+                  count: error ? 0 : count || 0 
+                };
+              })
+            );
+            
+            const participantCountMap = gameParticipantCounts.reduce((map, item) => {
+              map[item.gameId] = item.count;
+              return map;
+            }, {});
+            
             const participatedGames = gameParticipants.map(gp => {
               const gameData = games.find(g => g.id === gp.game_id);
               if (gameData) {
@@ -59,7 +79,7 @@ export const useUserGames = (userId: string | undefined) => {
                   zip_code: gameData.zip_code,
                   city: gameData.city,
                   max_players: gameData.max_players,
-                  participantsCount: null, // Sera compté plus tard si nécessaire
+                  participantsCount: participantCountMap[gameData.id] || 0,
                   price: gameData.price, // Ajout du prix
                   image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
                   role: gp.role,
@@ -78,6 +98,26 @@ export const useUserGames = (userId: string | undefined) => {
       
       // 4. Format created games
       if (createdGames && createdGames.length > 0) {
+        // For each created game, get the participant count
+        const createdGameParticipantCounts = await Promise.all(
+          createdGames.map(async (game) => {
+            const { count, error } = await supabase
+              .from('game_participants')
+              .select('id', { count: 'exact', head: true })
+              .eq('game_id', game.id);
+              
+            return { 
+              gameId: game.id, 
+              count: error ? 0 : count || 0 
+            };
+          })
+        );
+        
+        const createdGameCountMap = createdGameParticipantCounts.reduce((map, item) => {
+          map[item.gameId] = item.count;
+          return map;
+        }, {});
+        
         const organizedGames = createdGames.map(game => {
           const gameDate = new Date(game.date);
           const isUpcoming = gameDate > new Date();
@@ -92,7 +132,7 @@ export const useUserGames = (userId: string | undefined) => {
             zip_code: game.zip_code,
             city: game.city,
             max_players: game.max_players,
-            participantsCount: null, // Sera compté plus tard si nécessaire
+            participantsCount: createdGameCountMap[game.id] || 0,
             price: game.price, // Ajout du prix
             image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
             role: 'Organisateur',

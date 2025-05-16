@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -87,6 +86,7 @@ const ProfileSettingsDialog = ({
     setIsUpdating(true);
     
     try {
+      // Correction : Accéder directement à la table profiles avec l'id correct
       const { error } = await supabase
         .from('profiles')
         .update({ newsletter_subscribed: checked })
