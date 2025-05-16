@@ -59,10 +59,9 @@ export function useMapData() {
           .gte('date', today) // Filtrer pour n'afficher que les parties à venir ou du jour même
           .order('date', { ascending: true });
         
-        // On ne filtre les parties privées que si l'utilisateur n'est pas connecté
-        if (!user) {
-          query = query.eq('is_private', false);
-        }
+        // On ne filtre les parties privées que dans tous les cas
+        // Modification: Retirer la condition sur user pour toujours filtrer les parties privées pour les utilisateurs non connectés
+        query = query.eq('is_private', false);
         
         const { data, error } = await query;
         

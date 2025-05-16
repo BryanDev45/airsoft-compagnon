@@ -9,6 +9,7 @@ import SearchFiltersSidebar from './map/SearchFiltersSidebar';
 import MapResultsDisplay from './map/MapResultsDisplay';
 
 const MapSection: React.FC = () => {
+  // No change in hook usage
   const { loading, events } = useMapData();
   
   const {
