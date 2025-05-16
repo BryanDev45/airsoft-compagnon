@@ -34,7 +34,7 @@ const Footer = () => {
           <div className="flex flex-col items-center md:items-start">
             <div className="flex items-center gap-3 mb-4">
               <img src="/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png" alt="Airsoft Compagnon Logo" className="h-12" />
-              <span className="text-lg font-bold">Airsoft Compagnon</span>
+              <span className="text-lg font-bold">Airsoft Companion</span>
             </div>
             <p className="text-gray-400 mb-4 text-center md:text-left">
               Trouvez facilement vos parties d'airsoft, vos magasins et rejoignez une communauté passionnée.
