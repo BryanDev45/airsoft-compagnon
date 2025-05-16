@@ -16,7 +16,7 @@ const Index = () => {
           <div className="max-w-5xl mx-auto px-6">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4 relative inline-block">
-                <span className="relative z-10">Airsoft compagnon, c'est quoi ?</span>
+                <span className="relative z-10">Airsoft companion, c'est quoi ?</span>
                 <span className="absolute bottom-0 left-0 w-full h-2 bg-airsoft-red/20 -z-0"></span>
               </h2>
               <p className="text-lg text-gray-600 max-w-3xl mx-auto">
