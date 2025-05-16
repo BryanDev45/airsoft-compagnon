@@ -19,6 +19,7 @@ interface TeamAboutProps {
     is_recruiting?: boolean;
     is_association?: boolean;
     id: string;
+    leader_id?: string; // Added leader_id property to fix the error
     stats: {
       memberCount: number;
       gamesPlayed: number;
