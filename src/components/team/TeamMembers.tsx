@@ -12,6 +12,7 @@ interface TeamMember {
   verified?: boolean;
   specialty?: string;
   isTeamLeader?: boolean;
+  status?: string; // Added to check if the member is confirmed
 }
 
 interface TeamMembersProps {
@@ -20,8 +21,11 @@ interface TeamMembersProps {
 }
 
 const TeamMembers = ({ members, handleViewMember }: TeamMembersProps) => {
+  // Filter to only show confirmed members
+  const confirmedMembers = members.filter(member => member.status !== 'pending');
+
   // Tri des membres pour que le team leader apparaisse en premier
-  const sortedMembers = [...members].sort((a, b) => {
+  const sortedMembers = [...confirmedMembers].sort((a, b) => {
     if (a.isTeamLeader && !b.isTeamLeader) return -1;
     if (!a.isTeamLeader && b.isTeamLeader) return 1;
     return 0;

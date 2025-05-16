@@ -17,6 +17,7 @@ import { Check, X, UserMinus, LogOut } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface Profile {
   id: string;
@@ -56,6 +57,7 @@ const TeamSettingsMembers = ({
   onClose
 }: TeamSettingsMembersProps) => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [pendingMembers, setPendingMembers] = useState<TeamMember[]>([]);
 
@@ -74,7 +76,7 @@ const TeamSettingsMembers = ({
       // Fetch team members and join with profiles separately to avoid relationship issues
       const { data: membersData, error: membersError } = await supabase
         .from('team_members')
-        .select('id, user_id, team_id, role, status')
+        .select('id, user_id, role, status')
         .eq('team_id', team.id);
         
       if (membersError) {
@@ -156,6 +158,7 @@ const TeamSettingsMembers = ({
       if (error) throw error;
       
       await fetchTeamMembers();
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
       
       toast({
         title: "Membre accepté",
@@ -187,6 +190,7 @@ const TeamSettingsMembers = ({
       if (error) throw error;
       
       await fetchTeamMembers();
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
       
       toast({
         title: "Membre rejeté",

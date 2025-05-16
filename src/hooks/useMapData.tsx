@@ -32,7 +32,7 @@ export function useMapData() {
         
         const today = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
         
-        // Construction de la requête de base
+        // Construction de la requête de base - pour les parties publiques seulement
         let query = supabase
           .from('airsoft_games')
           .select(`
@@ -56,15 +56,38 @@ export function useMapData() {
             Picture4,
             Picture5
           `)
+          .eq('is_private', false) // Ne montrer que les parties publiques par défaut
           .gte('date', today) // Filtrer pour n'afficher que les parties à venir ou du jour même
           .order('date', { ascending: true });
         
-        // Ne montrons que les parties publiques aux utilisateurs non connectés
-        // Pour les utilisateurs connectés, afficher aussi leurs parties privées
-        if (!user) {
-          query = query.eq('is_private', false);
-        } else {
-          query = query.or(`is_private.eq.false,created_by.eq.${user.id}`);
+        // Pour les utilisateurs connectés, ajouter aussi leurs parties privées
+        if (user) {
+          query = supabase
+            .from('airsoft_games')
+            .select(`
+              id, 
+              title, 
+              date, 
+              address, 
+              city, 
+              zip_code, 
+              game_type,
+              max_players,
+              price,
+              latitude,
+              longitude,
+              created_at,
+              created_by,
+              is_private,
+              Picture1,
+              Picture2,
+              Picture3,
+              Picture4,
+              Picture5
+            `)
+            .or(`is_private.eq.false,created_by.eq.${user.id}`)
+            .gte('date', today)
+            .order('date', { ascending: true });
         }
         
         const { data, error } = await query;
