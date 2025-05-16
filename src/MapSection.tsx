@@ -3,10 +3,10 @@ import React from 'react';
 import { useMapData } from '@/hooks/useMapData';
 import { useMapFiltering } from '@/hooks/useMapFiltering';
 import { useMapLocation } from '@/hooks/useMapLocation';
-import MapComponent from './map/MapComponent';
-import MapSectionHeader from './map/MapSectionHeader';
-import SearchFiltersSidebar from './map/SearchFiltersSidebar';
-import MapResultsDisplay from './map/MapResultsDisplay';
+import MapComponent from '@/components/map/MapComponent';
+import MapSectionHeader from '@/components/map/MapSectionHeader';
+import SearchFiltersSidebar from '@/components/map/SearchFiltersSidebar';
+import MapResultsDisplay from '@/components/map/MapResultsDisplay';
 import { useAuth } from '@/hooks/useAuth';
 
 const MapSection: React.FC = () => {
