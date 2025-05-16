@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, BellOff, UserCheck, UserMinus, Trash2 } from 'lucide-react';
@@ -75,19 +76,32 @@ export const NotificationList = () => {
 
   const handleDeleteNotification = async (notificationId: string) => {
     try {
+      console.log("Deleting notification:", notificationId);
       const { error } = await supabase
         .from('notifications')
         .delete()
         .eq('id', notificationId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error object from Supabase:', error);
+        throw error;
+      }
+      
+      // Refetch notifications after successful deletion
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['unreadNotifications'] });
+      
       toast({
         title: "Notification supprimée",
         description: "La notification a été supprimée avec succès"
       });
     } catch (error) {
       console.error('Error deleting notification:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer la notification",
+        variant: "destructive"
+      });
     }
   };
 
@@ -221,7 +235,10 @@ export const NotificationList = () => {
                       variant="ghost" 
                       size="icon"
                       className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
-                      onClick={() => handleDeleteNotification(notification.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteNotification(notification.id);
+                      }}
                     >
                       <Trash2 size={14} />
                     </Button>

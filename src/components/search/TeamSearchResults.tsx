@@ -35,6 +35,34 @@ const TeamSearchResults = ({
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userTeamId, setUserTeamId] = useState<string | null>(null);
+
+  // Récupérer le team_id de l'utilisateur courant
+  useEffect(() => {
+    const fetchUserTeam = async () => {
+      if (!user) {
+        setUserTeamId(null);
+        return;
+      }
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('team_id')
+          .eq('id', user.id)
+          .single();
+          
+        if (error) throw error;
+        
+        setUserTeamId(data?.team_id || null);
+      } catch (err) {
+        console.error("Error fetching user team:", err);
+        setUserTeamId(null);
+      }
+    };
+    
+    fetchUserTeam();
+  }, [user]);
 
   // Fetch teams from Supabase
   useEffect(() => {
@@ -126,12 +154,41 @@ const TeamSearchResults = ({
       return;
     }
     
+    // Vérifier si l'utilisateur est déjà dans une équipe
+    if (userTeamId) {
+      toast({
+        title: "Déjà membre d'une équipe",
+        description: "Vous êtes déjà membre d'une équipe. Vous devez d'abord quitter votre équipe actuelle.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     // Find the team to apply to
     const team = teams.find(t => t.id === teamId);
     
     // Create team membership request
     const createMembershipRequest = async () => {
       try {
+        // Vérifier d'abord si une demande existe déjà
+        const { data: existingRequest, error: checkError } = await supabase
+          .from('team_members')
+          .select('id')
+          .eq('team_id', teamId)
+          .eq('user_id', user.id);
+          
+        if (checkError) throw checkError;
+        
+        if (existingRequest && existingRequest.length > 0) {
+          toast({
+            title: "Demande déjà envoyée",
+            description: "Vous avez déjà fait une demande pour rejoindre cette équipe",
+            variant: "destructive"
+          });
+          return;
+        }
+        
+        // Créer une demande avec statut 'pending'
         const { error } = await supabase
           .from('team_members')
           .insert({
@@ -142,6 +199,29 @@ const TeamSearchResults = ({
           });
           
         if (error) throw error;
+        
+        // Récupérer l'ID du leader de l'équipe
+        const { data: teamData, error: teamError } = await supabase
+          .from('teams')
+          .select('leader_id, name')
+          .eq('id', teamId)
+          .single();
+          
+        if (teamError) throw teamError;
+        
+        // Créer une notification pour le leader de l'équipe
+        if (teamData?.leader_id) {
+          await supabase
+            .from('notifications')
+            .insert({
+              user_id: teamData.leader_id,
+              title: "Nouvelle demande d'adhésion",
+              message: `Un joueur souhaite rejoindre votre équipe ${teamData.name}`,
+              type: 'team_request',
+              link: `/team/${teamId}`,
+              related_id: teamId
+            });
+        }
         
         toast({
           title: "Candidature envoyée",
@@ -271,8 +351,9 @@ const TeamSearchResults = ({
                   <Mail size={14} />
                   Contacter
                 </Button>
-                {/* Afficher le bouton Postuler uniquement si l'équipe recrute */}
-                {team.is_recruiting !== false && (
+                
+                {/* Afficher le bouton Postuler uniquement si l'équipe recrute ET l'utilisateur n'est pas déjà dans une équipe */}
+                {team.is_recruiting && !userTeamId && (
                   <Button 
                     variant="outline" 
                     size="sm" 

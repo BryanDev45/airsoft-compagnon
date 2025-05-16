@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { 
   Dialog, 
@@ -113,9 +114,18 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
     try {
       console.log("Fetching team members for team:", team.id);
       
+      // Modification importante: utiliser la jointure correcte et inclure les détails du profil
       const { data: allMembers, error } = await supabase
         .from('team_members')
-        .select('id, user_id, team_id, role, status, profiles:user_id(id, username, avatar)')
+        .select(`
+          id, 
+          user_id, 
+          team_id, 
+          role, 
+          status, 
+          joined_at,
+          profiles:user_id(id, username, avatar)
+        `)
         .eq('team_id', team.id);
         
       if (error) {
@@ -123,7 +133,7 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
         throw error;
       }
 
-      console.log("All team members:", allMembers);
+      console.log("All team members data:", allMembers);
       
       // Make sure members is an array before filtering
       if (!Array.isArray(allMembers)) {
@@ -140,7 +150,6 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
       console.log("Confirmed members:", confirmed);
       console.log("Pending members:", pending);
       
-      // Type casting for TypeScript
       setTeamMembers(confirmed as unknown as TeamMember[]);
       setPendingMembers(pending as unknown as TeamMember[]);
     } catch (error) {
