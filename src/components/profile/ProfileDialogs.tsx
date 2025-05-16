@@ -79,15 +79,15 @@ const ProfileDialogs = ({
                 <div className="flex items-center gap-2 text-gray-700">
                   <Users className="text-airsoft-red flex-shrink-0" size={18} />
                   <span>
-                    <span className="font-medium">{selectedGame.participantsCount}</span>
-                    <span className="text-gray-500">/{selectedGame.max_players}</span> participants
+                    <span className="font-medium">{selectedGame.participantsCount !== undefined ? selectedGame.participantsCount : 0}</span>
+                    <span className="text-gray-500">/{selectedGame.max_players || '?'}</span> participants
                   </span>
                 </div>
                 
                 <div className="flex items-center gap-2 text-gray-700">
                   <Euro className="text-airsoft-red flex-shrink-0" size={18} />
                   <span>
-                    {selectedGame.price}€
+                    {selectedGame.price !== undefined ? `${selectedGame.price}€` : '5€'}
                   </span>
                 </div>
                 
