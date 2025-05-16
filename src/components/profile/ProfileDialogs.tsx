@@ -33,6 +33,9 @@ const ProfileDialogs = ({
     }
   };
   
+  // Debug pour voir le contenu de selectedGame
+  console.log("Selected game in dialog:", selectedGame);
+  
   return (
     <>
       {/* Dialog pour afficher les détails d'une partie */}
@@ -87,7 +90,7 @@ const ProfileDialogs = ({
                 <div className="flex items-center gap-2 text-gray-700">
                   <Euro className="text-airsoft-red flex-shrink-0" size={18} />
                   <span>
-                    {selectedGame.price !== undefined ? `${selectedGame.price}€` : '5€'}
+                    {selectedGame.price !== undefined && selectedGame.price !== null ? `${selectedGame.price}€` : '5€'}
                   </span>
                 </div>
                 

@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,6 +25,8 @@ export const useAuth = () => {
             // Use setTimeout to avoid potential deadlocks
             setTimeout(() => {
               navigate('/profile');
+              // Force page reload after navigation to ensure fresh data loading
+              window.location.reload();
             }, 0);
           }
         }
@@ -64,9 +67,10 @@ export const useAuth = () => {
           title: "Connexion réussie",
           description: "Bienvenue sur Airsoft Compagnon",
         });
-        // Naviguer directement au lieu de laisser l'événement onAuthStateChange le faire
-        // Cela assure que la navigation se produise, même en cas de problème avec l'événement
+        
+        // Naviguer et recharger la page pour garantir un état frais
         navigate('/profile');
+        window.location.reload();
         return true;
       } else {
         throw new Error("Aucune donnée utilisateur retournée");

@@ -7,9 +7,11 @@ import MapComponent from './map/MapComponent';
 import MapSectionHeader from './map/MapSectionHeader';
 import SearchFiltersSidebar from './map/SearchFiltersSidebar';
 import MapResultsDisplay from './map/MapResultsDisplay';
+import { useAuth } from '@/hooks/useAuth';
 
 const MapSection: React.FC = () => {
-  // No change in hook usage
+  // Ajout de l'état d'authentification pour améliorer l'expérience utilisateur
+  const { user } = useAuth();
   const { loading, events } = useMapData();
   
   const {
@@ -70,6 +72,13 @@ const MapSection: React.FC = () => {
                 </div>
               ) : filteredEvents.length > 0 ? (
                 <MapComponent searchCenter={searchCenter} searchRadius={searchRadius[0]} filteredEvents={filteredEvents} />
+              ) : !user && events.length === 0 ? (
+                <div className="flex items-center justify-center h-full flex-col">
+                  <div className="text-center">
+                    <p className="text-gray-500 mb-3">Connectez-vous pour voir toutes les parties disponibles</p>
+                    <p className="text-gray-400 text-sm">Les parties privées sont visibles uniquement aux utilisateurs connectés</p>
+                  </div>
+                </div>
               ) : (
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center">
