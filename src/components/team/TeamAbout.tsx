@@ -1,79 +1,232 @@
 
-import React from 'react';
-import { MessageSquare, Share } from 'lucide-react';
+// Mettre à jour le composant TeamAbout pour changer le statut d'une demande d'adhésion à "pending"
+import React, { useState } from 'react';
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Mail, ShareIcon, MapPin, Phone, CalendarIcon, Users, UserPlus } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/components/ui/use-toast';
 
 interface TeamAboutProps {
-  team: any;
+  team: {
+    name: string;
+    description?: string;
+    location?: string;
+    contact?: string;
+    founded?: string;
+    is_recruiting?: boolean;
+    is_association?: boolean;
+    id: string;
+    stats: {
+      memberCount: number;
+      gamesPlayed: number;
+      averageRating: string;
+    }
+  };
   handleContactTeam: () => void;
   handleShare: () => void;
 }
 
 const TeamAbout = ({ team, handleContactTeam, handleShare }: TeamAboutProps) => {
+  const [isJoining, setIsJoining] = useState(false);
+  const { user } = useAuth();
+
+  const handleJoinTeam = async () => {
+    if (!user) {
+      toast({
+        title: "Connexion requise",
+        description: "Vous devez être connecté pour rejoindre une équipe",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      setIsJoining(true);
+      
+      // Vérifier si l'utilisateur est déjà membre d'une équipe
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('team_id')
+        .eq('id', user.id)
+        .single();
+      
+      if (profileError) throw profileError;
+      
+      if (profileData?.team_id) {
+        toast({
+          title: "Déjà membre d'une équipe",
+          description: "Vous devez d'abord quitter votre équipe actuelle avant d'en rejoindre une autre",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Vérifier si une demande existe déjà
+      const { data: existingRequest, error: requestError } = await supabase
+        .from('team_members')
+        .select('*')
+        .eq('team_id', team.id)
+        .eq('user_id', user.id);
+        
+      if (requestError) throw requestError;
+      
+      if (existingRequest && existingRequest.length > 0) {
+        toast({
+          title: "Demande existante",
+          description: "Vous avez déjà fait une demande pour rejoindre cette équipe",
+        });
+        return;
+      }
+      
+      // Créer la demande avec le statut "pending"
+      const { data, error } = await supabase
+        .from('team_members')
+        .insert([
+          { 
+            team_id: team.id, 
+            user_id: user.id,
+            status: 'pending',
+            role: 'Membre'
+          }
+        ]);
+        
+      if (error) throw error;
+      
+      // Créer une notification pour le leader de l'équipe
+      await supabase
+        .from('notifications')
+        .insert([
+          {
+            user_id: team.leader_id,
+            title: 'Nouvelle demande d\'adhésion',
+            message: `Un joueur souhaite rejoindre votre équipe ${team.name}`,
+            type: 'team_request',
+            link: `/team/${team.id}`,
+            related_id: team.id
+          }
+        ]);
+      
+      toast({
+        title: "Demande envoyée",
+        description: "Votre demande pour rejoindre cette équipe a été envoyée, vous serez notifié quand elle sera acceptée",
+      });
+    } catch (error: any) {
+      console.error('Erreur:', error);
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setIsJoining(false);
+    }
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>À propos de nous</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-gray-700">{team.description}</p>
-        
-        {team.is_association !== undefined && (
-          <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
-            <p className="text-sm flex items-center gap-2">
-              <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">
-                {team.is_association ? 'Association déclarée' : 'Équipe simple'}
+    <>
+      <Card className="overflow-hidden">
+        <CardContent className="p-6">
+          <h2 className="font-bold text-xl mb-4">À propos</h2>
+          
+          {team.is_recruiting && (
+            <div className="mb-4">
+              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                <UserPlus className="h-3 w-3 mr-1" /> Recrutement ouvert
               </Badge>
-              <span className="text-blue-800">
-                {team.is_association 
-                  ? 'Organisation officielle avec statuts déposés' 
-                  : 'Groupe informel de joueurs'}
-              </span>
-            </p>
+            </div>
+          )}
+          
+          {team.is_association && (
+            <div className="mb-4">
+              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                Association loi 1901
+              </Badge>
+            </div>
+          )}
+          
+          <p className="text-gray-600 mb-6">
+            {team.description || "Aucune description disponible"}
+          </p>
+          
+          <div className="space-y-3">
+            {team.location && (
+              <div className="flex items-center text-sm text-gray-600">
+                <MapPin className="h-4 w-4 mr-2 text-airsoft-red" />
+                <span>{team.location}</span>
+              </div>
+            )}
+            
+            {team.contact && (
+              <div className="flex items-center text-sm text-gray-600">
+                <Mail className="h-4 w-4 mr-2 text-airsoft-red" />
+                <span>{team.contact}</span>
+              </div>
+            )}
+            
+            {team.founded && (
+              <div className="flex items-center text-sm text-gray-600">
+                <CalendarIcon className="h-4 w-4 mr-2 text-airsoft-red" />
+                <span>Fondée en {team.founded}</span>
+              </div>
+            )}
+            
+            <div className="flex items-center text-sm text-gray-600">
+              <Users className="h-4 w-4 mr-2 text-airsoft-red" />
+              <span>{team.stats.memberCount} membres</span>
+            </div>
           </div>
-        )}
-        
-        <div className="grid grid-cols-2 gap-4 mt-6">
-          <div className="bg-gray-100 p-3 rounded-lg text-center">
-            <p className="text-sm text-gray-500">Parties</p>
-            <p className="text-xl font-bold text-airsoft-red">{team.stats.gamesPlayed}</p>
+          
+          <div className="grid grid-cols-3 gap-4 mt-6">
+            <div className="bg-gray-50 p-3 text-center rounded-lg">
+              <p className="text-sm text-gray-600">Membres</p>
+              <p className="font-bold text-lg">{team.stats.memberCount}</p>
+            </div>
+            <div className="bg-gray-50 p-3 text-center rounded-lg">
+              <p className="text-sm text-gray-600">Parties</p>
+              <p className="font-bold text-lg">{team.stats.gamesPlayed}</p>
+            </div>
+            <div className="bg-gray-50 p-3 text-center rounded-lg">
+              <p className="text-sm text-gray-600">Note</p>
+              <p className="font-bold text-lg">{team.stats.averageRating}</p>
+            </div>
           </div>
-          <div className="bg-gray-100 p-3 rounded-lg text-center">
-            <p className="text-sm text-gray-500">Membres</p>
-            <p className="text-xl font-bold text-airsoft-red">{team.stats.memberCount}</p>
+          
+          <div className="mt-6 space-y-2">
+            {team.is_recruiting && (
+              <Button 
+                className="w-full bg-airsoft-red hover:bg-red-700"
+                onClick={handleJoinTeam}
+                disabled={isJoining}
+              >
+                <UserPlus className="h-4 w-4 mr-2" />
+                {isJoining ? "En cours..." : "Rejoindre l'équipe"}
+              </Button>
+            )}
+            
+            <Button 
+              className="w-full" 
+              variant="outline"
+              onClick={handleContactTeam}
+            >
+              <Mail className="h-4 w-4 mr-2" />
+              Contacter
+            </Button>
+            
+            <Button 
+              className="w-full" 
+              variant="outline"
+              onClick={handleShare}
+            >
+              <ShareIcon className="h-4 w-4 mr-2" />
+              Partager
+            </Button>
           </div>
-          <div className="bg-gray-100 p-3 rounded-lg text-center">
-            <p className="text-sm text-gray-500">Évaluation</p>
-            <p className="text-xl font-bold text-airsoft-red flex items-center justify-center">
-              {team.stats.averageRating}
-              <svg className="w-5 h-5 text-yellow-500 ml-1" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-              </svg>
-            </p>
-          </div>
-        </div>
-        <div className="flex justify-between mt-6">
-          <Button 
-            variant="outline" 
-            className="flex items-center gap-2"
-            onClick={handleContactTeam}
-          >
-            <MessageSquare size={16} />
-            Contacter
-          </Button>
-          <Button 
-            variant="outline" 
-            className="flex items-center gap-2 bg-airsoft-red text-white hover:bg-red-700"
-            onClick={handleShare}
-          >
-            <Share size={16} />
-            Partager
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </>
   );
 };
 

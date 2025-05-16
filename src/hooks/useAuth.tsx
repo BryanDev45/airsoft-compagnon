@@ -40,12 +40,28 @@ export const useAuth = () => {
       }
     );
 
-    // Then check for an existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Configurer la persistance de session et la récupération de la session
+    const setupSessionPersistence = async () => {
+      // Vérifier s'il y a une session existante
+      const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user || null);
       setInitialLoading(false);
-    });
 
+      // Si un utilisateur est authentifié, configurer une vérification régulière de session
+      if (session?.user) {
+        // Rafraîchir la session toutes les 10 minutes pour éviter l'expiration
+        const interval = setInterval(async () => {
+          const { data: { session: refreshedSession }, error } = await supabase.auth.refreshSession();
+          if (error) {
+            console.error("Erreur lors du rafraîchissement de la session:", error);
+          }
+        }, 10 * 60 * 1000); // 10 minutes
+
+        return () => clearInterval(interval);
+      }
+    };
+
+    setupSessionPersistence();
     return () => subscription.unsubscribe();
   }, [navigate, location.pathname]);
 

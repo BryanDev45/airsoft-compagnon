@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose, SheetFooter } from "@/components/ui/sheet";
 import { NotificationList } from '@/components/notifications/NotificationList';
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 // Définir la structure pour les langues avec les drapeaux
 const languages = [{
@@ -111,25 +111,35 @@ const Header = () => {
   const handleNavigateToToolbox = () => {
     navigate('/toolbox');
   };
-  const {
-    data: notificationCount = 0,
-    isLoading: isLoadingNotifications
-  } = useQuery({
+  // Requête pour récupérer le nombre de notifications non lues
+  const { data: notificationCount = 0 } = useQuery({
     queryKey: ['unreadNotifications'],
     queryFn: async () => {
       if (!user?.id) return 0;
-      const {
-        count,
-        error
-      } = await supabase.from('notifications').select('id', {
-        count: 'exact',
-        head: true
-      }).eq('user_id', user.id).eq('read', false);
+      
+      const { count, error } = await supabase
+        .from('notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('read', false);
+        
       if (error) throw error;
       return count || 0;
     },
-    enabled: isAuthenticated && !!user?.id
+    enabled: isAuthenticated && !!user?.id,
+    refetchInterval: 30000, // Rafraîchir toutes les 30 secondes
   });
+
+  const queryClient = useQueryClient();
+
+  // Effet pour rafraîchir le compteur de notifications quand la feuille est fermée
+  const handleSheetOpenChange = (open: boolean) => {
+    if (!open) {
+      // Rafraîchir les notifications quand on ferme la feuille
+      queryClient.invalidateQueries({ queryKey: ['unreadNotifications'] });
+    }
+  };
+
   return <header className="bg-gradient-to-r from-gray-600 to-gray-900 text-white sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex justify-between items-center py-4">
         <div className="flex items-center">
@@ -161,13 +171,16 @@ const Header = () => {
           </DropdownMenu>
 
           <div className="flex items-center gap-4 ml-4">
-            {isAuthenticated && <Sheet>
+            {isAuthenticated && (
+              <Sheet onOpenChange={handleSheetOpenChange}>
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className="relative">
-                    <Bell size={20} className="text-white hover:text-airsoft-red transition-colors" />
-                    {notificationCount > 0 && <Badge className="absolute -top-1 -right-1 h-5 w-5 text-xs p-0 flex items-center justify-center bg-airsoft-red">
+                    <Bell size={20} className={`${notificationCount > 0 ? 'text-airsoft-red' : 'text-white'} hover:text-airsoft-red transition-colors`} />
+                    {notificationCount > 0 && (
+                      <Badge className="absolute -top-1 -right-1 h-5 w-5 text-xs p-0 flex items-center justify-center bg-airsoft-red">
                         {notificationCount}
-                      </Badge>}
+                      </Badge>
+                    )}
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="w-[400px] sm:w-[540px]">
@@ -181,7 +194,8 @@ const Header = () => {
                     </SheetClose>
                   </SheetFooter>
                 </SheetContent>
-              </Sheet>}
+              </Sheet>
+            )}
 
             {isAuthenticated && user ? <DropdownMenu>
                 <DropdownMenuTrigger asChild>

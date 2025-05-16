@@ -111,33 +111,51 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
     if (!team?.id) return;
     
     try {
-      const { data: members, error } = await supabase
+      console.log("Fetching team members for team:", team.id);
+      
+      const { data: allMembers, error } = await supabase
         .from('team_members')
-        .select('*, profiles:user_id(id, username, avatar)')
+        .select('id, user_id, team_id, role, status, profiles:user_id(id, username, avatar)')
         .eq('team_id', team.id);
         
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching members:', error);
+        throw error;
+      }
+
+      console.log("All team members:", allMembers);
       
       // Make sure members is an array before filtering
-      if (!Array.isArray(members)) {
-        console.error('Fetched members is not an array:', members);
+      if (!Array.isArray(allMembers)) {
+        console.error('Fetched members is not an array:', allMembers);
+        setTeamMembers([]);
+        setPendingMembers([]);
         return;
       }
       
       // Séparer les membres confirmés et les demandes en attente
-      const confirmed = members.filter(m => m.status === 'confirmed' || !m.status) || [];
-      const pending = members.filter(m => m.status === 'pending') || [];
+      const confirmed = allMembers.filter(m => m.status === 'confirmed') || [];
+      const pending = allMembers.filter(m => m.status === 'pending') || [];
+      
+      console.log("Confirmed members:", confirmed);
+      console.log("Pending members:", pending);
       
       // Type casting for TypeScript
       setTeamMembers(confirmed as unknown as TeamMember[]);
       setPendingMembers(pending as unknown as TeamMember[]);
     } catch (error) {
       console.error('Erreur lors de la récupération des membres:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les membres de l'équipe",
+        variant: "destructive"
+      });
     }
   };
   
   useEffect(() => {
     if (open) {
+      console.log("Dialog opened, fetching team members");
       fetchTeamMembers();
       setIsRecruitmentOpen(team?.is_recruiting || false);
       setIsAssociation(team?.is_association || false);
@@ -904,7 +922,7 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
           <TabsContent value="members" className="pt-4 space-y-6">
             {isTeamLeader && pendingMembers.length > 0 && (
               <div>
-                <h3 className="font-medium mb-2">Demandes d'adhésion en attente</h3>
+                <h3 className="font-medium mb-2">Demandes d'adhésion en attente ({pendingMembers.length})</h3>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -954,82 +972,86 @@ const TeamSettings = ({ team, isTeamMember, onTeamUpdate }: TeamSettingsProps) =
             )}
             
             <div>
-              <h3 className="font-medium mb-2">Membres de l'équipe</h3>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Membre</TableHead>
-                    {isTeamLeader && <TableHead>Rôle</TableHead>}
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {teamMembers.map((member) => (
-                    <TableRow key={member.id}>
-                      <TableCell className="flex items-center space-x-2">
-                        <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
-                          <img 
-                            src={member.profiles?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.profiles?.username || 'user'}`}
-                            alt={member.profiles?.username || "Utilisateur"} 
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <span>{member.profiles?.username || "Utilisateur"}</span>
-                        {member.user_id === team.leader_id && (
-                          <span className="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-full">
-                            Leader
-                          </span>
-                        )}
-                      </TableCell>
-                      
-                      {isTeamLeader && (
-                        <TableCell>
-                          {member.user_id !== team.leader_id && (
-                            <ToggleGroup 
-                              type="single" 
-                              value={member.role || "Membre"}
-                              onValueChange={(value) => {
-                                if (value) handleUpdateMemberRole(member.id, value);
-                              }}
-                              className="justify-start"
-                            >
-                              <ToggleGroupItem value="Membre" size="sm">Membre</ToggleGroupItem>
-                              <ToggleGroupItem value="Modérateur" size="sm">Modérateur</ToggleGroupItem>
-                              <ToggleGroupItem value="Admin" size="sm">Admin</ToggleGroupItem>
-                            </ToggleGroup>
+              <h3 className="font-medium mb-2">Membres de l'équipe ({teamMembers.length})</h3>
+              {teamMembers.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Membre</TableHead>
+                      {isTeamLeader && <TableHead>Rôle</TableHead>}
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {teamMembers.map((member) => (
+                      <TableRow key={member.id}>
+                        <TableCell className="flex items-center space-x-2">
+                          <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
+                            <img 
+                              src={member.profiles?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.profiles?.username || 'user'}`}
+                              alt={member.profiles?.username || "Utilisateur"} 
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <span>{member.profiles?.username || "Utilisateur"}</span>
+                          {member.user_id === team.leader_id && (
+                            <span className="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-full">
+                              Leader
+                            </span>
                           )}
                         </TableCell>
-                      )}
-                      
-                      <TableCell>
-                        {isTeamLeader && member.user_id !== team.leader_id && member.user_id !== user?.id && (
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleRemoveMember(member.id)}
-                            disabled={loading}
-                          >
-                            <UserMinus className="h-4 w-4 mr-1" />
-                            Supprimer
-                          </Button>
+                        
+                        {isTeamLeader && (
+                          <TableCell>
+                            {member.user_id !== team.leader_id && (
+                              <ToggleGroup 
+                                type="single" 
+                                value={member.role || "Membre"}
+                                onValueChange={(value) => {
+                                  if (value) handleUpdateMemberRole(member.id, value);
+                                }}
+                                className="justify-start"
+                              >
+                                <ToggleGroupItem value="Membre" size="sm">Membre</ToggleGroupItem>
+                                <ToggleGroupItem value="Modérateur" size="sm">Modérateur</ToggleGroupItem>
+                                <ToggleGroupItem value="Admin" size="sm">Admin</ToggleGroupItem>
+                              </ToggleGroup>
+                            )}
+                          </TableCell>
                         )}
                         
-                        {!isTeamLeader && member.user_id === user?.id && (
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={handleLeaveTeam}
-                            disabled={loading}
-                          >
-                            <LogOut className="h-4 w-4 mr-1" />
-                            Quitter
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                        <TableCell>
+                          {isTeamLeader && member.user_id !== team.leader_id && member.user_id !== user?.id && (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleRemoveMember(member.id)}
+                              disabled={loading}
+                            >
+                              <UserMinus className="h-4 w-4 mr-1" />
+                              Supprimer
+                            </Button>
+                          )}
+                          
+                          {!isTeamLeader && member.user_id === user?.id && (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={handleLeaveTeam}
+                              disabled={loading}
+                            >
+                              <LogOut className="h-4 w-4 mr-1" />
+                              Quitter
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <p className="text-gray-500 text-center py-4">Aucun membre confirmé dans l'équipe</p>
+              )}
             </div>
           </TabsContent>
           
