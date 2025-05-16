@@ -18,16 +18,18 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
 
+interface Profile {
+  id: string;
+  username?: string;
+  avatar?: string;
+}
+
 interface TeamMember {
   id: string;
   user_id?: string;
   role?: string;
   status?: string;
-  profiles?: {
-    id: string;
-    username?: string;
-    avatar?: string;
-  };
+  profiles?: Profile;
 }
 
 interface TeamData {
@@ -69,41 +71,61 @@ const TeamSettingsMembers = ({
     try {
       console.log("Fetching team members for team:", team.id);
       
-      // Use the correct query to fetch team members with profiles
-      const { data: allMembers, error } = await supabase
+      // Fetch team members and join with profiles separately to avoid relationship issues
+      const { data: membersData, error: membersError } = await supabase
         .from('team_members')
-        .select(`
-          id, 
-          user_id, 
-          team_id, 
-          role, 
-          status, 
-          profiles(id, username, avatar)
-        `)
+        .select('id, user_id, team_id, role, status')
         .eq('team_id', team.id);
         
-      if (error) {
-        console.error('Error fetching members:', error);
+      if (membersError) {
+        console.error('Error fetching members:', membersError);
         toast({
           title: "Erreur",
-          description: "Impossible de charger les membres de l'équipe: " + error.message,
+          description: "Impossible de charger les membres de l'équipe: " + membersError.message,
           variant: "destructive"
         });
         return;
       }
 
-      console.log("All team members data:", allMembers);
+      console.log("Team members data:", membersData);
       
-      if (!Array.isArray(allMembers)) {
-        console.error('Fetched members is not an array:', allMembers);
+      if (!Array.isArray(membersData) || membersData.length === 0) {
+        console.log('No team members found');
         setTeamMembers([]);
         setPendingMembers([]);
         return;
       }
       
+      // Get all user IDs from team members
+      const userIds = membersData.map(member => member.user_id).filter(Boolean);
+      
+      // Fetch profiles for these users
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, username, avatar')
+        .in('id', userIds);
+        
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+      }
+      
+      // Map profiles to team members
+      const membersWithProfiles: TeamMember[] = membersData.map(member => {
+        const profile = profilesData?.find(p => p.id === member.user_id) || {
+          id: member.user_id || '',
+          username: 'Utilisateur',
+          avatar: null
+        };
+        
+        return {
+          ...member,
+          profiles: profile
+        };
+      });
+      
       // Filter confirmed and pending members
-      const confirmed = allMembers.filter(m => m.status === 'confirmed') || [];
-      const pending = allMembers.filter(m => m.status === 'pending') || [];
+      const confirmed = membersWithProfiles.filter(m => m.status === 'confirmed') || [];
+      const pending = membersWithProfiles.filter(m => m.status === 'pending') || [];
       
       console.log("Confirmed members:", confirmed);
       console.log("Pending members:", pending);
