@@ -77,13 +77,15 @@ export const NotificationList = () => {
   const handleDeleteNotification = async (notificationId: string) => {
     try {
       console.log("Deleting notification:", notificationId);
+      
+      // Stop event propagation to prevent navigating when clicking delete
       const { error } = await supabase
         .from('notifications')
         .delete()
         .eq('id', notificationId);
 
       if (error) {
-        console.error('Error object from Supabase:', error);
+        console.error('Error deleting notification:', error);
         throw error;
       }
       
@@ -235,10 +237,7 @@ export const NotificationList = () => {
                       variant="ghost" 
                       size="icon"
                       className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteNotification(notification.id);
-                      }}
+                      onClick={() => handleDeleteNotification(notification.id)}
                     >
                       <Trash2 size={14} />
                     </Button>

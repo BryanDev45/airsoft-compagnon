@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Shield, MessageCircle, UserPlus } from 'lucide-react';
+import { MapPin, Shield, MessageCircle, UserPlus, UserMinus } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
@@ -19,6 +19,7 @@ const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<any[]>([]);
+  const [friendships, setFriendships] = useState<Record<string, string>>({});
   
   useEffect(() => {
     const fetchUsers = async () => {
@@ -52,6 +53,13 @@ const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
         if (error) throw error;
         
         setUsers(data || []);
+        
+        // Fetch friendship status for each user
+        if (data && data.length > 0 && user?.id) {
+          const userIds = data.map(u => u.id);
+          await fetchFriendshipStatus(userIds);
+        }
+        
         setLoading(false);
       } catch (error: any) {
         console.error("Erreur lors de la récupération des utilisateurs:", error);
@@ -66,6 +74,46 @@ const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
     
     fetchUsers();
   }, [searchQuery, user?.id, user]);
+  
+  const fetchFriendshipStatus = async (userIds: string[]) => {
+    try {
+      if (!user?.id) return;
+      
+      const friendshipsMap: Record<string, string> = {};
+      
+      // Fetch friendships where current user is the requester
+      const { data: sentRequests, error: sentError } = await supabase
+        .from('friendships')
+        .select('friend_id, status')
+        .eq('user_id', user.id)
+        .in('friend_id', userIds);
+        
+      if (sentError) throw sentError;
+      
+      // Fetch friendships where current user is the receiver
+      const { data: receivedRequests, error: receivedError } = await supabase
+        .from('friendships')
+        .select('user_id, status')
+        .eq('friend_id', user.id)
+        .in('user_id', userIds);
+        
+      if (receivedError) throw receivedError;
+      
+      // Map sent requests
+      (sentRequests || []).forEach(req => {
+        friendshipsMap[req.friend_id] = req.status;
+      });
+      
+      // Map received requests  
+      (receivedRequests || []).forEach(req => {
+        friendshipsMap[req.user_id] = req.status;
+      });
+      
+      setFriendships(friendshipsMap);
+    } catch (error) {
+      console.error("Error fetching friendship status:", error);
+    }
+  };
   
   const handleNavigateToProfile = (username: string) => {
     navigate(`/user/${username}`);
@@ -132,6 +180,11 @@ const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
 
       if (error) throw error;
 
+      // Update local state
+      const updatedFriendships = { ...friendships };
+      updatedFriendships[userId] = 'pending';
+      setFriendships(updatedFriendships);
+
       toast({
         title: "Demande envoyée",
         description: `Demande d'ami envoyée à ${targetUser?.username}`,
@@ -141,6 +194,37 @@ const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
       toast({
         title: "Erreur",
         description: "Impossible d'envoyer la demande d'ami",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleRemoveFriend = async (userId: string) => {
+    if (!user) return;
+
+    try {
+      // Delete friendship in either direction
+      const { error } = await supabase
+        .from('friendships')
+        .delete()
+        .or(`and(user_id.eq.${user.id},friend_id.eq.${userId}),and(user_id.eq.${userId},friend_id.eq.${user.id})`);
+
+      if (error) throw error;
+
+      // Update local state
+      const updatedFriendships = { ...friendships };
+      delete updatedFriendships[userId];
+      setFriendships(updatedFriendships);
+
+      toast({
+        title: "Ami retiré",
+        description: "Cet utilisateur a été retiré de votre liste d'amis",
+      });
+    } catch (error: any) {
+      console.error("Erreur lors de la suppression de l'ami:", error);
+      toast({
+        title: "Erreur", 
+        description: "Impossible de retirer cet ami",
         variant: "destructive"
       });
     }
@@ -238,15 +322,38 @@ const UserSearchResults = ({ searchQuery }: UserSearchResultsProps) => {
                 <MessageCircle size={14} />
                 Message
               </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex items-center gap-1"
-                onClick={() => handleAddFriend(user.id)}
-              >
-                <UserPlus size={14} />
-                Ajouter
-              </Button>
+              
+              {friendships[user.id] === 'accepted' ? (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                  onClick={() => handleRemoveFriend(user.id)}
+                >
+                  <UserMinus size={14} />
+                  Retirer
+                </Button>
+              ) : friendships[user.id] === 'pending' ? (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex items-center gap-1"
+                  disabled
+                >
+                  <UserPlus size={14} />
+                  En attente
+                </Button>
+              ) : (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex items-center gap-1"
+                  onClick={() => handleAddFriend(user.id)}
+                >
+                  <UserPlus size={14} />
+                  Ajouter
+                </Button>
+              )}
             </div>
           </div>
         </div>

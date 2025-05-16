@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { UserPlus, UserMinus, UserCheck } from "lucide-react";
@@ -11,9 +11,9 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
 const ProfileFriends = ({ userId, isOwnProfile }) => {
-  const [friends, setFriends] = React.useState([]);
-  const [pendingRequests, setPendingRequests] = React.useState([]);
-  const [isFriendsListPublic, setIsFriendsListPublic] = React.useState(false);
+  const [friends, setFriends] = useState([]);
+  const [pendingRequests, setPendingRequests] = useState([]);
+  const [isFriendsListPublic, setIsFriendsListPublic] = useState(false);
   const navigate = useNavigate();
 
   // Fetch profile data including friends list privacy setting
@@ -40,7 +40,7 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
       // Récupérer les amis (statut accepté)
       const { data: friendships, error: friendsError } = await supabase
         .from('friendships')
-        .select('friend_id')
+        .select('id, friend_id')
         .eq('user_id', userId)
         .eq('status', 'accepted');
 
@@ -49,27 +49,39 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
       // Récupérer aussi les amitiés où l'utilisateur est le friend_id
       const { data: reverseFriendships, error: reverseFriendsError } = await supabase
         .from('friendships')
-        .select('user_id')
+        .select('id, user_id')
         .eq('friend_id', userId)
         .eq('status', 'accepted');
 
       if (reverseFriendsError) throw reverseFriendsError;
 
-      // Combiner les deux listes d'IDs d'amis
-      const friendIds = [
-        ...friendships.map(f => f.friend_id),
-        ...reverseFriendships.map(f => f.user_id)
+      // Combiner les deux listes d'IDs d'amis et ajouter les IDs de friendship
+      const friendsWithData = [
+        ...(friendships || []).map(f => ({ friendshipId: f.id, userId: f.friend_id })),
+        ...(reverseFriendships || []).map(f => ({ friendshipId: f.id, userId: f.user_id }))
       ];
 
-      if (friendIds.length > 0) {
+      if (friendsWithData.length > 0) {
         // Récupérer les profils des amis
+        const userIds = friendsWithData.map(f => f.userId);
+        
         const { data: friendProfiles, error: profilesError } = await supabase
           .from('profiles')
           .select('*')
-          .in('id', friendIds);
+          .in('id', userIds);
 
         if (profilesError) throw profilesError;
-        setFriends(friendProfiles || []);
+        
+        // Merge friendship data with profiles
+        const profilesWithFriendshipId = (friendProfiles || []).map(profile => {
+          const friendData = friendsWithData.find(f => f.userId === profile.id);
+          return {
+            ...profile,
+            friendshipId: friendData?.friendshipId
+          };
+        });
+        
+        setFriends(profilesWithFriendshipId || []);
       } else {
         setFriends([]);
       }
@@ -78,14 +90,19 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
       if (isOwnProfile) {
         const { data: pendingFriendships, error: pendingError } = await supabase
           .from('friendships')
-          .select('user_id')
+          .select('id, user_id')
           .eq('friend_id', userId)
           .eq('status', 'pending');
 
         if (pendingError) throw pendingError;
 
         if (pendingFriendships && pendingFriendships.length > 0) {
-          const pendingUserIds = pendingFriendships.map(p => p.user_id);
+          const pendingData = pendingFriendships.map(p => ({ 
+            friendshipId: p.id, 
+            userId: p.user_id 
+          }));
+          
+          const pendingUserIds = pendingData.map(p => p.userId);
           
           const { data: pendingProfiles, error: pendingProfilesError } = await supabase
             .from('profiles')
@@ -93,7 +110,17 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
             .in('id', pendingUserIds);
 
           if (pendingProfilesError) throw pendingProfilesError;
-          setPendingRequests(pendingProfiles || []);
+          
+          // Add friendship IDs to profiles
+          const pendingProfilesWithIds = (pendingProfiles || []).map(profile => {
+            const pendingInfo = pendingData.find(p => p.userId === profile.id);
+            return {
+              ...profile,
+              friendshipId: pendingInfo?.friendshipId
+            };
+          });
+          
+          setPendingRequests(pendingProfilesWithIds || []);
         } else {
           setPendingRequests([]);
         }
@@ -108,50 +135,78 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
     }
   };
 
-  const handleAcceptFriend = async (friendId) => {
-    const { error } = await supabase
-      .from('friendships')
-      .update({ status: 'accepted' })
-      .eq('user_id', friendId)
-      .eq('friend_id', userId);
+  const handleAcceptFriend = async (friendshipId) => {
+    try {
+      const { error } = await supabase
+        .from('friendships')
+        .update({ status: 'accepted' })
+        .eq('id', friendshipId);
 
-    if (!error) {
+      if (error) throw error;
+      
       toast({
         title: "Demande acceptée",
         description: "Vous êtes maintenant amis",
       });
+      
       fetchFriends();
+    } catch (error) {
+      console.error("Error accepting friend request:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'accepter la demande d'ami",
+        variant: "destructive"
+      });
     }
   };
 
-  const handleRejectFriend = async (friendId) => {
-    const { error } = await supabase
-      .from('friendships')
-      .update({ status: 'rejected' })
-      .eq('user_id', friendId)
-      .eq('friend_id', userId);
+  const handleRejectFriend = async (friendshipId) => {
+    try {
+      const { error } = await supabase
+        .from('friendships')
+        .update({ status: 'rejected' })
+        .eq('id', friendshipId);
 
-    if (!error) {
+      if (error) throw error;
+      
       toast({
         title: "Demande rejetée",
         description: "La demande d'ami a été rejetée",
       });
+      
       fetchFriends();
+    } catch (error) {
+      console.error("Error rejecting friend request:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de rejeter la demande d'ami",
+        variant: "destructive"
+      });
     }
   };
 
-  const handleRemoveFriend = async (friendId) => {
-    const { error } = await supabase
-      .from('friendships')
-      .delete()
-      .or(`and(user_id.eq.${userId},friend_id.eq.${friendId}),and(user_id.eq.${friendId},friend_id.eq.${userId})`);
+  const handleRemoveFriend = async (friendshipId) => {
+    try {
+      const { error } = await supabase
+        .from('friendships')
+        .delete()
+        .eq('id', friendshipId);
 
-    if (!error) {
+      if (error) throw error;
+      
       toast({
         title: "Ami supprimé",
         description: "L'ami a été retiré de votre liste",
       });
+      
       fetchFriends();
+    } catch (error) {
+      console.error("Error removing friend:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de retirer cet ami",
+        variant: "destructive"
+      });
     }
   };
 
@@ -186,7 +241,7 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (userId) {
       fetchFriends();
       fetchProfileSettings();
@@ -247,16 +302,18 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
                   <Button 
                     variant="default" 
                     size="sm"
-                    onClick={() => handleAcceptFriend(request.id)}
+                    onClick={() => handleAcceptFriend(request.friendshipId)}
                     className="bg-airsoft-red hover:bg-red-700"
                   >
+                    <UserCheck className="h-4 w-4 mr-1" />
                     Accepter
                   </Button>
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => handleRejectFriend(request.id)}
+                    onClick={() => handleRejectFriend(request.friendshipId)}
                   >
+                    <UserMinus className="h-4 w-4 mr-1" />
                     Refuser
                   </Button>
                 </div>
@@ -292,7 +349,7 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation(); // Prevent navigation when clicking the button
-                      handleRemoveFriend(friend.id);
+                      handleRemoveFriend(friend.friendshipId);
                     }}
                   >
                     <UserMinus className="h-4 w-4 mr-1" />
