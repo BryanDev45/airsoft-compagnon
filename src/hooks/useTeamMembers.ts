@@ -109,6 +109,7 @@ export const useTeamMembers = (
     try {
       console.log("Accepting member with ID:", memberId);
       
+      // First update the database
       const { error } = await supabase
         .from('team_members')
         .update({ status: 'confirmed' })
@@ -121,22 +122,23 @@ export const useTeamMembers = (
           description: "Impossible d'accepter le membre: " + error.message,
           variant: "destructive",
         });
+        setLoading(false);
         return;
       }
       
-      // Immédiatement mettre à jour l'UI en déplaçant le membre de la liste des membres en attente à la liste des membres confirmés
+      // Only update the UI if the database update was successful
       setPendingMembers(prev => {
-        // Trouver le membre accepté
+        // Find the accepted member
         const acceptedMember = prev.find(m => m.id === memberId);
         if (!acceptedMember) return prev;
         
-        // Créer une copie du membre avec le statut mis à jour
+        // Create a copy of the member with updated status
         const updatedMember = { ...acceptedMember, status: 'confirmed' };
         
-        // Ajouter le membre à la liste des membres confirmés
+        // Add the member to the confirmed members list
         setTeamMembers(currentMembers => [...currentMembers, updatedMember]);
         
-        // Retourner la liste des membres en attente sans le membre accepté
+        // Return pending members without the accepted one
         return prev.filter(m => m.id !== memberId);
       });
       
@@ -165,6 +167,7 @@ export const useTeamMembers = (
     try {
       console.log("Rejecting member with ID:", memberId);
       
+      // Make sure to wait for the database operation to complete
       const { error } = await supabase
         .from('team_members')
         .delete()
@@ -177,10 +180,11 @@ export const useTeamMembers = (
           description: "Impossible de rejeter le membre: " + error.message,
           variant: "destructive",
         });
+        setLoading(false);
         return;
       }
       
-      // Immédiatement mettre à jour l'état local pour refléter le changement
+      // Only update the UI if the database operation was successful
       setPendingMembers(prev => prev.filter(member => member.id !== memberId));
       
       toast({
