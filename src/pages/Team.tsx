@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -94,14 +95,18 @@ const Team = () => {
       const { data: teamMembers, error: membersError } = await supabase
         .from('team_members')
         .select('id, role, user_id, status')
-        .eq('team_id', teamData.id);
+        .eq('team_id', teamData.id)
+        .eq('status', 'confirmed');
 
       if (membersError) throw membersError;
 
       // Get profiles for team members
       let formattedMembers: TeamMember[] = [];
+      let memberUserIds: string[] = [];
+      
       if (teamMembers && teamMembers.length > 0) {
         const userIds = teamMembers.map(member => member.user_id).filter(Boolean);
+        memberUserIds = [...userIds];
         
         if (userIds.length > 0) {
           const { data: profiles, error: profilesError } = await supabase
@@ -131,14 +136,21 @@ const Team = () => {
         }
       }
 
-      // Get team games - Note: Use 'airsoft_games' instead of 'games'
-      const { data: gamesData, error: gamesError } = await supabase
-        .from('airsoft_games')
-        .select('*')
-        .eq('created_by', teamData.id)
-        .order('date', { ascending: true });
+      // Get games created by team members
+      let gamesData: any[] = [];
+      if (memberUserIds.length > 0) {
+        const { data: teamGames, error: gamesError } = await supabase
+          .from('airsoft_games')
+          .select('*, profiles:created_by(username)')
+          .in('created_by', memberUserIds)
+          .order('date', { ascending: true });
 
-      if (gamesError) throw gamesError;
+        if (gamesError) throw gamesError;
+        
+        if (teamGames) {
+          gamesData = teamGames;
+        }
+      }
 
       // Split games into upcoming and past
       const now = new Date();
@@ -149,7 +161,8 @@ const Team = () => {
           title: game.title,
           date: new Date(game.date).toLocaleDateString('fr-FR'),
           location: game.city,
-          participants: game.max_players || 0
+          participants: game.max_players || 0,
+          creator: game.profiles
         }));
 
       const pastGames = (gamesData || [])
@@ -160,7 +173,8 @@ const Team = () => {
           date: new Date(game.date).toLocaleDateString('fr-FR'),
           location: game.city,
           result: "Terminé", // Default status since game.status may not exist
-          participants: game.max_players || 0
+          participants: game.max_players || 0,
+          creator: game.profiles
         }));
 
       // Check if the current user is a member of this team

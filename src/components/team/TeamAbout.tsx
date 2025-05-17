@@ -127,7 +127,7 @@ const TeamAbout = ({ team, handleContactTeam, handleShare, isTeamMember }: TeamA
   };
 
   // Vérifier si l'utilisateur fait déjà partie d'une équipe
-  const shouldShowJoinButton = team.is_recruiting && !isTeamMember && user;
+  const shouldShowJoinButton = team.is_recruiting && !isTeamMember && user && !user?.team_id;
 
   return (
     <Card className="overflow-hidden rounded-xl shadow-md border-gray-100 transition-all hover:shadow-lg">
@@ -159,7 +159,7 @@ const TeamAbout = ({ team, handleContactTeam, handleShare, isTeamMember }: TeamA
             </div>
           </div>
           
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-4">
               <h3 className="font-semibold text-sm text-gray-500 uppercase tracking-wider">Informations</h3>
               <div className="space-y-3">
@@ -183,11 +183,6 @@ const TeamAbout = ({ team, handleContactTeam, handleShare, isTeamMember }: TeamA
                     <span>Fondée en {team.founded}</span>
                   </div>
                 )}
-                
-                <div className="flex items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg">
-                  <Users className="h-4 w-4 mr-2 text-airsoft-red" />
-                  <span>{team.stats.memberCount} membres</span>
-                </div>
               </div>
             </div>
             
