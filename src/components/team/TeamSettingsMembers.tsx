@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { 
   Table, 
@@ -171,7 +170,10 @@ const TeamSettingsMembers = ({
         description: "Le membre a été accepté dans l'équipe.",
       });
       
-      // Refresh member lists immediately to update UI
+      // Immédiatement mettre à jour l'état local pour refléter le changement
+      setPendingMembers(prevPending => prevPending.filter(member => member.id !== memberId));
+      
+      // Refresh member lists to update UI with server data
       await fetchTeamMembers();
     } catch (error: any) {
       console.error("Erreur lors de l'acceptation du membre:", error);
@@ -214,7 +216,10 @@ const TeamSettingsMembers = ({
         description: "La demande d'adhésion a été rejetée.",
       });
       
-      // Refresh member lists immediately to update UI
+      // Immédiatement mettre à jour l'état local pour refléter le changement
+      setPendingMembers(prevPending => prevPending.filter(member => member.id !== memberId));
+      
+      // Fetch team members to ensure UI is in sync with server
       await fetchTeamMembers();
     } catch (error: any) {
       console.error("Erreur lors du rejet du membre:", error);
