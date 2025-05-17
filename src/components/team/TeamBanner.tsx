@@ -6,11 +6,12 @@ import TeamSettings from './TeamSettings';
 
 interface TeamBannerProps {
   team: {
+    id: string; // Added id property to match TeamData interface
     name: string;
     banner?: string;
     logo?: string;
     location?: string;
-    founded?: number; // Updated from string to number
+    founded?: number;
     members: any[];
   };
   isTeamMember?: boolean;
