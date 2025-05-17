@@ -29,7 +29,7 @@ interface TeamData {
   contact?: string;
   leader_id?: string;
   is_recruiting?: boolean;
-  founded?: string;
+  founded?: number; // Changed from string to number to match TeamSettingsGeneral.tsx
   is_association?: boolean;
 }
 
