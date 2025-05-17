@@ -248,8 +248,8 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
     }
   }, [userId]);
 
-  // Si ce n'est pas le profil de l'utilisateur connecté et que la liste d'amis est privée, masquer le contenu
-  const shouldShowFriendsList = isOwnProfile || isFriendsListPublic;
+  // Remove this condition - we'll handle visibility differently
+  // const shouldShowFriendsList = isOwnProfile || isFriendsListPublic;
 
   return (
     <div className="space-y-6">
@@ -326,7 +326,7 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
       <Card className="p-6">
         <h3 className="text-lg font-medium mb-4">Amis</h3>
         
-        {!shouldShowFriendsList ? (
+        {!isOwnProfile && !isFriendsListPublic ? (
           <p className="text-center text-gray-500">Cette liste d'amis est privée</p>
         ) : friends.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

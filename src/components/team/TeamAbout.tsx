@@ -159,7 +159,7 @@ const TeamAbout = ({ team, handleContactTeam, handleShare, isTeamMember }: TeamA
             </div>
           </div>
           
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="flex flex-col space-y-6">
             <div className="space-y-4">
               <h3 className="font-semibold text-sm text-gray-500 uppercase tracking-wider">Informations</h3>
               <div className="space-y-3">
