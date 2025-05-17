@@ -39,8 +39,6 @@ interface TeamData {
   contactEmail?: string;
   is_recruiting?: boolean;
   leader_id?: string;
-  founded?: number; // Changed from string to number to be consistent
-  is_association?: boolean;
   members: TeamMember[];
   upcomingGames: any[];
   pastGames: any[];
@@ -181,7 +179,6 @@ const Team = () => {
         contactEmail: teamData.contact, // Map contact email
         leader_id: teamData.leader_id, // Include team leader ID
         is_recruiting: teamData.is_recruiting, // Include recruitment status
-        founded: teamData.founded, // This is already a number from the database
         members: formattedMembers,
         upcomingGames,
         pastGames,
