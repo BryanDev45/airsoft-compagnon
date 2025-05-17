@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,17 +7,7 @@ import { LockOpen, Lock, PenBox, X, Save } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-
-interface TeamData {
-  id: string;
-  name: string;
-  description?: string;
-  location?: string;
-  founded?: number; // Note: This is a number type
-  is_recruiting?: boolean;
-  is_association?: boolean;
-  leader_id?: string;
-}
+import { TeamData } from '@/types/team';
 
 interface TeamSettingsGeneralProps {
   team: TeamData;

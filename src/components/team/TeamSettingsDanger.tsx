@@ -1,15 +1,10 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Trash2, LogOut } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
-
-interface TeamData {
-  id: string;
-  leader_id?: string;
-}
+import { TeamData } from '@/types/team';
 
 interface TeamSettingsDangerProps {
   team: TeamData;

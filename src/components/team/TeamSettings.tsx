@@ -18,20 +18,7 @@ import TeamSettingsGeneral from './TeamSettingsGeneral';
 import TeamSettingsMedia from './TeamSettingsMedia';
 import TeamSettingsMembers from './TeamSettingsMembers';
 import TeamSettingsDanger from './TeamSettingsDanger';
-
-interface TeamData {
-  id: string;
-  name: string;
-  logo?: string;
-  banner?: string;
-  description?: string;
-  location?: string;
-  contact?: string;
-  leader_id?: string;
-  is_recruiting?: boolean;
-  founded?: string;
-  is_association?: boolean;
-}
+import { TeamData } from '@/types/team';
 
 interface TeamSettingsProps {
   team: TeamData;

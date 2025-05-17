@@ -16,26 +16,7 @@ import { Check, X, UserMinus, LogOut } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
-
-interface Profile {
-  id: string;
-  username?: string;
-  avatar?: string;
-}
-
-interface TeamMember {
-  id: string;
-  user_id?: string;
-  role?: string;
-  status?: string;
-  profiles?: Profile;
-}
-
-interface TeamData {
-  id: string;
-  leader_id?: string;
-  name: string;
-}
+import { TeamData, TeamMember } from '@/types/team';
 
 interface TeamSettingsMembersProps {
   team: TeamData;

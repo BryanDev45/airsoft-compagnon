@@ -1,15 +1,9 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Upload, Camera } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-
-interface TeamData {
-  id: string;
-  logo?: string;
-  banner?: string;
-}
+import { TeamData } from '@/types/team';
 
 interface TeamSettingsMediaProps {
   team: TeamData;
