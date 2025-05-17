@@ -14,7 +14,7 @@ interface TeamData {
   name: string;
   description?: string;
   location?: string;
-  founded?: string;
+  founded?: number; // Note: This is a number type
   is_recruiting?: boolean;
   is_association?: boolean;
   leader_id?: string;
@@ -31,7 +31,7 @@ const TeamSettingsGeneral = ({ team, loading, setLoading, onTeamUpdate }: TeamSe
   const { user } = useAuth();
   const [name, setName] = useState(team?.name || '');
   const [location, setLocation] = useState(team?.location || '');
-  const [founded, setFounded] = useState(team?.founded || '');
+  const [founded, setFounded] = useState(team?.founded ? String(team.founded) : ''); // Convert number to string for input
   const [description, setDescription] = useState(team?.description || '');
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [isRecruitmentOpen, setIsRecruitmentOpen] = useState(team?.is_recruiting || false);
@@ -49,10 +49,13 @@ const TeamSettingsGeneral = ({ team, loading, setLoading, onTeamUpdate }: TeamSe
     setLoading(true);
     
     try {
+      // Convert founded to number or null if it's an empty string
+      const foundedValue = founded.trim() !== '' ? Number(founded) : null;
+      
       const updatedFields = {
         name,
         location,
-        founded,
+        founded: foundedValue, // Convert string to number
         description,
         is_association: isAssociation
       };
