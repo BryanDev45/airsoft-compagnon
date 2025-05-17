@@ -346,6 +346,7 @@ const Team = () => {
                 team={team} 
                 handleContactTeam={handleContactTeam} 
                 handleShare={handleShare} 
+                isTeamMember={isTeamMember}
               />
             </div>
 

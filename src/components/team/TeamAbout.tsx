@@ -1,9 +1,8 @@
 
-// Mettre à jour le composant TeamAbout pour changer le statut d'une demande d'adhésion à "pending"
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Mail, ShareIcon, MapPin, Phone, CalendarIcon, Users, UserPlus } from 'lucide-react';
+import { Mail, ShareIcon, MapPin, Phone, CalendarIcon, Users, UserPlus, Info } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,9 +27,10 @@ interface TeamAboutProps {
   };
   handleContactTeam: () => void;
   handleShare: () => void;
+  isTeamMember?: boolean;
 }
 
-const TeamAbout = ({ team, handleContactTeam, handleShare }: TeamAboutProps) => {
+const TeamAbout = ({ team, handleContactTeam, handleShare, isTeamMember }: TeamAboutProps) => {
   const [isJoining, setIsJoining] = useState(false);
   const { user } = useAuth();
 
@@ -126,77 +126,92 @@ const TeamAbout = ({ team, handleContactTeam, handleShare }: TeamAboutProps) => 
     }
   };
 
+  // Vérifier si l'utilisateur fait déjà partie d'une équipe
+  const shouldShowJoinButton = team.is_recruiting && !isTeamMember && user;
+
   return (
-    <>
-      <Card className="overflow-hidden">
-        <CardContent className="p-6">
-          <h2 className="font-bold text-xl mb-4">À propos</h2>
-          
-          {team.is_recruiting && (
-            <div className="mb-4">
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                <UserPlus className="h-3 w-3 mr-1" /> Recrutement ouvert
-              </Badge>
+    <Card className="overflow-hidden rounded-xl shadow-md border-gray-100 transition-all hover:shadow-lg">
+      <CardContent className="p-6 relative">
+        <div className="space-y-6">
+          <div>
+            <h2 className="font-bold text-xl mb-4 text-gray-800 flex items-center">
+              <Info className="h-5 w-5 mr-2 text-airsoft-red" /> À propos
+            </h2>
+            
+            <div className="flex flex-wrap gap-2 mb-4">
+              {team.is_recruiting && (
+                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 font-medium px-3 py-1">
+                  <UserPlus className="h-3.5 w-3.5 mr-1" /> Recrutement ouvert
+                </Badge>
+              )}
+              
+              {team.is_association && (
+                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-medium px-3 py-1">
+                  Association loi 1901
+                </Badge>
+              )}
             </div>
-          )}
-          
-          {team.is_association && (
-            <div className="mb-4">
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                Association loi 1901
-              </Badge>
-            </div>
-          )}
-          
-          <p className="text-gray-600 mb-6">
-            {team.description || "Aucune description disponible"}
-          </p>
-          
-          <div className="space-y-3">
-            {team.location && (
-              <div className="flex items-center text-sm text-gray-600">
-                <MapPin className="h-4 w-4 mr-2 text-airsoft-red" />
-                <span>{team.location}</span>
-              </div>
-            )}
             
-            {team.contact && (
-              <div className="flex items-center text-sm text-gray-600">
-                <Mail className="h-4 w-4 mr-2 text-airsoft-red" />
-                <span>{team.contact}</span>
-              </div>
-            )}
-            
-            {team.founded && (
-              <div className="flex items-center text-sm text-gray-600">
-                <CalendarIcon className="h-4 w-4 mr-2 text-airsoft-red" />
-                <span>Fondée en {team.founded}</span>
-              </div>
-            )}
-            
-            <div className="flex items-center text-sm text-gray-600">
-              <Users className="h-4 w-4 mr-2 text-airsoft-red" />
-              <span>{team.stats.memberCount} membres</span>
+            <div className="bg-gray-50 rounded-lg p-4 border border-gray-100 mb-6">
+              <p className="text-gray-700 leading-relaxed">
+                {team.description || "Aucune description disponible"}
+              </p>
             </div>
           </div>
           
-          <div className="grid grid-cols-3 gap-4 mt-6">
-            <div className="bg-gray-50 p-3 text-center rounded-lg">
-              <p className="text-sm text-gray-600">Membres</p>
-              <p className="font-bold text-lg">{team.stats.memberCount}</p>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-4">
+              <h3 className="font-semibold text-sm text-gray-500 uppercase tracking-wider">Informations</h3>
+              <div className="space-y-3">
+                {team.location && (
+                  <div className="flex items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg">
+                    <MapPin className="h-4 w-4 mr-2 text-airsoft-red" />
+                    <span>{team.location}</span>
+                  </div>
+                )}
+                
+                {team.contact && (
+                  <div className="flex items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg">
+                    <Mail className="h-4 w-4 mr-2 text-airsoft-red" />
+                    <span>{team.contact}</span>
+                  </div>
+                )}
+                
+                {team.founded && (
+                  <div className="flex items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg">
+                    <CalendarIcon className="h-4 w-4 mr-2 text-airsoft-red" />
+                    <span>Fondée en {team.founded}</span>
+                  </div>
+                )}
+                
+                <div className="flex items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg">
+                  <Users className="h-4 w-4 mr-2 text-airsoft-red" />
+                  <span>{team.stats.memberCount} membres</span>
+                </div>
+              </div>
             </div>
-            <div className="bg-gray-50 p-3 text-center rounded-lg">
-              <p className="text-sm text-gray-600">Parties</p>
-              <p className="font-bold text-lg">{team.stats.gamesPlayed}</p>
-            </div>
-            <div className="bg-gray-50 p-3 text-center rounded-lg">
-              <p className="text-sm text-gray-600">Note</p>
-              <p className="font-bold text-lg">{team.stats.averageRating}</p>
+            
+            <div className="space-y-4">
+              <h3 className="font-semibold text-sm text-gray-500 uppercase tracking-wider">Statistiques</h3>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="bg-white shadow-sm p-3 text-center rounded-lg border border-gray-100">
+                  <p className="font-semibold text-lg text-airsoft-red">{team.stats.memberCount}</p>
+                  <p className="text-xs text-gray-500">Membres</p>
+                </div>
+                <div className="bg-white shadow-sm p-3 text-center rounded-lg border border-gray-100">
+                  <p className="font-semibold text-lg text-airsoft-red">{team.stats.gamesPlayed}</p>
+                  <p className="text-xs text-gray-500">Parties</p>
+                </div>
+                <div className="bg-white shadow-sm p-3 text-center rounded-lg border border-gray-100">
+                  <p className="font-semibold text-lg text-airsoft-red">{team.stats.averageRating}</p>
+                  <p className="text-xs text-gray-500">Note</p>
+                </div>
+              </div>
             </div>
           </div>
           
-          <div className="mt-6 space-y-2">
-            {team.is_recruiting && (
+          <div className="flex flex-col sm:flex-row gap-3 pt-4 mt-2 border-t border-gray-100">
+            {shouldShowJoinButton && (
               <Button 
                 className="w-full bg-airsoft-red hover:bg-red-700"
                 onClick={handleJoinTeam}
@@ -225,9 +240,9 @@ const TeamAbout = ({ team, handleContactTeam, handleShare }: TeamAboutProps) => 
               Partager
             </Button>
           </div>
-        </CardContent>
-      </Card>
-    </>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
