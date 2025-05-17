@@ -10,7 +10,6 @@ import LocationMap from '../map/LocationMap';
 import { supabase } from '@/integrations/supabase/client';
 import { useMapLocation } from '@/hooks/useMapLocation';
 import { calculateDistance } from '@/utils/mapUtils';
-
 interface TeamFieldProps {
   field: any;
   isEditing: boolean;
@@ -18,50 +17,58 @@ interface TeamFieldProps {
   onSave: (fieldId: string, updates: any) => void;
   onCancel: () => void;
 }
-
-const TeamField: React.FC<TeamFieldProps> = ({ field, isEditing, onEdit, onSave, onCancel }) => {
+const TeamField: React.FC<TeamFieldProps> = ({
+  field,
+  isEditing,
+  onEdit,
+  onSave,
+  onCancel
+}) => {
   const [showAddTerrainDialog, setShowAddTerrainDialog] = useState(false);
   const [addressCoordinates, setAddressCoordinates] = useState<[number, number] | null>(null);
   const [editedField, setEditedField] = useState({
     name: field?.name || '',
     address: field?.address || '',
     description: field?.description || '',
-    coordinates: field?.coordinates || [2.3522, 48.8566], // Default Paris coordinates
+    coordinates: field?.coordinates || [2.3522, 48.8566] // Default Paris coordinates
   });
 
   // Utiliser le hook useMapLocation seulement pour l'adresse modifiée quand on est en édition
-  const { getCurrentPosition } = useMapLocation(
-    isEditing ? editedField.address : '', 
-    (coords) => {
-      if (coords) {
-        setAddressCoordinates(coords);
-        setEditedField(prev => ({ ...prev, coordinates: coords }));
-      }
+  const {
+    getCurrentPosition
+  } = useMapLocation(isEditing ? editedField.address : '', coords => {
+    if (coords) {
+      setAddressCoordinates(coords);
+      setEditedField(prev => ({
+        ...prev,
+        coordinates: coords
+      }));
     }
-  );
-
+  });
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setEditedField(prev => ({ ...prev, [name]: value }));
+    const {
+      name,
+      value
+    } = e.target;
+    setEditedField(prev => ({
+      ...prev,
+      [name]: value
+    }));
   }, []);
-
   const handleSave = () => {
-    const updatedField = { 
+    const updatedField = {
       ...editedField,
       // Ensure coordinates are properly formatted
       coordinates: addressCoordinates || editedField.coordinates
     };
     onSave(field?.id, updatedField);
   };
-
   const handleEditClick = () => {
     onEdit(field?.id, editedField);
   };
-
   const handleCancelClick = () => {
     onCancel();
   };
-
   useEffect(() => {
     // Mettre à jour les coordonnées uniquement lorsque l'adresse change en édition
     // et seulement après un délai
@@ -69,7 +76,6 @@ const TeamField: React.FC<TeamFieldProps> = ({ field, isEditing, onEdit, onSave,
       const timerId = setTimeout(() => {
         // La géocodification est gérée par le hook
       }, 500);
-      
       return () => clearTimeout(timerId);
     }
   }, [isEditing, editedField.address]);
@@ -78,22 +84,23 @@ const TeamField: React.FC<TeamFieldProps> = ({ field, isEditing, onEdit, onSave,
   // nous initialisons les coordonnées (une seule fois)
   useEffect(() => {
     if (field && field.address && (!field.coordinates || !field.coordinates[0] || !field.coordinates[1])) {
-      const { geocodeLocation } = useMapLocation('', () => {});
-      
+      const {
+        geocodeLocation
+      } = useMapLocation('', () => {});
       const initializeCoordinates = async () => {
         const coords = await geocodeLocation(field.address);
         if (coords) {
           setAddressCoordinates(coords);
-          setEditedField(prev => ({ ...prev, coordinates: coords }));
+          setEditedField(prev => ({
+            ...prev,
+            coordinates: coords
+          }));
         }
       };
-      
       initializeCoordinates();
     }
   }, [field]);
-
-  const addTerrainButton = (
-    <Dialog>
+  const addTerrainButton = <Dialog>
       <DialogTrigger asChild>
         <Button className="bg-airsoft-red hover:bg-red-700 text-white w-full">
           <Plus className="mr-2 h-4 w-4" />
@@ -132,13 +139,9 @@ const TeamField: React.FC<TeamFieldProps> = ({ field, isEditing, onEdit, onSave,
           <Button type="submit" onClick={handleSave}>Ajouter</Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog>
-  );
-
-  return (
-    <div className="space-y-6">
-      {!field ? (
-        <Card className="overflow-hidden border border-gray-200 shadow-md">
+    </Dialog>;
+  return <div className="space-y-6">
+      {!field ? <Card className="overflow-hidden border border-gray-200 shadow-md">
           <CardContent className="p-6">
             <div className="flex flex-col items-center justify-center text-center py-8 space-y-4">
               <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center">
@@ -149,47 +152,25 @@ const TeamField: React.FC<TeamFieldProps> = ({ field, isEditing, onEdit, onSave,
               {addTerrainButton}
             </div>
           </CardContent>
-        </Card>
-      ) : (
-        <Card className="overflow-hidden border border-gray-200 shadow-md">
+        </Card> : <Card className="overflow-hidden border border-gray-200 shadow-md">
           <CardHeader className="bg-gradient-to-r from-gray-100 to-gray-50 border-b border-gray-200">
             <CardTitle className="flex items-center gap-2">
               <MapPin className="h-5 w-5 text-airsoft-red" />
-              {isEditing ? (
-                <Input 
-                  id="name" 
-                  name="name" 
-                  value={editedField.name} 
-                  onChange={handleInputChange} 
-                  className="text-lg font-semibold" 
-                />
-              ) : (
-                field.name
-              )}
+              {isEditing ? <Input id="name" name="name" value={editedField.name} onChange={handleInputChange} className="text-lg font-semibold" /> : field.name}
             </CardTitle>
-            {!isEditing && field.description && (
-              <CardDescription className="text-sm text-gray-600">
+            {!isEditing && field.description && <CardDescription className="text-sm text-gray-600">
                 {field.description.substring(0, 120)}
                 {field.description.length > 120 ? '...' : ''}
-              </CardDescription>
-            )}
+              </CardDescription>}
           </CardHeader>
           <CardContent className="p-6 space-y-6">
-            {isEditing ? (
-              <div className="space-y-4">
+            {isEditing ? <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="address" className="text-sm font-medium">
                     Adresse
                   </Label>
                   <div className="flex items-center gap-2">
-                    <Input 
-                      id="address" 
-                      name="address" 
-                      value={editedField.address} 
-                      onChange={handleInputChange} 
-                      className="flex-1" 
-                      placeholder="Adresse complète du terrain"
-                    />
+                    <Input id="address" name="address" value={editedField.address} onChange={handleInputChange} className="flex-1" placeholder="Adresse complète du terrain" />
                   </div>
                 </div>
 
@@ -197,18 +178,9 @@ const TeamField: React.FC<TeamFieldProps> = ({ field, isEditing, onEdit, onSave,
                   <Label htmlFor="description" className="text-sm font-medium">
                     Description
                   </Label>
-                  <Textarea 
-                    id="description" 
-                    name="description" 
-                    value={editedField.description} 
-                    onChange={handleInputChange} 
-                    className="min-h-[100px]" 
-                    placeholder="Description détaillée du terrain"
-                  />
+                  <Textarea id="description" name="description" value={editedField.description} onChange={handleInputChange} className="min-h-[100px]" placeholder="Description détaillée du terrain" />
                 </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
+              </div> : <div className="space-y-4">
                 <div className="flex items-start gap-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
                   <MapPin size={18} className="text-airsoft-red flex-shrink-0 mt-0.5" />
                   <div className="font-medium text-gray-700">
@@ -216,27 +188,14 @@ const TeamField: React.FC<TeamFieldProps> = ({ field, isEditing, onEdit, onSave,
                   </div>
                 </div>
                 
-                {field.description && (
-                  <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                    <p className="text-gray-700">{field.description}</p>
-                  </div>
-                )}
-              </div>
-            )}
+                {field.description}
+              </div>}
 
             <div className="h-[400px] rounded-lg overflow-hidden border border-gray-200 shadow-inner relative">
-              <LocationMap 
-                location={field?.address || ''} 
-                coordinates={
-                  field?.coordinates?.[0] && field?.coordinates?.[1] ? 
-                  [field.coordinates[0], field.coordinates[1]] : 
-                  [2.3522, 48.8566]
-                }
-              />
+              <LocationMap location={field?.address || ''} coordinates={field?.coordinates?.[0] && field?.coordinates?.[1] ? [field.coordinates[0], field.coordinates[1]] : [2.3522, 48.8566]} />
             </div>
 
-            {isEditing ? (
-              <div className="flex justify-end space-x-2 pt-3">
+            {isEditing ? <div className="flex justify-end space-x-2 pt-3">
                 <Button variant="outline" onClick={onCancel}>
                   <X className="mr-2 h-4 w-4" />
                   Annuler
@@ -245,21 +204,12 @@ const TeamField: React.FC<TeamFieldProps> = ({ field, isEditing, onEdit, onSave,
                   <Check className="mr-2 h-4 w-4" />
                   Sauvegarder
                 </Button>
-              </div>
-            ) : (
-              <Button 
-                onClick={() => onEdit(field?.id, editedField)}
-                className="w-full mt-2"
-              >
+              </div> : <Button onClick={() => onEdit(field?.id, editedField)} className="w-full mt-2">
                 <Edit className="mr-2 h-4 w-4" />
                 Modifier
-              </Button>
-            )}
+              </Button>}
           </CardContent>
-        </Card>
-      )}
-    </div>
-  );
+        </Card>}
+    </div>;
 };
-
 export default TeamField;
