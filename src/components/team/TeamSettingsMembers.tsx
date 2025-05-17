@@ -143,18 +143,24 @@ const TeamSettingsMembers = ({
   };
 
   const handleAcceptMember = async (memberId: string) => {
-    if (!isTeamLeader) return;
+    if (!isTeamLeader || loading) return;
     
     setLoading(true);
     
     try {
+      console.log("Accepting member with ID:", memberId);
+      
       const { error } = await supabase
         .from('team_members')
         .update({ status: 'confirmed' })
         .eq('id', memberId);
         
-      if (error) throw error;
+      if (error) {
+        console.error("Error accepting member:", error);
+        throw error;
+      }
       
+      // Refresh member lists immediately to update UI
       await fetchTeamMembers();
       
       toast({
@@ -174,18 +180,24 @@ const TeamSettingsMembers = ({
   };
   
   const handleRejectMember = async (memberId: string) => {
-    if (!isTeamLeader) return;
+    if (!isTeamLeader || loading) return;
     
     setLoading(true);
     
     try {
+      console.log("Rejecting member with ID:", memberId);
+      
       const { error } = await supabase
         .from('team_members')
         .delete()
         .eq('id', memberId);
         
-      if (error) throw error;
+      if (error) {
+        console.error("Error rejecting member:", error);
+        throw error;
+      }
       
+      // Refresh member lists immediately to update UI
       await fetchTeamMembers();
       
       toast({

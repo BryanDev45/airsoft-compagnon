@@ -25,6 +25,7 @@ interface TeamMember {
   verified?: boolean;
   specialty?: string;
   isTeamLeader?: boolean;
+  status?: string; // Ajout du statut pour filtrer les membres
 }
 
 interface TeamData {
@@ -123,7 +124,8 @@ const Team = () => {
               joinedTeam: profile.join_date ? new Date(profile.join_date).toLocaleDateString('fr-FR') : 'N/A',
               verified: profile.is_verified,
               specialty: 'Non spécifié', // Default value, update if you have specialty data
-              isTeamLeader: member.user_id === teamData.leader_id // Mark the team leader
+              isTeamLeader: member.user_id === teamData.leader_id, // Mark the team leader
+              status: member.status // Include the status for filtering
             };
           }).filter(Boolean) as TeamMember[];
         }
