@@ -468,6 +468,7 @@ export type Database = {
           contact: string | null
           created_at: string | null
           description: string | null
+          founded: number | null
           game_count: number | null
           id: string
           is_association: boolean | null
@@ -484,6 +485,7 @@ export type Database = {
           contact?: string | null
           created_at?: string | null
           description?: string | null
+          founded?: number | null
           game_count?: number | null
           id?: string
           is_association?: boolean | null
@@ -500,6 +502,7 @@ export type Database = {
           contact?: string | null
           created_at?: string | null
           description?: string | null
+          founded?: number | null
           game_count?: number | null
           id?: string
           is_association?: boolean | null

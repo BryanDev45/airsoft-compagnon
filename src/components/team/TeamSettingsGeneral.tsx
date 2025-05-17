@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { LockOpen, Lock, PenBox, X, Save } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 interface TeamData {
   id: string;
@@ -27,6 +28,7 @@ interface TeamSettingsGeneralProps {
 }
 
 const TeamSettingsGeneral = ({ team, loading, setLoading, onTeamUpdate }: TeamSettingsGeneralProps) => {
+  const { user } = useAuth();
   const [name, setName] = useState(team?.name || '');
   const [location, setLocation] = useState(team?.location || '');
   const [founded, setFounded] = useState(team?.founded || '');
@@ -34,6 +36,14 @@ const TeamSettingsGeneral = ({ team, loading, setLoading, onTeamUpdate }: TeamSe
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [isRecruitmentOpen, setIsRecruitmentOpen] = useState(team?.is_recruiting || false);
   const [isAssociation, setIsAssociation] = useState(team?.is_association || false);
+  const [isTeamLeader, setIsTeamLeader] = useState(false);
+  
+  // Check if the current user is the team leader
+  useEffect(() => {
+    if (user && team) {
+      setIsTeamLeader(user.id === team.leader_id);
+    }
+  }, [user, team]);
 
   const handleUpdateTeamInfo = async () => {
     setLoading(true);
@@ -116,8 +126,7 @@ const TeamSettingsGeneral = ({ team, loading, setLoading, onTeamUpdate }: TeamSe
   };
 
   const handleToggleRecruitment = async () => {
-    const isLeader = team.leader_id === (supabase.auth.getUser() as any)?.data?.user?.id;
-    if (!isLeader) return;
+    if (!isTeamLeader) return;
     
     setLoading(true);
     
@@ -159,8 +168,7 @@ const TeamSettingsGeneral = ({ team, loading, setLoading, onTeamUpdate }: TeamSe
   };
 
   const handleToggleAssociation = async () => {
-    const isLeader = team.leader_id === (supabase.auth.getUser() as any)?.data?.user?.id;
-    if (!isLeader) return;
+    if (!isTeamLeader) return;
     
     setLoading(true);
     
@@ -285,7 +293,7 @@ const TeamSettingsGeneral = ({ team, loading, setLoading, onTeamUpdate }: TeamSe
         )}
       </div>
       
-      {team.leader_id === (supabase.auth.getUser() as any)?.data?.user?.id && (
+      {isTeamLeader && (
         <>
           <div className="pt-4 border-t">
             <div className="flex items-center justify-between">

@@ -157,16 +157,22 @@ const TeamSettingsMembers = ({
         
       if (error) {
         console.error("Error accepting member:", error);
-        throw error;
+        toast({
+          title: "Erreur",
+          description: "Impossible d'accepter le membre: " + error.message,
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
       }
-      
-      // Refresh member lists immediately to update UI
-      await fetchTeamMembers();
       
       toast({
         title: "Membre accepté",
         description: "Le membre a été accepté dans l'équipe.",
       });
+      
+      // Refresh member lists immediately to update UI
+      await fetchTeamMembers();
     } catch (error: any) {
       console.error("Erreur lors de l'acceptation du membre:", error);
       toast({
@@ -194,16 +200,22 @@ const TeamSettingsMembers = ({
         
       if (error) {
         console.error("Error rejecting member:", error);
-        throw error;
+        toast({
+          title: "Erreur",
+          description: "Impossible de rejeter le membre: " + error.message,
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
       }
-      
-      // Refresh member lists immediately to update UI
-      await fetchTeamMembers();
       
       toast({
         title: "Membre rejeté",
         description: "La demande d'adhésion a été rejetée.",
       });
+      
+      // Refresh member lists immediately to update UI
+      await fetchTeamMembers();
     } catch (error: any) {
       console.error("Erreur lors du rejet du membre:", error);
       toast({
