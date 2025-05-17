@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -76,20 +77,25 @@ export const useUserGames = (userId: string | undefined) => {
         if (gamesError) throw gamesError;
         participatedGames = games ?? [];
 
-        const { data: participantCounts, error: countsError } = await supabase
-          .from('game_participants')
-          .select('game_id, count:id', { count: 'exact' })
-          .in('game_id', participatedGameIds)
-          .group('game_id');
-
-        if (countsError) throw countsError;
-
-        const countMap = Object.fromEntries(
-          (participantCounts ?? []).map(({ game_id, count }) => [game_id, count])
-        );
+        // Fetch participant counts individually for each game
+        const participantCounts: Record<string, number> = {};
+        
+        // Get counts for all games at once
+        for (const gameId of participatedGameIds) {
+          const { count, error: countError } = await supabase
+            .from('game_participants')
+            .select('*', { count: 'exact', head: true })
+            .eq('game_id', gameId);
+            
+          if (!countError && count !== null) {
+            participantCounts[gameId] = count;
+          } else {
+            participantCounts[gameId] = 0;
+          }
+        }
 
         const formatted = gameParticipants
-          .map(gp => {
+          ?.map(gp => {
             const game = participatedGames.find(g => g.id === gp.game_id);
             if (!game) return null;
 
@@ -108,7 +114,7 @@ export const useUserGames = (userId: string | undefined) => {
               zip_code: game.zip_code,
               city: game.city,
               max_players: game.max_players ?? 0,
-              participantsCount: countMap[game.id] ?? 0,
+              participantsCount: participantCounts[game.id] ?? 0,
               price: game.price ?? 0,
               image: DEFAULT_IMAGE,
               role: gp.role,
@@ -119,24 +125,28 @@ export const useUserGames = (userId: string | undefined) => {
           })
           .filter(Boolean) as FormattedGame[];
 
-        formattedGames.push(...formatted);
+        formattedGames.push(...(formatted || []));
       }
 
       // === Created Games ===
       if (createdGames?.length) {
         const createdIds = createdGames.map(g => g.id);
-
-        const { data: createdCounts, error: createdCountsError } = await supabase
-          .from('game_participants')
-          .select('game_id, count:id', { count: 'exact' })
-          .in('game_id', createdIds)
-          .group('game_id');
-
-        if (createdCountsError) throw createdCountsError;
-
-        const createdMap = Object.fromEntries(
-          (createdCounts ?? []).map(({ game_id, count }) => [game_id, count])
-        );
+        
+        // Fetch participant counts individually for created games
+        const createdCounts: Record<string, number> = {};
+        
+        for (const gameId of createdIds) {
+          const { count, error: countError } = await supabase
+            .from('game_participants')
+            .select('*', { count: 'exact', head: true })
+            .eq('game_id', gameId);
+            
+          if (!countError && count !== null) {
+            createdCounts[gameId] = count;
+          } else {
+            createdCounts[gameId] = 0;
+          }
+        }
 
         const formatted = createdGames.map(game => {
           const gameDate = new Date(game.date);
@@ -152,7 +162,7 @@ export const useUserGames = (userId: string | undefined) => {
             zip_code: game.zip_code,
             city: game.city,
             max_players: game.max_players ?? 0,
-            participantsCount: createdMap[game.id] ?? 0,
+            participantsCount: createdCounts[game.id] ?? 0,
             price: game.price ?? 0,
             image: DEFAULT_IMAGE,
             role: 'Organisateur',
