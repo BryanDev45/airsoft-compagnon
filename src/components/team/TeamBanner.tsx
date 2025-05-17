@@ -5,7 +5,14 @@ import { ArrowLeft, MapPin, Calendar, Users } from 'lucide-react';
 import TeamSettings from './TeamSettings';
 
 interface TeamBannerProps {
-  team: any;
+  team: {
+    name: string;
+    banner?: string;
+    logo?: string;
+    location?: string;
+    founded?: number; // Updated from string to number
+    members: any[];
+  };
   isTeamMember?: boolean;
   onTeamUpdate?: (updatedTeam: any) => void;
 }
