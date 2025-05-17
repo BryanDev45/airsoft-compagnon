@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -136,19 +135,34 @@ const Team = () => {
         }
       }
 
-      // Get games created by team members
+      // Get games created by team members - Fix the query to avoid relationship error
       let gamesData: any[] = [];
       if (memberUserIds.length > 0) {
+        // Modified query to avoid the relationship error
         const { data: teamGames, error: gamesError } = await supabase
           .from('airsoft_games')
-          .select('*, profiles:created_by(username)')
+          .select('*')
           .in('created_by', memberUserIds)
           .order('date', { ascending: true });
 
         if (gamesError) throw gamesError;
         
         if (teamGames) {
-          gamesData = teamGames;
+          // Fetch creator usernames in a separate query
+          const creatorIds = teamGames.map(game => game.created_by).filter(Boolean);
+          const { data: creatorProfiles } = await supabase
+            .from('profiles')
+            .select('id, username')
+            .in('id', creatorIds);
+          
+          // Attach creator info to games
+          gamesData = teamGames.map(game => {
+            const creator = creatorProfiles?.find(profile => profile.id === game.created_by);
+            return {
+              ...game,
+              creator: creator ? { username: creator.username } : null
+            };
+          });
         }
       }
 
@@ -162,7 +176,7 @@ const Team = () => {
           date: new Date(game.date).toLocaleDateString('fr-FR'),
           location: game.city,
           participants: game.max_players || 0,
-          creator: game.profiles
+          creator: game.creator
         }));
 
       const pastGames = (gamesData || [])
@@ -174,7 +188,7 @@ const Team = () => {
           location: game.city,
           result: "Terminé", // Default status since game.status may not exist
           participants: game.max_players || 0,
-          creator: game.profiles
+          creator: game.creator
         }));
 
       // Check if the current user is a member of this team
