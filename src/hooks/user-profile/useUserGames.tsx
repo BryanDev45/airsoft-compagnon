@@ -1,207 +1,197 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+const DEFAULT_IMAGE = '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png';
+
+interface Game {
+  id: string;
+  title: string;
+  date: string;
+  address: string;
+  city: string;
+  zip_code: string;
+  max_players?: number;
+  price?: number;
+  created_by: string;
+}
+
+interface GameParticipant {
+  game_id: string;
+  user_id: string;
+  role: string;
+  status: string;
+}
+
+interface FormattedGame {
+  id: string;
+  title: string;
+  date: string;
+  rawDate: string;
+  location: string;
+  address: string;
+  zip_code: string;
+  city: string;
+  max_players: number;
+  participantsCount: number;
+  price: number;
+  image: string;
+  role: string;
+  status: 'À venir' | 'Terminé';
+  team: string;
+  result: string;
+}
+
 export const useUserGames = (userId: string | undefined) => {
-  const [userGames, setUserGames] = useState<any[]>([]);
+  const [userGames, setUserGames] = useState<FormattedGame[]>([]);
 
   const fetchUserGames = async () => {
     if (!userId) return;
-    
+
     try {
-      // 1. Fetch games where the user is a participant
-      const { data: gameParticipants, error: participantsError } = await supabase
-        .from('game_participants')
-        .select('*, game_id')
-        .eq('user_id', userId);
-        
-      if (participantsError) throw participantsError;
-      
-      // 2. Fetch games created by the user
-      const { data: createdGames, error: createdGamesError } = await supabase
-        .from('airsoft_games')
-        .select('*')
-        .eq('created_by', userId);
-        
-      if (createdGamesError) throw createdGamesError;
-      
-      console.log("Created games:", createdGames);
-      console.log("Participated games:", gameParticipants);
-      
-      let formattedGames: any[] = [];
-      let pastGamesCount = 0; // Compteur pour les parties déjà jouées
-      
-      // 3. Format participated games
-      if (gameParticipants && gameParticipants.length > 0) {
-        const gameIds = gameParticipants.map(gp => gp.game_id);
-        
-        if (gameIds.length > 0) {
-          const { data: games, error: gamesDataError } = await supabase
-            .from('airsoft_games')
-            .select('*')
-            .in('id', gameIds);
-            
-          if (gamesDataError) throw gamesDataError;
-          
-          if (games && games.length > 0) {
-            // For each game, get the participant count
-            const gameParticipantCounts = await Promise.all(
-              games.map(async (game) => {
-                const { count, error } = await supabase
-                  .from('game_participants')
-                  .select('id', { count: 'exact', head: true })
-                  .eq('game_id', game.id);
-                  
-                return { 
-                  gameId: game.id, 
-                  count: error ? 0 : count || 0 
-                };
-              })
-            );
-            
-            const participantCountMap = gameParticipantCounts.reduce((map, item) => {
-              map[item.gameId] = item.count;
-              return map;
-            }, {});
-            
-            const participatedGames = gameParticipants.map(gp => {
-              const gameData = games.find(g => g.id === gp.game_id);
-              if (gameData) {
-                const gameDate = new Date(gameData.date);
-                const isUpcoming = gameDate > new Date();
-                
-                // Incrémenter le compteur si la partie est déjà passée
-                if (!isUpcoming) {
-                  pastGamesCount++;
-                }
-                
-                return {
-                  id: gameData.id,
-                  title: gameData.title,
-                  date: new Date(gameData.date).toLocaleDateString('fr-FR'),
-                  rawDate: gameData.date, // Ajout de la date brute pour le tri
-                  location: gameData.city,
-                  address: gameData.address,
-                  zip_code: gameData.zip_code,
-                  city: gameData.city,
-                  max_players: gameData.max_players || 0,
-                  participantsCount: participantCountMap[gameData.id] || 0,
-                  price: gameData.price || 0, // Ajout du prix
-                  image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
-                  role: gp.role,
-                  status: isUpcoming ? 'À venir' : 'Terminé',
-                  team: 'Indéfini',
-                  result: gp.status
-                };
-              }
-              return null;
-            }).filter(Boolean);
-            
-            formattedGames = [...formattedGames, ...participatedGames];
-          }
-        }
+      const [
+        { data: gameParticipants, error: participantsError },
+        { data: createdGames, error: createdGamesError }
+      ] = await Promise.all([
+        supabase.from('game_participants').select('*').eq('user_id', userId),
+        supabase.from('airsoft_games').select('*').eq('created_by', userId)
+      ]);
+
+      if (participantsError || createdGamesError) {
+        throw participantsError || createdGamesError;
       }
-      
-      // 4. Format created games
-      if (createdGames && createdGames.length > 0) {
-        // For each created game, get the participant count
-        const createdGameParticipantCounts = await Promise.all(
-          createdGames.map(async (game) => {
-            const { count, error } = await supabase
-              .from('game_participants')
-              .select('id', { count: 'exact', head: true })
-              .eq('game_id', game.id);
-              
-            return { 
-              gameId: game.id, 
-              count: error ? 0 : count || 0 
-            };
-          })
+
+      let formattedGames: FormattedGame[] = [];
+      let pastGamesCount = 0;
+
+      // === Participated Games ===
+      const participatedGameIds = gameParticipants?.map(p => p.game_id) ?? [];
+      let participatedGames: Game[] = [];
+
+      if (participatedGameIds.length > 0) {
+        const { data: games, error: gamesError } = await supabase
+          .from('airsoft_games')
+          .select('*')
+          .in('id', participatedGameIds);
+
+        if (gamesError) throw gamesError;
+        participatedGames = games ?? [];
+
+        const { data: participantCounts, error: countsError } = await supabase
+          .from('game_participants')
+          .select('game_id, count:id', { count: 'exact' })
+          .in('game_id', participatedGameIds)
+          .group('game_id');
+
+        if (countsError) throw countsError;
+
+        const countMap = Object.fromEntries(
+          (participantCounts ?? []).map(({ game_id, count }) => [game_id, count])
         );
-        
-        const createdGameCountMap = createdGameParticipantCounts.reduce((map, item) => {
-          map[item.gameId] = item.count;
-          return map;
-        }, {});
-        
-        const organizedGames = createdGames.map(game => {
+
+        const formatted = gameParticipants
+          .map(gp => {
+            const game = participatedGames.find(g => g.id === gp.game_id);
+            if (!game) return null;
+
+            const gameDate = new Date(game.date);
+            const isUpcoming = gameDate > new Date();
+
+            if (!isUpcoming) pastGamesCount++;
+
+            return {
+              id: game.id,
+              title: game.title,
+              date: gameDate.toLocaleDateString('fr-FR'),
+              rawDate: game.date,
+              location: game.city,
+              address: game.address,
+              zip_code: game.zip_code,
+              city: game.city,
+              max_players: game.max_players ?? 0,
+              participantsCount: countMap[game.id] ?? 0,
+              price: game.price ?? 0,
+              image: DEFAULT_IMAGE,
+              role: gp.role,
+              status: isUpcoming ? 'À venir' : 'Terminé',
+              team: 'Indéfini',
+              result: gp.status
+            } as FormattedGame;
+          })
+          .filter(Boolean) as FormattedGame[];
+
+        formattedGames.push(...formatted);
+      }
+
+      // === Created Games ===
+      if (createdGames?.length) {
+        const createdIds = createdGames.map(g => g.id);
+
+        const { data: createdCounts, error: createdCountsError } = await supabase
+          .from('game_participants')
+          .select('game_id, count:id', { count: 'exact' })
+          .in('game_id', createdIds)
+          .group('game_id');
+
+        if (createdCountsError) throw createdCountsError;
+
+        const createdMap = Object.fromEntries(
+          (createdCounts ?? []).map(({ game_id, count }) => [game_id, count])
+        );
+
+        const formatted = createdGames.map(game => {
           const gameDate = new Date(game.date);
           const isUpcoming = gameDate > new Date();
-          
+
           return {
             id: game.id,
             title: game.title,
-            date: new Date(game.date).toLocaleDateString('fr-FR'),
-            rawDate: game.date, // Ajout de la date brute pour le tri
+            date: gameDate.toLocaleDateString('fr-FR'),
+            rawDate: game.date,
             location: game.city,
             address: game.address,
             zip_code: game.zip_code,
             city: game.city,
-            max_players: game.max_players || 0,
-            participantsCount: createdGameCountMap[game.id] || 0,
-            price: game.price || 0, // Ajout du prix
-            image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
+            max_players: game.max_players ?? 0,
+            participantsCount: createdMap[game.id] ?? 0,
+            price: game.price ?? 0,
+            image: DEFAULT_IMAGE,
             role: 'Organisateur',
             status: isUpcoming ? 'À venir' : 'Terminé',
             team: 'Organisateur',
             result: 'Organisateur'
-          };
+          } as FormattedGame;
         });
-        
-        formattedGames = [...formattedGames, ...organizedGames];
-      }
-      
-      // 5. Update the games_organized count in user_stats if needed
-      if (createdGames && createdGames.length > 0) {
-        const { error: updateError } = await supabase
+
+        formattedGames.push(...formatted);
+
+        // Update organized count
+        await supabase
           .from('user_stats')
           .update({ games_organized: createdGames.length })
           .eq('user_id', userId);
-          
-        if (updateError) {
-          console.error("Error updating games_organized count:", updateError);
-        } else {
-          console.log("Updated games_organized count to:", createdGames.length);
-        }
       }
-      
-      // Mettre à jour le compteur de parties jouées
-      const { error: updateGamesPlayedError } = await supabase
+
+      // Update games played
+      await supabase
         .from('user_stats')
         .update({ games_played: pastGamesCount })
         .eq('user_id', userId);
-        
-      if (updateGamesPlayedError) {
-        console.error("Error updating games_played count:", updateGamesPlayedError);
-      } else {
-        console.log("Updated games_played count to:", pastGamesCount);
-      }
-      
+
       // Remove duplicates
-      formattedGames = formattedGames.filter((game, index, self) => 
-        index === self.findIndex(g => g.id === game.id)
-      );
-      
-      // Sort games: upcoming first, then by date (newest first for each category)
+      formattedGames = Array.from(new Map(formattedGames.map(g => [g.id, g])).values());
+
+      // Sort: upcoming first, then by date descending
       formattedGames.sort((a, b) => {
-        // Upcoming games first
         if (a.status === 'À venir' && b.status !== 'À venir') return -1;
         if (a.status !== 'À venir' && b.status === 'À venir') return 1;
-        
-        // For games with the same status, sort by date
         return new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime();
       });
-      
-      console.log("Final formatted games:", formattedGames);
+
       setUserGames(formattedGames);
-      
-    } catch (error) {
-      console.error("Erreur lors de la récupération des parties:", error);
+    } catch (err) {
+      console.error('Erreur lors de la récupération des parties :', err);
     }
   };
 
-  return {
-    userGames,
-    fetchUserGames
-  };
+  return { userGames, fetchUserGames };
 };
