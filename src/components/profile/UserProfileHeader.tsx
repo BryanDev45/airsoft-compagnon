@@ -13,6 +13,7 @@ interface UserProfileHeaderProps {
   friendRequestSent: boolean;
   currentUserId: string | null;
   userRating: number;
+  userReputation?: number | null;
   handleFollowUser: () => void;
   handleRatingChange: (rating: number) => void;
 }
@@ -24,6 +25,7 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
   friendRequestSent,
   currentUserId,
   userRating,
+  userReputation,
   handleFollowUser,
   handleRatingChange
 }) => {
@@ -39,10 +41,13 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
   // Vérifier si l'utilisateur consulte son propre profil
   const isOwnProfile = currentUserId === userData?.id;
 
+  // Utiliser la réputation mise à jour si disponible, sinon utiliser celle du profil
+  const displayedReputation = userReputation !== null ? userReputation : profileData?.reputation || 0;
+
   return (
     <div className="relative">
       <ProfileHeader 
-        user={profileData} 
+        user={{...profileData, reputation: displayedReputation}}
         isOwnProfile={isOwnProfile}
         toggleProfileSettings={toggleProfileSettings}
         onEditBio={onEditBio}

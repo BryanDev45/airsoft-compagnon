@@ -28,6 +28,7 @@ const UserProfile = () => {
     isFollowing,
     friendRequestSent,
     userRating,
+    userReputation,
     currentUserId,
     handleFollowUser,
     handleRatingChange,
@@ -81,6 +82,7 @@ const UserProfile = () => {
               friendRequestSent={friendRequestSent}
               currentUserId={currentUserId}
               userRating={userRating}
+              userReputation={userReputation}
               handleFollowUser={handleFollowUser}
               handleRatingChange={handleRatingChange}
             />

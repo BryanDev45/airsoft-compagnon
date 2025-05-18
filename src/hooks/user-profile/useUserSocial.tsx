@@ -12,6 +12,7 @@ export const useUserSocial = (userData: any, currentUserId: string | null) => {
   const [friendRequestSent, setFriendRequestSent] = useState(false);
   const [userRating, setUserRating] = useState<number>(0);
   const [hasRated, setHasRated] = useState(false);
+  const [userReputation, setUserReputation] = useState<number | null>(null);
 
   // Check friendship status and rating when userData or currentUserId changes
   useEffect(() => {
@@ -40,6 +41,15 @@ export const useUserSocial = (userData: any, currentUserId: string | null) => {
         if (!ratingsError && ratings !== null) {
           setUserRating(ratings);
           setHasRated(true);
+        }
+
+        // Get user's current reputation
+        if (userData?.id) {
+          const { data: avgRating } = await callRPC<number>('get_average_rating', { 
+            p_user_id: userData.id 
+          });
+          
+          setUserReputation(avgRating);
         }
       } catch (error) {
         console.error("Error checking social status:", error);
@@ -147,14 +157,14 @@ export const useUserSocial = (userData: any, currentUserId: string | null) => {
 
       setUserRating(rating);
       
-      // Update average reputation
-      const { data: avgRating, error: avgError } = await callRPC<number>('get_average_rating', 
-        { p_user_id: userData.id }
-      );
+      // Update average reputation and get the new value immediately
+      const { data: avgRating, error: avgError } = await callRPC<number>('get_average_rating', { 
+        p_user_id: userData.id 
+      });
       
       if (!avgError && avgRating !== null) {
-        // This will be visible in the UI but we can't directly update profileData here
-        // This is fine since the updated value will be fetched on the next load
+        // Update local state with new reputation value
+        setUserReputation(avgRating);
       }
       
       toast({
@@ -175,6 +185,7 @@ export const useUserSocial = (userData: any, currentUserId: string | null) => {
     isFollowing,
     friendRequestSent,
     userRating,
+    userReputation,
     handleFollowUser,
     handleRatingChange
   };

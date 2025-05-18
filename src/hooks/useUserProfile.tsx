@@ -24,6 +24,7 @@ export const useUserProfile = (username: string | undefined) => {
     isFollowing,
     friendRequestSent,
     userRating,
+    userReputation,
     handleFollowUser,
     handleRatingChange
   } = useUserSocial(userData, currentUserId);
@@ -39,6 +40,7 @@ export const useUserProfile = (username: string | undefined) => {
     isFollowing,
     friendRequestSent,
     userRating,
+    userReputation,
     currentUserId,
     handleFollowUser,
     handleRatingChange,
