@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -188,7 +189,7 @@ const TeamField: React.FC<TeamFieldProps> = ({
                   </div>
                 </div>
                 
-                {field.description}
+                {/* Suppression de la ligne duplicate qui affichait field.description ici */}
               </div>}
 
             <div className="h-[400px] rounded-lg overflow-hidden border border-gray-200 shadow-inner relative">
