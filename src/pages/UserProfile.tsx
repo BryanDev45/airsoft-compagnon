@@ -10,6 +10,7 @@ import ProfileStats from '../components/profile/ProfileStats';
 import ProfileEquipment from '../components/profile/ProfileEquipment';
 import ProfileBadges from '../components/profile/ProfileBadges';
 import ProfileDialogs from '../components/profile/ProfileDialogs';
+import ProfileFriends from '../components/profile/ProfileFriends';
 import { useUserProfile } from '../hooks/useUserProfile';
 import UserProfileHeader from '../components/profile/UserProfileHeader';
 
@@ -69,6 +70,9 @@ const UserProfile = () => {
     );
   }
 
+  // Check if the profile is the user's own
+  const isOwnProfile = currentUserId === userData?.id;
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -95,6 +99,7 @@ const UserProfile = () => {
                   <TabsTrigger value="stats">Statistiques</TabsTrigger>
                   <TabsTrigger value="equipment">Équipement</TabsTrigger>
                   <TabsTrigger value="badges">Badges</TabsTrigger>
+                  <TabsTrigger value="friends">Amis</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="profile">
@@ -138,6 +143,13 @@ const UserProfile = () => {
                   <ProfileBadges 
                     badges={userBadges} 
                     handleViewAllBadges={() => setShowBadgesDialog(true)} 
+                  />
+                </TabsContent>
+
+                <TabsContent value="friends">
+                  <ProfileFriends 
+                    userId={userData?.id}
+                    isOwnProfile={isOwnProfile}
                   />
                 </TabsContent>
               </Tabs>

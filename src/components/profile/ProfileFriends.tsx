@@ -248,8 +248,10 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
     }
   }, [userId]);
 
-  // Remove this condition - we'll handle visibility differently
-  // const shouldShowFriendsList = isOwnProfile || isFriendsListPublic;
+  // Show friends if either:
+  // 1. It's the user's own profile, OR
+  // 2. The friends list is set to public
+  const shouldShowFriendsList = isOwnProfile || isFriendsListPublic;
 
   return (
     <div className="space-y-6">
@@ -326,7 +328,7 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
       <Card className="p-6">
         <h3 className="text-lg font-medium mb-4">Amis</h3>
         
-        {!isOwnProfile && !isFriendsListPublic ? (
+        {!shouldShowFriendsList ? (
           <p className="text-center text-gray-500">Cette liste d'amis est privée</p>
         ) : friends.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
