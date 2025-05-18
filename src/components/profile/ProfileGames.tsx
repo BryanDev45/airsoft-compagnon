@@ -12,6 +12,13 @@ interface Game {
   date: string;
   status: string;
   role: string;
+  participantsCount?: number;
+  max_players?: number;
+  price?: number;
+  address?: string;
+  city?: string;
+  zip_code?: string;
+  location?: string;
 }
 
 interface ProfileGamesProps {

@@ -90,7 +90,9 @@ const ProfileDialogs = ({
                 <div className="flex items-center gap-2 text-gray-700">
                   <Euro className="text-airsoft-red flex-shrink-0" size={18} />
                   <span>
-                    {selectedGame.price !== undefined && selectedGame.price !== null ? `${selectedGame.price}€` : '5€'}
+                    {selectedGame.price !== undefined && selectedGame.price !== null 
+                      ? `${selectedGame.price}€` 
+                      : 'Prix non spécifié'}
                   </span>
                 </div>
                 
