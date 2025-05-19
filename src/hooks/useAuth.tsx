@@ -68,6 +68,29 @@ export const useAuth = () => {
   const login = async (email: string, password: string, rememberMe: boolean = false) => {
     try {
       setLoading(true);
+      
+      // Vérifier d'abord si l'utilisateur est banni
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('Ban')
+        .eq('email', email)
+        .single();
+
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.error("Erreur lors de la vérification du statut de bannissement:", profileError);
+      }
+
+      // Si l'utilisateur est banni, refuser la connexion
+      if (profileData?.Ban === true) {
+        toast({
+          title: "Connexion refusée",
+          description: "Votre compte a été banni par un administrateur",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Si l'utilisateur n'est pas banni, procéder à la connexion
       const { data, error } = await supabase.auth.signInWithPassword({ 
         email, 
         password
@@ -78,6 +101,28 @@ export const useAuth = () => {
       }
 
       if (data && data.user) {
+        // Vérifier si le compte est banni après connexion (double vérification)
+        const { data: userData, error: userError } = await supabase
+          .from('profiles')
+          .select('Ban')
+          .eq('id', data.user.id)
+          .single();
+
+        if (userError) {
+          console.error("Erreur lors de la vérification du statut du compte:", userError);
+        }
+
+        // Si le compte est banni, déconnecter l'utilisateur
+        if (userData?.Ban === true) {
+          await supabase.auth.signOut();
+          toast({
+            title: "Connexion refusée",
+            description: "Votre compte a été banni par un administrateur",
+            variant: "destructive",
+          });
+          return false;
+        }
+        
         setUser(data.user);
         toast({
           title: "Connexion réussie",
