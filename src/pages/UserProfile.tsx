@@ -15,6 +15,7 @@ import { useUserProfile } from '../hooks/useUserProfile';
 import UserProfileHeader from '../components/profile/UserProfileHeader';
 import { toast } from "@/components/ui/use-toast";
 import { AlertCircle } from "lucide-react";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 const UserProfile = () => {
   const { username } = useParams();
@@ -93,21 +94,22 @@ const UserProfile = () => {
     if (userData?.Ban !== true) return null;
     
     return (
-      <div className="bg-red-600 text-white py-3 px-6 flex items-center justify-between">
-        <div className="flex items-center">
-          <AlertCircle className="mr-2 h-5 w-5" />
-          <span className="font-medium">Ce compte utilisateur a été banni</span>
-        </div>
-      </div>
+      <Alert variant="destructive" className="mb-4">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Compte banni</AlertTitle>
+        <AlertDescription>
+          Ce compte utilisateur a été banni par un administrateur.
+        </AlertDescription>
+      </Alert>
     );
   };
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <BannedUserBanner />
       <main className="flex-grow bg-gray-50 py-12">
         <div className="max-w-6xl mx-auto px-4">
+          {userData?.Ban && <BannedUserBanner />}
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <UserProfileHeader
               profileData={profileData}

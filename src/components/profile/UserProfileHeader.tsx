@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { UserPlus, UserMinus, Check, ShieldX } from "lucide-react";
 import RatingStars from './RatingStars';
@@ -7,6 +7,16 @@ import ReportUserButton from './ReportUserButton';
 import ProfileHeader from './ProfileHeader';
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from "@/components/ui/alert-dialog";
 
 interface UserProfileHeaderProps {
   profileData: any;
@@ -33,6 +43,8 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
   handleRatingChange,
   isCurrentUserAdmin = false
 }) => {
+  const [banDialogOpen, setBanDialogOpen] = useState(false);
+  
   // Mock functions that are called from ProfileHeader
   const toggleProfileSettings = () => {
     // This is just a placeholder for the ProfileHeader component
@@ -130,7 +142,7 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
           {/* Ban/Unban button for admins */}
           {isCurrentUserAdmin && userData?.id !== currentUserId && (
             <Button
-              onClick={handleBanUser}
+              onClick={() => setBanDialogOpen(true)}
               variant="destructive"
               className={userData?.Ban ? "bg-gray-600" : ""}
             >
@@ -142,6 +154,32 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
           <ReportUserButton username={profileData?.username} />
         </div>
       )}
+
+      {/* Ban confirmation dialog */}
+      <AlertDialog open={banDialogOpen} onOpenChange={setBanDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {userData?.Ban ? "Débannir cet utilisateur?" : "Bannir cet utilisateur?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {userData?.Ban 
+                ? `Êtes-vous sûr de vouloir débannir ${userData?.username}? Cet utilisateur pourra à nouveau accéder à toutes les fonctionnalités du site.`
+                : `Êtes-vous sûr de vouloir bannir ${userData?.username}? Cet utilisateur ne pourra plus accéder à certaines fonctionnalités du site.`
+              }
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBanUser}
+              className={userData?.Ban ? "bg-blue-600 hover:bg-blue-700" : "bg-destructive hover:bg-destructive/90"}
+            >
+              {userData?.Ban ? "Débannir" : "Bannir"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
