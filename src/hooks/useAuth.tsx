@@ -16,91 +16,34 @@ export const useAuth = () => {
     // First, set up the auth state listener to avoid missing auth events
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        setUser(session?.user || null);
+
         if (event === 'SIGNED_IN') {
-          // Check if the user is banned before setting the user state
-          checkIfBanned(session?.user?.id).then(isBanned => {
-            if (isBanned) {
-              // If banned, log the user out immediately
-              supabase.auth.signOut().then(() => {
-                toast({
-                  title: "Accès refusé",
-                  description: "Votre compte a été banni par un administrateur",
-                  variant: "destructive",
-                });
-                navigate('/login');
-              });
-            } else {
-              // Not banned, proceed normally
-              setUser(session?.user || null);
-              
-              // Only navigate to profile if we're on the login or register page
-              if (location.pathname === '/login' || location.pathname === '/register') {
-                // Use setTimeout to avoid potential deadlocks
-                setTimeout(() => {
-                  navigate('/profile');
-                  // Force page reload after navigation to ensure fresh data loading
-                  window.location.reload();
-                }, 0);
-              }
-            }
-          });
+          // Only navigate to profile if we're on the login or register page
+          // This prevents the redirect loop issue
+          if (location.pathname === '/login' || location.pathname === '/register') {
+            // Use setTimeout to avoid potential deadlocks
+            setTimeout(() => {
+              navigate('/profile');
+              // Force page reload after navigation to ensure fresh data loading
+              window.location.reload();
+            }, 0);
+          }
         }
-        else if (event === 'SIGNED_OUT') {
+        if (event === 'SIGNED_OUT') {
           setUser(null);
           // Use setTimeout to avoid potential deadlocks
           setTimeout(() => {
             navigate('/login');
           }, 0);
         }
-        else if (event !== 'TOKEN_REFRESHED') {
-          // For other events (PASSWORD_RECOVERY, etc), just update the user state
-          setUser(session?.user || null);
-        }
       }
     );
-
-    // Helper function to check if a user is banned
-    const checkIfBanned = async (userId: string | undefined): Promise<boolean> => {
-      if (!userId) return false;
-      
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('Ban')
-          .eq('id', userId)
-          .single();
-          
-        if (error || !data) return false;
-        return data.Ban === true;
-      } catch (error) {
-        console.error("Error checking if user is banned:", error);
-        return false;
-      }
-    };
 
     // Configurer la persistance de session et la récupération de la session
     const setupSessionPersistence = async () => {
       // Vérifier s'il y a une session existante
       const { data: { session } } = await supabase.auth.getSession();
-      
-      // Check if the logged-in user is banned
-      if (session?.user) {
-        const isBanned = await checkIfBanned(session.user.id);
-        if (isBanned) {
-          // If banned, log out and don't set the user state
-          await supabase.auth.signOut();
-          toast({
-            title: "Accès refusé",
-            description: "Votre compte a été banni par un administrateur",
-            variant: "destructive",
-          });
-          navigate('/login');
-          setUser(null);
-          setInitialLoading(false);
-          return;
-        }
-      }
-      
       setUser(session?.user || null);
       setInitialLoading(false);
 
@@ -125,6 +68,29 @@ export const useAuth = () => {
   const login = async (email: string, password: string, rememberMe: boolean = false) => {
     try {
       setLoading(true);
+      
+      // Vérifier d'abord si l'utilisateur est banni
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('Ban')
+        .eq('email', email)
+        .single();
+
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.error("Erreur lors de la vérification du statut de bannissement:", profileError);
+      }
+
+      // Si l'utilisateur est banni, refuser la connexion
+      if (profileData?.Ban === true) {
+        toast({
+          title: "Connexion refusée",
+          description: "Votre compte a été banni par un administrateur",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Si l'utilisateur n'est pas banni, procéder à la connexion
       const { data, error } = await supabase.auth.signInWithPassword({ 
         email, 
         password
@@ -135,31 +101,28 @@ export const useAuth = () => {
       }
 
       if (data && data.user) {
-        // Check if the user is banned
-        const { data: profile, error: profileError } = await supabase
+        // Vérifier si le compte est banni après connexion (double vérification)
+        const { data: userData, error: userError } = await supabase
           .from('profiles')
           .select('Ban')
           .eq('id', data.user.id)
           .single();
-          
-        if (profileError) {
-          console.error("Error checking if user is banned:", profileError);
+
+        if (userError) {
+          console.error("Erreur lors de la vérification du statut du compte:", userError);
         }
-        
-        // If the user is banned, prevent login
-        if (profile && profile.Ban === true) {
-          // Sign out immediately
+
+        // Si le compte est banni, déconnecter l'utilisateur
+        if (userData?.Ban === true) {
           await supabase.auth.signOut();
-          
           toast({
-            title: "Accès refusé",
+            title: "Connexion refusée",
             description: "Votre compte a été banni par un administrateur",
             variant: "destructive",
           });
           return false;
         }
         
-        // User not banned, proceed with login
         setUser(data.user);
         toast({
           title: "Connexion réussie",

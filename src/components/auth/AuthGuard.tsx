@@ -17,37 +17,36 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   const [isBanned, setIsBanned] = useState(false);
 
   useEffect(() => {
+    // Check if the user is banned
     const checkBanStatus = async () => {
-      if (!user) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('Ban')
-          .eq('id', user.id)
-          .single();
-          
-        if (error) throw error;
-        
-        if (data && data.Ban === true) {
-          setIsBanned(true);
-          
-          // Log out banned user
-          await supabase.auth.signOut();
-          
-          toast({
-            title: "Accès refusé",
-            description: "Votre compte a été banni par un administrateur",
-            variant: "destructive",
-          });
-          
-          navigate('/login');
+      if (user) {
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('Ban')
+            .eq('id', user.id)
+            .single();
+            
+          if (error) {
+            console.error("Error checking ban status:", error);
+          } else if (data?.Ban === true) {
+            setIsBanned(true);
+            // Force logout if banned
+            await supabase.auth.signOut();
+            toast({
+              title: "Accès refusé",
+              description: "Votre compte a été banni par un administrateur",
+              variant: "destructive"
+            });
+            navigate('/login');
+          }
+        } catch (error) {
+          console.error("Error checking ban status:", error);
         }
-      } catch (error) {
-        console.error("Error checking ban status:", error);
       }
+      setIsChecking(false);
     };
-    
+
     // Wait for the initial verification to complete
     if (!initialLoading) {
       if (!user) {
@@ -60,11 +59,10 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
           });
           navigate('/login');
         }
+        setIsChecking(false);
       } else {
-        // Check if the user is banned
         checkBanStatus();
       }
-      setIsChecking(false);
     }
   }, [user, initialLoading, navigate, location.pathname]);
 
