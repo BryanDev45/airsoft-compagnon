@@ -44,6 +44,7 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
   isCurrentUserAdmin = false
 }) => {
   const [banDialogOpen, setBanDialogOpen] = useState(false);
+  const [isBanning, setIsBanning] = useState(false);
   
   // Mock functions that are called from ProfileHeader
   const toggleProfileSettings = () => {
@@ -62,8 +63,9 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
 
   const handleBanUser = async () => {
     if (!isCurrentUserAdmin || !userData?.id) return;
-
+    
     try {
+      setIsBanning(true);
       const isBanned = userData.Ban || false;
       
       const { error } = await supabase
@@ -81,8 +83,8 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
         variant: isBanned ? "default" : "destructive",
       });
       
-      // Refresh page to see changes
-      window.location.reload();
+      // Update local state to reflect the change without page reload
+      userData.Ban = !isBanned;
       
     } catch (error) {
       console.error("Error banning user:", error);
@@ -91,6 +93,9 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
         description: "Une erreur s'est produite lors de la tentative de bannissement",
         variant: "destructive",
       });
+    } finally {
+      setIsBanning(false);
+      setBanDialogOpen(false);
     }
   };
 
@@ -145,6 +150,7 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
               onClick={() => setBanDialogOpen(true)}
               variant="destructive"
               className={userData?.Ban ? "bg-gray-600" : ""}
+              disabled={isBanning}
             >
               <ShieldX className="mr-2 h-4 w-4" />
               {userData?.Ban ? "Débannir" : "Bannir"}
@@ -174,8 +180,9 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
             <AlertDialogAction
               onClick={handleBanUser}
               className={userData?.Ban ? "bg-blue-600 hover:bg-blue-700" : "bg-destructive hover:bg-destructive/90"}
+              disabled={isBanning}
             >
-              {userData?.Ban ? "Débannir" : "Bannir"}
+              {isBanning ? "Traitement..." : (userData?.Ban ? "Débannir" : "Bannir")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

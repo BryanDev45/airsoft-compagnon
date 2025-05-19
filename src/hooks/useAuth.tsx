@@ -72,9 +72,9 @@ export const useAuth = () => {
       // Vérifier d'abord si l'utilisateur est banni
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('Ban')
+        .select('Ban, username')
         .eq('email', email)
-        .single();
+        .maybeSingle();
 
       if (profileError && profileError.code !== 'PGRST116') {
         console.error("Erreur lors de la vérification du statut de bannissement:", profileError);
@@ -84,7 +84,7 @@ export const useAuth = () => {
       if (profileData?.Ban === true) {
         toast({
           title: "Connexion refusée",
-          description: "Votre compte a été banni par un administrateur",
+          description: `Le compte ${profileData.username} a été banni par un administrateur`,
           variant: "destructive",
         });
         return false;
@@ -104,7 +104,7 @@ export const useAuth = () => {
         // Vérifier si le compte est banni après connexion (double vérification)
         const { data: userData, error: userError } = await supabase
           .from('profiles')
-          .select('Ban')
+          .select('Ban, username')
           .eq('id', data.user.id)
           .single();
 
@@ -117,7 +117,7 @@ export const useAuth = () => {
           await supabase.auth.signOut();
           toast({
             title: "Connexion refusée",
-            description: "Votre compte a été banni par un administrateur",
+            description: `Le compte ${userData.username} a été banni par un administrateur`,
             variant: "destructive",
           });
           return false;

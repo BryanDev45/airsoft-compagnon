@@ -39,6 +39,8 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
               variant: "destructive"
             });
             navigate('/login');
+          } else {
+            setIsBanned(false);
           }
         } catch (error) {
           console.error("Error checking ban status:", error);
