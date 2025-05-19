@@ -2,7 +2,8 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Settings, Pencil, Star } from 'lucide-react';
+import { Settings, Pencil, Star, ShieldCheck } from 'lucide-react';
+import { Badge } from "@/components/ui/badge";
 
 const ProfileHeader = ({
   user,
@@ -37,6 +38,16 @@ const ProfileHeader = ({
                   <span className="text-sm font-medium text-amber-700">{user.reputation.toFixed(1)}</span>
                 </div>}
             </div>
+            
+            {user?.Admin && (
+              <div className="flex items-center mt-1">
+                <Badge className="bg-blue-600 hover:bg-blue-700 flex items-center gap-1 text-white">
+                  <ShieldCheck className="h-3 w-3" />
+                  Administrateur
+                </Badge>
+              </div>
+            )}
+            
             <p className="text-gray-600 mt-1">{user?.bio || 'Aucune bio pour le moment'}</p>
           </div>
           

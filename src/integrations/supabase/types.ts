@@ -322,8 +322,10 @@ export type Database = {
       }
       profiles: {
         Row: {
+          Admin: boolean | null
           age: number | null
           avatar: string | null
+          Ban: boolean | null
           banner: string | null
           bio: string | null
           birth_date: string | null
@@ -344,8 +346,10 @@ export type Database = {
           username: string | null
         }
         Insert: {
+          Admin?: boolean | null
           age?: number | null
           avatar?: string | null
+          Ban?: boolean | null
           banner?: string | null
           bio?: string | null
           birth_date?: string | null
@@ -366,8 +370,10 @@ export type Database = {
           username?: string | null
         }
         Update: {
+          Admin?: boolean | null
           age?: number | null
           avatar?: string | null
+          Ban?: boolean | null
           banner?: string | null
           bio?: string | null
           birth_date?: string | null

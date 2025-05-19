@@ -15,6 +15,7 @@ export const useUserProfile = (username: string | undefined) => {
     userGames,
     userBadges,
     currentUserId,
+    isCurrentUserAdmin,
     updateLocation,
     updateUserStats,
     fetchProfileData
@@ -42,6 +43,7 @@ export const useUserProfile = (username: string | undefined) => {
     userRating,
     userReputation,
     currentUserId,
+    isCurrentUserAdmin,
     handleFollowUser,
     handleRatingChange,
     updateLocation,

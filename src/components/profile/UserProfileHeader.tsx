@@ -1,10 +1,12 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { UserPlus, UserMinus, Check } from "lucide-react";
+import { UserPlus, UserMinus, Check, ShieldX } from "lucide-react";
 import RatingStars from './RatingStars';
 import ReportUserButton from './ReportUserButton';
 import ProfileHeader from './ProfileHeader';
+import { toast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface UserProfileHeaderProps {
   profileData: any;
@@ -16,6 +18,7 @@ interface UserProfileHeaderProps {
   userReputation?: number | null;
   handleFollowUser: () => void;
   handleRatingChange: (rating: number) => void;
+  isCurrentUserAdmin?: boolean;
 }
 
 const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
@@ -27,7 +30,8 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
   userRating,
   userReputation,
   handleFollowUser,
-  handleRatingChange
+  handleRatingChange,
+  isCurrentUserAdmin = false
 }) => {
   // Mock functions that are called from ProfileHeader
   const toggleProfileSettings = () => {
@@ -43,6 +47,40 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
 
   // Utiliser la réputation mise à jour si disponible, sinon utiliser celle du profil
   const displayedReputation = userReputation !== null ? userReputation : profileData?.reputation || 0;
+
+  const handleBanUser = async () => {
+    if (!isCurrentUserAdmin || !userData?.id) return;
+
+    try {
+      const isBanned = userData.Ban || false;
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({ Ban: !isBanned })
+        .eq('id', userData.id);
+
+      if (error) throw error;
+
+      toast({
+        title: isBanned ? "Utilisateur débanni" : "Utilisateur banni",
+        description: isBanned 
+          ? `${userData.username} a été débanni avec succès` 
+          : `${userData.username} a été banni avec succès`,
+        variant: isBanned ? "default" : "destructive",
+      });
+      
+      // Refresh page to see changes
+      window.location.reload();
+      
+    } catch (error) {
+      console.error("Error banning user:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur s'est produite lors de la tentative de bannissement",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="relative">
@@ -88,6 +126,18 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
               userId={userData?.id}
             />
           </div>
+          
+          {/* Ban/Unban button for admins */}
+          {isCurrentUserAdmin && userData?.id !== currentUserId && (
+            <Button
+              onClick={handleBanUser}
+              variant="destructive"
+              className={userData?.Ban ? "bg-gray-600" : ""}
+            >
+              <ShieldX className="mr-2 h-4 w-4" />
+              {userData?.Ban ? "Débannir" : "Bannir"}
+            </Button>
+          )}
           
           <ReportUserButton username={profileData?.username} />
         </div>

@@ -19,12 +19,24 @@ export const useUserProfileData = (username: string | undefined) => {
   const [userBadges, setUserBadges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isCurrentUserAdmin, setIsCurrentUserAdmin] = useState<boolean>(false);
   
   useEffect(() => {
     const fetchCurrentUser = async () => {
       const { data } = await supabase.auth.getSession();
       if (data.session?.user?.id) {
         setCurrentUserId(data.session.user.id);
+        
+        // Check if the current user is an admin
+        const { data: currentUserProfile, error } = await supabase
+          .from('profiles')
+          .select('Admin')
+          .eq('id', data.session.user.id)
+          .single();
+        
+        if (!error && currentUserProfile) {
+          setIsCurrentUserAdmin(currentUserProfile.Admin === true);
+        }
       }
     };
     
@@ -284,6 +296,7 @@ export const useUserProfileData = (username: string | undefined) => {
     userGames,
     userBadges,
     currentUserId,
+    isCurrentUserAdmin,
     updateLocation,
     updateUserStats,
     fetchProfileData
