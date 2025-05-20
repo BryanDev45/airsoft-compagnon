@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -26,28 +25,24 @@ const FpsJouleCalculator = () => {
 
   const getEffectiveRange = (fps: number, weight: number) => {
     // Revised calculation for more realistic ranges based on actual airsoft performance
-    // Base calculation adjusted downward to reflect real-world limitations
-    const baseRange = fps * 0.2; // Reduced from 0.4 for more realistic base
+    // Base calculation adjusted for a more realistic representation
+    const baseRange = fps * 0.18; 
     
-    // Weight factor is more conservative
-    const weightFactor = Math.sqrt(weight) * 1.8; // Non-linear relationship with diminishing returns
+    // Weight factor with diminishing returns to keep realism
+    const weightFactor = Math.sqrt(weight) * 2.2; 
     
     // Environmental factors (assumes standard conditions)
-    const environmentalFactor = 0.85; // Account for air resistance, wind, etc.
+    const environmentalFactor = 0.9; 
     
     // Calculate effective range
     const effectiveRange = Math.round(baseRange * weightFactor * environmentalFactor);
     
-    // Maximum range is typically about 30% more than effective range in real conditions
-    const maxRange = Math.round(effectiveRange * 1.3);
-    
-    // Apply upper limits to prevent unrealistic ranges regardless of input
-    const cappedEffectiveRange = Math.min(effectiveRange, 60); // Cap at 60m for effective
-    const cappedMaxRange = Math.min(maxRange, 75); // Cap at 75m for maximum
+    // Maximum range is typically about 35% more than effective range in real conditions
+    const maxRange = Math.round(effectiveRange * 1.35);
     
     return {
-      effectiveRange: cappedEffectiveRange,
-      maxRange: cappedMaxRange
+      effectiveRange,
+      maxRange
     };
   };
 

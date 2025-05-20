@@ -62,22 +62,15 @@ const ProfileDialogs = ({
                   </div>
                 )}
                 
-                <div className="flex items-center gap-2 text-gray-700">
+                <div className="flex items-start gap-2 text-gray-700">
                   <MapPin className="text-airsoft-red flex-shrink-0" size={18} />
-                  <span>{selectedGame.location || 'Lieu non spécifié'}</span>
-                </div>
-                
-                {selectedGame.address && (
-                  <div className="flex items-start gap-2 text-gray-700">
-                    <MapPin className="text-airsoft-red mt-1 flex-shrink-0" size={18} />
-                    <div>
-                      <p>{selectedGame.address}</p>
-                      {selectedGame.zip_code && selectedGame.city && (
-                        <p>{selectedGame.zip_code} {selectedGame.city}</p>
-                      )}
-                    </div>
+                  <div>
+                    <p>{selectedGame.address || 'Lieu non spécifié'}</p>
+                    {selectedGame.zip_code && selectedGame.city && (
+                      <p>{selectedGame.zip_code} {selectedGame.city}</p>
+                    )}
                   </div>
-                )}
+                </div>
                 
                 <div className="flex items-center gap-2 text-gray-700">
                   <Users className="text-airsoft-red flex-shrink-0" size={18} />
