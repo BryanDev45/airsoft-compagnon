@@ -34,6 +34,9 @@ const MapSection: React.FC = () => {
 
   const { getCurrentPosition } = useMapLocation(searchQuery, setSearchCenter);
   
+  // Vérifier si l'utilisateur connecté est un admin
+  const isAdmin = user?.user_metadata?.Admin || false;
+  
   return (
     <div className="py-12 md:py-0">
       <div className="max-w-7xl mx-auto px-4 py-[30px]">
