@@ -26,7 +26,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
@@ -224,55 +223,61 @@ export default function AddStoreDialog({ open, onOpenChange }: AddStoreDialogPro
   return (
     <>
       <Dialog open={open} onOpenChange={handleDialogClose}>
-        <DialogContent className="sm:max-w-[550px] max-h-[90vh] flex flex-col">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-[550px] max-h-[85vh] p-0 gap-0 flex flex-col">
+          <DialogHeader className="p-6 pb-2">
             <DialogTitle>Ajouter un magasin</DialogTitle>
             <DialogDescription>
               Saisissez les informations du magasin. Tous les champs marqués * sont obligatoires.
             </DialogDescription>
           </DialogHeader>
 
-          <ScrollArea className="flex-grow pr-4">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nom du magasin *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Airsoft Shop" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="space-y-4">
-                  <StoreLocationSection 
-                    form={form}
-                    isGeocoding={isGeocoding}
-                    coordinates={coordinates}
-                    handleAddressChange={handleAddressChange}
+          <ScrollArea className="flex-grow px-6 pb-6">
+            <div className="pr-4">
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nom du magasin *</FormLabel>
+                        <FormControl>
+                          <input 
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm" 
+                            placeholder="Airsoft Shop" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
 
-                <div className="space-y-4">
-                  <StoreContactSection form={form} />
-                </div>
-                
-                <StoreImageUploadSection 
-                  images={images}
-                  preview={preview}
-                  handleImageChange={handleImageChange}
-                  removeImage={removeImage}
-                />
-              </form>
-            </Form>
+                  <div className="space-y-6">
+                    <StoreLocationSection 
+                      form={form}
+                      isGeocoding={isGeocoding}
+                      coordinates={coordinates}
+                      handleAddressChange={handleAddressChange}
+                    />
+                  </div>
+
+                  <div className="space-y-6">
+                    <StoreContactSection form={form} />
+                  </div>
+                  
+                  <StoreImageUploadSection 
+                    images={images}
+                    preview={preview}
+                    handleImageChange={handleImageChange}
+                    removeImage={removeImage}
+                  />
+                </form>
+              </Form>
+            </div>
           </ScrollArea>
 
-          <DialogFooter className="mt-4 pt-2 border-t">
+          <DialogFooter className="p-6 pt-2 border-t">
             <Button 
               type="button" 
               variant="outline" 
@@ -283,6 +288,7 @@ export default function AddStoreDialog({ open, onOpenChange }: AddStoreDialogPro
             <Button 
               onClick={form.handleSubmit(onSubmit)}
               disabled={isSubmitting || isGeocoding || !coordinates}
+              className="bg-airsoft-red hover:bg-red-700"
             >
               {isSubmitting ? 'Ajout en cours...' : 'Ajouter le magasin'}
             </Button>
@@ -301,7 +307,7 @@ export default function AddStoreDialog({ open, onOpenChange }: AddStoreDialogPro
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setShowImageConfirmDialog(false)}>Continuer la saisie</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmClose}>Quitter sans sauvegarder</AlertDialogAction>
+            <AlertDialogAction onClick={confirmClose} className="bg-airsoft-red hover:bg-red-700">Quitter sans sauvegarder</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
