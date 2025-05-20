@@ -25,14 +25,29 @@ const FpsJouleCalculator = () => {
   };
 
   const getEffectiveRange = (fps: number, weight: number) => {
-    // Estimation basée sur des données empiriques
-    const baseRange = fps * 0.4; // Base de calcul
-    const weightMultiplier = weight * 2.5; // Plus la bille est lourde, plus elle garde sa trajectoire
-    const effectiveRange = Math.round(baseRange * weightMultiplier);
-    const maxRange = Math.round(effectiveRange * 1.5);
+    // Revised calculation for more realistic ranges based on actual airsoft performance
+    // Base calculation adjusted downward to reflect real-world limitations
+    const baseRange = fps * 0.2; // Reduced from 0.4 for more realistic base
+    
+    // Weight factor is more conservative
+    const weightFactor = Math.sqrt(weight) * 1.8; // Non-linear relationship with diminishing returns
+    
+    // Environmental factors (assumes standard conditions)
+    const environmentalFactor = 0.85; // Account for air resistance, wind, etc.
+    
+    // Calculate effective range
+    const effectiveRange = Math.round(baseRange * weightFactor * environmentalFactor);
+    
+    // Maximum range is typically about 30% more than effective range in real conditions
+    const maxRange = Math.round(effectiveRange * 1.3);
+    
+    // Apply upper limits to prevent unrealistic ranges regardless of input
+    const cappedEffectiveRange = Math.min(effectiveRange, 60); // Cap at 60m for effective
+    const cappedMaxRange = Math.min(maxRange, 75); // Cap at 75m for maximum
+    
     return {
-      effectiveRange,
-      maxRange
+      effectiveRange: cappedEffectiveRange,
+      maxRange: cappedMaxRange
     };
   };
 
