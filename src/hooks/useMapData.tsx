@@ -24,13 +24,11 @@ export function useMapData() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState<MapEvent[]>([]);
-  const [loadingError, setLoadingError] = useState(false);
 
   useEffect(() => {
     const fetchGames = async () => {
       try {
         setLoading(true);
-        setLoadingError(false);
         
         const today = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
         
@@ -100,20 +98,15 @@ export function useMapData() {
           };
         }) || [];
         
+        console.log("Formatted events:", formattedEvents);
         setEvents(formattedEvents);
       } catch (error: any) {
         console.error("Erreur lors du chargement des parties:", error);
-        setLoadingError(true);
-        
-        // Ne pas afficher de toast d'erreur si l'utilisateur n'est pas connecté
-        // pour éviter de spammer l'utilisateur avec des messages d'erreur
-        if (user) {
-          toast({
-            title: "Erreur",
-            description: "Impossible de charger les parties",
-            variant: "destructive" 
-          });
-        }
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les parties",
+          variant: "destructive" 
+        });
         
         // En cas d'erreur, on définit un tableau vide pour éviter le chargement infini
         setEvents([]);
@@ -125,5 +118,5 @@ export function useMapData() {
     fetchGames();
   }, [toast, user]);
 
-  return { loading, events, loadingError };
+  return { loading, events };
 }

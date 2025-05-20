@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { UserPlus, UserMinus, Check, ShieldX } from "lucide-react";
+import { UserPlus, UserMinus, Check, ShieldX, Trash2 } from "lucide-react";
 import RatingStars from './RatingStars';
 import ReportUserButton from './ReportUserButton';
 import ProfileHeader from './ProfileHeader';
@@ -29,6 +29,7 @@ interface UserProfileHeaderProps {
   handleFollowUser: () => void;
   handleRatingChange: (rating: number) => void;
   isCurrentUserAdmin?: boolean;
+  onDeleteGame?: () => void;
 }
 
 const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
@@ -41,10 +42,10 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
   userReputation,
   handleFollowUser,
   handleRatingChange,
-  isCurrentUserAdmin = false
+  isCurrentUserAdmin = false,
+  onDeleteGame
 }) => {
   const [banDialogOpen, setBanDialogOpen] = useState(false);
-  const [isBanning, setIsBanning] = useState(false);
   
   // Mock functions that are called from ProfileHeader
   const toggleProfileSettings = () => {
@@ -63,17 +64,20 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
 
   const handleBanUser = async () => {
     if (!isCurrentUserAdmin || !userData?.id) return;
-    
+
     try {
-      setIsBanning(true);
       const isBanned = userData.Ban || false;
       
+      // Update the Ban status for the user in profiles table
       const { error } = await supabase
         .from('profiles')
         .update({ Ban: !isBanned })
         .eq('id', userData.id);
 
       if (error) throw error;
+
+      // Update local state to reflect the change immediately
+      userData.Ban = !isBanned;
 
       toast({
         title: isBanned ? "Utilisateur débanni" : "Utilisateur banni",
@@ -83,8 +87,7 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
         variant: isBanned ? "default" : "destructive",
       });
       
-      // Update local state to reflect the change without page reload
-      userData.Ban = !isBanned;
+      // No page reload required, we've updated the local state
       
     } catch (error) {
       console.error("Error banning user:", error);
@@ -94,7 +97,6 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
         variant: "destructive",
       });
     } finally {
-      setIsBanning(false);
       setBanDialogOpen(false);
     }
   };
@@ -150,10 +152,20 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
               onClick={() => setBanDialogOpen(true)}
               variant="destructive"
               className={userData?.Ban ? "bg-gray-600" : ""}
-              disabled={isBanning}
             >
               <ShieldX className="mr-2 h-4 w-4" />
               {userData?.Ban ? "Débannir" : "Bannir"}
+            </Button>
+          )}
+          
+          {/* Delete game button for admins when viewing a game */}
+          {isCurrentUserAdmin && onDeleteGame && (
+            <Button
+              onClick={onDeleteGame}
+              variant="destructive"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Supprimer partie
             </Button>
           )}
           
@@ -180,9 +192,8 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
             <AlertDialogAction
               onClick={handleBanUser}
               className={userData?.Ban ? "bg-blue-600 hover:bg-blue-700" : "bg-destructive hover:bg-destructive/90"}
-              disabled={isBanning}
             >
-              {isBanning ? "Traitement..." : (userData?.Ban ? "Débannir" : "Bannir")}
+              {userData?.Ban ? "Débannir" : "Bannir"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

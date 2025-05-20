@@ -25,7 +25,6 @@ const Login = () => {
   const { login, handleSocialLogin, loading, user } = useAuth();
   const navigate = useNavigate();
   const [rememberMe, setRememberMe] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -48,14 +47,9 @@ const Login = () => {
 
   const onSubmit = async (data) => {
     try {
-      setIsSubmitting(true);
-      const success = await login(data.email, data.password, rememberMe);
-      if (!success) {
-        setIsSubmitting(false);
-      }
+      await login(data.email, data.password, rememberMe);
     } catch (error) {
       console.error("Erreur de connexion:", error);
-      setIsSubmitting(false);
     }
   };
 
@@ -138,9 +132,9 @@ const Login = () => {
             <Button
               type="submit"
               className="w-full bg-airsoft-red hover:bg-red-700"
-              disabled={isSubmitting || loading}
+              disabled={loading}
             >
-              {isSubmitting || loading ? "Connexion en cours..." : "Se connecter"}
+              {loading ? "Connexion en cours..." : "Se connecter"}
             </Button>
             
             <Separator className="my-4">
@@ -152,7 +146,7 @@ const Login = () => {
                 type="button"
                 variant="outline"
                 onClick={handleGoogleLogin}
-                disabled={isSubmitting || loading}
+                disabled={loading}
                 className="flex items-center justify-center gap-2"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -180,7 +174,7 @@ const Login = () => {
                 type="button"
                 variant="outline"
                 onClick={handleFacebookLogin}
-                disabled={isSubmitting || loading}
+                disabled={loading}
                 className="flex items-center justify-center gap-2 text-[#1877F2]"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">

@@ -8,15 +8,11 @@ import MapSectionHeader from './map/MapSectionHeader';
 import SearchFiltersSidebar from './map/SearchFiltersSidebar';
 import MapResultsDisplay from './map/MapResultsDisplay';
 import { useAuth } from '@/hooks/useAuth';
-import { LogIn } from 'lucide-react';
-import { Button } from './ui/button';
-import { useNavigate } from 'react-router-dom';
 
 const MapSection: React.FC = () => {
   // Ajout de l'état d'authentification pour améliorer l'expérience utilisateur
   const { user } = useAuth();
-  const navigate = useNavigate();
-  const { loading, events, loadingError } = useMapData();
+  const { loading, events } = useMapData();
   
   const {
     searchQuery,
@@ -37,10 +33,6 @@ const MapSection: React.FC = () => {
   } = useMapFiltering(events);
 
   const { getCurrentPosition } = useMapLocation(searchQuery, setSearchCenter);
-
-  const handleLoginRedirect = () => {
-    navigate('/login');
-  };
   
   return (
     <div className="py-12 md:py-0">
@@ -78,30 +70,13 @@ const MapSection: React.FC = () => {
                     <p className="text-gray-500">Chargement de la carte...</p>
                   </div>
                 </div>
-              ) : loadingError ? (
-                <div className="flex items-center justify-center h-full flex-col">
-                  <div className="text-center p-6">
-                    <p className="text-gray-500 mb-3">Une erreur s'est produite lors du chargement des parties</p>
-                    {!user && (
-                      <>
-                        <p className="text-gray-400 text-sm mb-4">Connectez-vous pour accéder à toutes les fonctionnalités</p>
-                        <Button onClick={handleLoginRedirect} className="bg-airsoft-red hover:bg-red-700">
-                          <LogIn className="mr-2 h-4 w-4" /> Se connecter
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
               ) : filteredEvents.length > 0 ? (
                 <MapComponent searchCenter={searchCenter} searchRadius={searchRadius[0]} filteredEvents={filteredEvents} />
               ) : !user && events.length === 0 ? (
                 <div className="flex items-center justify-center h-full flex-col">
-                  <div className="text-center p-6">
+                  <div className="text-center">
                     <p className="text-gray-500 mb-3">Connectez-vous pour voir toutes les parties disponibles</p>
-                    <p className="text-gray-400 text-sm mb-4">Les parties privées sont visibles uniquement aux utilisateurs connectés</p>
-                    <Button onClick={handleLoginRedirect} className="bg-airsoft-red hover:bg-red-700">
-                      <LogIn className="mr-2 h-4 w-4" /> Se connecter
-                    </Button>
+                    <p className="text-gray-400 text-sm">Les parties privées sont visibles uniquement aux utilisateurs connectés</p>
                   </div>
                 </div>
               ) : (
@@ -115,7 +90,7 @@ const MapSection: React.FC = () => {
           </div>
         </div>
         
-        <MapResultsDisplay loading={loading} filteredEvents={filteredEvents} loadingError={loadingError} />
+        <MapResultsDisplay loading={loading} filteredEvents={filteredEvents} />
       </div>
     </div>
   );

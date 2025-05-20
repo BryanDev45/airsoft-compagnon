@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,6 +20,17 @@ import GameImages from '@/components/game/GameImages';
 import GameInfoCard from '@/components/game/GameInfoCard';
 import GameLocationCard from '@/components/game/GameLocationCard';
 import RegistrationDialog from '@/components/game/RegistrationDialog';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from "@/components/ui/alert-dialog";
+import { Trash2 } from "lucide-react";
 
 const GameDetails = () => {
   const { id } = useParams();
@@ -35,7 +47,32 @@ const GameDetails = () => {
   const [creatorRating, setCreatorRating] = useState<number | null>(null);
   const [creatorProfile, setCreatorProfile] = useState<Profile | null>(null);
   const [deletingGame, setDeletingGame] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isCurrentUserAdmin, setIsCurrentUserAdmin] = useState<boolean>(false);
 
+  useEffect(() => {
+    // Check if the current user is an admin
+    const checkAdminStatus = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('Admin')
+          .eq('id', user.id)
+          .single();
+          
+        if (error) throw error;
+        
+        setIsCurrentUserAdmin(data?.Admin === true);
+      } catch (error) {
+        console.error("Error checking admin status:", error);
+      }
+    };
+    
+    checkAdminStatus();
+  }, [user]);
+  
   useEffect(() => {
     if (id) {
       loadGameData();
@@ -261,7 +298,7 @@ const GameDetails = () => {
   };
   
   const handleDeleteGame = async () => {
-    if (!user || !id || !gameData || user.id !== gameData.created_by) {
+    if (!id || (!isCreator && !isCurrentUserAdmin)) {
       toast({
         variant: "destructive",
         title: "Erreur",
@@ -314,6 +351,7 @@ const GameDetails = () => {
       });
     } finally {
       setDeletingGame(false);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -343,6 +381,10 @@ const GameDetails = () => {
     gameData.Picture4,
     gameData.Picture5
   ].filter(Boolean) : [];
+  
+  const confirmDeleteGame = () => {
+    setDeleteDialogOpen(true);
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -351,6 +393,22 @@ const GameDetails = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {gameData && (
             <>
+              <div className="flex justify-between items-center mb-4">
+                <h1 className="text-2xl font-bold">{gameData.title}</h1>
+                
+                {/* Admin Delete Button (visible only to admins) */}
+                {isCurrentUserAdmin && !isCreator && (
+                  <button 
+                    className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md"
+                    onClick={confirmDeleteGame}
+                    disabled={deletingGame}
+                  >
+                    <Trash2 size={18} />
+                    {deletingGame ? 'Suppression...' : 'Supprimer la partie (Admin)'}
+                  </button>
+                )}
+              </div>
+              
               <GameHeader 
                 title={gameData.title}
                 gameType={gameData.game_type}
@@ -370,7 +428,7 @@ const GameDetails = () => {
                 isCreator={isCreator}
                 isPastGame={isPastGame}
                 onEdit={isCreator ? handleEditGame : undefined}
-                onDelete={isCreator && !isPastGame ? handleDeleteGame : undefined}
+                onDelete={isCreator && !isPastGame ? confirmDeleteGame : undefined}
               />
               
               <div className="my-6">
@@ -434,6 +492,7 @@ const GameDetails = () => {
         </div>
       </main>
       <Footer />
+      
       {showShareDialog && (
         <ShareDialog 
           open={showShareDialog} 
@@ -447,6 +506,7 @@ const GameDetails = () => {
           }}
         />
       )}
+      
       {showRegistrationDialog && gameData && (
         <RegistrationDialog
           open={showRegistrationDialog}
@@ -456,6 +516,30 @@ const GameDetails = () => {
           onUnregister={handleUnregister}
         />
       )}
+      
+      {/* Delete Game Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Confirmer la suppression
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer cette partie ? Cette action est irréversible.
+              Tous les participants et commentaires associés seront également supprimés.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteGame}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {deletingGame ? 'Suppression...' : 'Supprimer'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
