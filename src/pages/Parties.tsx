@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
@@ -15,6 +14,7 @@ import TeamSearchResults from '../components/search/TeamSearchResults';
 import MapComponent from '../components/map/MapComponent';
 import { useAuth } from '../hooks/useAuth';
 import AddStoreDialog from '../components/stores/AddStoreDialog';
+import { supabase } from '@/integrations/supabase/client';
 
 // This component will automatically scroll to top on mount
 const ScrollToTop = () => {
