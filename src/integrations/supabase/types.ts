@@ -407,6 +407,11 @@ export type Database = {
           longitude: number
           name: string
           phone: string | null
+          picture1: string | null
+          picture2: string | null
+          picture3: string | null
+          picture4: string | null
+          picture5: string | null
           website: string | null
           zip_code: string
         }
@@ -421,6 +426,11 @@ export type Database = {
           longitude: number
           name: string
           phone?: string | null
+          picture1?: string | null
+          picture2?: string | null
+          picture3?: string | null
+          picture4?: string | null
+          picture5?: string | null
           website?: string | null
           zip_code: string
         }
@@ -435,6 +445,11 @@ export type Database = {
           longitude?: number
           name?: string
           phone?: string | null
+          picture1?: string | null
+          picture2?: string | null
+          picture3?: string | null
+          picture4?: string | null
+          picture5?: string | null
           website?: string | null
           zip_code?: string
         }
