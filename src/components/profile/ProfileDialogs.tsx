@@ -66,8 +66,8 @@ const ProfileDialogs = ({
                   <MapPin className="text-airsoft-red flex-shrink-0" size={18} />
                   <div>
                     <p>{selectedGame.address || 'Lieu non spécifié'}</p>
-                    {selectedGame.zip_code && selectedGame.city && (
-                      <p>{selectedGame.zip_code} {selectedGame.city}</p>
+                    {selectedGame.zip_code && (
+                      <p>{selectedGame.zip_code}</p>
                     )}
                   </div>
                 </div>
