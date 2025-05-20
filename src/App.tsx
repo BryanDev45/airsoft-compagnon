@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import Index from './pages/Index';
@@ -27,6 +26,7 @@ import CreateTeam from './pages/CreateTeam';
 import { useState, useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import CookieConsent from './components/CookieConsent';
+import QueryProvider from './components/QueryProvider';
 
 function App() {
   const [cookiesAccepted, setCookiesAccepted] = useState<boolean | null>(null);
@@ -60,49 +60,51 @@ function App() {
   };
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/parties" element={<Parties />} />
-        <Route path="/parties/create" element={<CreateParty />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/partners" element={<Partners />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/new-password" element={<NewPassword />} />
-        <Route path="/faq" element={<FAQ />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="/terms-of-use" element={<TermsOfUse />} />
-        <Route path="/terms-of-sale" element={<TermsOfSale />} />
-        <Route path="/cookies-policy" element={<CookiesPolicy />} />
-        <Route path="/toolbox" element={<Toolbox />} />
-        <Route path="/game/:id" element={<GameDetails />} />
-        <Route path="/edit-game/:id" element={<EditGame />} />
-        <Route path="/team/:id" element={<Team />} />
-        <Route path="/team/create" element={<CreateTeam />} />
-        <Route path="/user/:username" element={<UserProfile />} />
-        <Route path="/search" element={<Parties />} />
-        <Route 
-          path="/profile" 
-          element={
-            <AuthGuard>
-              <Profile />
-            </AuthGuard>
-          } 
-        />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      
-      {cookiesAccepted === null && (
-        <CookieConsent 
-          onAccept={handleAcceptCookies}
-          onDecline={handleDeclineCookies}
-        />
-      )}
-      
-      <Toaster />
-    </Router>
+    <QueryProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/parties" element={<Parties />} />
+          <Route path="/parties/create" element={<CreateParty />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/partners" element={<Partners />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/new-password" element={<NewPassword />} />
+          <Route path="/faq" element={<FAQ />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-use" element={<TermsOfUse />} />
+          <Route path="/terms-of-sale" element={<TermsOfSale />} />
+          <Route path="/cookies-policy" element={<CookiesPolicy />} />
+          <Route path="/toolbox" element={<Toolbox />} />
+          <Route path="/game/:id" element={<GameDetails />} />
+          <Route path="/edit-game/:id" element={<EditGame />} />
+          <Route path="/team/:id" element={<Team />} />
+          <Route path="/team/create" element={<CreateTeam />} />
+          <Route path="/user/:username" element={<UserProfile />} />
+          <Route path="/search" element={<Parties />} />
+          <Route 
+            path="/profile" 
+            element={
+              <AuthGuard>
+                <Profile />
+              </AuthGuard>
+            } 
+          />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+        
+        {cookiesAccepted === null && (
+          <CookieConsent 
+            onAccept={handleAcceptCookies}
+            onDecline={handleDeclineCookies}
+          />
+        )}
+        
+        <Toaster />
+      </Router>
+    </QueryProvider>
   );
 }
 

@@ -4,6 +4,10 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { getRandomAvatar, getAllDefaultAvatars } from '@/utils/avatarUtils';
+import { getStorageWithExpiry, setStorageWithExpiry, CACHE_DURATIONS } from '@/utils/cacheUtils';
+
+// Cache keys
+const USER_CACHE_KEY = 'auth_user';
 
 export const useAuth = () => {
   const [user, setUser] = useState<any>(null);
@@ -11,6 +15,13 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Update the cache when user state changes
+  useEffect(() => {
+    if (user) {
+      setStorageWithExpiry(USER_CACHE_KEY, user, CACHE_DURATIONS.MEDIUM);
+    }
+  }, [user]);
 
   useEffect(() => {
     // First, set up the auth state listener to avoid missing auth events
@@ -25,13 +36,14 @@ export const useAuth = () => {
             // Use setTimeout to avoid potential deadlocks
             setTimeout(() => {
               navigate('/profile');
-              // Force page reload after navigation to ensure fresh data loading
-              window.location.reload();
             }, 0);
           }
         }
         if (event === 'SIGNED_OUT') {
           setUser(null);
+          // Clear user cache on sign out
+          localStorage.removeItem(USER_CACHE_KEY);
+          
           // Use setTimeout to avoid potential deadlocks
           setTimeout(() => {
             navigate('/login');
@@ -40,20 +52,35 @@ export const useAuth = () => {
       }
     );
 
-    // Configurer la persistance de session et la récupération de la session
+    // Configure session persistence and retrieval
     const setupSessionPersistence = async () => {
-      // Vérifier s'il y a une session existante
+      // First check the cache for user data
+      const cachedUser = getStorageWithExpiry(USER_CACHE_KEY);
+      if (cachedUser) {
+        setUser(cachedUser);
+      }
+
+      // Verify with Supabase if the session is still valid
       const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user || null);
+      if (session?.user) {
+        // If the session exists, update user state and cache
+        setUser(session.user);
+        setStorageWithExpiry(USER_CACHE_KEY, session.user, CACHE_DURATIONS.MEDIUM);
+      } else if (cachedUser) {
+        // If no session but cached user exists, it means the session expired
+        localStorage.removeItem(USER_CACHE_KEY);
+        setUser(null);
+      }
+      
       setInitialLoading(false);
 
-      // Si un utilisateur est authentifié, configurer une vérification régulière de session
+      // If a user is authenticated, set up regular session refresh
       if (session?.user) {
-        // Rafraîchir la session toutes les 10 minutes pour éviter l'expiration
+        // Refresh session every 10 minutes to prevent expiration
         const interval = setInterval(async () => {
           const { data: { session: refreshedSession }, error } = await supabase.auth.refreshSession();
           if (error) {
-            console.error("Erreur lors du rafraîchissement de la session:", error);
+            console.error("Error refreshing session:", error);
           }
         }, 10 * 60 * 1000); // 10 minutes
 

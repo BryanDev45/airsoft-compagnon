@@ -3,9 +3,10 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { Profile, UserStats } from '@/types/profile';
+import { getStorageWithExpiry, setStorageWithExpiry, CACHE_DURATIONS, generateCacheKey } from '@/utils/cacheUtils';
 
 /**
- * Hook for fetching profile and user statistics data
+ * Hook for fetching profile and user statistics data with caching
  */
 export const useProfileFetch = (userId: string | undefined) => {
   const [loading, setLoading] = useState(true);
@@ -21,7 +22,31 @@ export const useProfileFetch = (userId: string | undefined) => {
         return;
       }
       
+      const profileCacheKey = generateCacheKey('profile_data', { userId });
+      const statsCacheKey = generateCacheKey('user_stats', { userId });
+      
       try {
+        // Try to get profile data from cache first
+        const cachedProfile = getStorageWithExpiry(profileCacheKey);
+        const cachedStats = getStorageWithExpiry(statsCacheKey);
+        
+        // If we have valid cached data, use it
+        if (cachedProfile && isMounted) {
+          console.log('Using cached profile data');
+          setProfileData(cachedProfile);
+        }
+        
+        if (cachedStats && isMounted) {
+          console.log('Using cached user stats');
+          setUserStats(cachedStats);
+        }
+        
+        // If we have both cached profile and stats, we can stop loading
+        if (cachedProfile && cachedStats && isMounted) {
+          setLoading(false);
+        }
+
+        // Always fetch fresh data from database but don't block UI
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('*')
@@ -64,7 +89,10 @@ export const useProfileFetch = (userId: string | undefined) => {
               
             if (insertError) throw insertError;
             
-            setProfileData(newProfile);
+            if (isMounted) {
+              setProfileData(newProfile);
+              setStorageWithExpiry(profileCacheKey, newProfile, CACHE_DURATIONS.MEDIUM);
+            }
           }
         } else if (isMounted) {
           // Create a complete profile object including the newsletter_subscribed property
@@ -74,6 +102,7 @@ export const useProfileFetch = (userId: string | undefined) => {
           };
           
           setProfileData(completeProfile);
+          setStorageWithExpiry(profileCacheKey, completeProfile, CACHE_DURATIONS.MEDIUM);
         }
 
         if (isMounted) {
@@ -107,9 +136,13 @@ export const useProfileFetch = (userId: string | undefined) => {
               
             if (insertStatsError) throw insertStatsError;
             
-            setUserStats(defaultStats);
-          } else if (isMounted) {
+            if (isMounted) {
+              setUserStats(defaultStats);
+              setStorageWithExpiry(statsCacheKey, defaultStats, CACHE_DURATIONS.MEDIUM);
+            }
+          } else if (isMounted && stats) {
             setUserStats(stats as UserStats);
+            setStorageWithExpiry(statsCacheKey, stats, CACHE_DURATIONS.MEDIUM);
           }
         }
       } catch (error: any) {

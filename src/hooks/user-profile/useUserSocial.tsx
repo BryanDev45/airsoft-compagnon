@@ -2,68 +2,101 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
-import { callRPC } from '@/utils/supabaseHelpers';
+import { getStorageWithExpiry, setStorageWithExpiry, CACHE_DURATIONS, generateCacheKey, clearCacheItem } from '@/utils/cacheUtils';
 
 /**
- * Hook for handling social interactions with a user profile
+ * Hook for handling social interactions between users with caching
  */
 export const useUserSocial = (userData: any, currentUserId: string | null) => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [friendRequestSent, setFriendRequestSent] = useState(false);
   const [userRating, setUserRating] = useState<number>(0);
-  const [hasRated, setHasRated] = useState(false);
   const [userReputation, setUserReputation] = useState<number | null>(null);
 
-  // Check friendship status and rating when userData or currentUserId changes
+  // Load social data when component mounts or user changes
   useEffect(() => {
-    const checkSocialStatus = async () => {
-      if (!userData?.id || !currentUserId) return;
-      
-      try {
-        const { data: friendship, error: friendshipError } = await supabase
-          .from('friendships')
-          .select('*')
-          .eq('user_id', currentUserId)
-          .eq('friend_id', userData.id)
-          .single();
-          
-        if (!friendshipError && friendship) {
-          setIsFollowing(friendship.status === 'accepted');
-          setFriendRequestSent(friendship.status === 'pending');
-        }
-        
-        // Call RPC function
-        const { data: ratings, error: ratingsError } = await callRPC<number>('get_user_rating', { 
-          p_rater_id: currentUserId, 
-          p_rated_id: userData.id 
-        });
-          
-        if (!ratingsError && ratings !== null) {
-          setUserRating(ratings);
-          setHasRated(true);
-        }
+    if (!userData?.id || !currentUserId) return;
 
-        // Get user's current reputation
-        if (userData?.id) {
-          const { data: avgRating } = await callRPC<number>('get_average_rating', { 
-            p_user_id: userData.id 
+    const checkFriendshipStatus = async () => {
+      const friendshipCacheKey = generateCacheKey('friendship_status', { 
+        userId: currentUserId, 
+        friendId: userData.id 
+      });
+      
+      // Try to get cached friendship status
+      const cachedStatus = getStorageWithExpiry(friendshipCacheKey);
+      if (cachedStatus !== null) {
+        const { isFollowing: cachedIsFollowing, friendRequestSent: cachedRequestSent } = cachedStatus;
+        setIsFollowing(cachedIsFollowing);
+        setFriendRequestSent(cachedRequestSent);
+      } else {
+        // If not cached, fetch from database
+        try {
+          // Check if they are friends or have a pending request
+          const { data, error } = await supabase.rpc('check_friendship_status', { 
+            p_user_id: currentUserId, 
+            p_friend_id: userData.id 
           });
-          
-          setUserReputation(avgRating);
+
+          if (!error) {
+            const newIsFollowing = data === 'accepted';
+            const newFriendRequestSent = data === 'pending';
+            
+            setIsFollowing(newIsFollowing);
+            setFriendRequestSent(newFriendRequestSent);
+            
+            // Cache the result
+            setStorageWithExpiry(friendshipCacheKey, {
+              isFollowing: newIsFollowing,
+              friendRequestSent: newFriendRequestSent
+            }, CACHE_DURATIONS.MEDIUM);
+          }
+        } catch (error) {
+          console.error('Error checking friendship status:', error);
         }
-      } catch (error) {
-        console.error("Error checking social status:", error);
       }
     };
+
+    const getUserRating = async () => {
+      const ratingCacheKey = generateCacheKey('user_rating', { 
+        raterId: currentUserId, 
+        ratedId: userData.id 
+      });
+
+      // Try to get cached user rating
+      const cachedRating = getStorageWithExpiry(ratingCacheKey);
+      if (cachedRating !== null) {
+        setUserRating(cachedRating);
+      } else if (currentUserId !== userData.id) {
+        // Only fetch rating if viewing another user's profile
+        try {
+          const { data, error } = await supabase.rpc('get_user_rating', { 
+            p_rater_id: currentUserId, 
+            p_rated_id: userData.id 
+          });
+
+          if (!error && data !== null) {
+            setUserRating(data);
+            // Cache the result
+            setStorageWithExpiry(ratingCacheKey, data, CACHE_DURATIONS.MEDIUM);
+          }
+        } catch (error) {
+          console.error('Error getting user rating:', error);
+        }
+      }
+    };
+
+    checkFriendshipStatus();
+    getUserRating();
+    setUserReputation(userData?.reputation || 0);
     
-    checkSocialStatus();
-  }, [userData?.id, currentUserId]);
+  }, [userData?.id, currentUserId, userData?.reputation]);
 
   const handleFollowUser = async () => {
-    if (!currentUserId) {
+    if (!currentUserId || !userData?.id) {
       toast({
-        title: "Connexion requise",
-        description: "Vous devez être connecté pour ajouter un ami",
+        title: "Erreur",
+        description: "Vous devez être connecté pour suivre un utilisateur",
         variant: "destructive",
       });
       return;
@@ -71,34 +104,38 @@ export const useUserSocial = (userData: any, currentUserId: string | null) => {
 
     try {
       if (isFollowing) {
+        // Remove friendship
         const { error } = await supabase
           .from('friendships')
           .delete()
-          .or(`and(user_id.eq.${currentUserId},friend_id.eq.${userData.id}),and(user_id.eq.${userData.id},friend_id.eq.${currentUserId})`);
+          .or(`user_id.eq.${currentUserId},user_id.eq.${userData.id}`)
+          .or(`friend_id.eq.${currentUserId},friend_id.eq.${userData.id}`);
 
         if (error) throw error;
 
         setIsFollowing(false);
         setFriendRequestSent(false);
         toast({
-          title: "Ami retiré",
-          description: "Cet utilisateur a été retiré de vos amis",
+          title: "Succès",
+          description: `Vous avez supprimé ${userData.username} de vos amis`,
         });
       } else if (friendRequestSent) {
+        // Cancel friend request
         const { error } = await supabase
           .from('friendships')
           .delete()
-          .eq('user_id', currentUserId)
-          .eq('friend_id', userData.id);
+          .or(`user_id.eq.${currentUserId},user_id.eq.${userData.id}`)
+          .or(`friend_id.eq.${currentUserId},friend_id.eq.${userData.id}`);
 
         if (error) throw error;
 
         setFriendRequestSent(false);
         toast({
-          title: "Demande annulée",
-          description: "Votre demande d'amitié a été annulée",
+          title: "Succès",
+          description: `Demande d'ami annulée`,
         });
       } else {
+        // Send friend request
         const { error } = await supabase
           .from('friendships')
           .insert({
@@ -111,24 +148,32 @@ export const useUserSocial = (userData: any, currentUserId: string | null) => {
 
         setFriendRequestSent(true);
         toast({
-          title: "Demande envoyée",
-          description: "Votre demande d'amitié a été envoyée",
+          title: "Succès",
+          description: `Demande d'ami envoyée à ${userData.username}`,
         });
       }
-    } catch (error) {
-      console.error("Erreur lors de la gestion de l'amitié:", error);
+      
+      // Clear cached friendship status after change
+      const friendshipCacheKey = generateCacheKey('friendship_status', { 
+        userId: currentUserId, 
+        friendId: userData.id 
+      });
+      clearCacheItem(friendshipCacheKey);
+      
+    } catch (error: any) {
+      console.error('Error updating friendship:', error);
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de l'action",
+        description: "Une erreur est survenue lors de la mise à jour de l'amitié",
         variant: "destructive",
       });
     }
   };
 
   const handleRatingChange = async (rating: number) => {
-    if (!currentUserId) {
+    if (!currentUserId || !userData?.id) {
       toast({
-        title: "Connexion requise",
+        title: "Erreur",
         description: "Vous devez être connecté pour noter un utilisateur",
         variant: "destructive",
       });
@@ -136,46 +181,48 @@ export const useUserSocial = (userData: any, currentUserId: string | null) => {
     }
 
     try {
-      if (hasRated) {
-        const { error } = await callRPC('update_user_rating', { 
-          p_rater_id: currentUserId, 
-          p_rated_id: userData.id, 
-          p_rating: rating 
+      if (userRating === 0) {
+        // Insert new rating
+        await supabase.rpc('insert_user_rating', {
+          p_rater_id: currentUserId,
+          p_rated_id: userData.id,
+          p_rating: rating
         });
-          
-        if (error) throw error;
       } else {
-        const { error } = await callRPC('insert_user_rating', { 
-          p_rater_id: currentUserId, 
-          p_rated_id: userData.id, 
-          p_rating: rating 
+        // Update existing rating
+        await supabase.rpc('update_user_rating', {
+          p_rater_id: currentUserId,
+          p_rated_id: userData.id,
+          p_rating: rating
         });
-          
-        if (error) throw error;
-        setHasRated(true);
       }
 
+      // Update local state
       setUserRating(rating);
       
-      // Update average reputation and get the new value immediately
-      const { data: avgRating, error: avgError } = await callRPC<number>('get_average_rating', { 
-        p_user_id: userData.id 
+      // Get updated reputation
+      const { data: newReputation } = await supabase.rpc('get_average_rating', {
+        p_user_id: userData.id
       });
       
-      if (!avgError && avgRating !== null) {
-        // Update local state with new reputation value
-        setUserReputation(avgRating);
-      }
+      setUserReputation(newReputation || 0);
+      
+      // Update cache with new rating
+      const ratingCacheKey = generateCacheKey('user_rating', { 
+        raterId: currentUserId, 
+        ratedId: userData.id 
+      });
+      setStorageWithExpiry(ratingCacheKey, rating, CACHE_DURATIONS.MEDIUM);
       
       toast({
-        title: "Notation enregistrée",
-        description: "Votre évaluation a été prise en compte",
+        title: "Succès",
+        description: `Vous avez attribué une note de ${rating} étoiles à ${userData.username}`,
       });
-    } catch (error) {
-      console.error("Erreur lors de l'enregistrement de la notation:", error);
+    } catch (error: any) {
+      console.error('Error updating rating:', error);
       toast({
         title: "Erreur",
-        description: "Impossible d'enregistrer votre évaluation",
+        description: "Une erreur est survenue lors de la notation",
         variant: "destructive",
       });
     }

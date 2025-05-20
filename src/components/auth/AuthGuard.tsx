@@ -3,6 +3,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/components/ui/use-toast';
+import { getStorageWithExpiry } from '@/utils/cacheUtils';
 
 interface AuthGuardProps {
   children: ReactNode;
@@ -17,7 +18,9 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   useEffect(() => {
     // Wait for the initial verification to complete
     if (!initialLoading) {
-      if (!user) {
+      // Fast check with cached user
+      const cachedUser = getStorageWithExpiry('auth_user');
+      if (!user && !cachedUser) {
         // Only show toast and navigate if we're not already on the login page
         if (location.pathname !== '/login' && location.pathname !== '/register') {
           toast({
@@ -44,6 +47,16 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   }
 
   if (!user) {
+    return <Navigate to="/login" />;
+  }
+
+  // Check if user is banned
+  if (user?.user_metadata?.Ban === true) {
+    toast({
+      title: "Compte banni",
+      description: "Votre compte a été banni par un administrateur",
+      variant: "destructive"
+    });
     return <Navigate to="/login" />;
   }
 
