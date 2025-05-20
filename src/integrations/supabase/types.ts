@@ -395,6 +395,51 @@ export type Database = {
         }
         Relationships: []
       }
+      stores: {
+        Row: {
+          address: string
+          city: string
+          created_at: string | null
+          created_by: string
+          email: string | null
+          id: string
+          latitude: number
+          longitude: number
+          name: string
+          phone: string | null
+          website: string | null
+          zip_code: string
+        }
+        Insert: {
+          address: string
+          city: string
+          created_at?: string | null
+          created_by: string
+          email?: string | null
+          id?: string
+          latitude: number
+          longitude: number
+          name: string
+          phone?: string | null
+          website?: string | null
+          zip_code: string
+        }
+        Update: {
+          address?: string
+          city?: string
+          created_at?: string | null
+          created_by?: string
+          email?: string | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          name?: string
+          phone?: string | null
+          website?: string | null
+          zip_code?: string
+        }
+        Relationships: []
+      }
       team_fields: {
         Row: {
           address: string | null
