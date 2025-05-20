@@ -3,7 +3,6 @@ import { ReactNode, useEffect, useState } from 'react';
 import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/components/ui/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 
 interface AuthGuardProps {
   children: ReactNode;
@@ -14,39 +13,8 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isChecking, setIsChecking] = useState(true);
-  const [isBanned, setIsBanned] = useState(false);
 
   useEffect(() => {
-    // Check if the user is banned
-    const checkBanStatus = async () => {
-      if (user) {
-        try {
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('Ban')
-            .eq('id', user.id)
-            .single();
-            
-          if (error) {
-            console.error("Error checking ban status:", error);
-          } else if (data?.Ban === true) {
-            setIsBanned(true);
-            // Force logout if banned
-            await supabase.auth.signOut();
-            toast({
-              title: "Accès refusé",
-              description: "Votre compte a été banni par un administrateur",
-              variant: "destructive"
-            });
-            navigate('/login');
-          }
-        } catch (error) {
-          console.error("Error checking ban status:", error);
-        }
-      }
-      setIsChecking(false);
-    };
-
     // Wait for the initial verification to complete
     if (!initialLoading) {
       if (!user) {
@@ -59,10 +27,8 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
           });
           navigate('/login');
         }
-        setIsChecking(false);
-      } else {
-        checkBanStatus();
       }
+      setIsChecking(false);
     }
   }, [user, initialLoading, navigate, location.pathname]);
 
@@ -77,7 +43,7 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
     );
   }
 
-  if (!user || isBanned) {
+  if (!user) {
     return <Navigate to="/login" />;
   }
 
