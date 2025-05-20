@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,8 +24,6 @@ export const useAuth = () => {
             // Use setTimeout to avoid potential deadlocks
             setTimeout(() => {
               navigate('/profile');
-              // Force page reload after navigation to ensure fresh data loading
-              window.location.reload();
             }, 0);
           }
         }
@@ -129,9 +126,8 @@ export const useAuth = () => {
           description: "Bienvenue sur Airsoft Compagnon",
         });
         
-        // Naviguer et recharger la page pour garantir un état frais
+        // Naviguer sans recharger la page
         navigate('/profile');
-        window.location.reload();
         return true;
       } else {
         throw new Error("Aucune donnée utilisateur retournée");

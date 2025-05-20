@@ -38,7 +38,9 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
               description: "Votre compte a été banni par un administrateur",
               variant: "destructive"
             });
-            navigate('/login');
+            setTimeout(() => {
+              navigate('/login');
+            }, 0);
           } else {
             setIsBanned(false);
           }
@@ -59,7 +61,9 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
             description: "Veuillez vous connecter pour accéder à cette page",
             variant: "destructive"
           });
-          navigate('/login');
+          setTimeout(() => {
+            navigate('/login');
+          }, 0);
         }
         setIsChecking(false);
       } else {
