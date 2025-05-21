@@ -44,7 +44,7 @@ export const AuthSection: React.FC<AuthSectionProps> = ({
     }
   };
 
-  // Fonction pour générer une URL d'avatar par défaut si l'avatar n'existe pas
+  // Function to generate a default avatar URL if the avatar doesn't exist
   const getAvatarUrl = (user: any) => {
     if (user?.avatar && user.avatar.startsWith('http')) {
       return user.avatar;
@@ -54,7 +54,7 @@ export const AuthSection: React.FC<AuthSectionProps> = ({
       return user.avatar;
     }
     
-    // Fallback vers un avatar généré basé sur le nom d'utilisateur
+    // Fallback to a generated avatar based on username
     return `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'default'}`;
   };
 

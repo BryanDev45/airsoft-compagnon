@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -68,8 +67,6 @@ const Team = () => {
   const [isTeamMember, setIsTeamMember] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
   const [retryCount, setRetryCount] = useState(0);
-
-  // Add timeout to prevent infinite loading
   const [loadingTimeout, setLoadingTimeout] = useState<NodeJS.Timeout | null>(null);
 
   // Function to fetch team data that can be reused for refresh
@@ -147,9 +144,11 @@ const Team = () => {
             const profile = profiles?.find(p => p.id === member.user_id);
             if (!profile) return null;
             
-            // Utilisez une URL par défaut basée sur le nom d'utilisateur si l'avatar n'existe pas
-            const avatarUrl = profile.avatar || 
-              `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.username || 'default'}`;
+            // Generate avatar URL based on username if avatar doesn't exist
+            let avatarUrl = profile.avatar;
+            if (!avatarUrl || !avatarUrl.startsWith('http')) {
+              avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.username || 'default'}`;
+            }
             
             return {
               id: profile.id,
@@ -264,8 +263,12 @@ const Team = () => {
     } catch (error: any) {
       console.error("Erreur lors de la récupération des données:", error);
       
-      // Check if it's a connection error and we haven't retried too many times
-      if (error.message && error.message.includes("upstream connect error") && retryCount < 3) {
+      if (loadingTimeout) clearTimeout(loadingTimeout);
+      
+      // Check if it's a network error and we haven't retried too many times
+      if ((error.message && error.message.includes("Failed to fetch") || 
+           error.message && error.message.includes("upstream connect error")) && 
+          retryCount < 3) {
         setRetryCount(prev => prev + 1);
         
         // Retry after a delay (exponential backoff)
@@ -287,7 +290,6 @@ const Team = () => {
           variant: "destructive",
         });
         
-        if (loadingTimeout) clearTimeout(loadingTimeout);
         setError("Une erreur s'est produite lors du chargement des données de l'équipe. Veuillez réessayer plus tard.");
         setLoading(false);
       }
