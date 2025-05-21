@@ -25,25 +25,45 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
     if (cachedAuthState?.isAuthenticated && cachedUser) {
       setIsAuthenticated(true);
       setIsChecking(false);
-    }
-    
-    // Then verify with actual auth state once it loads
-    if (!initialLoading) {
-      if (user) {
-        setIsAuthenticated(true);
-      } else {
-        setIsAuthenticated(false);
-        // Only show toast and navigate if we're not already on the login page
-        if (location.pathname !== '/login' && location.pathname !== '/register') {
-          toast({
-            title: "Accès refusé",
-            description: "Veuillez vous connecter pour accéder à cette page",
-            variant: "destructive"
-          });
-          navigate('/login');
+    } else {
+      // Set a timeout to stop checking after a reasonable amount of time
+      // to prevent infinite loading if something is wrong
+      const timeout = setTimeout(() => {
+        setIsChecking(false);
+        if (!user) {
+          // If after timeout we still don't have a user, redirect to login
+          if (location.pathname !== '/login' && location.pathname !== '/register') {
+            toast({
+              title: "Accès refusé",
+              description: "Veuillez vous connecter pour accéder à cette page",
+              variant: "destructive"
+            });
+            navigate('/login');
+          }
         }
+      }, 3000); // 3 second timeout
+      
+      // Then verify with actual auth state once it loads
+      if (!initialLoading) {
+        clearTimeout(timeout);
+        if (user) {
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+          // Only show toast and navigate if we're not already on the login page
+          if (location.pathname !== '/login' && location.pathname !== '/register') {
+            toast({
+              title: "Accès refusé",
+              description: "Veuillez vous connecter pour accéder à cette page",
+              variant: "destructive"
+            });
+            navigate('/login');
+          }
+        }
+        setIsChecking(false);
       }
-      setIsChecking(false);
+      
+      return () => clearTimeout(timeout);
     }
   }, [user, initialLoading, navigate, location.pathname]);
 

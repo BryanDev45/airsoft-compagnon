@@ -13,24 +13,30 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getStorageWithExpiry, setStorageWithExpiry, CACHE_DURATIONS } from '@/utils/cacheUtils';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// Définir la structure pour les langues avec les drapeaux
-const languages = [{
-  code: 'fr',
-  name: 'Français',
-  flag: '🇫🇷'
-}, {
-  code: 'en',
-  name: 'English',
-  flag: '🇬🇧'
-}, {
-  code: 'de',
-  name: 'Deutsch',
-  flag: '🇩🇪'
-}, {
-  code: 'es',
-  name: 'Español',
-  flag: '🇪🇸'
-}];
+// Define language structure with flags
+const languages = [
+  {
+    code: 'fr',
+    name: 'Français',
+    flag: '🇫🇷'
+  },
+  {
+    code: 'en',
+    name: 'English',
+    flag: '🇬🇧'
+  },
+  {
+    code: 'de',
+    name: 'Deutsch',
+    flag: '🇩🇪'
+  },
+  {
+    code: 'es',
+    name: 'Español',
+    flag: '🇪🇸'
+  }
+];
+
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -48,35 +54,33 @@ const Header = () => {
   useEffect(() => {
     // Immediately check the cached auth state for fast UI rendering
     const cachedAuthState = getStorageWithExpiry('auth_state');
-    const cachedUser = getStorageWithExpiry('auth_user');
-    const cachedProfile = getStorageWithExpiry('user_profile');
     
-    if (cachedAuthState?.isAuthenticated && cachedUser) {
+    // Only proceed with auth check if there's a cached state indicating authentication
+    if (cachedAuthState?.isAuthenticated) {
+      const cachedUser = getStorageWithExpiry('auth_user');
+      const cachedProfile = getStorageWithExpiry('user_profile');
+      
       setIsAuthenticated(true);
       
       if (cachedProfile) {
         setUser({
-          id: cachedUser.id,
+          id: cachedUser?.id,
           username: cachedProfile.username || '',
           avatar: cachedProfile.avatar || '',
           teamId: cachedProfile.team_id
         });
-        setIsAuthLoading(false);
       }
-    }
-    
-    const checkAuth = async () => {
-      try {
-        // Check auth session
-        const { data: { session } } = await supabase.auth.getSession();
+      
+      // Setup auth state monitoring only if we think we're authenticated
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        console.log('Auth state changed in Header:', event);
         const isAuthValid = !!session;
         setIsAuthenticated(isAuthValid);
         
-        // Save auth state to cache
+        // Update cached auth state
         setStorageWithExpiry('auth_state', { isAuthenticated: isAuthValid }, CACHE_DURATIONS.MEDIUM);
         
         if (session?.user) {
-          // Fetch profile data
           const { data: profileData } = await supabase
             .from('profiles')
             .select('username, avatar, team_id')
@@ -91,7 +95,6 @@ const Header = () => {
               teamId: profileData.team_id
             };
             
-            // Update state
             setUser(userData);
             
             // Update cache
@@ -100,53 +103,69 @@ const Header = () => {
         } else {
           setUser(null);
         }
-      } catch (error) {
-        console.error('Error checking auth:', error);
-      } finally {
-        setIsAuthLoading(false);
-      }
-    };
-    
-    // Set up subscription to auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed in Header:', event);
-      const isAuthValid = !!session;
-      setIsAuthenticated(isAuthValid);
+      });
       
-      // Update cached auth state
-      setStorageWithExpiry('auth_state', { isAuthenticated: isAuthValid }, CACHE_DURATIONS.MEDIUM);
-      
-      if (session?.user) {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('username, avatar, team_id')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (profileData) {
-          const userData = {
-            id: session.user.id,
-            username: profileData.username || '',
-            avatar: profileData.avatar || '',
-            teamId: profileData.team_id
-          };
+      // Fetch full profile only if we're reasonably sure we're authenticated
+      const checkAuth = async () => {
+        try {
+          // Check auth session
+          const { data: { session } } = await supabase.auth.getSession();
+          const isAuthValid = !!session;
           
-          setUser(userData);
-          
-          // Update cache
-          setStorageWithExpiry('user_profile', profileData, CACHE_DURATIONS.MEDIUM);
+          if (!isAuthValid) {
+            // Clear auth state if session is invalid
+            setIsAuthenticated(false);
+            setUser(null);
+            setStorageWithExpiry('auth_state', { isAuthenticated: false }, CACHE_DURATIONS.MEDIUM);
+          } else if (session?.user) {
+            // Fetch profile data
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('username, avatar, team_id')
+              .eq('id', session.user.id)
+              .single();
+            
+            if (profileData) {
+              const userData = {
+                id: session.user.id,
+                username: profileData.username || '',
+                avatar: profileData.avatar || '',
+                teamId: profileData.team_id
+              };
+              
+              // Update state
+              setUser(userData);
+              
+              // Update cache
+              setStorageWithExpiry('user_profile', profileData, CACHE_DURATIONS.MEDIUM);
+            }
+          }
+        } catch (error) {
+          console.error('Error checking auth:', error);
+          // In case of error, assume not authenticated
+          setIsAuthenticated(false);
+          setUser(null);
+        } finally {
+          setIsAuthLoading(false);
         }
-      } else {
-        setUser(null);
-      }
-    });
-    
-    // If we didn't get complete data from cache, fetch fresh data
-    if (!cachedUser || !cachedProfile) {
+      };
+      
+      // Always set isAuthLoading to false after a short timeout to prevent UI from being stuck
+      const timeout = setTimeout(() => {
+        setIsAuthLoading(false);
+      }, 1000);
+      
       checkAuth();
+      
+      return () => {
+        clearTimeout(timeout);
+        if (subscription) subscription.unsubscribe();
+      };
+    } else {
+      // If no cached auth state or not authenticated, immediately update the UI
+      setIsAuthenticated(false);
+      setIsAuthLoading(false);
     }
-    
-    return () => subscription.unsubscribe();
   }, []);
 
   // Requête pour récupérer le nombre de notifications non lues avec mise en cache
@@ -233,15 +252,17 @@ const Header = () => {
   };
 
   const renderAuthSection = () => {
-    if (isAuthLoading) {
+    // Si chargement initial avec état d'authentification inconnu, afficher un bouton de connexion basique
+    // pour éviter de bloquer l'accès à la connexion
+    if (isAuthLoading && !isAuthenticated) {
       return (
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-8 w-8 rounded-full" />
-          <Skeleton className="h-8 w-24" />
-        </div>
+        <Button variant="default" className="bg-airsoft-red hover:bg-red-700" onClick={handleLogin}>
+          Se connecter
+        </Button>
       );
     }
     
+    // Si authentifié et avec des données utilisateur, afficher l'interface complète
     if (isAuthenticated && user) {
       return (
         <>
@@ -300,6 +321,7 @@ const Header = () => {
       );
     }
     
+    // Par défaut, afficher le bouton de connexion
     return (
       <Button variant="default" className="bg-airsoft-red hover:bg-red-700" onClick={handleLogin}>
         Se connecter
@@ -415,4 +437,5 @@ const Header = () => {
         </div>}
     </header>;
 };
+
 export default Header;
