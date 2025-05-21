@@ -11,7 +11,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose,
 import { NotificationList } from '@/components/notifications/NotificationList';
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getStorageWithExpiry, setStorageWithExpiry, CACHE_DURATIONS } from '@/utils/cacheUtils';
+import { getStorageWithExpiry, setStorageWithExpiry, clearCacheByPrefix, clearCacheItem, CACHE_DURATIONS } from '@/utils/cacheUtils';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Define language structure with flags
