@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -13,7 +13,6 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/components/ui/use-toast";
-import { getStorageWithExpiry } from '@/utils/cacheUtils';
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Email invalide" }),
@@ -22,21 +21,9 @@ const loginSchema = z.object({
 });
 
 const Login = () => {
-  const { login, handleSocialLogin, loading, user } = useAuth();
+  const { login, handleSocialLogin, loading } = useAuth();
   const navigate = useNavigate();
   const [rememberMe, setRememberMe] = useState(false);
-
-  useEffect(() => {
-    // Check if user is already logged in, but don't redirect automatically
-    // This prevents infinite loading issues on the profile page
-    const cachedAuthState = getStorageWithExpiry('auth_state');
-    const isAuthenticated = cachedAuthState?.isAuthenticated && user;
-    
-    // Only redirect if we're absolutely sure the user is authenticated
-    if (isAuthenticated) {
-      navigate('/profile');
-    }
-  }, [user, navigate]);
   
   const {
     register,
@@ -55,7 +42,7 @@ const Login = () => {
     try {
       const success = await login(data.email, data.password, rememberMe);
       if (success) {
-        // The login function will handle navigation in useAuth hook
+        // Redirect is now handled in the login function in useAuthActions
       }
     } catch (error) {
       console.error("Erreur de connexion:", error);
@@ -110,7 +97,7 @@ const Login = () => {
               <div>
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Mot de passe</Label>
-                  <Link to="/forgot-password" className="text-sm text-airsoft-red hover:text-red-500">
+                  <Link to="/reset-password" className="text-sm text-airsoft-red hover:text-red-500">
                     Mot de passe oublié?
                   </Link>
                 </div>
