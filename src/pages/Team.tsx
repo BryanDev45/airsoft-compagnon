@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -66,12 +67,15 @@ const Team = () => {
   const [selectedField, setSelectedField] = useState<any>(null);
   const [isTeamMember, setIsTeamMember] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
+  const [retryCount, setRetryCount] = useState(0);
 
   // Add timeout to prevent infinite loading
   const [loadingTimeout, setLoadingTimeout] = useState<NodeJS.Timeout | null>(null);
 
   // Function to fetch team data that can be reused for refresh
   const fetchTeamData = useCallback(async () => {
+    if (!id) return;
+    
     try {
       setLoading(true);
       setError(null);
@@ -143,11 +147,15 @@ const Team = () => {
             const profile = profiles?.find(p => p.id === member.user_id);
             if (!profile) return null;
             
+            // Utilisez une URL par défaut basée sur le nom d'utilisateur si l'avatar n'existe pas
+            const avatarUrl = profile.avatar || 
+              `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.username || 'default'}`;
+            
             return {
               id: profile.id,
               username: profile.username,
               role: member.role,
-              avatar: profile.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.username || 'default'}`,
+              avatar: avatarUrl,
               joinedTeam: profile.join_date ? new Date(profile.join_date).toLocaleDateString('fr-FR') : 'N/A',
               verified: profile.is_verified,
               specialty: 'Non spécifié', // Default value, update if you have specialty data
@@ -251,18 +259,40 @@ const Team = () => {
       clearTimeout(timeout);
       setTeam(teamDataFormatted);
       setLoading(false);
+      // Reset retry count on success
+      setRetryCount(0);
     } catch (error: any) {
       console.error("Erreur lors de la récupération des données:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les données de l'équipe: " + error.message,
-        variant: "destructive",
-      });
-      if (loadingTimeout) clearTimeout(loadingTimeout);
-      setError("Une erreur s'est produite lors du chargement des données de l'équipe.");
-      setLoading(false);
+      
+      // Check if it's a connection error and we haven't retried too many times
+      if (error.message && error.message.includes("upstream connect error") && retryCount < 3) {
+        setRetryCount(prev => prev + 1);
+        
+        // Retry after a delay (exponential backoff)
+        const delay = Math.pow(2, retryCount) * 1000;
+        
+        toast({
+          title: "Problème de connexion",
+          description: `Nouvelle tentative de connexion dans ${delay/1000} secondes...`,
+        });
+        
+        setTimeout(() => {
+          fetchTeamData();
+        }, delay);
+      } else {
+        // If it's not a connection error or we've retried too many times
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les données de l'équipe: " + error.message,
+          variant: "destructive",
+        });
+        
+        if (loadingTimeout) clearTimeout(loadingTimeout);
+        setError("Une erreur s'est produite lors du chargement des données de l'équipe. Veuillez réessayer plus tard.");
+        setLoading(false);
+      }
     }
-  }, [id, navigate, loadingTimeout]);
+  }, [id, navigate, loadingTimeout, retryCount]);
 
   useEffect(() => {
     if (id) {
@@ -275,7 +305,7 @@ const Team = () => {
         clearTimeout(loadingTimeout);
       }
     };
-  }, [id, fetchTeamData, loadingTimeout]);
+  }, [id, fetchTeamData]);
 
   // Function to handle team updates
   const handleTeamUpdate = useCallback((updatedTeam: Partial<TeamData>) => {
