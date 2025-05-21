@@ -224,7 +224,7 @@ export default function AddStoreDialog({ open, onOpenChange }: AddStoreDialogPro
   return (
     <>
       <Dialog open={open} onOpenChange={handleDialogClose}>
-        <DialogContent className="sm:max-w-[550px] max-h-[90vh] flex flex-col">
+        <DialogContent className="sm:max-w-[550px] max-h-[90vh] flex flex-col overflow-hidden">
           <DialogHeader>
             <DialogTitle>Ajouter un magasin</DialogTitle>
             <DialogDescription>
@@ -232,44 +232,46 @@ export default function AddStoreDialog({ open, onOpenChange }: AddStoreDialogPro
             </DialogDescription>
           </DialogHeader>
 
-          <ScrollArea className="flex-grow pr-4">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nom du magasin *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Airsoft Shop" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="space-y-4">
-                  <StoreLocationSection 
-                    form={form}
-                    isGeocoding={isGeocoding}
-                    coordinates={coordinates}
-                    handleAddressChange={handleAddressChange}
+          <ScrollArea className="flex-grow pr-6" style={{ height: "calc(70vh - 180px)" }}>
+            <div className="pr-4">
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nom du magasin *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Airsoft Shop" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
 
-                <div className="space-y-4">
-                  <StoreContactSection form={form} />
-                </div>
-                
-                <StoreImageUploadSection 
-                  images={images}
-                  preview={preview}
-                  handleImageChange={handleImageChange}
-                  removeImage={removeImage}
-                />
-              </form>
-            </Form>
+                  <div className="space-y-4">
+                    <StoreLocationSection 
+                      form={form}
+                      isGeocoding={isGeocoding}
+                      coordinates={coordinates}
+                      handleAddressChange={handleAddressChange}
+                    />
+                  </div>
+
+                  <div className="space-y-4">
+                    <StoreContactSection form={form} />
+                  </div>
+                  
+                  <StoreImageUploadSection 
+                    images={images}
+                    preview={preview}
+                    handleImageChange={handleImageChange}
+                    removeImage={removeImage}
+                  />
+                </form>
+              </Form>
+            </div>
           </ScrollArea>
 
           <DialogFooter className="mt-4 pt-2 border-t">
@@ -283,6 +285,7 @@ export default function AddStoreDialog({ open, onOpenChange }: AddStoreDialogPro
             <Button 
               onClick={form.handleSubmit(onSubmit)}
               disabled={isSubmitting || isGeocoding || !coordinates}
+              className="bg-airsoft-red hover:bg-red-700 text-white"
             >
               {isSubmitting ? 'Ajout en cours...' : 'Ajouter le magasin'}
             </Button>
@@ -301,7 +304,7 @@ export default function AddStoreDialog({ open, onOpenChange }: AddStoreDialogPro
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setShowImageConfirmDialog(false)}>Continuer la saisie</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmClose}>Quitter sans sauvegarder</AlertDialogAction>
+            <AlertDialogAction onClick={confirmClose} className="bg-airsoft-red hover:bg-red-700 text-white">Quitter sans sauvegarder</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
