@@ -18,22 +18,19 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
+} from '@/components/ui/alert-dialog';
 
-// Importation des composants extraits
-import StoreImageUploadSection from './StoreImageUploadSection';
-import StoreLocationSection from './StoreLocationSection';
-import StoreContactSection from './StoreContactSection';
+import StoreForm from './StoreForm';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Le nom doit contenir au moins 2 caractères" }),
@@ -224,60 +221,37 @@ export default function AddStoreDialog({ open, onOpenChange }: AddStoreDialogPro
   return (
     <>
       <Dialog open={open} onOpenChange={handleDialogClose}>
-        <DialogContent className="sm:max-w-[550px] max-h-[90vh] flex flex-col overflow-hidden">
-          <DialogHeader>
-            <DialogTitle>Ajouter un magasin</DialogTitle>
-            <DialogDescription>
+        <DialogContent className="sm:max-w-[600px] max-h-[85vh] flex flex-col overflow-hidden rounded-lg border-neutral-200 shadow-lg">
+          <DialogHeader className="pb-4 border-b border-neutral-200">
+            <DialogTitle className="text-xl font-semibold text-neutral-800">Ajouter un magasin</DialogTitle>
+            <DialogDescription className="text-neutral-600">
               Saisissez les informations du magasin. Tous les champs marqués * sont obligatoires.
             </DialogDescription>
           </DialogHeader>
 
-          <ScrollArea className="flex-grow pr-6" style={{ height: "calc(70vh - 180px)" }}>
-            <div className="pr-4">
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nom du magasin *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Airsoft Shop" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+          <div className="flex-grow overflow-hidden my-2">
+            <ScrollArea className="h-[calc(60vh-80px)] pr-4">
+              <div className="px-1 pb-4">
+                <StoreForm 
+                  form={form}
+                  isGeocoding={isGeocoding}
+                  coordinates={coordinates}
+                  handleAddressChange={handleAddressChange}
+                  handleImageChange={handleImageChange}
+                  removeImage={removeImage}
+                  images={images}
+                  preview={preview}
+                  onSubmit={onSubmit}
+                />
+              </div>
+            </ScrollArea>
+          </div>
 
-                  <div className="space-y-4">
-                    <StoreLocationSection 
-                      form={form}
-                      isGeocoding={isGeocoding}
-                      coordinates={coordinates}
-                      handleAddressChange={handleAddressChange}
-                    />
-                  </div>
-
-                  <div className="space-y-4">
-                    <StoreContactSection form={form} />
-                  </div>
-                  
-                  <StoreImageUploadSection 
-                    images={images}
-                    preview={preview}
-                    handleImageChange={handleImageChange}
-                    removeImage={removeImage}
-                  />
-                </form>
-              </Form>
-            </div>
-          </ScrollArea>
-
-          <DialogFooter className="mt-4 pt-2 border-t">
+          <DialogFooter className="pt-4 border-t border-neutral-200 bg-neutral-50 rounded-b-lg">
             <Button 
               type="button" 
-              variant="outline" 
+              variant="outline"
+              className="border-neutral-300 hover:bg-neutral-100"
               onClick={() => handleDialogClose(false)}
             >
               Annuler
@@ -295,16 +269,23 @@ export default function AddStoreDialog({ open, onOpenChange }: AddStoreDialogPro
       
       {/* Dialogue de confirmation pour quitter sans sauvegarder */}
       <AlertDialog open={showImageConfirmDialog} onOpenChange={setShowImageConfirmDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-lg border-neutral-200 shadow-lg">
           <AlertDialogHeader>
-            <AlertDialogTitle>Annuler les modifications ?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-lg font-semibold text-neutral-800">Annuler les modifications ?</AlertDialogTitle>
+            <AlertDialogDescription className="text-neutral-600">
               Toutes les informations saisies et images téléchargées seront perdues. Êtes-vous sûr de vouloir quitter ?
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setShowImageConfirmDialog(false)}>Continuer la saisie</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmClose} className="bg-airsoft-red hover:bg-red-700 text-white">Quitter sans sauvegarder</AlertDialogAction>
+          <AlertDialogFooter className="pt-4 border-t border-neutral-200">
+            <AlertDialogCancel className="border-neutral-300 hover:bg-neutral-100" onClick={() => setShowImageConfirmDialog(false)}>
+              Continuer la saisie
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmClose} 
+              className="bg-airsoft-red hover:bg-red-700 text-white"
+            >
+              Quitter sans sauvegarder
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
