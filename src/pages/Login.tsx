@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -14,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/components/ui/use-toast";
+import { getStorageWithExpiry } from '@/utils/cacheUtils';
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Email invalide" }),
@@ -27,6 +27,15 @@ const Login = () => {
   const [rememberMe, setRememberMe] = useState(false);
 
   useEffect(() => {
+    // Check cached auth state for faster redirect
+    const cachedAuthState = getStorageWithExpiry('auth_state');
+    
+    if (cachedAuthState?.isAuthenticated) {
+      navigate('/profile');
+      return;
+    }
+    
+    // Also check for user from auth hook
     if (user) {
       navigate('/profile');
     }
@@ -47,7 +56,10 @@ const Login = () => {
 
   const onSubmit = async (data) => {
     try {
-      await login(data.email, data.password, rememberMe);
+      const success = await login(data.email, data.password, rememberMe);
+      if (success) {
+        // La navigation sera gérée par le hook useAuth
+      }
     } catch (error) {
       console.error("Erreur de connexion:", error);
     }

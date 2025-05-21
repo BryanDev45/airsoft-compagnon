@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import Index from './pages/Index';
@@ -27,6 +28,7 @@ import { useState, useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import CookieConsent from './components/CookieConsent';
 import QueryProvider from './components/QueryProvider';
+import { getStorageWithExpiry, setStorageWithExpiry, CACHE_DURATIONS } from '@/utils/cacheUtils';
 
 function App() {
   const [cookiesAccepted, setCookiesAccepted] = useState<boolean | null>(null);
@@ -45,16 +47,19 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const consentStatus = localStorage.getItem('cookieConsent');
+    // Check cookie consent from cache
+    const consentStatus = getStorageWithExpiry('cookieConsent') || localStorage.getItem('cookieConsent');
     setCookiesAccepted(consentStatus === 'accepted');
   }, []);
 
   const handleAcceptCookies = () => {
+    setStorageWithExpiry('cookieConsent', 'accepted', CACHE_DURATIONS.LONG);
     localStorage.setItem('cookieConsent', 'accepted');
     setCookiesAccepted(true);
   };
 
   const handleDeclineCookies = () => {
+    setStorageWithExpiry('cookieConsent', 'declined', CACHE_DURATIONS.LONG);
     localStorage.setItem('cookieConsent', 'declined');
     setCookiesAccepted(false);
   };
