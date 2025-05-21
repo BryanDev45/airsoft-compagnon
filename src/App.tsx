@@ -68,9 +68,9 @@ function App() {
     <QueryProvider>
       <Router>
         <Routes>
+          {/* Public routes */}
           <Route path="/" element={<Index />} />
           <Route path="/parties" element={<Parties />} />
-          <Route path="/parties/create" element={<CreateParty />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/partners" element={<Partners />} />
           <Route path="/login" element={<Login />} />
@@ -84,11 +84,42 @@ function App() {
           <Route path="/cookies-policy" element={<CookiesPolicy />} />
           <Route path="/toolbox" element={<Toolbox />} />
           <Route path="/game/:id" element={<GameDetails />} />
-          <Route path="/edit-game/:id" element={<EditGame />} />
-          <Route path="/team/:id" element={<Team />} />
-          <Route path="/team/create" element={<CreateTeam />} />
           <Route path="/user/:username" element={<UserProfile />} />
           <Route path="/search" element={<Parties />} />
+          
+          {/* Protected routes */}
+          <Route 
+            path="/parties/create" 
+            element={
+              <AuthGuard>
+                <CreateParty />
+              </AuthGuard>
+            } 
+          />
+          <Route 
+            path="/edit-game/:id" 
+            element={
+              <AuthGuard>
+                <EditGame />
+              </AuthGuard>
+            } 
+          />
+          <Route 
+            path="/team/:id" 
+            element={
+              <AuthGuard>
+                <Team />
+              </AuthGuard>
+            } 
+          />
+          <Route 
+            path="/team/create" 
+            element={
+              <AuthGuard>
+                <CreateTeam />
+              </AuthGuard>
+            } 
+          />
           <Route 
             path="/profile" 
             element={

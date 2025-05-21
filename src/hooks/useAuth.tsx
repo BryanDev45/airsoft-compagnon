@@ -62,6 +62,8 @@ export const useAuth = () => {
             // Clear user and auth state on sign out
             setUser(null);
             setSession(null);
+            
+            // Clear all auth-related cache
             localStorage.removeItem(USER_CACHE_KEY);
             localStorage.removeItem(SESSION_CACHE_KEY);
             localStorage.removeItem(AUTH_STATE_KEY);
@@ -70,6 +72,7 @@ export const useAuth = () => {
             clearCacheByPrefix('userProfile_');
             clearCacheByPrefix('profile_data');
             clearCacheByPrefix('user_stats');
+            clearCacheByPrefix('notifications');
 
             // Use setTimeout to avoid potential deadlocks
             if (location.pathname !== '/login' && location.pathname !== '/register' && event === 'SIGNED_OUT') {
@@ -116,6 +119,9 @@ export const useAuth = () => {
         console.error("Error fetching session:", error);
         if (isMounted) {
           setInitialLoading(false);
+          
+          // Clear cached auth state if there's an error
+          clearCacheByPrefix('auth_');
         }
       }
     };
@@ -131,6 +137,13 @@ export const useAuth = () => {
         if (isMounted) setInitialLoading(false);
       }, 50);
     }
+
+    // Set up a safety timeout to prevent infinite loading
+    const safetyTimeout = setTimeout(() => {
+      if (isMounted && initialLoading) {
+        setInitialLoading(false);
+      }
+    }, 3000);
 
     // Set up regular session refresh if user is authenticated
     let refreshInterval: number;
@@ -153,13 +166,18 @@ export const useAuth = () => {
     return () => {
       isMounted = false;
       subscription.unsubscribe();
+      clearTimeout(safetyTimeout);
       if (refreshInterval) clearInterval(refreshInterval);
     };
-  }, [navigate, location.pathname]);
+  }, [navigate, location.pathname, initialLoading]);
 
   const login = async (email: string, password: string, rememberMe: boolean = false) => {
     try {
       setLoading(true);
+      
+      // Clear any previous auth state first
+      clearCacheByPrefix('auth_');
+      
       const { data, error } = await supabase.auth.signInWithPassword({ 
         email, 
         password
@@ -170,15 +188,22 @@ export const useAuth = () => {
       }
 
       if (data && data.user) {
+        // Update the user state
         setUser(data.user);
+        setSession(data.session);
+        
+        // Cache the auth state
+        setStorageWithExpiry(USER_CACHE_KEY, data.user, CACHE_DURATIONS.MEDIUM);
+        setStorageWithExpiry(SESSION_CACHE_KEY, data.session, CACHE_DURATIONS.MEDIUM);
+        setStorageWithExpiry(AUTH_STATE_KEY, { isAuthenticated: true }, CACHE_DURATIONS.MEDIUM);
+        
         toast({
           title: "Connexion réussie",
           description: "Bienvenue sur Airsoft Compagnon",
         });
         
-        // Naviguer et recharger la page pour garantir un état frais
+        // Navigate to profile page
         navigate('/profile');
-        window.location.reload();
         return true;
       } else {
         throw new Error("Aucune donnée utilisateur retournée");
@@ -253,11 +278,25 @@ export const useAuth = () => {
   const logout = async () => {
     try {
       setLoading(true);
+      
+      // Perform Supabase logout
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
+      // Clear all auth-related states and cache
       setUser(null);
-      // Navigate to login page after successful logout
+      setSession(null);
+      
+      // Clear all auth-related cache
+      localStorage.removeItem(USER_CACHE_KEY);
+      localStorage.removeItem(SESSION_CACHE_KEY);
+      localStorage.removeItem(AUTH_STATE_KEY);
+      clearCacheByPrefix('userProfile_');
+      clearCacheByPrefix('profile_data');
+      clearCacheByPrefix('user_stats');
+      clearCacheByPrefix('notifications');
+      
+      // Navigate to login page
       navigate('/login');
       
       toast({
@@ -265,9 +304,10 @@ export const useAuth = () => {
         description: "À bientôt !",
       });
     } catch (error: any) {
+      console.error('Error during logout:', error);
       toast({
         title: "Erreur de déconnexion",
-        description: error.message,
+        description: error.message || "Une erreur est survenue",
         variant: "destructive",
       });
     } finally {

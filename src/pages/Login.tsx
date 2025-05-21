@@ -27,16 +27,13 @@ const Login = () => {
   const [rememberMe, setRememberMe] = useState(false);
 
   useEffect(() => {
-    // Check cached auth state for faster redirect
+    // Check if user is already logged in, but don't redirect automatically
+    // This prevents infinite loading issues on the profile page
     const cachedAuthState = getStorageWithExpiry('auth_state');
+    const isAuthenticated = cachedAuthState?.isAuthenticated && user;
     
-    if (cachedAuthState?.isAuthenticated) {
-      navigate('/profile');
-      return;
-    }
-    
-    // Also check for user from auth hook
-    if (user) {
+    // Only redirect if we're absolutely sure the user is authenticated
+    if (isAuthenticated) {
       navigate('/profile');
     }
   }, [user, navigate]);
@@ -58,7 +55,7 @@ const Login = () => {
     try {
       const success = await login(data.email, data.password, rememberMe);
       if (success) {
-        // La navigation sera gérée par le hook useAuth
+        // The login function will handle navigation in useAuth hook
       }
     } catch (error) {
       console.error("Erreur de connexion:", error);

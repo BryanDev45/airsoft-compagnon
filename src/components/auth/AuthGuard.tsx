@@ -67,6 +67,21 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
     }
   }, [user, initialLoading, navigate, location.pathname]);
 
+  // Another safety timeout to prevent infinite loading
+  useEffect(() => {
+    const safetyTimeout = setTimeout(() => {
+      // If we're still checking after 5 seconds, assume not authenticated and redirect
+      if (isChecking && !isAuthenticated) {
+        setIsChecking(false);
+        if (location.pathname !== '/login' && location.pathname !== '/register') {
+          navigate('/login');
+        }
+      }
+    }, 5000); // 5 second safety timeout
+    
+    return () => clearTimeout(safetyTimeout);
+  }, [isChecking, isAuthenticated, navigate, location.pathname]);
+
   // Show skeleton loader only if we don't have cached auth data
   if ((initialLoading || isChecking) && !isAuthenticated) {
     return (

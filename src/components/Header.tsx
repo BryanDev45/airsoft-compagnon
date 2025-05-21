@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, User as UserIcon, LogOut, Bell, BellOff, Settings, Users, Wrench, Globe } from 'lucide-react';
@@ -212,27 +213,45 @@ const Header = () => {
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
-      // La déconnexion est gérée par le listener onAuthStateChange
+      setIsAuthLoading(true);
+      const { error } = await supabase.auth.signOut();
       
-      // Forcer l'invalidation du cache
+      if (error) throw error;
+      
+      // Clear auth state and user data
+      setUser(null);
+      setIsAuthenticated(false);
+      
+      // Clear all auth-related cache
       localStorage.removeItem('auth_state');
       localStorage.removeItem('auth_user');
       localStorage.removeItem('auth_session');
       localStorage.removeItem('user_profile');
+      clearCacheByPrefix('notifications');
+      clearCacheByPrefix('user_');
+      clearCacheByPrefix('profile_');
       
       toast({
         title: "Déconnexion réussie",
         description: "À bientôt sur Airsoft Compagnon"
       });
       
+      // Navigate to login page
       navigate('/login');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error during logout:', error);
+      toast({
+        title: "Erreur de déconnexion",
+        description: error.message || "Une erreur est survenue",
+        variant: "destructive"
+      });
+    } finally {
+      setIsAuthLoading(false);
     }
   };
 
   const handleLogin = () => {
+    // Redirect directly to login page
     navigate('/login');
   };
 
@@ -252,9 +271,8 @@ const Header = () => {
   };
 
   const renderAuthSection = () => {
-    // Si chargement initial avec état d'authentification inconnu, afficher un bouton de connexion basique
-    // pour éviter de bloquer l'accès à la connexion
-    if (isAuthLoading && !isAuthenticated) {
+    // If loading, show a basic login button to ensure users can always access login
+    if (isAuthLoading) {
       return (
         <Button variant="default" className="bg-airsoft-red hover:bg-red-700" onClick={handleLogin}>
           Se connecter
@@ -262,7 +280,7 @@ const Header = () => {
       );
     }
     
-    // Si authentifié et avec des données utilisateur, afficher l'interface complète
+    // If authenticated and with user data, show the full interface
     if (isAuthenticated && user) {
       return (
         <>
@@ -321,7 +339,7 @@ const Header = () => {
       );
     }
     
-    // Par défaut, afficher le bouton de connexion
+    // Default to showing the login button
     return (
       <Button variant="default" className="bg-airsoft-red hover:bg-red-700" onClick={handleLogin}>
         Se connecter
