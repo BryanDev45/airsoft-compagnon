@@ -69,17 +69,11 @@ export const useTeamData = (teamId: string | undefined) => {
             const profile = profiles?.find(p => p.id === member.user_id);
             if (!profile) return null;
             
-            // Generate avatar URL based on username if avatar doesn't exist
-            let avatarUrl = profile.avatar;
-            if (!avatarUrl || !avatarUrl.startsWith('http')) {
-              avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.username || 'default'}`;
-            }
-            
             return {
               id: profile.id,
               username: profile.username,
               role: member.role,
-              avatar: avatarUrl,
+              avatar: profile.avatar,
               joinedTeam: profile.join_date ? new Date(profile.join_date).toLocaleDateString('fr-FR') : 'N/A',
               verified: profile.is_verified,
               specialty: 'Non spécifié', // Default value

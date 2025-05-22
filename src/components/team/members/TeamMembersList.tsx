@@ -55,7 +55,7 @@ const TeamMembersList = ({
                 <TableCell className="flex items-center space-x-2">
                   <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
                     <img 
-                      src={member.profiles?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.profiles?.username || 'user'}`}
+                      src={member.profiles?.avatar}
                       alt={member.profiles?.username || "Utilisateur"} 
                       className="w-full h-full object-cover"
                     />

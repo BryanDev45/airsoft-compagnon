@@ -44,22 +44,6 @@ export const AuthSection: React.FC<AuthSectionProps> = ({
     }
   };
 
-  // Function to generate a default avatar URL if the avatar doesn't exist
-  const getAvatarUrl = (user: any) => {
-    if (!user) return `https://api.dicebear.com/7.x/avataaars/svg?seed=default`;
-    
-    if (user?.avatar && user.avatar.startsWith('http')) {
-      return user.avatar;
-    }
-    
-    if (user?.avatar) {
-      return user.avatar;
-    }
-    
-    // Fallback to a generated avatar based on username
-    return `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username || 'default'}`;
-  };
-
   // If loading, show a basic login button to ensure users can always access login
   if (initialLoading) {
     return (
@@ -110,8 +94,8 @@ export const AuthSection: React.FC<AuthSectionProps> = ({
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
               <Avatar>
-                <AvatarImage src={getAvatarUrl(user)} alt={user.username} />
-                <AvatarFallback>{user.username?.charAt(0) || 'U'}</AvatarFallback>
+                <AvatarImage src={user?.avatar} alt={user?.username} />
+                <AvatarFallback>{user?.username?.charAt(0) || 'U'}</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
@@ -164,8 +148,8 @@ export const AuthSection: React.FC<AuthSectionProps> = ({
 
         <div className="flex items-center gap-3 py-2">
           <Avatar>
-            <AvatarImage src={getAvatarUrl(user)} alt={user.username} />
-            <AvatarFallback>{user.username?.charAt(0) || 'U'}</AvatarFallback>
+            <AvatarImage src={user?.avatar} alt={user?.username} />
+            <AvatarFallback>{user?.username?.charAt(0) || 'U'}</AvatarFallback>
           </Avatar>
           <span>{user.username}</span>
         </div>
@@ -195,3 +179,4 @@ export const AuthSection: React.FC<AuthSectionProps> = ({
     );
   }
 };
+
