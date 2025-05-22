@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { getStorageWithExpiry, setStorageWithExpiry, clearCacheByPrefix, CACHE_DURATIONS } from '@/utils/cacheUtils';
-import { getRandomAvatar } from '@/utils/avatarUtils';
 
 // Cache keys
 const USER_CACHE_KEY = 'auth_user';
@@ -63,10 +62,7 @@ export const useAuthActions = () => {
   const register = async (email: string, password: string, userData: any) => {
     try {
       setLoading(true);
-      const userDataWithAvatar = {
-        ...userData,
-        avatar: getRandomAvatar(),
-      };
+      // No longer using random avatars - userData will be used as is without modification
 
       const { data: existingUser, error: checkError } = await supabase
         .from('profiles')
@@ -87,7 +83,7 @@ export const useAuthActions = () => {
         email,
         password,
         options: {
-          data: userDataWithAvatar, // This metadata will be used by the trigger to create the profile
+          data: userData, // This metadata will be used by the trigger to create the profile
         },
       });
 

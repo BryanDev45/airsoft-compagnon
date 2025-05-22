@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload, Image as ImageIcon, RefreshCw } from 'lucide-react';
-import { getAllDefaultAvatars } from "@/utils/avatarUtils";
 
 interface ProfileEditBioDialogProps {
   open: boolean;
@@ -36,10 +34,7 @@ const ProfileEditBioDialog = ({
   const [defaultAvatars, setDefaultAvatars] = useState<string[]>([]);
   
   useEffect(() => {
-    const avatars = getAllDefaultAvatars();
-    if (avatars && avatars.length > 0) {
-      setDefaultAvatars(avatars);
-    }
+    setDefaultAvatars([]);
   }, []);
   
   useEffect(() => {
@@ -246,33 +241,6 @@ const ProfileEditBioDialog = ({
               <p className="text-xs text-gray-500 text-center">
                 Formats acceptés : JPG, PNG. Taille maximale : 2MB.
               </p>
-              <div className="w-full mt-4">
-                <p className="text-xs text-gray-400 mb-2">Ou choisissez un avatar parmi ces modèles</p>
-                <div className="grid grid-cols-3 gap-4 mt-2 max-h-60 overflow-y-auto p-2">
-                  {defaultAvatars && defaultAvatars.length > 0 ? (
-                    defaultAvatars.map((src, index) => (
-                      <button
-                        key={`${src}-${index}`}
-                        type="button"
-                        className={`p-1 rounded-lg border-2 ${avatarPreview === src ? 'border-airsoft-red' : 'border-transparent'} hover:border-gray-300 transition-colors focus:outline-none`}
-                        onClick={() => handleSelectDefaultAvatar(src)}
-                        title="Choisir cet avatar"
-                      >
-                        <div className="w-full aspect-square rounded-lg overflow-hidden bg-gray-100">
-                          <img
-                            src={src}
-                            alt={`Avatar airsoft ${index + 1}`}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
-                        </div>
-                      </button>
-                    ))
-                  ) : (
-                    <p className="text-sm text-gray-500 col-span-3 text-center py-4">Chargement des avatars...</p>
-                  )}
-                </div>
-              </div>
             </div>
           </TabsContent>
           

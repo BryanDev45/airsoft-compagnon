@@ -9,7 +9,6 @@ import { toast } from "@/components/ui/use-toast";
 import { Upload, Image as ImageIcon, RefreshCw } from 'lucide-react';
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { getAllDefaultAvatars } from "@/utils/avatarUtils";
 
 interface ProfileEditMediaDialogProps {
   open: boolean;
@@ -25,10 +24,8 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
   const [defaultAvatars, setDefaultAvatars] = useState<string[]>([]);
 
   useEffect(() => {
-    const avatars = getAllDefaultAvatars();
-    if (avatars && avatars.length > 0) {
-      setDefaultAvatars(avatars);
-    }
+    // Default avatars are no longer used, so we set an empty array
+    setDefaultAvatars([]);
   }, []);
 
   useEffect(() => {
@@ -184,33 +181,7 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
               <p className="text-xs text-gray-500 text-center">
                 Formats acceptés : JPG, PNG. Taille maximale : 2MB.
               </p>
-              <div className="w-full mt-4">
-                <p className="text-xs text-gray-400 mb-2">Ou choisissez un avatar de base</p>
-                <div className="grid grid-cols-4 gap-3 mt-2 max-h-48 overflow-y-auto p-2">
-                  {defaultAvatars && defaultAvatars.length > 0 ? (
-                    defaultAvatars.map((src, index) => (
-                      <button
-                        key={`${src}-${index}`}
-                        type="button"
-                        className={`p-0.5 rounded-full border-2 ${avatarPreview === src ? 'border-airsoft-red' : 'border-transparent'} hover:border-gray-300 transition-colors focus:outline-none`}
-                        onClick={() => handleSelectDefaultAvatar(src)}
-                        title="Choisir cet avatar"
-                      >
-                        <div className="w-12 h-12 rounded-full overflow-hidden">
-                          <img
-                            src={src}
-                            alt={`Avatar airsoft ${index + 1}`}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
-                        </div>
-                      </button>
-                    ))
-                  ) : (
-                    <p className="text-sm text-gray-500 col-span-4 text-center py-4">Chargement des avatars...</p>
-                  )}
-                </div>
-              </div>
+              {/* Remove the default avatars section since we no longer have that functionality */}
             </div>
           </TabsContent>
           
