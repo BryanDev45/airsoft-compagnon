@@ -35,8 +35,10 @@ export const AuthSection: React.FC<AuthSectionProps> = ({
 
   const handleNavigateToTeam = () => {
     if (user?.team_id) {
+      console.log("Navigating to team with ID:", user.team_id);
       navigate(`/team/${user.team_id}`);
     } else {
+      console.log("No team found for user:", user);
       toast({
         title: "Information",
         description: "Vous n'êtes pas membre d'une équipe"
