@@ -14,12 +14,16 @@ export const useAuthState = () => {
   const [initialLoading, setInitialLoading] = useState(true);
 
   useEffect(() => {
+    console.log("Initializing auth state");
+    let mounted = true;
+    
     // First, try to get from storage cache
     const cachedUser = getStorageWithExpiry(USER_CACHE_KEY);
     const cachedSession = getStorageWithExpiry(SESSION_CACHE_KEY);
     const cachedAuthState = getStorageWithExpiry(AUTH_STATE_KEY);
     
     if (cachedUser && cachedSession && cachedAuthState?.isAuthenticated) {
+      console.log("Found cached auth state, setting user");
       setUser(cachedUser);
       setSession(cachedSession);
       
@@ -30,15 +34,21 @@ export const useAuthState = () => {
     // Set up auth change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
+        console.log("Auth state change:", event);
+        
         // Update state based on auth event
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          if (newSession) {
+          if (newSession && mounted) {
+            console.log("Signed in, loading user profile");
             // Get user profile data
             await loadUserProfile(newSession.user.id, newSession);
           }
         } else if (event === 'SIGNED_OUT') {
-          setUser(null);
-          setSession(null);
+          console.log("Signed out, clearing user state");
+          if (mounted) {
+            setUser(null);
+            setSession(null);
+          }
           localStorage.removeItem(USER_CACHE_KEY);
           localStorage.removeItem(SESSION_CACHE_KEY);
           localStorage.removeItem(AUTH_STATE_KEY);
@@ -49,17 +59,26 @@ export const useAuthState = () => {
     // Get initial session
     const initializeAuth = async () => {
       try {
+        console.log("Getting initial session");
         const { data: { session: initialSession }, error } = await supabase.auth.getSession();
         
         if (initialSession && !error) {
-          await loadUserProfile(initialSession.user.id, initialSession);
+          console.log("Found initial session, loading user profile");
+          if (mounted) {
+            await loadUserProfile(initialSession.user.id, initialSession);
+          }
         } else {
-          setInitialLoading(false);
+          console.log("No initial session found or error:", error);
+          if (mounted) {
+            setInitialLoading(false);
+          }
         }
         
       } catch (error) {
         console.error('Error getting initial session:', error);
-        setInitialLoading(false);
+        if (mounted) {
+          setInitialLoading(false);
+        }
       }
     };
 
@@ -70,6 +89,7 @@ export const useAuthState = () => {
     }
 
     return () => {
+      mounted = false;
       subscription?.unsubscribe();
     };
   }, []);
@@ -77,16 +97,21 @@ export const useAuthState = () => {
   // Helper function to load user profile data
   const loadUserProfile = async (userId: string, currentSession: any) => {
     try {
+      console.log("Loading user profile data for:", userId);
       // Fetch the user's profile data
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error loading profile:", error);
+        throw error;
+      }
 
       if (profile) {
+        console.log("Profile loaded successfully");
         // Construct complete user object with both auth and profile data
         const fullUser = {
           ...currentSession.user,
@@ -99,6 +124,8 @@ export const useAuthState = () => {
         setStorageWithExpiry(USER_CACHE_KEY, fullUser, CACHE_DURATIONS.MEDIUM);
         setStorageWithExpiry(SESSION_CACHE_KEY, currentSession, CACHE_DURATIONS.MEDIUM);
         setStorageWithExpiry(AUTH_STATE_KEY, { isAuthenticated: true }, CACHE_DURATIONS.MEDIUM);
+      } else {
+        console.warn("No profile found for user:", userId);
       }
     } catch (error) {
       console.error('Error loading user profile:', error);

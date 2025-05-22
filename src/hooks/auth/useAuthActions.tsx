@@ -21,16 +21,21 @@ export const useAuthActions = () => {
       // Clear any previous auth state first
       clearCacheByPrefix('auth_');
       
+      console.log("Attempting login with email:", email);
+      
       const { data, error } = await supabase.auth.signInWithPassword({ 
         email, 
         password
       });
 
       if (error) {
+        console.error("Login error:", error);
         throw error;
       }
 
       if (data && data.user) {
+        console.log("Login successful, user data received");
+        
         // Cache the auth state
         setStorageWithExpiry(USER_CACHE_KEY, data.user, CACHE_DURATIONS.MEDIUM);
         setStorageWithExpiry(SESSION_CACHE_KEY, data.session, CACHE_DURATIONS.MEDIUM);
@@ -45,12 +50,14 @@ export const useAuthActions = () => {
         navigate('/profile');
         return true;
       } else {
+        console.error("No user data returned from login");
         throw new Error("Aucune donnée utilisateur retournée");
       }
     } catch (error: any) {
+      console.error("Login process error:", error);
       toast({
         title: "Erreur de connexion",
-        description: error.message,
+        description: error.message || "Une erreur est survenue lors de la connexion",
         variant: "destructive",
       });
       return false;
