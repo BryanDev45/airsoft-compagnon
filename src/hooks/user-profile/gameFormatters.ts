@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-// Constantes communes
+// Common constants
 export const DEFAULT_IMAGE = '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png';
 
 export interface FormattedGame {
@@ -51,32 +51,30 @@ export interface GameParticipant {
 }
 
 /**
- * Récupère le compteur de participants pour une liste de jeux
+ * Retrieves participant counts for a list of games
  */
 export const fetchParticipantCounts = async (gameIds: string[]): Promise<Record<string, number>> => {
   if (gameIds.length === 0) return {};
   
   const counts: Record<string, number> = {};
   
-  // Optimisation: récupérer les compteurs en une seule requête au lieu de multiples
-  const { data, error } = await supabase
-    .from('game_participants')
-    .select('game_id, count')
-    .in('game_id', gameIds)
-    .select('game_id')
-    .count();
-  
-  if (!error && data) {
-    data.forEach(item => {
-      counts[item.game_id] = item.count || 0;
-    });
+  // Optimization: get counts in a single query instead of multiple
+  for (const gameId of gameIds) {
+    const { data, error, count } = await supabase
+      .from('game_participants')
+      .select('*', { count: 'exact', head: true })
+      .eq('game_id', gameId);
+    
+    if (!error && count !== null) {
+      counts[gameId] = count;
+    }
   }
   
   return counts;
 }
 
 /**
- * Formate une partie organisée
+ * Formats an organized game
  */
 export const formatCreatedGame = (game: RawGame, participantCount: number): FormattedGame => {
   const gameDate = new Date(game.date);
@@ -107,7 +105,7 @@ export const formatCreatedGame = (game: RawGame, participantCount: number): Form
 };
 
 /**
- * Formate une partie à laquelle l'utilisateur participe
+ * Formats a game in which the user participates
  */
 export const formatParticipatedGame = (game: RawGame, participant: GameParticipant, participantCount: number): FormattedGame => {
   const gameDate = new Date(game.date);

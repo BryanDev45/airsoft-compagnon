@@ -24,7 +24,7 @@ export function useMapData() {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  // Utilisez React Query pour la mise en cache et la gestion des états
+  // Use React Query for data fetching, caching, and state management
   const { 
     data: events = [], 
     isLoading: loading, 
@@ -34,25 +34,27 @@ export function useMapData() {
     queryKey: ['mapEvents', user?.id],
     queryFn: fetchGames,
     refetchOnWindowFocus: false,
-    staleTime: 5 * 60 * 1000, // Cache valide pendant 5 minutes
+    staleTime: 5 * 60 * 1000, // Cache valid for 5 minutes
     retry: 1,
-    onError: (error: any) => {
-      // Ne pas afficher de toast pour les erreurs de réseau pour éviter le spam
-      if (error.message !== "Failed to fetch") {
-        toast({
-          title: "Erreur",
-          description: "Impossible de charger les parties",
-          variant: "destructive" 
-        });
+    meta: {
+      errorHandler: (error: any) => {
+        // Don't display toast for network errors to avoid spam
+        if (error.message !== "Failed to fetch") {
+          toast({
+            title: "Erreur",
+            description: "Impossible de charger les parties",
+            variant: "destructive" 
+          });
+        }
       }
     }
   });
 
-  // Fonction pour récupérer les jeux
+  // Function to fetch games
   async function fetchGames(): Promise<MapEvent[]> {    
     const today = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
     
-    // Construction de la requête de base
+    // Build the base query
     let query = supabase
       .from('airsoft_games')
       .select(`
@@ -76,11 +78,11 @@ export function useMapData() {
         Picture4,
         Picture5
       `)
-      .gte('date', today) // Filtrer pour n'afficher que les parties à venir ou du jour même
+      .gte('date', today) // Filter to show only upcoming games or today's games
       .order('date', { ascending: true });
     
-    // Ne montrons que les parties publiques aux utilisateurs non connectés
-    // Pour les utilisateurs connectés, afficher aussi leurs parties privées
+    // Only show public games to non-logged in users
+    // For logged-in users, also display their private games
     if (!user) {
       query = query.eq('is_private', false);
     } else {
@@ -93,7 +95,7 @@ export function useMapData() {
       throw error;
     }
 
-    // Transformation des données pour correspondre au format attendu par les composants existants
+    // Transform data to match the format expected by existing components
     const formattedEvents = data?.map(game => {
       // Format date as DD/MM/YYYY for display
       const gameDate = new Date(game.date);
@@ -109,7 +111,7 @@ export function useMapData() {
         location: game.city,
         department: game.zip_code?.substring(0, 2) || "",
         type: game.game_type || "woodland",
-        country: "france", // Valeur par défaut, peut être étendue plus tard
+        country: "france", // Default value, can be extended later
         lat: game.latitude ? parseFloat(String(game.latitude)) : 48.8566,
         lng: game.longitude ? parseFloat(String(game.longitude)) : 2.3522,
         maxPlayers: game.max_players,
@@ -120,6 +122,13 @@ export function useMapData() {
     
     return formattedEvents;
   }
+
+  // Set up an error handler that runs when the query has an error
+  useEffect(() => {
+    if (error) {
+      console.error("Error loading map data:", error);
+    }
+  }, [error]);
 
   return { 
     loading, 
