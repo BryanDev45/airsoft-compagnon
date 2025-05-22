@@ -42,18 +42,19 @@ const Login = () => {
 
   // Check if user is already logged in
   useEffect(() => {
+    console.log("Login page rendered, checking auth state");
     const checkAuthState = async () => {
-      const isAuthenticated = localStorage.getItem('auth_state');
-      if (isAuthenticated) {
-        try {
+      try {
+        const isAuthenticated = localStorage.getItem('auth_state');
+        if (isAuthenticated) {
           const authState = JSON.parse(isAuthenticated);
-          if (authState && authState.isAuthenticated) {
+          if (authState && authState.isAuthenticated && authState.value) {
             console.log("User already authenticated, redirecting to profile");
             navigate('/profile');
           }
-        } catch (e) {
-          console.error("Error parsing auth state:", e);
         }
+      } catch (e) {
+        console.error("Error parsing auth state:", e);
       }
     };
     
@@ -63,6 +64,11 @@ const Login = () => {
   }, [navigate, initialLoading]);
 
   const onSubmit = async (data) => {
+    if (isSubmitting || loading) {
+      console.log("Form submission blocked - already submitting");
+      return;
+    }
+    
     try {
       setIsSubmitting(true);
       console.log("Form submitted, attempting login");
@@ -86,6 +92,8 @@ const Login = () => {
   };
 
   const handleGoogleLogin = async () => {
+    if (isSubmitting || loading) return;
+    
     setIsSubmitting(true);
     try {
       await handleSocialLogin('google');
@@ -96,6 +104,8 @@ const Login = () => {
   };
 
   const handleFacebookLogin = async () => {
+    if (isSubmitting || loading) return;
+    
     setIsSubmitting(true);
     try {
       await handleSocialLogin('facebook');
@@ -104,6 +114,9 @@ const Login = () => {
       setIsSubmitting(false);
     }
   };
+
+  // Combine loading states to show loader when either local state or auth state is loading
+  const showLoader = initialLoading || isSubmitting || loading;
 
   if (initialLoading) {
     return (
@@ -149,7 +162,7 @@ const Login = () => {
                   id="email"
                   type="email"
                   autoComplete="email"
-                  disabled={isSubmitting}
+                  disabled={showLoader}
                   {...register('email')}
                   className={errors.email ? "border-red-500" : ""}
                 />
@@ -169,7 +182,7 @@ const Login = () => {
                   id="password"
                   type="password"
                   autoComplete="current-password"
-                  disabled={isSubmitting}
+                  disabled={showLoader}
                   {...register('password')}
                   className={errors.password ? "border-red-500" : ""}
                 />
@@ -183,7 +196,7 @@ const Login = () => {
                   id="remember-me"
                   checked={rememberMe}
                   onCheckedChange={(checked) => setRememberMe(!!checked)}
-                  disabled={isSubmitting}
+                  disabled={showLoader}
                 />
                 <Label htmlFor="remember-me" className="ml-2 text-sm text-gray-600">
                   Se souvenir de moi
@@ -194,9 +207,9 @@ const Login = () => {
             <Button
               type="submit"
               className="w-full bg-airsoft-red hover:bg-red-700"
-              disabled={isSubmitting}
+              disabled={showLoader}
             >
-              {isSubmitting ? (
+              {showLoader ? (
                 <span className="flex items-center justify-center">
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Connexion en cours...
@@ -215,10 +228,10 @@ const Login = () => {
                 type="button"
                 variant="outline"
                 onClick={handleGoogleLogin}
-                disabled={isSubmitting}
+                disabled={showLoader}
                 className="flex items-center justify-center gap-2"
               >
-                {isSubmitting ? (
+                {showLoader ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -247,10 +260,10 @@ const Login = () => {
                 type="button"
                 variant="outline"
                 onClick={handleFacebookLogin}
-                disabled={isSubmitting}
+                disabled={showLoader}
                 className="flex items-center justify-center gap-2 text-[#1877F2]"
               >
-                {isSubmitting ? (
+                {showLoader ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">

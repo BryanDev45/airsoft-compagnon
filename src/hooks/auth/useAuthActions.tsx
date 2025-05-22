@@ -30,16 +30,22 @@ export const useAuthActions = () => {
 
       if (error) {
         console.error("Login error:", error);
-        throw error;
+        toast({
+          title: "Erreur de connexion",
+          description: error.message || "Identifiants invalides",
+          variant: "destructive",
+        });
+        return false;
       }
 
       if (data && data.user) {
         console.log("Login successful, user data received");
         
         // Cache the auth state
-        setStorageWithExpiry(USER_CACHE_KEY, data.user, CACHE_DURATIONS.MEDIUM);
-        setStorageWithExpiry(SESSION_CACHE_KEY, data.session, CACHE_DURATIONS.MEDIUM);
-        setStorageWithExpiry(AUTH_STATE_KEY, { isAuthenticated: true }, CACHE_DURATIONS.MEDIUM);
+        const ttl = rememberMe ? CACHE_DURATIONS.LONG : CACHE_DURATIONS.MEDIUM;
+        setStorageWithExpiry(USER_CACHE_KEY, data.user, ttl);
+        setStorageWithExpiry(SESSION_CACHE_KEY, data.session, ttl);
+        setStorageWithExpiry(AUTH_STATE_KEY, { isAuthenticated: true, value: true }, ttl);
         
         toast({
           title: "Connexion réussie",
@@ -51,7 +57,12 @@ export const useAuthActions = () => {
         return true;
       } else {
         console.error("No user data returned from login");
-        throw new Error("Aucune donnée utilisateur retournée");
+        toast({
+          title: "Erreur de connexion",
+          description: "Aucune donnée utilisateur retournée",
+          variant: "destructive",
+        });
+        return false;
       }
     } catch (error: any) {
       console.error("Login process error:", error);

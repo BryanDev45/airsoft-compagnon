@@ -26,9 +26,6 @@ export const useAuthState = () => {
       console.log("Found cached auth state, setting user");
       setUser(cachedUser);
       setSession(cachedSession);
-      
-      // Even if we have cache, still load latest data in background
-      loadUserProfile(cachedUser.id, cachedSession);
     }
     
     // Set up auth change listener
@@ -56,7 +53,7 @@ export const useAuthState = () => {
       }
     );
 
-    // Get initial session
+    // Get initial session with a timeout to prevent infinite loading
     const initializeAuth = async () => {
       try {
         console.log("Getting initial session");
@@ -82,14 +79,28 @@ export const useAuthState = () => {
       }
     };
 
+    // Add a timeout to prevent infinite loading state
+    const timeoutId = setTimeout(() => {
+      if (mounted && initialLoading) {
+        console.log("Auth initialization timeout reached, setting loading to false");
+        setInitialLoading(false);
+      }
+    }, 5000); // 5 seconds timeout
+
     if (!cachedUser || !cachedSession) {
       initializeAuth();
     } else {
-      setInitialLoading(false);
+      // Even if we have cached user, still load the latest profile data
+      if (cachedUser.id) {
+        loadUserProfile(cachedUser.id, cachedSession);
+      } else {
+        setInitialLoading(false);
+      }
     }
 
     return () => {
       mounted = false;
+      clearTimeout(timeoutId);
       subscription?.unsubscribe();
     };
   }, []);
@@ -123,7 +134,7 @@ export const useAuthState = () => {
         setSession(currentSession);
         setStorageWithExpiry(USER_CACHE_KEY, fullUser, CACHE_DURATIONS.MEDIUM);
         setStorageWithExpiry(SESSION_CACHE_KEY, currentSession, CACHE_DURATIONS.MEDIUM);
-        setStorageWithExpiry(AUTH_STATE_KEY, { isAuthenticated: true }, CACHE_DURATIONS.MEDIUM);
+        setStorageWithExpiry(AUTH_STATE_KEY, { isAuthenticated: true, value: true }, CACHE_DURATIONS.MEDIUM);
       } else {
         console.warn("No profile found for user:", userId);
       }
