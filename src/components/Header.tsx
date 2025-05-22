@@ -7,7 +7,7 @@ import { AuthSection } from './header/AuthSection';
 import { LanguageSelector } from './header/LanguageSelector';
 import { MobileMenu } from './header/MobileMenu';
 import { useNotifications } from './header/useNotifications';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/auth/useAuth';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

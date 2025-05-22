@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
 import { Upload, Image as ImageIcon, RefreshCw } from 'lucide-react';
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/auth/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
 interface ProfileEditMediaDialogProps {
@@ -21,13 +21,7 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
-  const [defaultAvatars, setDefaultAvatars] = useState<string[]>([]);
-
-  useEffect(() => {
-    // Default avatars are no longer used, so we set an empty array
-    setDefaultAvatars([]);
-  }, []);
-
+  
   useEffect(() => {
     const fetchCurrentImages = async () => {
       if (user?.id) {
@@ -63,10 +57,6 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
       };
       reader.readAsDataURL(file);
     }
-  };
-
-  const handleSelectDefaultAvatar = (src: string) => {
-    setAvatarPreview(src);
   };
 
   const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -181,7 +171,6 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
               <p className="text-xs text-gray-500 text-center">
                 Formats acceptés : JPG, PNG. Taille maximale : 2MB.
               </p>
-              {/* Remove the default avatars section since we no longer have that functionality */}
             </div>
           </TabsContent>
           

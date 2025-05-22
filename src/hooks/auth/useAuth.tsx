@@ -10,8 +10,13 @@ export const useAuth = () => {
 
   const loading = actionsLoading || socialLoading;
 
+  const enhancedUser = user ? {
+    ...user,
+    team_id: user.team_id || null,
+  } : null;
+
   return {
-    user,
+    user: enhancedUser,
     session,
     loading,
     initialLoading,

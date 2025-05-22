@@ -9,7 +9,7 @@ import { NotificationList } from '@/components/notifications/NotificationList';
 import { LogOut, Bell, Users, UserIcon } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/use-toast";
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/auth/useAuth';
 
 interface AuthSectionProps {
   isDesktop?: boolean;
@@ -34,8 +34,8 @@ export const AuthSection: React.FC<AuthSectionProps> = ({
   };
 
   const handleNavigateToTeam = () => {
-    if (user?.teamId) {
-      navigate(`/team/${user.teamId}`);
+    if (user?.team_id) {
+      navigate(`/team/${user.team_id}`);
     } else {
       toast({
         title: "Information",
@@ -94,7 +94,7 @@ export const AuthSection: React.FC<AuthSectionProps> = ({
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
               <Avatar>
-                <AvatarImage src={user?.avatar} alt={user?.username} />
+                <AvatarImage src={user.avatar} alt={user.username} />
                 <AvatarFallback>{user?.username?.charAt(0) || 'U'}</AvatarFallback>
               </Avatar>
             </Button>
@@ -148,7 +148,7 @@ export const AuthSection: React.FC<AuthSectionProps> = ({
 
         <div className="flex items-center gap-3 py-2">
           <Avatar>
-            <AvatarImage src={user?.avatar} alt={user?.username} />
+            <AvatarImage src={user.avatar} alt={user.username} />
             <AvatarFallback>{user?.username?.charAt(0) || 'U'}</AvatarFallback>
           </Avatar>
           <span>{user.username}</span>
@@ -179,4 +179,3 @@ export const AuthSection: React.FC<AuthSectionProps> = ({
     );
   }
 };
-

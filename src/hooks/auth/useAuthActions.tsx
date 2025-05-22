@@ -62,7 +62,6 @@ export const useAuthActions = () => {
   const register = async (email: string, password: string, userData: any) => {
     try {
       setLoading(true);
-      // No longer using random avatars - userData will be used as is without modification
 
       const { data: existingUser, error: checkError } = await supabase
         .from('profiles')
