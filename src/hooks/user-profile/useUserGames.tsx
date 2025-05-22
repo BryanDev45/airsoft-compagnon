@@ -1,207 +1,130 @@
 
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { FormattedGame, fetchParticipantCounts, formatParticipatedGame, formatCreatedGame } from './gameFormatters';
 
-const DEFAULT_IMAGE = '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png';
-
-interface Game {
-  id: string;
-  title: string;
-  date: string;
-  address: string;
-  city: string;
-  zip_code: string;
-  max_players?: number;
-  price?: number;
-  created_by: string;
-}
-
-interface GameParticipant {
-  game_id: string;
-  user_id: string;
-  role: string;
-  status: string;
-}
-
-interface FormattedGame {
-  id: string;
-  title: string;
-  date: string;
-  rawDate: string;
-  location: string;
-  address: string;
-  zip_code: string;
-  city: string;
-  max_players: number;
-  participantsCount: number;
-  price: number;
-  image: string;
-  role: string;
-  status: 'À venir' | 'Terminé';
-  team: string;
-  result: string;
-}
-
+/**
+ * Hook pour récupérer et mettre à jour les parties d'un utilisateur avec des fonctionnalités supplémentaires
+ */
 export const useUserGames = (userId: string | undefined) => {
   const [userGames, setUserGames] = useState<FormattedGame[]>([]);
 
+  /**
+   * Récupérer les parties d'un utilisateur avec possibilité de rafraîchir manuellement
+   */
   const fetchUserGames = async () => {
     if (!userId) return;
-
+    
     try {
-      const [
-        { data: gameParticipants, error: participantsError },
-        { data: createdGames, error: createdGamesError }
-      ] = await Promise.all([
+      // Récupérer les données en parallèle pour de meilleures performances
+      const [participantsResponse, createdGamesResponse] = await Promise.all([
         supabase.from('game_participants').select('*').eq('user_id', userId),
         supabase.from('airsoft_games').select('*').eq('created_by', userId)
       ]);
-
-      if (participantsError || createdGamesError) {
-        throw participantsError || createdGamesError;
-      }
-
+      
+      if (participantsResponse.error) throw participantsResponse.error;
+      if (createdGamesResponse.error) throw createdGamesResponse.error;
+      
+      const gameParticipants = participantsResponse.data || [];
+      const createdGames = createdGamesResponse.data || [];
+      
       let formattedGames: FormattedGame[] = [];
       let pastGamesCount = 0;
-
-      // === Participated Games ===
-      const participatedGameIds = gameParticipants?.map(p => p.game_id) ?? [];
-      let participatedGames: Game[] = [];
-
-      if (participatedGameIds.length > 0) {
-        const { data: games, error: gamesError } = await supabase
-          .from('airsoft_games')
-          .select('*')
-          .in('id', participatedGameIds);
-
-        if (gamesError) throw gamesError;
-        participatedGames = games ?? [];
-
-        // Fetch participant counts individually for each game
-        const participantCounts: Record<string, number> = {};
+      
+      // Traiter les parties auxquelles l'utilisateur participe
+      if (gameParticipants.length > 0) {
+        const gameIds = gameParticipants.map(gp => gp.game_id);
         
-        // Get counts for all games at once
-        for (const gameId of participatedGameIds) {
-          const { count, error: countError } = await supabase
-            .from('game_participants')
-            .select('*', { count: 'exact', head: true })
-            .eq('game_id', gameId);
+        if (gameIds.length > 0) {
+          const { data: games, error: gamesDataError } = await supabase
+            .from('airsoft_games')
+            .select('*')
+            .in('id', gameIds);
+          
+          if (gamesDataError) throw gamesDataError;
+          
+          if (games && games.length > 0) {
+            // Récupérer les compteurs de participants de manière optimisée
+            const participantCounts = await fetchParticipantCounts(gameIds);
             
-          if (!countError && count !== null) {
-            participantCounts[gameId] = count;
-          } else {
-            participantCounts[gameId] = 0;
+            // Formater les jeux participés
+            for (const participant of gameParticipants) {
+              const gameData = games.find(g => g.id === participant.game_id);
+              if (gameData) {
+                const gameDate = new Date(gameData.date);
+                
+                // Compter les parties passées
+                if (gameDate <= new Date()) {
+                  pastGamesCount++;
+                }
+                
+                formattedGames.push(
+                  formatParticipatedGame(
+                    gameData, 
+                    participant, 
+                    participantCounts[gameData.id] || 0
+                  )
+                );
+              }
+            }
           }
         }
-
-        const formatted = gameParticipants
-          ?.map(gp => {
-            const game = participatedGames.find(g => g.id === gp.game_id);
-            if (!game) return null;
-
-            const gameDate = new Date(game.date);
-            const isUpcoming = gameDate > new Date();
-
-            if (!isUpcoming) pastGamesCount++;
-
-            return {
-              id: game.id,
-              title: game.title,
-              date: gameDate.toLocaleDateString('fr-FR'),
-              rawDate: game.date,
-              location: game.city,
-              address: game.address,
-              zip_code: game.zip_code,
-              city: game.city,
-              max_players: game.max_players ?? 0,
-              participantsCount: participantCounts[game.id] ?? 0,
-              price: game.price ?? 0,
-              image: DEFAULT_IMAGE,
-              role: gp.role,
-              status: isUpcoming ? 'À venir' : 'Terminé',
-              team: 'Indéfini',
-              result: gp.status
-            } as FormattedGame;
-          })
-          .filter(Boolean) as FormattedGame[];
-
-        formattedGames.push(...(formatted || []));
       }
-
-      // === Created Games ===
-      if (createdGames?.length) {
+      
+      // Traiter les parties créées par l'utilisateur
+      if (createdGames.length > 0) {
         const createdIds = createdGames.map(g => g.id);
+        const createdCounts = await fetchParticipantCounts(createdIds);
         
-        // Fetch participant counts individually for created games
-        const createdCounts: Record<string, number> = {};
-        
-        for (const gameId of createdIds) {
-          const { count, error: countError } = await supabase
-            .from('game_participants')
-            .select('*', { count: 'exact', head: true })
-            .eq('game_id', gameId);
-            
-          if (!countError && count !== null) {
-            createdCounts[gameId] = count;
-          } else {
-            createdCounts[gameId] = 0;
-          }
+        // Formater les parties créées
+        for (const game of createdGames) {
+          formattedGames.push(
+            formatCreatedGame(
+              game, 
+              createdCounts[game.id] || 0
+            )
+          );
         }
-
-        const formatted = createdGames.map(game => {
-          const gameDate = new Date(game.date);
-          const isUpcoming = gameDate > new Date();
-
-          return {
-            id: game.id,
-            title: game.title,
-            date: gameDate.toLocaleDateString('fr-FR'),
-            rawDate: game.date,
-            location: game.city,
-            address: game.address,
-            zip_code: game.zip_code,
-            city: game.city,
-            max_players: game.max_players ?? 0,
-            participantsCount: createdCounts[game.id] ?? 0,
-            price: game.price ?? 0,
-            image: DEFAULT_IMAGE,
-            role: 'Organisateur',
-            status: isUpcoming ? 'À venir' : 'Terminé',
-            team: 'Organisateur',
-            result: 'Organisateur'
-          } as FormattedGame;
-        });
-
-        formattedGames.push(...formatted);
-
-        // Update organized count
-        await supabase
-          .from('user_stats')
-          .update({ games_organized: createdGames.length })
-          .eq('user_id', userId);
       }
-
-      // Update games played
-      await supabase
-        .from('user_stats')
-        .update({ games_played: pastGamesCount })
-        .eq('user_id', userId);
-
-      // Remove duplicates
-      formattedGames = Array.from(new Map(formattedGames.map(g => [g.id, g])).values());
-
-      // Sort: upcoming first, then by date descending
+      
+      // Mettre à jour les compteurs dans user_stats
+      await Promise.all([
+        // Mettre à jour le nombre de parties organisées
+        createdGames.length > 0 
+          ? supabase
+              .from('user_stats')
+              .update({ games_organized: createdGames.length })
+              .eq('user_id', userId)
+          : Promise.resolve(),
+        
+        // Mettre à jour le nombre de parties jouées
+        supabase
+          .from('user_stats')
+          .update({ games_played: pastGamesCount })
+          .eq('user_id', userId)
+      ]).catch(error => console.error("Error updating user stats:", error));
+      
+      // Supprimer les doublons
+      formattedGames = formattedGames.filter((game, index, self) => 
+        index === self.findIndex(g => g.id === game.id)
+      );
+      
+      // Trier: à venir d'abord, puis par date
       formattedGames.sort((a, b) => {
         if (a.status === 'À venir' && b.status !== 'À venir') return -1;
         if (a.status !== 'À venir' && b.status === 'À venir') return 1;
         return new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime();
       });
-
+      
       setUserGames(formattedGames);
-    } catch (err) {
-      console.error('Erreur lors de la récupération des parties :', err);
+      
+    } catch (error) {
+      console.error("Erreur lors de la récupération des parties:", error);
     }
   };
 
-  return { userGames, fetchUserGames };
+  return {
+    userGames,
+    fetchUserGames
+  };
 };
