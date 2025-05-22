@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react';
+
+import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -14,49 +15,22 @@ import TeamMembers from '../components/team/TeamMembers';
 import TeamGames from '../components/team/TeamGames';
 import TeamField from '../components/team/TeamField';
 import TeamDialogs from '../components/team/TeamDialogs';
-
-// Define a shared TeamMember interface that is consistent with TeamMembers.tsx
-interface TeamMember {
-  id: string;
-  username?: string;
-  role?: string;
-  avatar?: string;
-  joinedTeam?: string;
-  verified?: boolean;
-  specialty?: string;
-  isTeamLeader?: boolean;
-  status?: string; // Ajout du statut pour filtrer les membres
-}
-
-interface TeamData {
-  id: string;
-  name: string;
-  description?: string;
-  location?: string;
-  logo?: string;
-  banner?: string;
-  contact?: string;
-  contactEmail?: string;
-  is_recruiting?: boolean;
-  leader_id?: string;
-  members: TeamMember[];
-  upcomingGames: any[];
-  pastGames: any[];
-  field: any;
-  stats: {
-    gamesPlayed: number;
-    memberCount: number;
-    averageRating: string;
-  };
-}
+import { useTeamData } from '@/hooks/useTeamData';
 
 const Team = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [team, setTeam] = useState<TeamData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
+  
+  const { 
+    team, 
+    loading, 
+    error, 
+    isTeamMember, 
+    currentUserId, 
+    fetchTeamData 
+  } = useTeamData(id);
+  
+  const [selectedMember, setSelectedMember] = useState<any>(null);
   const [showMemberDialog, setShowMemberDialog] = useState(false);
   const [showContactDialog, setShowContactDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
@@ -64,270 +38,11 @@ const Team = () => {
   const [contactSubject, setContactSubject] = useState('');
   const [isEditingField, setIsEditingField] = useState(false);
   const [selectedField, setSelectedField] = useState<any>(null);
-  const [isTeamMember, setIsTeamMember] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
-  const [retryCount, setRetryCount] = useState(0);
-  const [loadingTimeout, setLoadingTimeout] = useState<NodeJS.Timeout | null>(null);
-
-  // Function to fetch team data that can be reused for refresh
-  const fetchTeamData = useCallback(async () => {
-    if (!id) return;
-    
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Set a timeout to prevent infinite loading
-      const timeout = setTimeout(() => {
-        setLoading(false);
-        setError("Chargement des données de l'équipe a pris trop de temps. Veuillez réessayer.");
-      }, 15000); // 15 seconds timeout
-      
-      setLoadingTimeout(timeout);
-      
-      // Fetch team data with separate queries to avoid relationship issues
-      const { data: teamData, error: teamError } = await supabase
-        .from('teams')
-        .select('*, team_fields(*)')
-        .eq('id', id)
-        .single();
-
-      if (teamError) {
-        clearTimeout(timeout);
-        throw teamError;
-      }
-
-      if (!teamData) {
-        clearTimeout(timeout);
-        toast({
-          title: "Équipe non trouvée",
-          description: "Cette équipe n'existe pas ou a été supprimée",
-          variant: "destructive",
-        });
-        navigate('/');
-        return;
-      }
-
-      // Get team members
-      const { data: teamMembers, error: membersError } = await supabase
-        .from('team_members')
-        .select('id, role, user_id, status')
-        .eq('team_id', teamData.id)
-        .eq('status', 'confirmed');
-
-      if (membersError) {
-        clearTimeout(timeout);
-        throw membersError;
-      }
-
-      // Get profiles for team members
-      let formattedMembers: TeamMember[] = [];
-      let memberUserIds: string[] = [];
-      
-      if (teamMembers && teamMembers.length > 0) {
-        const userIds = teamMembers.map(member => member.user_id).filter(Boolean);
-        memberUserIds = [...userIds];
-        
-        if (userIds.length > 0) {
-          const { data: profiles, error: profilesError } = await supabase
-            .from('profiles')
-            .select('id, username, avatar, join_date, is_verified')
-            .in('id', userIds);
-
-          if (profilesError) {
-            clearTimeout(timeout);
-            throw profilesError;
-          }
-
-          // Match profiles with team members and format the data
-          formattedMembers = teamMembers.map(member => {
-            const profile = profiles?.find(p => p.id === member.user_id);
-            if (!profile) return null;
-            
-            // Generate avatar URL based on username if avatar doesn't exist
-            let avatarUrl = profile.avatar;
-            if (!avatarUrl || !avatarUrl.startsWith('http')) {
-              avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.username || 'default'}`;
-            }
-            
-            return {
-              id: profile.id,
-              username: profile.username,
-              role: member.role,
-              avatar: avatarUrl,
-              joinedTeam: profile.join_date ? new Date(profile.join_date).toLocaleDateString('fr-FR') : 'N/A',
-              verified: profile.is_verified,
-              specialty: 'Non spécifié', // Default value, update if you have specialty data
-              isTeamLeader: member.user_id === teamData.leader_id, // Mark the team leader
-              status: member.status // Include the status for filtering
-            };
-          }).filter(Boolean) as TeamMember[];
-        }
-      }
-
-      // Prepare empty arrays for games in case of no games
-      let upcomingGames: any[] = [];
-      let pastGames: any[] = [];
-
-      // Get games created by team members - only if there are member IDs
-      if (memberUserIds.length > 0) {
-        try {
-          // Get games with a try-catch to prevent failure if this part errors
-          const { data: teamGames, error: gamesError } = await supabase
-            .from('airsoft_games')
-            .select('*')
-            .in('created_by', memberUserIds)
-            .order('date', { ascending: true });
-  
-          if (!gamesError && teamGames) {
-            // Fetch creator usernames in a separate query
-            const creatorIds = teamGames.map(game => game.created_by).filter(Boolean);
-            const { data: creatorProfiles } = await supabase
-              .from('profiles')
-              .select('id, username')
-              .in('id', creatorIds);
-            
-            // Attach creator info to games
-            const gamesData = teamGames.map(game => {
-              const creator = creatorProfiles?.find(profile => profile.id === game.created_by);
-              return {
-                ...game,
-                creator: creator ? { username: creator.username } : null
-              };
-            });
-  
-            // Split games into upcoming and past
-            const now = new Date();
-            upcomingGames = (gamesData || [])
-              .filter(game => new Date(game.date) > now)
-              .map(game => ({
-                id: game.id,
-                title: game.title,
-                date: new Date(game.date).toLocaleDateString('fr-FR'),
-                location: game.city,
-                participants: game.max_players || 0,
-                creator: game.creator
-              }));
-  
-            pastGames = (gamesData || [])
-              .filter(game => new Date(game.date) <= now)
-              .map(game => ({
-                id: game.id,
-                title: game.title,
-                date: new Date(game.date).toLocaleDateString('fr-FR'),
-                location: game.city,
-                result: "Terminé", // Default status since game.status may not exist
-                participants: game.max_players || 0,
-                creator: game.creator
-              }));
-          }
-        } catch (gameError) {
-          console.error("Erreur lors de la récupération des parties:", gameError);
-          // Don't fail the whole team loading just because games failed
-        }
-      }
-
-      // Check if the current user is a member of this team
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      const currentUserId = userData?.user?.id;
-      setCurrentUserId(currentUserId);
-      
-      const isCurrentUserMember = currentUserId ? 
-        formattedMembers.some(member => member.id === currentUserId) : 
-        false;
-        
-      setIsTeamMember(isCurrentUserMember);
-
-      const teamDataFormatted: TeamData = {
-        ...teamData,
-        contactEmail: teamData.contact, // Map contact email
-        leader_id: teamData.leader_id, // Include team leader ID
-        is_recruiting: teamData.is_recruiting, // Include recruitment status
-        members: formattedMembers,
-        upcomingGames,
-        pastGames,
-        field: teamData.team_fields?.[0] || null,
-        stats: {
-          gamesPlayed: pastGames.length + upcomingGames.length,
-          memberCount: formattedMembers.length,
-          averageRating: teamData.rating?.toFixed(1) || '0.0'
-        }
-      };
-
-      // Clear timeout as we've successfully loaded
-      clearTimeout(timeout);
-      setTeam(teamDataFormatted);
-      setLoading(false);
-      // Reset retry count on success
-      setRetryCount(0);
-    } catch (error: any) {
-      console.error("Erreur lors de la récupération des données:", error);
-      
-      if (loadingTimeout) clearTimeout(loadingTimeout);
-      
-      // Check if it's a network error and we haven't retried too many times
-      if ((error.message && error.message.includes("Failed to fetch") || 
-           error.message && error.message.includes("upstream connect error")) && 
-          retryCount < 3) {
-        setRetryCount(prev => prev + 1);
-        
-        // Retry after a delay (exponential backoff)
-        const delay = Math.pow(2, retryCount) * 1000;
-        
-        toast({
-          title: "Problème de connexion",
-          description: `Nouvelle tentative de connexion dans ${delay/1000} secondes...`,
-        });
-        
-        setTimeout(() => {
-          fetchTeamData();
-        }, delay);
-      } else {
-        // If it's not a connection error or we've retried too many times
-        toast({
-          title: "Erreur",
-          description: "Impossible de charger les données de l'équipe: " + error.message,
-          variant: "destructive",
-        });
-        
-        setError("Une erreur s'est produite lors du chargement des données de l'équipe. Veuillez réessayer plus tard.");
-        setLoading(false);
-      }
-    }
-  }, [id, navigate, loadingTimeout, retryCount]);
-
-  useEffect(() => {
-    if (id) {
-      fetchTeamData();
-    }
-    
-    return () => {
-      // Clean up timeout on unmount
-      if (loadingTimeout) {
-        clearTimeout(loadingTimeout);
-      }
-    };
-  }, [id, fetchTeamData]);
 
   // Function to handle team updates
-  const handleTeamUpdate = useCallback((updatedTeam: Partial<TeamData>) => {
-    if (team) {
-      // Update team data in state with the updated fields
-      setTeam(prevTeam => {
-        if (!prevTeam) return null;
-        return {
-          ...prevTeam,
-          ...updatedTeam
-        };
-      });
-      
-      // Show success message
-      toast({
-        title: "Mise à jour réussie",
-        description: "Les informations de l'équipe ont été mises à jour.",
-      });
-    }
-  }, [team]);
+  const handleTeamUpdate = (updatedTeam: any) => {
+    fetchTeamData();
+  };
 
   const handleViewMember = (member: any) => {
     setSelectedMember(member);
@@ -415,7 +130,7 @@ const Team = () => {
           <Card>
             <CardHeader>
               <CardTitle>Erreur</CardTitle>
-              <CardDescription>{error}</CardDescription>
+              <CardDescription>{error.message}</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col items-center gap-4">
               <Button 
