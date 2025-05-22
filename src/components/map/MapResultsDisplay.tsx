@@ -3,13 +3,17 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import EventCard from './EventCard';
 import { MapEvent } from '@/hooks/useMapData';
+import { Button } from "@/components/ui/button";
+import { AlertCircle } from 'lucide-react';
 
 interface MapResultsDisplayProps {
   loading: boolean;
+  error: Error | null;
   filteredEvents: MapEvent[];
+  handleRetry: () => void;
 }
 
-const MapResultsDisplay: React.FC<MapResultsDisplayProps> = ({ loading, filteredEvents }) => {
+const MapResultsDisplay: React.FC<MapResultsDisplayProps> = ({ loading, error, filteredEvents, handleRetry }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
       {loading ? (
@@ -23,6 +27,18 @@ const MapResultsDisplay: React.FC<MapResultsDisplayProps> = ({ loading, filtered
             </div>
           </div>
         ))
+      ) : error ? (
+        <div className="col-span-3 text-center py-12 bg-white rounded-lg shadow-sm">
+          <AlertCircle className="h-10 w-10 text-airsoft-red mx-auto mb-3" />
+          <p className="text-gray-700 text-xl mb-2">Impossible de charger les parties</p>
+          <p className="text-gray-500 mb-4">Veuillez vérifier votre connexion internet et réessayer</p>
+          <Button 
+            className="bg-airsoft-red hover:bg-red-700"
+            onClick={handleRetry}
+          >
+            Réessayer
+          </Button>
+        </div>
       ) : filteredEvents.length > 0 ? (
         filteredEvents.map(event => (
           <EventCard key={event.id} event={event} />

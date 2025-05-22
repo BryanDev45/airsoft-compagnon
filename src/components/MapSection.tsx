@@ -8,11 +8,13 @@ import MapSectionHeader from './map/MapSectionHeader';
 import SearchFiltersSidebar from './map/SearchFiltersSidebar';
 import MapResultsDisplay from './map/MapResultsDisplay';
 import { useAuth } from '@/hooks/useAuth';
+import { AlertCircle } from 'lucide-react';
+import { Button } from './ui/button';
 
 const MapSection: React.FC = () => {
   // Ajout de l'état d'authentification pour améliorer l'expérience utilisateur
   const { user } = useAuth();
-  const { loading, events } = useMapData();
+  const { loading, events, error } = useMapData();
   
   const {
     searchQuery,
@@ -33,6 +35,11 @@ const MapSection: React.FC = () => {
   } = useMapFiltering(events);
 
   const { getCurrentPosition } = useMapLocation(searchQuery, setSearchCenter);
+  
+  // Fonction pour recharger les données
+  const handleRetry = () => {
+    window.location.reload();
+  };
   
   return (
     <div className="py-12 md:py-0">
@@ -70,6 +77,20 @@ const MapSection: React.FC = () => {
                     <p className="text-gray-500">Chargement de la carte...</p>
                   </div>
                 </div>
+              ) : error ? (
+                <div className="flex items-center justify-center h-full flex-col">
+                  <div className="text-center">
+                    <AlertCircle className="h-12 w-12 text-airsoft-red mx-auto mb-4" />
+                    <p className="text-gray-700 mb-3 font-semibold">Impossible de charger les parties</p>
+                    <p className="text-gray-500 mb-6">Veuillez vérifier votre connexion internet et réessayer</p>
+                    <Button 
+                      className="bg-airsoft-red hover:bg-red-700"
+                      onClick={handleRetry}
+                    >
+                      Réessayer
+                    </Button>
+                  </div>
+                </div>
               ) : filteredEvents.length > 0 ? (
                 <MapComponent searchCenter={searchCenter} searchRadius={searchRadius[0]} filteredEvents={filteredEvents} />
               ) : !user && events.length === 0 ? (
@@ -90,7 +111,7 @@ const MapSection: React.FC = () => {
           </div>
         </div>
         
-        <MapResultsDisplay loading={loading} filteredEvents={filteredEvents} />
+        <MapResultsDisplay loading={loading} error={error} filteredEvents={filteredEvents} handleRetry={handleRetry} />
       </div>
     </div>
   );

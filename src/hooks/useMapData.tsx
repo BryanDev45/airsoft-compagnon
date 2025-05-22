@@ -23,12 +23,14 @@ export function useMapData() {
   const { toast } = useToast();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
   const [events, setEvents] = useState<MapEvent[]>([]);
 
   useEffect(() => {
     const fetchGames = async () => {
       try {
         setLoading(true);
+        setError(null);
         
         const today = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
         
@@ -102,11 +104,16 @@ export function useMapData() {
         setEvents(formattedEvents);
       } catch (error: any) {
         console.error("Erreur lors du chargement des parties:", error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de charger les parties",
-          variant: "destructive" 
-        });
+        setError(error);
+        
+        // Ne pas afficher de toast pour les erreurs de réseau, cela pourrait spammer l'utilisateur
+        if (error.message !== "Failed to fetch") {
+          toast({
+            title: "Erreur",
+            description: "Impossible de charger les parties",
+            variant: "destructive" 
+          });
+        }
         
         // En cas d'erreur, on définit un tableau vide pour éviter le chargement infini
         setEvents([]);
@@ -118,5 +125,5 @@ export function useMapData() {
     fetchGames();
   }, [toast, user]);
 
-  return { loading, events };
+  return { loading, events, error };
 }
