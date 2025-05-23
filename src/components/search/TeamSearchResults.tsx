@@ -8,9 +8,21 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MapPin, Users, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface TeamSearchResultsProps {
   searchQuery: string;
+}
+
+interface TeamResult {
+  id: string;
+  name: string;
+  logo: string | null;
+  location: string | null;
+  member_count: number;
+  rating: number;
+  is_recruiting: boolean;
+  is_association: boolean;
 }
 
 const TeamSearchResults: React.FC<TeamSearchResultsProps> = ({ searchQuery }) => {
@@ -93,7 +105,7 @@ const TeamSearchResults: React.FC<TeamSearchResultsProps> = ({ searchQuery }) =>
 
   return (
     <div className="space-y-4">
-      {teams.map((team) => (
+      {teams.map((team: TeamResult) => (
         <Link to={`/team/${team.id}`} key={team.id}>
           <Card className="hover:bg-gray-50 transition duration-150">
             <CardContent className="p-4">
@@ -123,12 +135,19 @@ const TeamSearchResults: React.FC<TeamSearchResultsProps> = ({ searchQuery }) =>
                       <Users className="h-3 w-3" />
                       <span>{team.member_count || 0} membres</span>
                     </div>
-                    {team.rating > 0 && (
-                      <div className="flex items-center gap-1">
-                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                        <span>{team.rating.toFixed(1)}</span>
-                      </div>
-                    )}
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center gap-1">
+                            <Star className={`h-3 w-3 ${team.rating > 0 ? "fill-yellow-400 text-yellow-400" : "text-gray-400"}`} />
+                            <span>{team.rating > 0 ? team.rating.toFixed(1) : "Non notée"}</span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Notation de l'équipe</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 </div>
                 {team.is_recruiting && (
