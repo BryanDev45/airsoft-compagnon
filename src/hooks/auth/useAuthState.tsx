@@ -16,6 +16,7 @@ export const useAuthState = () => {
   useEffect(() => {
     console.log("Initializing auth state");
     let mounted = true;
+    let authTimeout: NodeJS.Timeout | undefined;
     
     // First, try to get from storage cache
     const cachedUser = getStorageWithExpiry(USER_CACHE_KEY);
@@ -26,19 +27,25 @@ export const useAuthState = () => {
       console.log("Found cached auth state, setting user");
       setUser(cachedUser);
       setSession(cachedSession);
+      setInitialLoading(false);
     }
     
     // Set up auth change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
+      (event, newSession) => {
         console.log("Auth state change:", event);
         
         // Update state based on auth event
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
           if (newSession && mounted) {
             console.log("Signed in, loading user profile");
-            // Get user profile data
-            await loadUserProfile(newSession.user.id, newSession);
+            
+            // Use setTimeout to prevent potential auth deadlock
+            setTimeout(() => {
+              if (mounted) {
+                loadUserProfile(newSession.user.id, newSession);
+              }
+            }, 0);
           }
         } else if (event === 'SIGNED_OUT') {
           console.log("Signed out, clearing user state");
@@ -57,12 +64,19 @@ export const useAuthState = () => {
     const initializeAuth = async () => {
       try {
         console.log("Getting initial session");
+        if (!mounted) return;
+        
         const { data: { session: initialSession }, error } = await supabase.auth.getSession();
         
         if (initialSession && !error) {
           console.log("Found initial session, loading user profile");
           if (mounted) {
-            await loadUserProfile(initialSession.user.id, initialSession);
+            // Use setTimeout to prevent potential auth deadlock
+            setTimeout(() => {
+              if (mounted) {
+                loadUserProfile(initialSession.user.id, initialSession);
+              }
+            }, 0);
           }
         } else {
           console.log("No initial session found or error:", error);
@@ -79,20 +93,24 @@ export const useAuthState = () => {
       }
     };
 
-    // Add a timeout to prevent infinite loading state
-    const timeoutId = setTimeout(() => {
+    // Add a timeout to prevent infinite loading state - reduced to 3 seconds
+    authTimeout = setTimeout(() => {
       if (mounted && initialLoading) {
         console.log("Auth initialization timeout reached, setting loading to false");
         setInitialLoading(false);
       }
-    }, 5000); // 5 seconds timeout
+    }, 3000);
 
     if (!cachedUser || !cachedSession) {
       initializeAuth();
     } else {
       // Even if we have cached user, still load the latest profile data
       if (cachedUser.id) {
-        loadUserProfile(cachedUser.id, cachedSession);
+        setTimeout(() => {
+          if (mounted) {
+            loadUserProfile(cachedUser.id, cachedSession);
+          }
+        }, 0);
       } else {
         setInitialLoading(false);
       }
@@ -100,7 +118,7 @@ export const useAuthState = () => {
 
     return () => {
       mounted = false;
-      clearTimeout(timeoutId);
+      if (authTimeout) clearTimeout(authTimeout);
       subscription?.unsubscribe();
     };
   }, []);
@@ -118,7 +136,8 @@ export const useAuthState = () => {
 
       if (error) {
         console.error("Error loading profile:", error);
-        throw error;
+        setInitialLoading(false);
+        return;
       }
 
       if (profile) {

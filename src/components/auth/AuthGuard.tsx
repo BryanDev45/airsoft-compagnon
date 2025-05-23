@@ -16,8 +16,19 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
   const { user, initialLoading } = useAuth();
   const location = useLocation();
 
+  // Limit the loading spinner display time
+  const [showLoadingScreen, setShowLoadingScreen] = React.useState(true);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoadingScreen(false);
+    }, 3000); // Show loading for max 3 seconds
+    
+    return () => clearTimeout(timer);
+  }, []);
+
   // Show loading spinner while checking auth state
-  if (initialLoading) {
+  if (initialLoading && showLoadingScreen) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
         <Loader2 className="h-12 w-12 animate-spin text-airsoft-red" />

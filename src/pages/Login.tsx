@@ -26,6 +26,16 @@ const Login = () => {
   const navigate = useNavigate();
   const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pageLoaded, setPageLoaded] = useState(false);
+  
+  // Mark page as loaded after a small delay to improve perceived performance
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPageLoaded(true);
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, []);
   
   const {
     register,
@@ -40,10 +50,10 @@ const Login = () => {
     },
   });
 
-  // Check if user is already logged in
+  // Check if user is already logged in - with timeout to avoid infinite state
   useEffect(() => {
     console.log("Login page rendered, checking auth state");
-    const checkAuthState = async () => {
+    const checkAuthTimeout = setTimeout(() => {
       try {
         const isAuthenticated = localStorage.getItem('auth_state');
         if (isAuthenticated) {
@@ -56,12 +66,10 @@ const Login = () => {
       } catch (e) {
         console.error("Error parsing auth state:", e);
       }
-    };
+    }, 500);
     
-    if (!initialLoading) {
-      checkAuthState();
-    }
-  }, [navigate, initialLoading]);
+    return () => clearTimeout(checkAuthTimeout);
+  }, [navigate]);
 
   const onSubmit = async (data) => {
     if (isSubmitting || loading) {
@@ -118,7 +126,8 @@ const Login = () => {
   // Combine loading states to show loader when either local state or auth state is loading
   const showLoader = initialLoading || isSubmitting || loading;
 
-  if (initialLoading) {
+  // Show a separate loading screen if the page is not fully loaded yet
+  if (!pageLoaded || (initialLoading && !isSubmitting)) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />

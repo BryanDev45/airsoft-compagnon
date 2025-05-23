@@ -15,6 +15,15 @@ export const useAuthActions = () => {
   const navigate = useNavigate();
 
   const login = async (email: string, password: string, rememberMe: boolean = false) => {
+    if (!email || !password) {
+      toast({
+        title: "Erreur de connexion",
+        description: "Veuillez remplir tous les champs",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
     try {
       setLoading(true);
       
