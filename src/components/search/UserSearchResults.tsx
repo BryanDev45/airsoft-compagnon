@@ -21,7 +21,7 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) =>
   } = useQuery({
     queryKey: ['userSearch', searchQuery],
     queryFn: () => searchUsers(searchQuery),
-    enabled: searchQuery.length >= 2, // N'exécute la recherche que si au moins 2 caractères sont saisis
+    enabled: true, // Permettre la recherche même sans caractères minimum
     staleTime: 30000, // Cache valide pendant 30 secondes
     refetchOnWindowFocus: false,
   });
@@ -29,9 +29,7 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) =>
   // Déclencher la recherche lorsque la requête change, mais avec un délai
   useEffect(() => {
     const handler = setTimeout(() => {
-      if (searchQuery.length >= 2) {
-        refetch();
-      }
+      refetch();
     }, 300);
 
     return () => clearTimeout(handler);
@@ -39,15 +37,19 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) =>
 
   // Fonction de recherche d'utilisateurs
   async function searchUsers(query: string) {
-    if (!query || query.length < 2) return [];
-
     try {
-      const { data, error } = await supabase
+      let queryBuilder = supabase
         .from('profiles')
         .select('id, username, firstname, lastname, avatar, location, reputation, Ban')
-        .or(`username.ilike.%${query}%,firstname.ilike.%${query}%,lastname.ilike.%${query}%`)
         .eq('Ban', false)
         .limit(20);
+      
+      // Ajouter le filtre de recherche seulement si une requête est fournie
+      if (query && query.length > 0) {
+        queryBuilder = queryBuilder.or(`username.ilike.%${query}%,firstname.ilike.%${query}%,lastname.ilike.%${query}%`);
+      }
+      
+      const { data, error } = await queryBuilder;
 
       if (error) {
         throw error;
@@ -80,18 +82,10 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) =>
     );
   }
 
-  if (!searchQuery || searchQuery.length < 2) {
-    return (
-      <div className="text-center py-8 text-gray-500">
-        Entrez au moins 2 caractères pour rechercher des joueurs
-      </div>
-    );
-  }
-
   if (users.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
-        Aucun joueur trouvé pour "{searchQuery}"
+        {searchQuery ? `Aucun joueur trouvé pour "${searchQuery}"` : 'Entrez votre recherche pour trouver des joueurs'}
       </div>
     );
   }

@@ -39,7 +39,8 @@ export function useMapFiltering(events: MapEvent[]) {
   }, [selectedCountry]);
 
   const filteredEvents = events.filter(event => {
-    const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    const matchesSearch = !searchQuery || 
+                        event.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                         event.location.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = selectedType === 'all' || 
                         (selectedType === 'dominicale' && event.type === 'dominicale') ||

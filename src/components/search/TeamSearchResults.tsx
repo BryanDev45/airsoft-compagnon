@@ -22,7 +22,7 @@ const TeamSearchResults: React.FC<TeamSearchResultsProps> = ({ searchQuery }) =>
   } = useQuery({
     queryKey: ['teamSearch', searchQuery],
     queryFn: () => searchTeams(searchQuery),
-    enabled: searchQuery.length >= 2,
+    enabled: true, // Permettre la recherche même sans caractères minimum
     staleTime: 30000, // Cache valide pendant 30 secondes
     refetchOnWindowFocus: false,
   });
@@ -30,9 +30,7 @@ const TeamSearchResults: React.FC<TeamSearchResultsProps> = ({ searchQuery }) =>
   // Déclencher la recherche avec un délai lorsque la requête change
   useEffect(() => {
     const handler = setTimeout(() => {
-      if (searchQuery.length >= 2) {
-        refetch();
-      }
+      refetch();
     }, 300);
 
     return () => clearTimeout(handler);
@@ -40,14 +38,18 @@ const TeamSearchResults: React.FC<TeamSearchResultsProps> = ({ searchQuery }) =>
 
   // Fonction de recherche d'équipes
   async function searchTeams(query: string) {
-    if (!query || query.length < 2) return [];
-
     try {
-      const { data, error } = await supabase
+      let queryBuilder = supabase
         .from('teams')
         .select('id, name, logo, location, member_count, rating, is_recruiting, is_association')
-        .or(`name.ilike.%${query}%,location.ilike.%${query}%`)
         .limit(20);
+      
+      // Ajouter le filtre de recherche seulement si une requête est fournie
+      if (query && query.length > 0) {
+        queryBuilder = queryBuilder.or(`name.ilike.%${query}%,location.ilike.%${query}%`);
+      }
+      
+      const { data, error } = await queryBuilder;
 
       if (error) {
         throw error;
@@ -81,18 +83,10 @@ const TeamSearchResults: React.FC<TeamSearchResultsProps> = ({ searchQuery }) =>
     );
   }
 
-  if (!searchQuery || searchQuery.length < 2) {
-    return (
-      <div className="text-center py-8 text-gray-500">
-        Entrez au moins 2 caractères pour rechercher des équipes
-      </div>
-    );
-  }
-
   if (teams.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
-        Aucune équipe trouvée pour "{searchQuery}"
+        {searchQuery ? `Aucune équipe trouvée pour "${searchQuery}"` : 'Entrez votre recherche pour trouver des équipes'}
       </div>
     );
   }
