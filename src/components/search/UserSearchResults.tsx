@@ -216,7 +216,7 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) =>
         <Card className="hover:bg-gray-50 transition duration-150" key={userData.id}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
-              <Link to={`/profile/${userData.username}`} className="flex items-center gap-4 flex-1">
+              <Link to={`/user/${userData.username}`} className="flex items-center gap-4 flex-1">
                 <Avatar className="h-12 w-12">
                   {userData.avatar ? (
                     <AvatarImage src={userData.avatar} alt={userData.username} />
