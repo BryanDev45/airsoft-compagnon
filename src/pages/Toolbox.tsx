@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -161,8 +162,8 @@ const Toolbox = () => {
       <Header />
       <main className="flex-grow py-12 bg-slate-50">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2 flex items-center gap-2">
+          <div className="mb-8 text-center">
+            <h1 className="text-3xl font-bold mb-2 flex items-center justify-center gap-2">
               <Wrench className="h-8 w-8 text-airsoft-red" />
               ToolBox Airsoft
             </h1>

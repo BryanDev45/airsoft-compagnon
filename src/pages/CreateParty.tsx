@@ -6,10 +6,12 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Save } from 'lucide-react';
+import { Save, Copy } from 'lucide-react';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { usePartyForm } from '@/hooks/usePartyForm';
+import { useLastGame } from '@/hooks/useLastGame';
 import { ScrollToTop } from "../components/ui/scroll-to-top";
+import { toast } from "@/components/ui/use-toast";
 
 // Import component sections
 import GeneralInfoSection from '@/components/party/GeneralInfoSection';
@@ -39,11 +41,58 @@ const CreateParty = () => {
   } = useImageUpload(5);
   
   const { form, isSubmitting, onSubmit } = usePartyForm(images);
+  const { lastGame, isLoading } = useLastGame();
 
   // Scroll to top on mount
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+  
+  // Fonction pour préremplir le formulaire avec les données de la dernière partie
+  const fillFromLastGame = () => {
+    if (!lastGame) return;
+    
+    // Créer les dates avec les heures par défaut
+    const startDateTime = new Date();
+    startDateTime.setHours(parseInt(lastGame.start_time.split(':')[0]), parseInt(lastGame.start_time.split(':')[1]), 0, 0);
+    
+    const endDateTime = new Date();
+    endDateTime.setHours(parseInt(lastGame.end_time.split(':')[0]), parseInt(lastGame.end_time.split(':')[1]), 0, 0);
+    
+    // Préremplir tous les champs du formulaire
+    form.setValue('title', lastGame.title);
+    form.setValue('description', lastGame.description);
+    form.setValue('rules', lastGame.rules);
+    form.setValue('startDateTime', startDateTime);
+    form.setValue('endDateTime', endDateTime);
+    form.setValue('address', lastGame.address);
+    form.setValue('city', lastGame.city);
+    form.setValue('zipCode', lastGame.zip_code);
+    form.setValue('maxPlayers', lastGame.max_players.toString());
+    form.setValue('price', lastGame.price.toString());
+    form.setValue('gameType', lastGame.game_type);
+    form.setValue('manualValidation', lastGame.manual_validation);
+    form.setValue('hasToilets', lastGame.has_toilets);
+    form.setValue('hasParking', lastGame.has_parking);
+    form.setValue('hasEquipmentRental', lastGame.has_equipment_rental);
+    form.setValue('aeg_fps_min', lastGame.aeg_fps_min.toString());
+    form.setValue('aeg_fps_max', lastGame.aeg_fps_max.toString());
+    form.setValue('dmr_fps_max', lastGame.dmr_fps_max.toString());
+    form.setValue('eyeProtectionRequired', lastGame.eye_protection_required);
+    form.setValue('fullFaceProtectionRequired', lastGame.full_face_protection_required);
+    form.setValue('hpaAllowed', lastGame.hpa_allowed);
+    form.setValue('polarStarAllowed', lastGame.polarstar_allowed);
+    form.setValue('tracersAllowed', lastGame.tracers_allowed);
+    form.setValue('grenadesAllowed', lastGame.grenades_allowed);
+    form.setValue('smokesAllowed', lastGame.smokes_allowed);
+    form.setValue('pyroAllowed', lastGame.pyro_allowed);
+    form.setValue('isPrivate', lastGame.is_private);
+    
+    toast({
+      title: "Informations préremplies",
+      description: "Les informations de votre dernière partie ont été copiées dans le formulaire"
+    });
+  };
   
   // Fonction pour mettre à jour les données du formulaire (non utilisée ici mais nécessaire pour les props)
   const updateFormData = (section: string, data: any) => {
@@ -57,8 +106,23 @@ const CreateParty = () => {
       <main className="flex-grow bg-gray-50 py-12">
         <div className="max-w-4xl mx-auto px-4">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Créer une partie d'airsoft</h1>
-            <p className="text-gray-600">Remplissez le formulaire ci-dessous pour organiser votre partie d'airsoft</p>
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h1 className="text-3xl font-bold mb-2">Créer une partie d'airsoft</h1>
+                <p className="text-gray-600">Remplissez le formulaire ci-dessous pour organiser votre partie d'airsoft</p>
+              </div>
+              {lastGame && !isLoading && (
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={fillFromLastGame}
+                  className="flex items-center gap-2"
+                >
+                  <Copy className="h-4 w-4" />
+                  Copier ma dernière partie
+                </Button>
+              )}
+            </div>
           </div>
           
           <Form {...form}>
