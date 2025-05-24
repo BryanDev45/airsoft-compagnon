@@ -186,20 +186,13 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) =>
     return (
       <div className="space-y-4">
         {[1, 2, 3].map((_, index) => (
-          <Card key={index} className="overflow-hidden">
-            <CardContent className="p-0">
-              <div className="flex items-center gap-4 p-6">
-                <Skeleton className="h-16 w-16 rounded-full flex-shrink-0" />
-                <div className="space-y-3 flex-1">
-                  <Skeleton className="h-5 w-40" />
-                  <div className="flex gap-4">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-4 w-20" />
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Skeleton className="h-9 w-9" />
-                  <Skeleton className="h-9 w-9" />
+          <Card key={index}>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-4">
+                <Skeleton className="h-12 w-12 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-24" />
                 </div>
               </div>
             </CardContent>
@@ -211,16 +204,8 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) =>
 
   if (users.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
-        <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-          <UserPlus className="h-8 w-8 text-gray-400" />
-        </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
-          {searchQuery ? `Aucun joueur trouvé` : 'Rechercher des joueurs'}
-        </h3>
-        <p className="text-sm">
-          {searchQuery ? `Aucun résultat pour "${searchQuery}"` : 'Entrez votre recherche pour découvrir des joueurs'}
-        </p>
+      <div className="text-center py-8 text-gray-500">
+        {searchQuery ? `Aucun joueur trouvé pour "${searchQuery}"` : 'Entrez votre recherche pour trouver des joueurs'}
       </div>
     );
   }
@@ -228,66 +213,39 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) =>
   return (
     <div className="space-y-4">
       {users.map((userData: UserResult) => (
-        <Card key={userData.id} className="overflow-hidden hover:shadow-md transition-all duration-200 border-l-4 border-l-transparent hover:border-l-airsoft-red">
-          <CardContent className="p-0">
-            <div className="flex items-center gap-6 p-6">
-              {/* Avatar and main info */}
-              <Link to={`/user/${userData.username}`} className="flex items-center gap-4 flex-1 min-w-0 group">
-                <div className="relative flex-shrink-0">
-                  <Avatar className="h-16 w-16 border-2 border-gray-200 group-hover:border-airsoft-red transition-colors">
-                    {userData.avatar ? (
-                      <AvatarImage src={userData.avatar} alt={userData.username} />
-                    ) : (
-                      <AvatarFallback className="text-lg font-semibold bg-gradient-to-br from-gray-100 to-gray-200">
-                        {userData.username?.substring(0, 2).toUpperCase() || 'U'}
-                      </AvatarFallback>
-                    )}
-                  </Avatar>
-                  {/* Online indicator could go here if we had that data */}
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="font-semibold text-lg text-gray-900 group-hover:text-airsoft-red transition-colors truncate">
-                      {userData.username}
-                    </h3>
-                  </div>
-                  
-                  {/* Full name if available */}
-                  {(userData.firstname || userData.lastname) && (
-                    <p className="text-sm text-gray-600 mb-2 truncate">
-                      {[userData.firstname, userData.lastname].filter(Boolean).join(' ')}
-                    </p>
+        <Card className="hover:bg-gray-50 transition duration-150" key={userData.id}>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <Link to={`/user/${userData.username}`} className="flex items-center gap-4 flex-1">
+                <Avatar className="h-12 w-12">
+                  {userData.avatar ? (
+                    <AvatarImage src={userData.avatar} alt={userData.username} />
+                  ) : (
+                    <AvatarFallback>{userData.username?.substring(0, 2).toUpperCase() || 'U'}</AvatarFallback>
                   )}
-                  
-                  {/* Location and reputation */}
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
+                </Avatar>
+                <div>
+                  <h3 className="font-medium">{userData.username}</h3>
+                  <div className="flex items-center gap-3 text-sm text-gray-500">
                     {userData.location && (
-                      <div className="flex items-center gap-1.5">
-                        <MapPin className="h-4 w-4 text-gray-400" />
-                        <span className="truncate max-w-32">{userData.location}</span>
+                      <div className="flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        <span>{userData.location}</span>
                       </div>
                     )}
-                    <div className="flex items-center gap-1.5">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium">
-                        {userData.reputation ? userData.reputation.toFixed(1) : '0.0'}
-                      </span>
+                    <div className="flex items-center gap-1">
+                      <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                      <span>{userData.reputation ? userData.reputation.toFixed(1) : '0.0'}</span>
                     </div>
                   </div>
                 </div>
               </Link>
               
-              {/* Action buttons - only show for other users, not the current user */}
+              {/* Buttons section - only show for other users, not the current user */}
               {user && user.id !== userData.id && (
-                <div className="flex gap-2 items-center flex-shrink-0">
+                <div className="flex gap-2 items-center">
                   {/* Message button */}
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="h-10 w-10 p-0 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600 transition-colors" 
-                    title="Envoyer un message"
-                  >
+                  <Button size="sm" variant="outline" className="h-9 w-9 p-0" title="Envoyer un message">
                     <MessageSquare className="h-4 w-4" />
                   </Button>
                   
@@ -296,31 +254,31 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) =>
                     <Button 
                       size="sm" 
                       variant="outline" 
-                      className="h-10 w-10 p-0 hover:bg-red-50 hover:border-red-300 transition-colors group" 
+                      className="h-9 w-9 p-0" 
                       title="Supprimer des amis"
                       onClick={() => handleFriendAction(userData.id, 'remove')}
                     >
-                      <UserMinus className="h-4 w-4 text-red-500 group-hover:text-red-600" />
+                      <UserMinus className="h-4 w-4 text-red-500" />
                     </Button>
                   ) : friendships[userData.id] === 'pending' ? (
                     <Button 
                       size="sm" 
                       variant="outline" 
-                      className="h-10 w-10 p-0 border-orange-200 bg-orange-50 cursor-not-allowed" 
+                      className="h-9 w-9 p-0" 
                       title="Demande en cours"
                       disabled
                     >
-                      <UserPlus className="h-4 w-4 text-orange-500" />
+                      <UserPlus className="h-4 w-4 text-gray-400" />
                     </Button>
                   ) : (
                     <Button 
                       size="sm" 
                       variant="outline" 
-                      className="h-10 w-10 p-0 hover:bg-green-50 hover:border-green-300 transition-colors group" 
+                      className="h-9 w-9 p-0" 
                       title="Ajouter en ami"
                       onClick={() => handleFriendAction(userData.id, 'add')}
                     >
-                      <UserPlus className="h-4 w-4 text-green-500 group-hover:text-green-600" />
+                      <UserPlus className="h-4 w-4 text-green-500" />
                     </Button>
                   )}
                 </div>
