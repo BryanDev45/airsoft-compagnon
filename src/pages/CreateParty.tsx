@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { useNavigate } from 'react-router-dom';
@@ -49,7 +49,7 @@ const CreateParty = () => {
   }, []);
   
   // Fonction pour préremplir le formulaire avec les données de la dernière partie
-  const fillFromLastGame = () => {
+  const fillFromLastGame = useCallback(() => {
     if (!lastGame) return;
     
     // Créer les dates avec les heures par défaut
@@ -60,39 +60,42 @@ const CreateParty = () => {
     endDateTime.setHours(parseInt(lastGame.end_time.split(':')[0]), parseInt(lastGame.end_time.split(':')[1]), 0, 0);
     
     // Préremplir tous les champs du formulaire
-    form.setValue('title', lastGame.title);
-    form.setValue('description', lastGame.description);
-    form.setValue('rules', lastGame.rules);
-    form.setValue('startDateTime', startDateTime);
-    form.setValue('endDateTime', endDateTime);
-    form.setValue('address', lastGame.address);
-    form.setValue('city', lastGame.city);
-    form.setValue('zipCode', lastGame.zip_code);
-    form.setValue('maxPlayers', lastGame.max_players.toString());
-    form.setValue('price', lastGame.price.toString());
-    form.setValue('gameType', lastGame.game_type);
-    form.setValue('manualValidation', lastGame.manual_validation);
-    form.setValue('hasToilets', lastGame.has_toilets);
-    form.setValue('hasParking', lastGame.has_parking);
-    form.setValue('hasEquipmentRental', lastGame.has_equipment_rental);
-    form.setValue('aeg_fps_min', lastGame.aeg_fps_min.toString());
-    form.setValue('aeg_fps_max', lastGame.aeg_fps_max.toString());
-    form.setValue('dmr_fps_max', lastGame.dmr_fps_max.toString());
-    form.setValue('eyeProtectionRequired', lastGame.eye_protection_required);
-    form.setValue('fullFaceProtectionRequired', lastGame.full_face_protection_required);
-    form.setValue('hpaAllowed', lastGame.hpa_allowed);
-    form.setValue('polarStarAllowed', lastGame.polarstar_allowed);
-    form.setValue('tracersAllowed', lastGame.tracers_allowed);
-    form.setValue('grenadesAllowed', lastGame.grenades_allowed);
-    form.setValue('smokesAllowed', lastGame.smokes_allowed);
-    form.setValue('pyroAllowed', lastGame.pyro_allowed);
-    form.setValue('isPrivate', lastGame.is_private);
+    form.reset({
+      title: lastGame.title,
+      description: lastGame.description,
+      rules: lastGame.rules,
+      startDateTime: startDateTime,
+      endDateTime: endDateTime,
+      address: lastGame.address,
+      city: lastGame.city,
+      zipCode: lastGame.zip_code,
+      maxPlayers: lastGame.max_players.toString(),
+      price: lastGame.price.toString(),
+      gameType: lastGame.game_type,
+      manualValidation: lastGame.manual_validation,
+      hasToilets: lastGame.has_toilets,
+      hasParking: lastGame.has_parking,
+      hasEquipmentRental: lastGame.has_equipment_rental,
+      aeg_fps_min: lastGame.aeg_fps_min.toString(),
+      aeg_fps_max: lastGame.aeg_fps_max.toString(),
+      dmr_fps_max: lastGame.dmr_fps_max.toString(),
+      eyeProtectionRequired: lastGame.eye_protection_required,
+      fullFaceProtectionRequired: lastGame.full_face_protection_required,
+      hpaAllowed: lastGame.hpa_allowed,
+      polarStarAllowed: lastGame.polarstar_allowed,
+      tracersAllowed: lastGame.tracers_allowed,
+      grenadesAllowed: lastGame.grenades_allowed,
+      smokesAllowed: lastGame.smokes_allowed,
+      pyroAllowed: lastGame.pyro_allowed,
+      isPrivate: lastGame.is_private,
+      terms: false
+    });
     
     toast({
       title: "Informations préremplies",
       description: "Les informations de votre dernière partie ont été copiées dans le formulaire"
     });
-  };
+  }, [lastGame, form]);
   
   // Fonction pour mettre à jour les données du formulaire (non utilisée ici mais nécessaire pour les props)
   const updateFormData = (section: string, data: any) => {

@@ -1,60 +1,12 @@
+
 import { useState } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { toast } from "@/components/ui/use-toast";
-import { createAirsoftGame, uploadGameImages } from "@/utils/supabaseHelpers";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from 'react-router-dom';
-
-// Form schema definition
-const partyFormSchema = z.object({
-  title: z.string().min(5, "Le titre doit comporter au moins 5 caractères"),
-  description: z.string().min(20, "La description doit comporter au moins 20 caractères"),
-  rules: z.string().min(10, "Les règles doivent comporter au moins 10 caractères"),
-  startDateTime: z.date({
-    required_error: "La date et l'heure de début sont requises"
-  }),
-  endDateTime: z.date({
-    required_error: "La date et l'heure de fin sont requises"
-  }),
-  address: z.string().min(5, "L'adresse doit comporter au moins 5 caractères"),
-  city: z.string().min(2, "La ville est requise"),
-  zipCode: z.string().min(5, "Le code postal est requis"),
-  maxPlayers: z.string().min(1, "Le nombre maximum de joueurs est requis"),
-  price: z.string()
-    .refine(val => {
-      const numVal = parseFloat(val);
-      return !isNaN(numVal) && numVal >= 5;
-    }, "Le prix minimum est de 5€ (incluant les frais de gestion)"),
-  gameType: z.string().min(1, "Le type de jeu est requis"),
-  manualValidation: z.boolean().default(false),
-  hasToilets: z.boolean().default(false),
-  hasParking: z.boolean().default(false),
-  hasEquipmentRental: z.boolean().default(false),
-  aeg_fps_min: z.string().default("280"),
-  aeg_fps_max: z.string().default("350"),
-  dmr_fps_max: z.string().default("450"),
-  eyeProtectionRequired: z.boolean().default(true),
-  fullFaceProtectionRequired: z.boolean().default(false),
-  hpaAllowed: z.boolean().default(true),
-  polarStarAllowed: z.boolean().default(true),
-  tracersAllowed: z.boolean().default(true),
-  grenadesAllowed: z.boolean().default(true),
-  smokesAllowed: z.boolean().default(false),
-  pyroAllowed: z.boolean().default(false),
-  terms: z.boolean().refine(val => val === true, {
-    message: "Vous devez accepter les conditions"
-  }),
-  isPrivate: z.boolean().default(false)
-}).refine((data) => {
-  return data.endDateTime >= data.startDateTime;
-}, {
-  message: "La date et l'heure de fin doivent être égales ou postérieures à la date et l'heure de début",
-  path: ["endDateTime"]
-});
-
-export type PartyFormValues = z.infer<typeof partyFormSchema>;
+import { partyFormSchema, PartyFormValues } from '@/hooks/party/usePartyFormValidation';
+import { handleImageUpload, createGame, registerOrganizer } from '@/hooks/party/usePartyFormHelpers';
 
 export const usePartyForm = (images: File[]) => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -101,86 +53,6 @@ export const usePartyForm = (images: File[]) => {
       isPrivate: false
     }
   });
-
-  // Fonction pour gérer le téléchargement des images et la mise à jour du jeu
-  const handleImageUpload = async (gameId: string, images: File[]): Promise<{ success: boolean, imageUrls?: string[], error?: any, errorMessage?: string }> => {
-    if (images.length === 0) {
-      console.log("Aucune image à télécharger");
-      return { success: true, imageUrls: [] };
-    }
-    
-    try {
-      console.log(`Téléchargement de ${images.length} images pour la partie ${gameId}`);
-      const { data: imageUrls, error: uploadError } = await uploadGameImages(gameId, images);
-      
-      if (uploadError) {
-        console.error("Erreur lors du téléchargement des images:", uploadError);
-        return { 
-          success: false, 
-          error: uploadError,
-          errorMessage: "Certaines images n'ont pas pu être téléchargées" 
-        };
-      }
-      
-      if (!imageUrls || imageUrls.length === 0) {
-        console.warn("Aucune URL d'image n'a été retournée après le téléchargement");
-        return { success: true, imageUrls: [] };
-      }
-      
-      // Les mises à jour des URL dans la base de données sont maintenant gérées par uploadGameImages
-      console.log("URLs des images téléchargées avec succès");
-      return { success: true, imageUrls };
-      
-    } catch (error) {
-      console.error("Erreur inattendue lors du téléchargement des images:", error);
-      return { 
-        success: false, 
-        error, 
-        errorMessage: "Une erreur inattendue est survenue lors du téléchargement des images" 
-      };
-    }
-  };
-
-  // Fonction pour créer une partie
-  const createGame = async (gameData: any): Promise<{ success: boolean, gameId?: string, error?: any }> => {
-    try {
-      const { data: gameResult, error } = await createAirsoftGame(gameData);
-      
-      if (error || !gameResult) {
-        throw new Error(error?.message || "Erreur lors de la création de la partie");
-      }
-      
-      console.log("Partie créée avec succès, ID:", gameResult.id);
-      return { success: true, gameId: gameResult.id };
-    } catch (error) {
-      console.error("Erreur lors de la création de la partie:", error);
-      return { success: false, error };
-    }
-  };
-
-  // Fonction pour inscrire l'organisateur à la partie
-  const registerOrganizer = async (gameId: string, userId: string): Promise<{ success: boolean, error?: any }> => {
-    try {
-      const { error: participationError } = await supabase
-        .from('game_participants')
-        .insert({
-          game_id: gameId,
-          user_id: userId,
-          role: 'Organisateur',
-          status: 'Confirmé'
-        });
-        
-      if (participationError) {
-        console.error("Erreur lors de l'inscription de l'organisateur:", participationError);
-        return { success: false, error: participationError };
-      }
-      
-      return { success: true };
-    } catch (error) {
-      console.error("Erreur lors de l'inscription de l'organisateur:", error);
-      return { success: false, error };
-    }
-  };
 
   const onSubmit = async (data: PartyFormValues) => {
     setIsSubmitting(true);
@@ -288,3 +160,5 @@ export const usePartyForm = (images: File[]) => {
   
   return { form, isSubmitting, onSubmit };
 };
+
+export type { PartyFormValues } from '@/hooks/party/usePartyFormValidation';
