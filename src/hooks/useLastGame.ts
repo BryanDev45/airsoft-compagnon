@@ -6,10 +6,11 @@ import { useAuth } from './useAuth';
 export const useLastGame = () => {
   const [lastGame, setLastGame] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasChecked, setHasChecked] = useState(false);
   const { user } = useAuth();
 
   const fetchLastGame = async () => {
-    if (!user) return;
+    if (!user || hasChecked) return;
     
     setIsLoading(true);
     try {
@@ -19,7 +20,7 @@ export const useLastGame = () => {
         .eq('created_by', user.id)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
         console.error('Erreur lors de la récupération de la dernière partie:', error);
@@ -27,6 +28,7 @@ export const useLastGame = () => {
       }
 
       setLastGame(data);
+      setHasChecked(true);
     } catch (error) {
       console.error('Erreur lors de la récupération de la dernière partie:', error);
     } finally {
@@ -35,10 +37,10 @@ export const useLastGame = () => {
   };
 
   useEffect(() => {
-    if (user) {
+    if (user && !hasChecked) {
       fetchLastGame();
     }
-  }, [user]);
+  }, [user, hasChecked]);
 
   return { lastGame, isLoading, fetchLastGame };
 };

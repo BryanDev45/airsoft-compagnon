@@ -1,5 +1,5 @@
 
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { useNavigate } from 'react-router-dom';
@@ -32,6 +32,7 @@ const gameTypes = [{
 
 const CreateParty = () => {
   const navigate = useNavigate();
+  const [hasFilledFromLastGame, setHasFilledFromLastGame] = useState(false);
   
   const { 
     images, 
@@ -49,8 +50,8 @@ const CreateParty = () => {
   }, []);
   
   // Fonction pour préremplir le formulaire avec les données de la dernière partie
-  const fillFromLastGame = useCallback(() => {
-    if (!lastGame) return;
+  const fillFromLastGame = () => {
+    if (!lastGame || hasFilledFromLastGame) return;
     
     // Créer les dates avec les heures par défaut
     const startDateTime = new Date();
@@ -91,17 +92,22 @@ const CreateParty = () => {
       terms: false
     });
     
+    setHasFilledFromLastGame(true);
+    
     toast({
       title: "Informations préremplies",
       description: "Les informations de votre dernière partie ont été copiées dans le formulaire"
     });
-  }, [lastGame, form]);
+  };
   
   // Fonction pour mettre à jour les données du formulaire (non utilisée ici mais nécessaire pour les props)
   const updateFormData = (section: string, data: any) => {
     // Cette fonction n'est pas utilisée dans CreateParty mais est requise par les interfaces
     console.log(`Updating section: ${section}`, data);
   };
+
+  // Condition stable pour afficher le bouton
+  const shouldShowCopyButton = lastGame && !isLoading && !hasFilledFromLastGame;
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -114,7 +120,7 @@ const CreateParty = () => {
                 <h1 className="text-3xl font-bold mb-2">Créer une partie d'airsoft</h1>
                 <p className="text-gray-600">Remplissez le formulaire ci-dessous pour organiser votre partie d'airsoft</p>
               </div>
-              {lastGame && !isLoading && (
+              {shouldShowCopyButton && (
                 <Button 
                   type="button" 
                   variant="outline" 
