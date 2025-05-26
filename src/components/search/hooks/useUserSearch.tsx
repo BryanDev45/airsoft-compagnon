@@ -21,43 +21,8 @@ interface UserResult {
 // Fonction de recherche d'utilisateurs
 async function searchUsers(query: string): Promise<UserResult[]> {
   try {
-    // Recherche des utilisateurs avec jointure sur les équipes et les memberships
+    // Try the main query first (without team join to avoid relationship issues)
     let queryBuilder = supabase
-      .from('profiles')
-      .select(`
-        id, 
-        username, 
-        firstname, 
-        lastname, 
-        avatar, 
-        location, 
-        reputation, 
-        Ban,
-        is_verified,
-        team_id,
-        team_members!inner(
-          team_id,
-          status,
-          teams!inner(
-            id,
-            name,
-            logo
-          )
-        )
-      `)
-      .eq('Ban', false)
-      .eq('team_members.status', 'confirmed')
-      .limit(20);
-    
-    // Ajouter le filtre de recherche seulement si une requête est fournie
-    if (query && query.length > 0) {
-      queryBuilder = queryBuilder.or(`username.ilike.%${query}%,firstname.ilike.%${query}%,lastname.ilike.%${query}%`);
-    }
-    
-    const { data: usersWithTeams, error: teamsError } = await queryBuilder;
-
-    // Recherche des utilisateurs sans équipe
-    let noTeamQueryBuilder = supabase
       .from('profiles')
       .select(`
         id, 
@@ -72,59 +37,67 @@ async function searchUsers(query: string): Promise<UserResult[]> {
         team_id
       `)
       .eq('Ban', false)
-      .is('team_id', null)
       .limit(20);
     
     // Ajouter le filtre de recherche seulement si une requête est fournie
     if (query && query.length > 0) {
-      noTeamQueryBuilder = noTeamQueryBuilder.or(`username.ilike.%${query}%,firstname.ilike.%${query}%,lastname.ilike.%${query}%`);
+      queryBuilder = queryBuilder.or(`username.ilike.%${query}%,firstname.ilike.%${query}%,lastname.ilike.%${query}%`);
     }
     
-    const { data: usersWithoutTeams, error: noTeamError } = await noTeamQueryBuilder;
+    const { data, error } = await queryBuilder;
 
-    // Combiner les résultats
-    const allUsers: UserResult[] = [];
+    if (error) {
+      console.error('Erreur lors de la recherche d\'utilisateurs:', error);
+      return [];
+    }
 
-    // Traiter les utilisateurs avec équipes
-    if (usersWithTeams && !teamsError) {
-      usersWithTeams.forEach((user: any) => {
-        if (user.team_members && user.team_members.length > 0) {
-          const teamData = user.team_members[0].teams;
-          allUsers.push({
-            id: user.id,
-            username: user.username,
-            firstname: user.firstname,
-            lastname: user.lastname,
-            avatar: user.avatar,
-            location: user.location,
-            reputation: user.reputation,
-            Ban: user.Ban,
-            is_verified: user.is_verified,
-            team_id: user.team_id,
-            team_name: teamData?.name || null,
-            team_logo: teamData?.logo || null
-          });
+    if (!data) {
+      return [];
+    }
+
+    // Now get team information separately for users who have a team_id
+    const usersWithTeams = await Promise.all(
+      data.map(async (user) => {
+        if (!user.team_id) {
+          return {
+            ...user,
+            team_name: null,
+            team_logo: null
+          };
         }
-      });
-    }
 
-    // Traiter les utilisateurs sans équipes
-    if (usersWithoutTeams && !noTeamError) {
-      usersWithoutTeams.forEach((user: any) => {
-        allUsers.push({
-          ...user,
-          team_name: null,
-          team_logo: null
-        });
-      });
-    }
+        try {
+          const { data: teamData, error: teamError } = await supabase
+            .from('teams')
+            .select('name, logo')
+            .eq('id', user.team_id)
+            .single();
 
-    // Supprimer les doublons basés sur l'ID utilisateur
-    const uniqueUsers = allUsers.filter((user, index, self) => 
-      index === self.findIndex(u => u.id === user.id)
+          if (teamError || !teamData) {
+            return {
+              ...user,
+              team_name: null,
+              team_logo: null
+            };
+          }
+
+          return {
+            ...user,
+            team_name: teamData.name,
+            team_logo: teamData.logo
+          };
+        } catch (error) {
+          console.error('Erreur lors de la récupération des données d\'équipe:', error);
+          return {
+            ...user,
+            team_name: null,
+            team_logo: null
+          };
+        }
+      })
     );
 
-    return uniqueUsers;
+    return usersWithTeams;
   } catch (error) {
     console.error('Erreur lors de la recherche d\'utilisateurs:', error);
     return [];

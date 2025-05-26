@@ -48,8 +48,8 @@ const UserCard: React.FC<UserCardProps> = ({ userData, friendshipStatus, onFrien
               )}
             </Avatar>
             
-            {/* Team logo seulement si l'utilisateur a une équipe */}
-            {userData.team_logo && (
+            {/* Team logo ou online indicator */}
+            {userData.team_logo ? (
               <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-white rounded-full border-2 border-white overflow-hidden">
                 <img 
                   src={userData.team_logo} 
@@ -57,6 +57,8 @@ const UserCard: React.FC<UserCardProps> = ({ userData, friendshipStatus, onFrien
                   className="w-full h-full object-cover"
                 />
               </div>
+            ) : (
+              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
             )}
           </div>
           
