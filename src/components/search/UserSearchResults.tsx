@@ -1,12 +1,14 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { MapPin, Star, UserPlus, UserMinus, MessageSquare } from "lucide-react";
+import { MapPin, Star, UserPlus, UserMinus, MessageSquare, Shield } from "lucide-react";
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -23,6 +25,13 @@ interface UserResult {
   location: string | null;
   reputation: number | null;
   Ban: boolean;
+  is_verified: boolean | null;
+  team_id: string | null;
+  teams?: {
+    id: string;
+    name: string;
+    logo: string | null;
+  } | null;
 }
 
 const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) => {
@@ -90,7 +99,23 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) =>
     try {
       let queryBuilder = supabase
         .from('profiles')
-        .select('id, username, firstname, lastname, avatar, location, reputation, Ban')
+        .select(`
+          id, 
+          username, 
+          firstname, 
+          lastname, 
+          avatar, 
+          location, 
+          reputation, 
+          Ban,
+          is_verified,
+          team_id,
+          teams:team_id (
+            id,
+            name,
+            logo
+          )
+        `)
         .eq('Ban', false)
         .limit(20);
       
@@ -232,41 +257,62 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) =>
         >
           <CardContent className="p-0">
             <div className="flex items-center p-4">
-              {/* Avatar and Info Section */}
+              {/* Avatar Section */}
+              <div className="relative flex-shrink-0">
+                <Avatar className="h-14 w-14 ring-2 ring-white shadow-sm">
+                  {userData.avatar ? (
+                    <AvatarImage src={userData.avatar} alt={userData.username} />
+                  ) : (
+                    <AvatarFallback className="bg-gradient-to-br from-airsoft-red to-red-600 text-white font-semibold text-lg">
+                      {userData.username?.substring(0, 2).toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                
+                {/* Team logo ou online indicator */}
+                {userData.teams?.logo ? (
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-white rounded-full border-2 border-white overflow-hidden">
+                    <img 
+                      src={userData.teams.logo} 
+                      alt={userData.teams.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                )}
+              </div>
+              
+              {/* Info Section - Now with username on the left */}
               <Link 
                 to={`/user/${userData.username}`} 
-                className="flex items-center flex-1 min-w-0 group-hover:text-airsoft-red transition-colors duration-200"
+                className="ml-4 flex-1 min-w-0 group-hover:text-airsoft-red transition-colors duration-200"
               >
-                <div className="relative flex-shrink-0">
-                  <Avatar className="h-14 w-14 ring-2 ring-white shadow-sm">
-                    {userData.avatar ? (
-                      <AvatarImage src={userData.avatar} alt={userData.username} />
-                    ) : (
-                      <AvatarFallback className="bg-gradient-to-br from-airsoft-red to-red-600 text-white font-semibold text-lg">
-                        {userData.username?.substring(0, 2).toUpperCase() || 'U'}
-                      </AvatarFallback>
-                    )}
-                  </Avatar>
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
-                </div>
-                
-                <div className="ml-4 flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
                   <h3 className="font-semibold text-gray-900 truncate group-hover:text-airsoft-red transition-colors duration-200">
                     {userData.username}
                   </h3>
-                  <div className="flex items-center gap-4 mt-1">
-                    {userData.location && (
-                      <div className="flex items-center gap-1 text-sm text-gray-500">
-                        <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
-                        <span className="truncate max-w-32">{userData.location}</span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-1 text-sm">
-                      <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400 flex-shrink-0" />
-                      <span className="font-medium text-gray-700">
-                        {userData.reputation ? userData.reputation.toFixed(1) : '0.0'}
-                      </span>
+                  {userData.is_verified && (
+                    <Shield className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                  )}
+                  {userData.teams && (
+                    <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                      {userData.teams.name}
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex items-center gap-4">
+                  {userData.location && (
+                    <div className="flex items-center gap-1 text-sm text-gray-500">
+                      <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
+                      <span className="truncate max-w-32">{userData.location}</span>
                     </div>
+                  )}
+                  <div className="flex items-center gap-1 text-sm">
+                    <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400 flex-shrink-0" />
+                    <span className="font-medium text-gray-700">
+                      {userData.reputation ? userData.reputation.toFixed(1) : '0.0'}
+                    </span>
                   </div>
                 </div>
               </Link>
