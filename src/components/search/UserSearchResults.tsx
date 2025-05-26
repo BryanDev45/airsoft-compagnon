@@ -93,6 +93,7 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) =>
   // Fonction de recherche d'utilisateurs
   async function searchUsers(query: string) {
     try {
+      // Try the main query first (without team join to avoid relationship issues)
       let queryBuilder = supabase
         .from('profiles')
         .select(`
@@ -105,11 +106,7 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) =>
           reputation, 
           Ban,
           is_verified,
-          team_id,
-          teams!left(
-            name,
-            logo
-          )
+          team_id
         `)
         .eq('Ban', false)
         .limit(20);
@@ -123,47 +120,56 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) =>
 
       if (error) {
         console.error('Erreur lors de la recherche d\'utilisateurs:', error);
-        // Fallback: query without team join if the relationship fails
-        const fallbackQuery = supabase
-          .from('profiles')
-          .select(`
-            id, 
-            username, 
-            firstname, 
-            lastname, 
-            avatar, 
-            location, 
-            reputation, 
-            Ban,
-            is_verified,
-            team_id
-          `)
-          .eq('Ban', false)
-          .limit(20);
-          
-        if (query && query.length > 0) {
-          fallbackQuery.or(`username.ilike.%${query}%,firstname.ilike.%${query}%,lastname.ilike.%${query}%`);
-        }
-        
-        const { data: fallbackData, error: fallbackError } = await fallbackQuery;
-        
-        if (fallbackError) {
-          throw fallbackError;
-        }
-        
-        return (fallbackData || []).map(user => ({
-          ...user,
-          team_name: null,
-          team_logo: null
-        }));
+        return [];
       }
 
-      // Transform the data to match our UserResult interface only when we have successful data
-      return (data || []).map(user => ({
-        ...user,
-        team_name: user.teams?.name || null,
-        team_logo: user.teams?.logo || null
-      }));
+      if (!data) {
+        return [];
+      }
+
+      // Now get team information separately for users who have a team_id
+      const usersWithTeams = await Promise.all(
+        data.map(async (user) => {
+          if (!user.team_id) {
+            return {
+              ...user,
+              team_name: null,
+              team_logo: null
+            };
+          }
+
+          try {
+            const { data: teamData, error: teamError } = await supabase
+              .from('teams')
+              .select('name, logo')
+              .eq('id', user.team_id)
+              .single();
+
+            if (teamError || !teamData) {
+              return {
+                ...user,
+                team_name: null,
+                team_logo: null
+              };
+            }
+
+            return {
+              ...user,
+              team_name: teamData.name,
+              team_logo: teamData.logo
+            };
+          } catch (error) {
+            console.error('Erreur lors de la récupération des données d\'équipe:', error);
+            return {
+              ...user,
+              team_name: null,
+              team_logo: null
+            };
+          }
+        })
+      );
+
+      return usersWithTeams;
     } catch (error) {
       console.error('Erreur lors de la recherche d\'utilisateurs:', error);
       return [];
