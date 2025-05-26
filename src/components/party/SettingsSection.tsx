@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -37,7 +36,7 @@ const SettingsSection: React.FC<SettingsSectionProps> = ({ updateFormData, initi
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
           <FormField 
             control={form.control} 
             name="maxPlayers" 
@@ -63,10 +62,10 @@ const SettingsSection: React.FC<SettingsSectionProps> = ({ updateFormData, initi
                 <FormControl>
                   <Input type="number" {...field} min="5" step="0.01" />
                 </FormControl>
+                <FormMessage />
                 <p className="text-xs text-muted-foreground mt-1">
                   Minimum 5€ (inclut 1€ de frais Airsoft Compagnon)
                 </p>
-                <FormMessage />
               </FormItem>
             )} 
           />
