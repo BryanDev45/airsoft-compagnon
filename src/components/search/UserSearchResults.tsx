@@ -27,11 +27,8 @@ interface UserResult {
   Ban: boolean;
   is_verified: boolean | null;
   team_id: string | null;
-  teams?: {
-    id: string;
-    name: string;
-    logo: string | null;
-  } | null;
+  team_name?: string | null;
+  team_logo?: string | null;
 }
 
 const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) => {
@@ -110,8 +107,7 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) =>
           Ban,
           is_verified,
           team_id,
-          teams:team_id (
-            id,
+          teams!left(
             name,
             logo
           )
@@ -127,10 +123,48 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) =>
       const { data, error } = await queryBuilder;
 
       if (error) {
-        throw error;
+        console.error('Erreur lors de la recherche d\'utilisateurs:', error);
+        // Fallback: query without team join if the relationship fails
+        const fallbackQuery = supabase
+          .from('profiles')
+          .select(`
+            id, 
+            username, 
+            firstname, 
+            lastname, 
+            avatar, 
+            location, 
+            reputation, 
+            Ban,
+            is_verified,
+            team_id
+          `)
+          .eq('Ban', false)
+          .limit(20);
+          
+        if (query && query.length > 0) {
+          fallbackQuery.or(`username.ilike.%${query}%,firstname.ilike.%${query}%,lastname.ilike.%${query}%`);
+        }
+        
+        const { data: fallbackData, error: fallbackError } = await fallbackQuery;
+        
+        if (fallbackError) {
+          throw fallbackError;
+        }
+        
+        return (fallbackData || []).map(user => ({
+          ...user,
+          team_name: null,
+          team_logo: null
+        }));
       }
 
-      return data || [];
+      // Transform the data to match our UserResult interface
+      return (data || []).map(user => ({
+        ...user,
+        team_name: user.teams?.name || null,
+        team_logo: user.teams?.logo || null
+      }));
     } catch (error) {
       console.error('Erreur lors de la recherche d\'utilisateurs:', error);
       return [];
@@ -270,11 +304,11 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) =>
                 </Avatar>
                 
                 {/* Team logo ou online indicator */}
-                {userData.teams?.logo ? (
+                {userData.team_logo ? (
                   <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-white rounded-full border-2 border-white overflow-hidden">
                     <img 
-                      src={userData.teams.logo} 
-                      alt={userData.teams.name}
+                      src={userData.team_logo} 
+                      alt={userData.team_name || 'Team'}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -295,9 +329,9 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) =>
                   {userData.is_verified && (
                     <Shield className="h-4 w-4 text-blue-500 flex-shrink-0" />
                   )}
-                  {userData.teams && (
+                  {userData.team_name && (
                     <Badge variant="secondary" className="text-xs px-2 py-0.5">
-                      {userData.teams.name}
+                      {userData.team_name}
                     </Badge>
                   )}
                 </div>
