@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -159,7 +158,7 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) =>
         }));
       }
 
-      // Transform the data to match our UserResult interface
+      // Transform the data to match our UserResult interface only when we have successful data
       return (data || []).map(user => ({
         ...user,
         team_name: user.teams?.name || null,
