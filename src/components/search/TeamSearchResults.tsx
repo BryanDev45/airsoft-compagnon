@@ -76,15 +76,15 @@ const TeamSearchResults: React.FC<TeamSearchResultsProps> = ({ searchQuery }) =>
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-3">
         {[1, 2, 3].map((_, index) => (
-          <Card key={index}>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-4">
-                <Skeleton className="h-14 w-14 rounded-full" />
-                <div className="space-y-2 flex-1">
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-3 w-24" />
+          <Card key={index} className="overflow-hidden">
+            <CardContent className="p-0">
+              <div className="flex items-center p-4">
+                <Skeleton className="h-14 w-14 rounded-full flex-shrink-0" />
+                <div className="ml-4 space-y-2 flex-1">
+                  <Skeleton className="h-5 w-32" />
+                  <Skeleton className="h-4 w-24" />
                 </div>
                 <Skeleton className="h-6 w-20" />
               </div>
@@ -104,43 +104,45 @@ const TeamSearchResults: React.FC<TeamSearchResultsProps> = ({ searchQuery }) =>
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {teams.map((team: TeamResult) => (
         <Link to={`/team/${team.id}`} key={team.id}>
-          <Card className="hover:bg-gray-50 transition duration-150">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-4">
-                <Avatar className="h-14 w-14">
+          <Card className="group overflow-hidden transition-all duration-200 hover:shadow-md border-l-4 border-l-transparent hover:border-l-airsoft-red bg-gradient-to-r from-white to-gray-50/50">
+            <CardContent className="p-0">
+              <div className="flex items-center p-4">
+                <Avatar className="h-14 w-14 ring-2 ring-white shadow-sm flex-shrink-0">
                   {team.logo ? (
                     <AvatarImage src={team.logo} alt={team.name} />
                   ) : (
-                    <AvatarFallback>{team.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                    <AvatarFallback className="bg-gradient-to-br from-airsoft-red to-red-600 text-white font-semibold text-lg">
+                      {team.name.substring(0, 2).toUpperCase()}
+                    </AvatarFallback>
                   )}
                 </Avatar>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-medium">{team.name}</h3>
+                <div className="ml-4 flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-semibold text-gray-900 truncate group-hover:text-airsoft-red transition-colors duration-200">{team.name}</h3>
                     {team.is_association && (
                       <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">Association</Badge>
                     )}
                   </div>
-                  <div className="flex items-center flex-wrap gap-3 text-sm text-gray-500 mt-1">
+                  <div className="flex items-center flex-wrap gap-3 text-sm text-gray-500">
                     {team.location && (
                       <div className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        <span>{team.location}</span>
+                        <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
+                        <span className="truncate max-w-32">{team.location}</span>
                       </div>
                     )}
                     <div className="flex items-center gap-1">
-                      <Users className="h-3 w-3" />
+                      <Users className="h-3.5 w-3.5 flex-shrink-0" />
                       <span>{team.member_count || 0} membres</span>
                     </div>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <div className="flex items-center gap-1">
-                            <Star className={`h-3 w-3 ${team.rating > 0 ? "fill-yellow-400 text-yellow-400" : "text-gray-400"}`} />
-                            <span>{team.rating > 0 ? team.rating.toFixed(1) : "Non notée"}</span>
+                            <Star className={`h-3.5 w-3.5 flex-shrink-0 ${team.rating > 0 ? "fill-yellow-400 text-yellow-400" : "text-gray-400"}`} />
+                            <span className="font-medium text-gray-700">{team.rating > 0 ? team.rating.toFixed(1) : "Non notée"}</span>
                           </div>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -151,7 +153,7 @@ const TeamSearchResults: React.FC<TeamSearchResultsProps> = ({ searchQuery }) =>
                   </div>
                 </div>
                 {team.is_recruiting && (
-                  <Badge className="bg-green-500 hover:bg-green-600">Recrutement</Badge>
+                  <Badge className="bg-green-500 hover:bg-green-600 ml-4 flex-shrink-0">Recrutement</Badge>
                 )}
               </div>
             </CardContent>
