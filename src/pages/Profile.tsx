@@ -72,11 +72,13 @@ const Profile = () => {
     return <div>Une erreur est survenue lors du chargement de votre profil. Veuillez réessayer plus tard.</div>;
   }
 
-  // Fusion sécurisée des objets
+  // Fusion sécurisée des objets avec les données d'équipe pour l'icône
   const userWithUpdates = {
     id: user?.id,
     email: user?.email,
     ...profileData,
+    team_logo: profileData?.team_logo,
+    team_name: profileData?.team,
     updateNewsletterSubscription,
   };
 
