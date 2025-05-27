@@ -97,8 +97,6 @@ const ProfileLayout: React.FC<ProfileLayoutProps> = ({
               }}
               fetchProfileData={fetchProfileData}
               handleNavigateToTeam={handleNavigateToTeam}
-              setSelectedGame={setSelectedGame}
-              setShowGameDialog={setShowGameDialog}
               setShowAllGamesDialog={setShowAllGamesDialog}
               setShowBadgesDialog={setShowBadgesDialog}
               setShowAddEquipmentDialog={setShowAddEquipmentDialog}
