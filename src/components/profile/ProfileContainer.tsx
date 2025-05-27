@@ -1,3 +1,4 @@
+
 import React from 'react';
 import ProfileHeader from './ProfileHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -84,7 +85,6 @@ const ProfileContainer = ({
             <ProfileEquipment 
               equipment={equipment} 
               equipmentTypes={equipmentTypes}
-              handleAddEquipment={handleAddEquipment}
             />
           </TabsContent>
           

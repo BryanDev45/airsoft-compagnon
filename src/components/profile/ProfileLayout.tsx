@@ -86,7 +86,7 @@ const ProfileLayout: React.FC<ProfileLayoutProps> = ({
               profileData={profileData}
               userStats={userStats}
               equipment={equipment}
-              games={userGames} 
+              userGames={userGames}
               updateLocation={(location) => {
                 // This is handled by useProfileData hook and passed to Profile.tsx
                 return Promise.resolve(false);
@@ -106,6 +106,10 @@ const ProfileLayout: React.FC<ProfileLayoutProps> = ({
               setShowAddEquipmentDialog={setShowAddEquipmentDialog}
               isOwnProfile={true}
               equipmentTypes={equipmentTypes}
+              handleAddEquipment={handleAddEquipment}
+              dialogStates={dialogStates}
+              toggleProfileSettings={() => setShowSettingsDialog(true)}
+              onEditBio={() => setShowEditBioDialog(true)}
             />
           </div>
         </div>
