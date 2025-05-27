@@ -75,7 +75,7 @@ const GameDetails = () => {
           creator = {
             ...(creatorData as any),
             newsletter_subscribed: creatorData?.newsletter_subscribed ?? null,
-            team_logo: creatorData?.team_logo ?? null
+            team_logo: (creatorData as any)?.team_logo ?? null
           } as Profile;
           
           setCreatorProfile(creator);
@@ -134,7 +134,7 @@ const GameDetails = () => {
           const profile = profileError ? null : {
             ...(profileData as any),
             newsletter_subscribed: profileData?.newsletter_subscribed ?? null,
-            team_logo: profileData?.team_logo ?? null
+            team_logo: (profileData as any)?.team_logo ?? null
           } as Profile;
 
           return {
