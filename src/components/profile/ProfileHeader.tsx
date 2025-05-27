@@ -23,10 +23,23 @@ const ProfileHeader = ({
       
       <div className="px-6 pb-4 pt-16 relative">
         <div className="absolute -top-12 left-6">
-          <Avatar className="h-24 w-24 border-4 border-white shadow-md ring-2 ring-airsoft-red">
-            <AvatarImage src={user?.avatar} alt={user?.username || 'Utilisateur'} />
-            <AvatarFallback>{user?.username?.charAt(0) || 'U'}</AvatarFallback>
-          </Avatar>
+          <div className="relative">
+            <Avatar className="h-24 w-24 border-4 border-white shadow-md ring-2 ring-airsoft-red">
+              <AvatarImage src={user?.avatar} alt={user?.username || 'Utilisateur'} />
+              <AvatarFallback>{user?.username?.charAt(0) || 'U'}</AvatarFallback>
+            </Avatar>
+            
+            {/* Team logo overlay */}
+            {user?.team_logo && (
+              <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-white rounded-full border-2 border-white overflow-hidden">
+                <img 
+                  src={user.team_logo} 
+                  alt={user.team_name || 'Team'}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+          </div>
         </div>
         
         <div className="flex flex-col md:flex-row md:items-end justify-between">

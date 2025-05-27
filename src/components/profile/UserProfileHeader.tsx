@@ -97,7 +97,12 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
   return (
     <div className="relative">
       <ProfileHeader 
-        user={{...profileData, reputation: displayedReputation}}
+        user={{
+          ...profileData, 
+          reputation: displayedReputation,
+          team_logo: profileData?.team_logo,
+          team_name: profileData?.team
+        }}
         isOwnProfile={isOwnProfile}
         toggleProfileSettings={toggleProfileSettings}
         onEditBio={onEditBio}
