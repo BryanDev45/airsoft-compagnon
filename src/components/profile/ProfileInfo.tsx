@@ -128,7 +128,16 @@ const ProfileInfo = ({
                 <span className="text-sm text-gray-500">Équipe</span>
                 {profileData?.team ? (
                   <div className="flex items-center justify-between">
-                    <p className="font-medium">{profileData.team}</p>
+                    {profileData?.team_id ? (
+                      <Link 
+                        to={`/team/${profileData.team_id}`}
+                        className="font-medium text-airsoft-red hover:text-red-700 transition-colors duration-200"
+                      >
+                        {profileData.team}
+                      </Link>
+                    ) : (
+                      <p className="font-medium">{profileData.team}</p>
+                    )}
                     {isOwnProfile && (
                       <Button variant="ghost" size="sm" onClick={handleNavigateToTeam} className="h-8 px-2">
                         <Users className="h-4 w-4" />

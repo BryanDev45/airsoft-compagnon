@@ -141,6 +141,7 @@ const UserProfile = () => {
                     profileData={profileData}
                     updateLocation={updateLocation}
                     handleNavigateToTeam={handleNavigateToTeam}
+                    isOwnProfile={isOwnProfile}
                   />
                 </TabsContent>
                 
