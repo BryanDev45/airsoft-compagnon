@@ -85,6 +85,7 @@ const ProfileContainer = ({
             <ProfileEquipment 
               equipment={equipment} 
               equipmentTypes={equipmentTypes}
+              readOnly={false}
             />
           </TabsContent>
           

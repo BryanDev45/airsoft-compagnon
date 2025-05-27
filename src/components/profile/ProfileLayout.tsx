@@ -96,8 +96,6 @@ const ProfileLayout: React.FC<ProfileLayoutProps> = ({
                 return Promise.resolve(false);
               }}
               fetchProfileData={fetchProfileData}
-              fetchEquipment={fetchEquipment}
-              fetchUserGames={fetchUserGames}
               handleNavigateToTeam={handleNavigateToTeam}
               setSelectedGame={setSelectedGame}
               setShowGameDialog={setShowGameDialog}
