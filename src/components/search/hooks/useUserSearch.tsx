@@ -21,7 +21,7 @@ interface UserResult {
 // Fonction de recherche d'utilisateurs
 async function searchUsers(query: string): Promise<UserResult[]> {
   try {
-    // Try the main query first (without team join to avoid relationship issues)
+    // First, get the basic user profiles
     let queryBuilder = supabase
       .from('profiles')
       .select(`
@@ -55,45 +55,58 @@ async function searchUsers(query: string): Promise<UserResult[]> {
       return [];
     }
 
-    // Now get team information separately for users who have a team_id
+    // Now get team information for each user
     const usersWithTeams = await Promise.all(
       data.map(async (user) => {
-        if (!user.team_id) {
-          return {
-            ...user,
-            team_name: null,
-            team_logo: null
-          };
-        }
+        let teamName = null;
+        let teamLogo = null;
+        let teamId = user.team_id;
 
         try {
-          const { data: teamData, error: teamError } = await supabase
-            .from('teams')
-            .select('name, logo')
-            .eq('id', user.team_id)
-            .single();
+          // First check if the user has a direct team_id (for team leaders)
+          if (user.team_id) {
+            const { data: teamData, error: teamError } = await supabase
+              .from('teams')
+              .select('name, logo')
+              .eq('id', user.team_id)
+              .single();
 
-          if (teamError || !teamData) {
-            return {
-              ...user,
-              team_name: null,
-              team_logo: null
-            };
+            if (!teamError && teamData) {
+              teamName = teamData.name;
+              teamLogo = teamData.logo;
+            }
+          } else {
+            // If no direct team_id, check if the user is a team member
+            const { data: memberData, error: memberError } = await supabase
+              .from('team_members')
+              .select(`
+                team_id,
+                teams (
+                  id,
+                  name,
+                  logo
+                )
+              `)
+              .eq('user_id', user.id)
+              .eq('status', 'confirmed')
+              .single();
+
+            if (!memberError && memberData?.teams) {
+              teamId = memberData.team_id;
+              teamName = memberData.teams.name;
+              teamLogo = memberData.teams.logo;
+            }
           }
-
-          return {
-            ...user,
-            team_name: teamData.name,
-            team_logo: teamData.logo
-          };
         } catch (error) {
           console.error('Erreur lors de la récupération des données d\'équipe:', error);
-          return {
-            ...user,
-            team_name: null,
-            team_logo: null
-          };
         }
+
+        return {
+          ...user,
+          team_id: teamId,
+          team_name: teamName,
+          team_logo: teamLogo
+        };
       })
     );
 
