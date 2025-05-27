@@ -86,7 +86,7 @@ const ProfileLayout: React.FC<ProfileLayoutProps> = ({
               profileData={profileData}
               userStats={userStats}
               equipment={equipment}
-              userGames={userGames}
+              games={userGames} 
               updateLocation={(location) => {
                 // This is handled by useProfileData hook and passed to Profile.tsx
                 return Promise.resolve(false);
@@ -96,14 +96,16 @@ const ProfileLayout: React.FC<ProfileLayoutProps> = ({
                 return Promise.resolve(false);
               }}
               fetchProfileData={fetchProfileData}
+              fetchEquipment={fetchEquipment}
+              fetchUserGames={fetchUserGames}
               handleNavigateToTeam={handleNavigateToTeam}
+              setSelectedGame={setSelectedGame}
+              setShowGameDialog={setShowGameDialog}
+              setShowAllGamesDialog={setShowAllGamesDialog}
+              setShowBadgesDialog={setShowBadgesDialog}
               setShowAddEquipmentDialog={setShowAddEquipmentDialog}
               isOwnProfile={true}
               equipmentTypes={equipmentTypes}
-              handleAddEquipment={handleAddEquipment}
-              dialogStates={dialogStates}
-              toggleProfileSettings={() => setShowSettingsDialog(true)}
-              onEditBio={() => setShowEditBioDialog(true)}
             />
           </div>
         </div>

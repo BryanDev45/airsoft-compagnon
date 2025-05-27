@@ -14,7 +14,6 @@ export interface Profile {
   location: string | null;
   team: string | null;
   team_id: string | null;
-  team_logo: string | null;
   is_team_leader: boolean | null;
   is_verified: boolean | null;
   newsletter_subscribed: boolean | null;

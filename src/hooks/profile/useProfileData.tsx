@@ -60,7 +60,6 @@ export const useProfileData = (userId: string | undefined) => {
             location: null,
             team: null,
             team_id: null,
-            team_logo: null,
             is_team_leader: null,
             is_verified: null,
             newsletter_subscribed: false // Initialize with default value

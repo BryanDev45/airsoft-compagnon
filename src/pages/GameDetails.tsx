@@ -71,12 +71,11 @@ const GameDetails = () => {
         if (creatorError) {
           console.warn("Could not fetch creator profile:", creatorError);
         } else {
-          // Use optional chaining to safely access newsletter_subscribed and add team_logo
+          // Use optional chaining to safely access newsletter_subscribed
           creator = {
-            ...(creatorData as any),
-            newsletter_subscribed: creatorData?.newsletter_subscribed ?? null,
-            team_logo: (creatorData as any)?.team_logo ?? null
-          } as Profile;
+            ...(creatorData as Profile),
+            newsletter_subscribed: creatorData?.newsletter_subscribed ?? null
+          };
           
           setCreatorProfile(creator);
         }
@@ -130,11 +129,10 @@ const GameDetails = () => {
             .eq('id', participant.user_id)
             .single();
 
-          // Make sure newsletter_subscribed and team_logo are included
+          // Make sure newsletter_subscribed is included
           const profile = profileError ? null : {
             ...(profileData as any),
-            newsletter_subscribed: profileData?.newsletter_subscribed ?? null,
-            team_logo: (profileData as any)?.team_logo ?? null
+            newsletter_subscribed: profileData?.newsletter_subscribed ?? null
           } as Profile;
 
           return {
