@@ -326,6 +326,9 @@ export type Database = {
           age: number | null
           avatar: string | null
           Ban: boolean | null
+          ban_date: string | null
+          ban_reason: string | null
+          banned_by: string | null
           banner: string | null
           bio: string | null
           birth_date: string | null
@@ -350,6 +353,9 @@ export type Database = {
           age?: number | null
           avatar?: string | null
           Ban?: boolean | null
+          ban_date?: string | null
+          ban_reason?: string | null
+          banned_by?: string | null
           banner?: string | null
           bio?: string | null
           birth_date?: string | null
@@ -374,6 +380,9 @@ export type Database = {
           age?: number | null
           avatar?: string | null
           Ban?: boolean | null
+          ban_date?: string | null
+          ban_reason?: string | null
+          banned_by?: string | null
           banner?: string | null
           bio?: string | null
           birth_date?: string | null
@@ -393,7 +402,15 @@ export type Database = {
           team_id?: string | null
           username?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_banned_by_fkey"
+            columns: ["banned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       stores: {
         Row: {
@@ -697,6 +714,10 @@ export type Database = {
       insert_user_rating: {
         Args: { p_rater_id: string; p_rated_id: string; p_rating: number }
         Returns: undefined
+      }
+      is_current_user_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       update_user_location: {
         Args: { p_user_id: string; p_location: string }

@@ -18,6 +18,13 @@ export interface Profile {
   is_team_leader: boolean | null;
   is_verified: boolean | null;
   newsletter_subscribed: boolean | null;
+  Admin: boolean | null;
+  Ban: boolean | null;
+  ban_date: string | null;
+  ban_reason: string | null;
+  banned_by: string | null;
+  reputation: number | null;
+  friends_list_public: boolean | null;
 }
 
 export interface UserStats {

@@ -63,7 +63,14 @@ export const useProfileData = (userId: string | undefined) => {
             team_logo: null,
             is_team_leader: null,
             is_verified: null,
-            newsletter_subscribed: false // Initialize with default value
+            newsletter_subscribed: false,
+            Admin: null,
+            Ban: null,
+            ban_date: null,
+            ban_reason: null,
+            banned_by: null,
+            reputation: null,
+            friends_list_public: null
           };
           
           // Insert the new profile
