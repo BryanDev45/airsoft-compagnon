@@ -326,6 +326,9 @@ export type Database = {
           age: number | null
           avatar: string | null
           Ban: boolean | null
+          ban_date: string | null
+          ban_reason: string | null
+          banned_by: string | null
           banner: string | null
           bio: string | null
           birth_date: string | null
@@ -350,6 +353,9 @@ export type Database = {
           age?: number | null
           avatar?: string | null
           Ban?: boolean | null
+          ban_date?: string | null
+          ban_reason?: string | null
+          banned_by?: string | null
           banner?: string | null
           bio?: string | null
           birth_date?: string | null
@@ -374,6 +380,9 @@ export type Database = {
           age?: number | null
           avatar?: string | null
           Ban?: boolean | null
+          ban_date?: string | null
+          ban_reason?: string | null
+          banned_by?: string | null
           banner?: string | null
           bio?: string | null
           birth_date?: string | null
@@ -393,7 +402,15 @@ export type Database = {
           team_id?: string | null
           username?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_banned_by_fkey"
+            columns: ["banned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       stores: {
         Row: {
