@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
@@ -96,10 +95,11 @@ export const useProfileFetch = (userId: string | undefined) => {
             }
           }
         } else if (isMounted) {
-          // Create a complete profile object including the newsletter_subscribed property
+          // Create a complete profile object including all properties
           const completeProfile: Profile = {
             ...(profile as any),
-            newsletter_subscribed: profile.newsletter_subscribed ?? null
+            newsletter_subscribed: profile.newsletter_subscribed ?? null,
+            team_logo: profile.team_logo ?? null
           };
           
           setProfileData(completeProfile);
