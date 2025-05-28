@@ -30,7 +30,7 @@ export const useUserProfileFetch = (username: string | undefined) => {
           .from('profiles')
           .select('Admin')
           .eq('id', data.session.user.id)
-          .single();
+          .maybeSingle();
         
         if (!error && currentUserProfile) {
           setIsCurrentUserAdmin(currentUserProfile.Admin === true);
@@ -54,9 +54,12 @@ export const useUserProfileFetch = (username: string | undefined) => {
           .from('profiles')
           .select('*')
           .eq('username', username)
-          .single();
+          .maybeSingle();
 
-        if (profileError) throw profileError;
+        if (profileError) {
+          console.error('Profile fetch error:', profileError);
+          throw profileError;
+        }
         
         if (!userProfile) {
           toast({
@@ -68,11 +71,47 @@ export const useUserProfileFetch = (username: string | undefined) => {
           return;
         }
 
-        // Ensure the profile has the newsletter_subscribed property
+        // Create complete profile object
         const completeProfile: Profile = {
-          ...(userProfile as any),
-          newsletter_subscribed: userProfile.newsletter_subscribed ?? null
+          id: userProfile.id,
+          username: userProfile.username,
+          email: userProfile.email,
+          firstname: userProfile.firstname,
+          lastname: userProfile.lastname,
+          birth_date: userProfile.birth_date,
+          age: userProfile.age,
+          join_date: userProfile.join_date,
+          avatar: userProfile.avatar,
+          banner: userProfile.banner,
+          bio: userProfile.bio,
+          location: userProfile.location,
+          team: userProfile.team,
+          team_id: userProfile.team_id,
+          team_logo: null,
+          is_team_leader: userProfile.is_team_leader,
+          is_verified: userProfile.is_verified,
+          newsletter_subscribed: userProfile.newsletter_subscribed ?? null,
+          Admin: userProfile.Admin,
+          Ban: userProfile.Ban,
+          ban_date: userProfile.ban_date,
+          ban_reason: userProfile.ban_reason,
+          banned_by: userProfile.banned_by,
+          reputation: userProfile.reputation,
+          friends_list_public: userProfile.friends_list_public
         };
+
+        // If user has a team, fetch team logo
+        if (userProfile.team_id) {
+          const { data: teamData } = await supabase
+            .from('teams')
+            .select('logo')
+            .eq('id', userProfile.team_id)
+            .maybeSingle();
+          
+          if (teamData?.logo) {
+            completeProfile.team_logo = teamData.logo;
+          }
+        }
 
         const { data: stats, error: statsError } = await supabase
           .from('user_stats')

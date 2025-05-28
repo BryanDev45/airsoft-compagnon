@@ -46,32 +46,33 @@ export const useProfileFetch = (userId: string | undefined) => {
           setLoading(false);
         }
 
-        // Always fetch fresh data from database but don't block UI
+        // Always fetch fresh data from database
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', userId)
           .maybeSingle();
 
-        if (profileError && profileError.code !== 'PGRST116') {
+        if (profileError) {
+          console.error('Profile fetch error:', profileError);
           throw profileError;
         }
 
         if (!profile) {
+          // If no profile exists, create a basic one
           const { data: userData } = await supabase.auth.getUser();
           if (userData?.user && isMounted) {
-            // Create a new profile based on user metadata
             const metaData = userData.user.user_metadata;
             const newProfile: Profile = {
               id: userId,
               username: metaData.username || `user_${userId.substring(0, 8)}`,
               email: userData.user.email,
-              firstname: metaData.firstname,
-              lastname: metaData.lastname,
-              birth_date: metaData.birth_date,
+              firstname: metaData.firstname || null,
+              lastname: metaData.lastname || null,
+              birth_date: metaData.birth_date || null,
               age: metaData.age || null,
               join_date: new Date().toISOString().split('T')[0],
-              avatar: metaData.avatar,
+              avatar: metaData.avatar || null,
               banner: null,
               bio: null,
               location: null,
@@ -80,17 +81,22 @@ export const useProfileFetch = (userId: string | undefined) => {
               team_logo: null,
               is_team_leader: null,
               is_verified: null,
-              newsletter_subscribed: null
+              newsletter_subscribed: null,
+              Admin: null,
+              Ban: null,
+              ban_date: null,
+              ban_reason: null,
+              banned_by: null,
+              reputation: null,
+              friends_list_public: null
             };
             
-            // Insert the new profile
+            // Try to insert the new profile
             const { error: insertError } = await supabase
               .from('profiles')
               .insert(newProfile);
               
-            if (insertError) throw insertError;
-            
-            if (isMounted) {
+            if (!insertError && isMounted) {
               setProfileData(newProfile);
               setStorageWithExpiry(profileCacheKey, newProfile, CACHE_DURATIONS.MEDIUM);
             }
@@ -98,54 +104,87 @@ export const useProfileFetch = (userId: string | undefined) => {
         } else if (isMounted) {
           // Create a complete profile object including all properties
           const completeProfile: Profile = {
-            ...(profile as any),
-            newsletter_subscribed: profile.newsletter_subscribed ?? null,
-            team_logo: (profile as any).team_logo ?? null
+            id: profile.id,
+            username: profile.username,
+            email: profile.email,
+            firstname: profile.firstname,
+            lastname: profile.lastname,
+            birth_date: profile.birth_date,
+            age: profile.age,
+            join_date: profile.join_date,
+            avatar: profile.avatar,
+            banner: profile.banner,
+            bio: profile.bio,
+            location: profile.location,
+            team: profile.team,
+            team_id: profile.team_id,
+            team_logo: null, // This will be fetched from teams table if needed
+            is_team_leader: profile.is_team_leader,
+            is_verified: profile.is_verified,
+            newsletter_subscribed: profile.newsletter_subscribed,
+            Admin: profile.Admin,
+            Ban: profile.Ban,
+            ban_date: profile.ban_date,
+            ban_reason: profile.ban_reason,
+            banned_by: profile.banned_by,
+            reputation: profile.reputation,
+            friends_list_public: profile.friends_list_public
           };
+          
+          // If user has a team, fetch team logo
+          if (profile.team_id) {
+            const { data: teamData } = await supabase
+              .from('teams')
+              .select('logo')
+              .eq('id', profile.team_id)
+              .maybeSingle();
+            
+            if (teamData?.logo) {
+              completeProfile.team_logo = teamData.logo;
+            }
+          }
           
           setProfileData(completeProfile);
           setStorageWithExpiry(profileCacheKey, completeProfile, CACHE_DURATIONS.MEDIUM);
         }
 
-        if (isMounted) {
-          const { data: stats, error: statsError } = await supabase
+        // Fetch user stats
+        const { data: stats, error: statsError } = await supabase
+          .from('user_stats')
+          .select('*')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        if (statsError) {
+          console.error('Stats fetch error:', statsError);
+          throw statsError;
+        }
+
+        if (!stats && isMounted) {
+          // Create default statistics if they don't exist
+          const defaultStats: UserStats = {
+            user_id: userId,
+            games_played: 0,
+            games_organized: 0,
+            reputation: 0,
+            preferred_game_type: 'CQB',
+            favorite_role: 'Assaut',
+            level: 'Débutant',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+          
+          const { error: insertStatsError } = await supabase
             .from('user_stats')
-            .select('*')
-            .eq('user_id', userId)
-            .maybeSingle();
-
-          if (statsError && statsError.code !== 'PGRST116') {
-            throw statsError;
-          }
-
-          if (!stats && isMounted) {
-            // Create default statistics if they don't exist
-            const defaultStats: UserStats = {
-              user_id: userId,
-              games_played: 0,
-              games_organized: 0,
-              reputation: 0,
-              preferred_game_type: 'CQB',
-              favorite_role: 'Assaut',
-              level: 'Débutant',
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            };
+            .insert(defaultStats);
             
-            const { error: insertStatsError } = await supabase
-              .from('user_stats')
-              .insert(defaultStats);
-              
-            if (insertStatsError) throw insertStatsError;
-            
-            if (isMounted) {
-              setUserStats(defaultStats);
-              setStorageWithExpiry(statsCacheKey, defaultStats, CACHE_DURATIONS.MEDIUM);
-            }
-          } else if (isMounted && stats) {
-            setUserStats(stats as UserStats);
-            setStorageWithExpiry(statsCacheKey, stats, CACHE_DURATIONS.MEDIUM);
+          if (!insertStatsError && isMounted) {
+            setUserStats(defaultStats);
+            setStorageWithExpiry(statsCacheKey, defaultStats, CACHE_DURATIONS.MEDIUM);
           }
+        } else if (isMounted && stats) {
+          setUserStats(stats as UserStats);
+          setStorageWithExpiry(statsCacheKey, stats, CACHE_DURATIONS.MEDIUM);
         }
       } catch (error: any) {
         console.error("Error loading data:", error);

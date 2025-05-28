@@ -715,6 +715,10 @@ export type Database = {
         Args: { p_rater_id: string; p_rated_id: string; p_rating: number }
         Returns: undefined
       }
+      is_current_user_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       update_user_location: {
         Args: { p_user_id: string; p_location: string }
         Returns: undefined

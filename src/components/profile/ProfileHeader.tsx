@@ -5,7 +5,24 @@ import { Button } from "@/components/ui/button";
 import { Settings, Pencil, Star, ShieldCheck } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 
-const ProfileHeader = ({
+interface ProfileHeaderProps {
+  user: {
+    username?: string | null;
+    avatar?: string | null;
+    banner?: string | null;
+    bio?: string | null;
+    reputation?: number | null;
+    team_logo?: string | null;
+    team_name?: string | null;
+    team?: string | null;
+    Admin?: boolean | null;
+  };
+  isOwnProfile?: boolean;
+  toggleProfileSettings?: () => void;
+  onEditBio?: () => void;
+}
+
+const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   user,
   isOwnProfile = false,
   toggleProfileSettings,
@@ -25,14 +42,14 @@ const ProfileHeader = ({
         <div className="absolute -top-12 left-6">
           <div className="relative">
             <Avatar className="h-24 w-24 border-4 border-white shadow-md ring-2 ring-airsoft-red">
-              <AvatarImage src={user?.avatar} alt={user?.username || 'Utilisateur'} />
+              <AvatarImage src={user?.avatar || undefined} alt={user?.username || 'Utilisateur'} />
               <AvatarFallback>{user?.username?.charAt(0) || 'U'}</AvatarFallback>
             </Avatar>
             
             {/* Team logo overlay - positioned at bottom right */}
             {user?.team_logo && (
               <div className="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full border-2 border-white overflow-hidden shadow-sm">
-                <img src={user.team_logo} alt={user.team || 'Team'} className="w-full h-full object-cover" />
+                <img src={user.team_logo} alt={user.team_name || user.team || 'Team'} className="w-full h-full object-cover" />
               </div>
             )}
           </div>
@@ -42,7 +59,7 @@ const ProfileHeader = ({
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold">{user?.username || 'Utilisateur'}</h1>
-              {user?.reputation && (
+              {user?.reputation && user.reputation > 0 && (
                 <div className="flex items-center bg-amber-50 px-2 py-1 rounded-full">
                   <Star className="h-4 w-4 text-amber-500 fill-amber-500 mr-1" />
                   <span className="text-sm font-medium text-amber-700">{user.reputation.toFixed(1)}</span>
