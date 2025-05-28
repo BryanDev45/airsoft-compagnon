@@ -71,11 +71,12 @@ const GameDetails = () => {
         if (creatorError) {
           console.warn("Could not fetch creator profile:", creatorError);
         } else {
-          // Use optional chaining to safely access newsletter_subscribed and add team_logo
+          // Cast creatorData to any to safely access all properties including team_logo
+          const creatorDataAny = creatorData as any;
           creator = {
-            ...(creatorData as any),
-            newsletter_subscribed: creatorData?.newsletter_subscribed ?? null,
-            team_logo: creatorData?.team_logo ?? null
+            ...creatorDataAny,
+            newsletter_subscribed: creatorDataAny?.newsletter_subscribed ?? null,
+            team_logo: creatorDataAny?.team_logo ?? null
           } as Profile;
           
           setCreatorProfile(creator);
