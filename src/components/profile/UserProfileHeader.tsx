@@ -1,10 +1,22 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { UserPlus, UserMinus, Check, ShieldX } from "lucide-react";
 import RatingStars from './RatingStars';
 import ReportUserButton from './ReportUserButton';
 import ProfileHeader from './ProfileHeader';
-import BanUserDialog from './BanUserDialog';
+import { toast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from "@/components/ui/alert-dialog";
 
 interface UserProfileHeaderProps {
   profileData: any;
@@ -47,6 +59,40 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
 
   // Utiliser la réputation mise à jour si disponible, sinon utiliser celle du profil
   const displayedReputation = userReputation !== null ? userReputation : profileData?.reputation || 0;
+
+  const handleBanUser = async () => {
+    if (!isCurrentUserAdmin || !userData?.id) return;
+
+    try {
+      const isBanned = userData.Ban || false;
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({ Ban: !isBanned })
+        .eq('id', userData.id);
+
+      if (error) throw error;
+
+      toast({
+        title: isBanned ? "Utilisateur débanni" : "Utilisateur banni",
+        description: isBanned 
+          ? `${userData.username} a été débanni avec succès` 
+          : `${userData.username} a été banni avec succès`,
+        variant: isBanned ? "default" : "destructive",
+      });
+      
+      // Refresh page to see changes
+      window.location.reload();
+      
+    } catch (error) {
+      console.error("Error banning user:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur s'est produite lors de la tentative de bannissement",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="relative">
@@ -115,13 +161,30 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
       )}
 
       {/* Ban confirmation dialog */}
-      <BanUserDialog
-        open={banDialogOpen}
-        onOpenChange={setBanDialogOpen}
-        userData={userData}
-        currentUserId={currentUserId}
-        isCurrentUserAdmin={isCurrentUserAdmin}
-      />
+      <AlertDialog open={banDialogOpen} onOpenChange={setBanDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {userData?.Ban ? "Débannir cet utilisateur?" : "Bannir cet utilisateur?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {userData?.Ban 
+                ? `Êtes-vous sûr de vouloir débannir ${userData?.username}? Cet utilisateur pourra à nouveau accéder à toutes les fonctionnalités du site.`
+                : `Êtes-vous sûr de vouloir bannir ${userData?.username}? Cet utilisateur ne pourra plus accéder à certaines fonctionnalités du site.`
+              }
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBanUser}
+              className={userData?.Ban ? "bg-blue-600 hover:bg-blue-700" : "bg-destructive hover:bg-destructive/90"}
+            >
+              {userData?.Ban ? "Débannir" : "Bannir"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
