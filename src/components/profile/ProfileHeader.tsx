@@ -29,12 +29,12 @@ const ProfileHeader = ({
               <AvatarFallback>{user?.username?.charAt(0) || 'U'}</AvatarFallback>
             </Avatar>
             
-            {/* Team logo overlay */}
+            {/* Team logo overlay - positioned at bottom right */}
             {user?.team_logo && (
-              <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-white rounded-full border-2 border-white overflow-hidden">
+              <div className="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full border-2 border-white overflow-hidden shadow-sm">
                 <img 
                   src={user.team_logo} 
-                  alt={user.team_name || 'Team'}
+                  alt={user.team || 'Team'}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -51,6 +51,13 @@ const ProfileHeader = ({
                   <span className="text-sm font-medium text-amber-700">{user.reputation.toFixed(1)}</span>
                 </div>}
             </div>
+            
+            {/* Team name styled in black */}
+            {user?.team && (
+              <p className="text-black font-medium text-sm mt-1">
+                Équipe: {user.team}
+              </p>
+            )}
             
             {user?.Admin && (
               <div className="flex items-center mt-1">
