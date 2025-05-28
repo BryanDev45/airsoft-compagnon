@@ -1,24 +1,17 @@
-
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Settings, Pencil, Star, ShieldCheck } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
-
 const ProfileHeader = ({
   user,
   isOwnProfile = false,
   toggleProfileSettings,
   onEditBio
 }) => {
-  return (
-    <div className="relative">
+  return <div className="relative">
       <div className="w-full h-64 md:h-72 bg-gray-200 overflow-hidden">
-        {user?.banner ? (
-          <img src={user.banner} alt="Profile banner" className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-r from-gray-400 to-gray-300" />
-        )}
+        {user?.banner ? <img src={user.banner} alt="Profile banner" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gradient-to-r from-gray-400 to-gray-300" />}
       </div>
       
       <div className="px-6 pb-4 pt-16 relative">
@@ -30,15 +23,9 @@ const ProfileHeader = ({
             </Avatar>
             
             {/* Team logo overlay - positioned at bottom right */}
-            {user?.team_logo && (
-              <div className="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full border-2 border-white overflow-hidden shadow-sm">
-                <img 
-                  src={user.team_logo} 
-                  alt={user.team || 'Team'}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
+            {user?.team_logo && <div className="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full border-2 border-white overflow-hidden shadow-sm">
+                <img src={user.team_logo} alt={user.team || 'Team'} className="w-full h-full object-cover" />
+              </div>}
           </div>
         </div>
         
@@ -53,20 +40,14 @@ const ProfileHeader = ({
             </div>
             
             {/* Team name styled in black */}
-            {user?.team && (
-              <p className="text-black font-medium text-sm mt-1">
-                Équipe: {user.team}
-              </p>
-            )}
+            {user?.team}
             
-            {user?.Admin && (
-              <div className="flex items-center mt-1">
+            {user?.Admin && <div className="flex items-center mt-1">
                 <Badge className="bg-blue-600 hover:bg-blue-700 flex items-center gap-1 text-white">
                   <ShieldCheck className="h-3 w-3" />
                   Administrateur
                 </Badge>
-              </div>
-            )}
+              </div>}
             
             <p className="text-gray-600 mt-1">{user?.bio || 'Aucune bio pour le moment'}</p>
           </div>
@@ -84,8 +65,6 @@ const ProfileHeader = ({
             </div>}
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default ProfileHeader;
