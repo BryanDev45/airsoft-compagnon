@@ -1,42 +1,33 @@
 
 import React from 'react';
-import { useMapData } from '@/hooks/useMapData';
-import { useMapFiltering } from '@/hooks/useMapFiltering';
+import { useStores } from '@/hooks/useStores';
+import { useStoreFiltering } from '@/hooks/useStoreFiltering';
 import { useMapLocation } from '@/hooks/useMapLocation';
-import MapComponent from './map/MapComponent';
-import MapSectionHeader from './map/MapSectionHeader';
-import SearchFiltersSidebar from './map/SearchFiltersSidebar';
-import MapResultsDisplay from './map/MapResultsDisplay';
-import { useAuth } from '@/hooks/useAuth';
+import MapComponent from '../map/MapComponent';
+import StoreFiltersSidebar from './StoreFiltersSidebar';
+import StoreResultsDisplay from './StoreResultsDisplay';
 import { AlertCircle } from 'lucide-react';
-import { Button } from './ui/button';
+import { Button } from '../ui/button';
 
-const MapSection: React.FC = () => {
-  const { user } = useAuth();
-  const { loading: eventsLoading, events, error: eventsError } = useMapData();
+const StoresMapSection: React.FC = () => {
+  const { stores, loading: storesLoading, error: storesError } = useStores();
   
   const {
     searchQuery,
     setSearchQuery,
-    selectedType,
-    setSelectedType,
-    selectedDepartment,
-    setSelectedDepartment,
-    selectedDate,
-    setSelectedDate,
     selectedCountry,
     setSelectedCountry,
     searchRadius,
     setSearchRadius,
     searchCenter,
     setSearchCenter,
-    filteredEvents
-  } = useMapFiltering(events);
+    filteredStores
+  } = useStoreFiltering(stores);
 
   const { getCurrentPosition } = useMapLocation(searchQuery, setSearchCenter);
   
-  const loading = eventsLoading;
-  const error = eventsError;
+  const loading = storesLoading;
+  const error = storesError;
   
   const handleRetry = () => {
     window.location.reload();
@@ -45,28 +36,19 @@ const MapSection: React.FC = () => {
   return (
     <div className="py-12 md:py-0">
       <div className="max-w-7xl mx-auto px-4 py-[30px]">
-        <MapSectionHeader />
-        
         <div className="bg-white rounded-lg overflow-hidden shadow-xl mb-8 border border-gray-200">
           <div className="flex flex-col md:flex-row h-full">
-            <SearchFiltersSidebar
+            <StoreFiltersSidebar
               loading={loading}
-              filteredEventsCount={filteredEvents.length}
-              stores={[]}
+              filteredStoresCount={filteredStores.length}
               filterState={{
                 searchQuery,
-                selectedType,
-                selectedDepartment,
-                selectedDate,
                 selectedCountry,
                 searchRadius,
                 searchCenter
               }}
               setSearchQuery={setSearchQuery}
-              setSelectedType={setSelectedType}
-              setSelectedDepartment={setSelectedDepartment}
               setSelectedCountry={setSelectedCountry}
-              setSelectedDate={setSelectedDate}
               setSearchRadius={setSearchRadius}
               getCurrentPosition={getCurrentPosition}
             />
@@ -83,7 +65,7 @@ const MapSection: React.FC = () => {
                 <div className="flex items-center justify-center h-full flex-col">
                   <div className="text-center">
                     <AlertCircle className="h-12 w-12 text-airsoft-red mx-auto mb-4" />
-                    <p className="text-gray-700 mb-3 font-semibold">Impossible de charger les parties</p>
+                    <p className="text-gray-700 mb-3 font-semibold">Impossible de charger les magasins</p>
                     <p className="text-gray-500 mb-6">Veuillez vérifier votre connexion internet et réessayer</p>
                     <Button 
                       className="bg-airsoft-red hover:bg-red-700"
@@ -93,17 +75,17 @@ const MapSection: React.FC = () => {
                     </Button>
                   </div>
                 </div>
-              ) : filteredEvents.length > 0 ? (
+              ) : filteredStores.length > 0 ? (
                 <MapComponent 
                   searchCenter={searchCenter} 
                   searchRadius={searchRadius[0]} 
-                  filteredEvents={filteredEvents}
-                  stores={[]}
+                  filteredEvents={[]}
+                  stores={filteredStores}
                 />
               ) : (
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center">
-                    <p className="text-gray-500">Aucune partie trouvée correspondant à vos critères</p>
+                    <p className="text-gray-500">Aucun magasin trouvé correspondant à vos critères</p>
                   </div>
                 </div>
               )}
@@ -111,11 +93,10 @@ const MapSection: React.FC = () => {
           </div>
         </div>
         
-        <MapResultsDisplay 
+        <StoreResultsDisplay 
           loading={loading} 
           error={error} 
-          filteredEvents={filteredEvents} 
-          stores={[]}
+          filteredStores={filteredStores}
           handleRetry={handleRetry} 
         />
       </div>
@@ -123,4 +104,4 @@ const MapSection: React.FC = () => {
   );
 };
 
-export default MapSection;
+export default StoresMapSection;

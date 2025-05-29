@@ -1,7 +1,9 @@
+
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import MapSection from '../components/MapSection';
+import StoresMapSection from '../components/stores/StoresMapSection';
 import Footer from '../components/Footer';
 import { Button } from "@/components/ui/button";
 import { Store, MapPin, User, Users, Search, Plus } from 'lucide-react';
@@ -11,7 +13,6 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import UserSearchResults from '../components/search/UserSearchResults';
 import TeamSearchResults from '../components/search/TeamSearchResults';
-import MapComponent from '../components/map/MapComponent';
 import { useAuth } from '../hooks/useAuth';
 import AddStoreDialog from '../components/stores/AddStoreDialog';
 import { supabase } from '@/integrations/supabase/client';
@@ -32,7 +33,6 @@ const Recherche = () => {
   } = useAuth();
   const [activeTab, setActiveTab] = useState("parties");
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchCenter, setSearchCenter] = useState<[number, number]>([2.3522, 48.8566]); // Paris coordinates
   const [isAddStoreDialogOpen, setIsAddStoreDialogOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -145,28 +145,14 @@ const Recherche = () => {
               </TabsContent>
               
               <TabsContent value="magasins">
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="flex justify-between items-center mb-6">
-                      <div className="flex items-center border rounded-md overflow-hidden w-full max-w-md">
-                        <Input placeholder="Rechercher un magasin par nom, ville..." className="border-0 focus-visible:ring-0 flex-1" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
-                        <Button variant="ghost" className="rounded-l-none">
-                          <Search className="h-5 w-5" />
-                        </Button>
-                      </div>
-                      
-                      {isAdmin && (
-                        <Button onClick={() => setIsAddStoreDialogOpen(true)} className="bg-airsoft-red hover:bg-red-700 text-white ml-4">
-                          <Plus className="h-4 w-4 mr-2" /> Ajouter un magasin
-                        </Button>
-                      )}
-                    </div>
-                    
-                    <div className="h-[600px] rounded-lg overflow-hidden">
-                      <MapComponent searchCenter={searchCenter} searchRadius={0} filteredEvents={[]} />
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="mb-6 flex justify-end">
+                  {isAdmin && (
+                    <Button onClick={() => setIsAddStoreDialogOpen(true)} className="bg-airsoft-red hover:bg-red-700 text-white">
+                      <Plus className="h-4 w-4 mr-2" /> Ajouter un magasin
+                    </Button>
+                  )}
+                </div>
+                <StoresMapSection />
               </TabsContent>
             </Tabs>
           </div>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { MapPin, Search, Filter, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -201,8 +200,8 @@ const SearchFiltersSidebar: React.FC<SearchFiltersSidebarProps> = ({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tous les types</SelectItem>
-              <SelectItem value="parties">Parties uniquement</SelectItem>
-              <SelectItem value="magasins">Magasins uniquement</SelectItem>
+              <SelectItem value="dominicale">Parties dominicales</SelectItem>
+              <SelectItem value="operation">Opérations</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -304,10 +303,7 @@ const SearchFiltersSidebar: React.FC<SearchFiltersSidebarProps> = ({
                 Recherche en cours...
               </div>
             ) : (
-              <>
-                <p className="font-medium">{filteredEventsCount} parties trouvées</p>
-                <p className="font-medium">{stores.length} magasins disponibles</p>
-              </>
+              <p className="font-medium">{filteredEventsCount} parties trouvées</p>
             )}
           </div>
         </div>
