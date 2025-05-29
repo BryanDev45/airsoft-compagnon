@@ -98,7 +98,12 @@ const UserProfile = () => {
         <AlertCircle className="h-4 w-4" />
         <AlertTitle>Compte banni</AlertTitle>
         <AlertDescription>
-          Ce compte utilisateur a été banni par un administrateur.
+          <div>Ce compte utilisateur a été banni par un administrateur.</div>
+          {userData?.ban_reason && (
+            <div className="mt-2 font-medium">
+              Raison : {userData.ban_reason}
+            </div>
+          )}
         </AlertDescription>
       </Alert>
     );
