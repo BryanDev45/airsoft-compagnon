@@ -1,8 +1,10 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { getStorageWithExpiry, setStorageWithExpiry, CACHE_DURATIONS } from '@/utils/cacheUtils';
+import { globalQueryCache } from '@/utils/queryCache';
 
 interface UserResult {
   id: string;
@@ -19,10 +21,14 @@ interface UserResult {
   team_logo?: string | null;
 }
 
-// Fonction de recherche d'utilisateurs
+// Cache des équipes pour éviter les requêtes répétées
+const teamCache = new Map<string, { name: string; logo: string | null }>();
+
 async function searchUsers(query: string, isAdmin: boolean = false): Promise<UserResult[]> {
-  try {
-    // First, get the basic user profiles
+  const cacheKey = `userSearch_${query}_${isAdmin}`;
+  
+  // Utiliser le cache global pour éviter les recherches dupliquées
+  return globalQueryCache.get(cacheKey, async () => {
     let queryBuilder = supabase
       .from('profiles')
       .select(`
@@ -39,12 +45,12 @@ async function searchUsers(query: string, isAdmin: boolean = false): Promise<Use
       `)
       .limit(20);
     
-    // Si ce n'est pas un admin, exclure les utilisateurs bannis
+    // Filtrer les utilisateurs bannis sauf pour les admins
     if (!isAdmin) {
       queryBuilder = queryBuilder.eq('Ban', false);
     }
     
-    // Ajouter le filtre de recherche seulement si une requête est fournie
+    // Ajouter le filtre de recherche
     if (query && query.length > 0) {
       queryBuilder = queryBuilder.or(`username.ilike.%${query}%,firstname.ilike.%${query}%,lastname.ilike.%${query}%`);
     }
@@ -60,7 +66,7 @@ async function searchUsers(query: string, isAdmin: boolean = false): Promise<Use
       return [];
     }
 
-    // Now get team information for each user
+    // Récupérer les informations d'équipe de manière optimisée
     const usersWithTeams = await Promise.all(
       data.map(async (user) => {
         let teamName = null;
@@ -68,20 +74,29 @@ async function searchUsers(query: string, isAdmin: boolean = false): Promise<Use
         let teamId = user.team_id;
 
         try {
-          // First check if the user has a direct team_id (for team leaders)
+          // Vérifier d'abord si l'utilisateur a un team_id direct
           if (user.team_id) {
-            const { data: teamData, error: teamError } = await supabase
-              .from('teams')
-              .select('name, logo')
-              .eq('id', user.team_id)
-              .single();
+            // Vérifier le cache des équipes
+            if (teamCache.has(user.team_id)) {
+              const cachedTeam = teamCache.get(user.team_id)!;
+              teamName = cachedTeam.name;
+              teamLogo = cachedTeam.logo;
+            } else {
+              const { data: teamData, error: teamError } = await supabase
+                .from('teams')
+                .select('name, logo')
+                .eq('id', user.team_id)
+                .single();
 
-            if (!teamError && teamData) {
-              teamName = teamData.name;
-              teamLogo = teamData.logo;
+              if (!teamError && teamData) {
+                teamName = teamData.name;
+                teamLogo = teamData.logo;
+                // Mettre en cache
+                teamCache.set(user.team_id, { name: teamData.name, logo: teamData.logo });
+              }
             }
           } else {
-            // If no direct team_id, check if the user is a team member
+            // Vérifier si l'utilisateur est membre d'une équipe
             const { data: memberData, error: memberError } = await supabase
               .from('team_members')
               .select(`
@@ -100,6 +115,11 @@ async function searchUsers(query: string, isAdmin: boolean = false): Promise<Use
               teamId = memberData.team_id;
               teamName = memberData.teams.name;
               teamLogo = memberData.teams.logo;
+              // Mettre en cache
+              teamCache.set(memberData.team_id, { 
+                name: memberData.teams.name, 
+                logo: memberData.teams.logo 
+              });
             }
           }
         } catch (error) {
@@ -116,27 +136,36 @@ async function searchUsers(query: string, isAdmin: boolean = false): Promise<Use
     );
 
     return usersWithTeams;
-  } catch (error) {
-    console.error('Erreur lors de la recherche d\'utilisateurs:', error);
-    return [];
-  }
+  }, CACHE_DURATIONS.SHORT); // Cache de 5 minutes pour les recherches
 }
 
 export const useUserSearch = (searchQuery: string) => {
   const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // Vérifier si l'utilisateur est admin
+  // Vérifier le statut admin avec cache
   useEffect(() => {
     const checkAdminStatus = async () => {
       if (user) {
+        const cacheKey = `adminStatus_${user.id}`;
+        const cachedStatus = getStorageWithExpiry(cacheKey);
+        
+        if (cachedStatus !== null) {
+          setIsAdmin(cachedStatus);
+          return;
+        }
+
         const { data: profileData } = await supabase
           .from('profiles')
           .select('Admin')
           .eq('id', user.id)
           .single();
         
-        setIsAdmin(profileData?.Admin === true);
+        const adminStatus = profileData?.Admin === true;
+        setIsAdmin(adminStatus);
+        
+        // Cache le statut admin pour 1 heure
+        setStorageWithExpiry(cacheKey, adminStatus, 60 * 60 * 1000);
       } else {
         setIsAdmin(false);
       }
@@ -145,7 +174,13 @@ export const useUserSearch = (searchQuery: string) => {
     checkAdminStatus();
   }, [user]);
 
-  // Utilisez useQuery pour mettre en cache et optimiser la recherche
+  // Débouncer la requête de recherche
+  const debouncedSearchQuery = useMemo(() => {
+    const timer = setTimeout(() => searchQuery, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Utiliser React Query avec cache optimisé
   const {
     data: users = [],
     isLoading,
@@ -153,19 +188,11 @@ export const useUserSearch = (searchQuery: string) => {
   } = useQuery({
     queryKey: ['userSearch', searchQuery, isAdmin],
     queryFn: () => searchUsers(searchQuery, isAdmin),
-    enabled: true, // Permettre la recherche même sans caractères minimum
-    staleTime: 30000, // Cache valide pendant 30 secondes
+    enabled: searchQuery.length >= 0, // Permettre la recherche vide
+    staleTime: CACHE_DURATIONS.SHORT, // 5 minutes
+    gcTime: CACHE_DURATIONS.MEDIUM, // 30 minutes
     refetchOnWindowFocus: false,
   });
-
-  // Déclencher la recherche lorsque la requête change, mais avec un délai
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      refetch();
-    }, 300);
-
-    return () => clearTimeout(handler);
-  }, [searchQuery, refetch]);
 
   return {
     users,

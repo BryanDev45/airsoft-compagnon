@@ -9,17 +9,17 @@ import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 /**
- * Main hook for user profile data that composes all other hooks
+ * Hook principal optimisé pour les données de profil utilisateur
  */
 export const useUserProfileData = (username: string | undefined) => {
   const queryClient = useQueryClient();
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const cacheKey = `userProfile_${username || 'current'}`;
   
-  // Try to load data from cache first for instant rendering
+  // Charger immédiatement depuis le cache pour un rendu instantané
   const cachedUserProfile = getStorageWithExpiry(cacheKey);
   
-  // Use individual hooks
+  // Utiliser les hooks individuels avec optimisations
   const {
     loading: profileLoading,
     userData,
@@ -32,12 +32,23 @@ export const useUserProfileData = (username: string | undefined) => {
     setUserStats
   } = useUserProfileFetch(username);
   
-  const { equipment } = useUserEquipment(userData?.id);
-  const { userBadges } = useUserBadges(userData?.id);
-  const { userGames } = useUserGamesFetch(userData?.id);
+  // Charger les données secondaires seulement si on a l'ID utilisateur
+  const { equipment } = useUserEquipment(userData?.id, { enabled: !!userData?.id });
+  const { userBadges } = useUserBadges(userData?.id, { enabled: !!userData?.id });
+  const { userGames } = useUserGamesFetch(userData?.id, { enabled: !!userData?.id });
   const { updateLocation, updateUserStats, fetchProfileData } = useUserProfileUtils();
 
-  // Store complete profile data in cache whenever it updates
+  // Pré-remplir les données depuis le cache si disponible
+  useEffect(() => {
+    if (cachedUserProfile && isInitialLoading && !userData) {
+      console.log('Loading user profile from cache');
+      setUserData(cachedUserProfile.userData);
+      setProfileData(cachedUserProfile.profileData);
+      setUserStats(cachedUserProfile.userStats);
+    }
+  }, [cachedUserProfile, isInitialLoading, userData, setUserData, setProfileData, setUserStats]);
+
+  // Stocker les données complètes en cache quand elles sont mises à jour
   useEffect(() => {
     if (!profileLoading && userData && profileData) {
       const completeProfileData = {
@@ -49,30 +60,16 @@ export const useUserProfileData = (username: string | undefined) => {
         lastUpdated: new Date().toISOString()
       };
       
-      // Update cache
-      setStorageWithExpiry(cacheKey, completeProfileData, CACHE_DURATIONS.MEDIUM);
+      // Mettre à jour le cache avec une durée plus longue pour les profils
+      setStorageWithExpiry(cacheKey, completeProfileData, CACHE_DURATIONS.LONG);
       
-      // Also update React Query cache
+      // Mettre à jour aussi le cache React Query
       queryClient.setQueryData(['userProfile', username || 'current'], completeProfileData);
       
-      // Initial loading is complete
       setIsInitialLoading(false);
     }
   }, [profileLoading, userData, profileData, userStats, currentUserId, isCurrentUserAdmin, username, queryClient, cacheKey]);
   
-  // Pre-populate state from cache for instant rendering if available
-  useEffect(() => {
-    if (cachedUserProfile && isInitialLoading) {
-      setUserData(cachedUserProfile.userData);
-      setProfileData(cachedUserProfile.profileData);
-      setUserStats(cachedUserProfile.userStats);
-      
-      // Still mark as initially loading until fresh data comes in
-      // This allows us to show cached content immediately while waiting for fresh data
-    }
-  }, [cachedUserProfile, isInitialLoading]);
-  
-  // Determine if everything is loaded
   const loading = isInitialLoading && profileLoading;
 
   return {
