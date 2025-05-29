@@ -104,13 +104,15 @@ const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
     // Mettre à jour les coordonnées en arrière-plan si nécessaire
     if (coordinates.latitude !== game.latitude || coordinates.longitude !== game.longitude) {
       // Ne pas attendre cette mise à jour pour ne pas ralentir l'affichage
-      supabase
+      const updatePromise = supabase
         .from('airsoft_games')
         .update({
           latitude: coordinates.latitude,
           longitude: coordinates.longitude
         })
-        .eq('id', game.id)
+        .eq('id', game.id);
+      
+      updatePromise
         .then(() => console.log(`Updated coordinates for game ${game.id}`))
         .catch(error => console.error('Failed to update coordinates:', error));
     }
@@ -165,13 +167,15 @@ const fetchStoresData = async (): Promise<MapStore[]> => {
     
     // Mettre à jour les coordonnées en arrière-plan si nécessaire
     if (coordinates.latitude !== store.latitude || coordinates.longitude !== store.longitude) {
-      supabase
+      const updatePromise = supabase
         .from('stores')
         .update({
           latitude: coordinates.latitude,
           longitude: coordinates.longitude
         })
-        .eq('id', store.id)
+        .eq('id', store.id);
+      
+      updatePromise
         .then(() => console.log(`Updated coordinates for store ${store.id}`))
         .catch(error => console.error('Failed to update store coordinates:', error));
     }

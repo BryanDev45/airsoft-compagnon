@@ -33,9 +33,9 @@ export const useUserProfileData = (username: string | undefined) => {
   } = useUserProfileFetch(username);
   
   // Charger les données secondaires seulement si on a l'ID utilisateur
-  const { equipment } = useUserEquipment(userData?.id, { enabled: !!userData?.id });
-  const { userBadges } = useUserBadges(userData?.id, { enabled: !!userData?.id });
-  const { userGames } = useUserGamesFetch(userData?.id, { enabled: !!userData?.id });
+  const { equipment } = useUserEquipment(userData?.id);
+  const { userBadges } = useUserBadges(userData?.id);
+  const { userGames } = useUserGamesFetch(userData?.id);
   const { updateLocation, updateUserStats, fetchProfileData } = useUserProfileUtils();
 
   // Pré-remplir les données depuis le cache si disponible
