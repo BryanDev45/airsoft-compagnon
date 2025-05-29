@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { useMapData } from '@/hooks/useMapData';
+import { useStores } from '@/hooks/useStores';
 import { useMapFiltering } from '@/hooks/useMapFiltering';
 import { useMapLocation } from '@/hooks/useMapLocation';
 import MapComponent from './map/MapComponent';
@@ -14,7 +15,8 @@ import { Button } from './ui/button';
 const MapSection: React.FC = () => {
   // Ajout de l'état d'authentification pour améliorer l'expérience utilisateur
   const { user } = useAuth();
-  const { loading, events, error } = useMapData();
+  const { loading: eventsLoading, events, error: eventsError } = useMapData();
+  const { stores, loading: storesLoading } = useStores();
   
   const {
     searchQuery,
@@ -36,6 +38,9 @@ const MapSection: React.FC = () => {
 
   const { getCurrentPosition } = useMapLocation(searchQuery, setSearchCenter);
   
+  const loading = eventsLoading || storesLoading;
+  const error = eventsError;
+  
   // Fonction pour recharger les données
   const handleRetry = () => {
     window.location.reload();
@@ -51,6 +56,7 @@ const MapSection: React.FC = () => {
             <SearchFiltersSidebar
               loading={loading}
               filteredEventsCount={filteredEvents.length}
+              stores={stores}
               filterState={{
                 searchQuery,
                 selectedType,
@@ -91,12 +97,17 @@ const MapSection: React.FC = () => {
                     </Button>
                   </div>
                 </div>
-              ) : filteredEvents.length > 0 ? (
-                <MapComponent searchCenter={searchCenter} searchRadius={searchRadius[0]} filteredEvents={filteredEvents} />
+              ) : filteredEvents.length > 0 || stores.length > 0 ? (
+                <MapComponent 
+                  searchCenter={searchCenter} 
+                  searchRadius={searchRadius[0]} 
+                  filteredEvents={filteredEvents}
+                  stores={stores}
+                />
               ) : (
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center">
-                    <p className="text-gray-500">Aucune partie trouvée correspondant à vos critères</p>
+                    <p className="text-gray-500">Aucune partie ou magasin trouvé correspondant à vos critères</p>
                   </div>
                 </div>
               )}
@@ -104,7 +115,13 @@ const MapSection: React.FC = () => {
           </div>
         </div>
         
-        <MapResultsDisplay loading={loading} error={error} filteredEvents={filteredEvents} handleRetry={handleRetry} />
+        <MapResultsDisplay 
+          loading={loading} 
+          error={error} 
+          filteredEvents={filteredEvents} 
+          stores={stores}
+          handleRetry={handleRetry} 
+        />
       </div>
     </div>
   );

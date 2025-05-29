@@ -14,19 +14,26 @@ import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import Circle from 'ol/geom/Circle';
 import Overlay from 'ol/Overlay';
 import MapMarker from './MapMarker';
-import { MapEvent } from '@/hooks/useMapData';
+import { MapEvent, MapStore } from '@/hooks/useMapData';
 
 interface MapComponentProps {
   searchCenter: [number, number];
   searchRadius: number;
   filteredEvents: MapEvent[];
+  stores?: MapStore[];
 }
 
-const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius, filteredEvents }) => {
+const MapComponent: React.FC<MapComponentProps> = ({ 
+  searchCenter, 
+  searchRadius, 
+  filteredEvents, 
+  stores = [] 
+}) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const map = useRef<Map | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [selectedStore, setSelectedStore] = useState<any>(null);
   const popupRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<Overlay | null>(null);
   const [view, setView] = useState<View | null>(null);
@@ -44,15 +51,17 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
       }
     });
 
-    // Create event markers with custom style
-    const features = filteredEvents.map(event => {
-      // Make sure we're using the correct coordinates for the game - ensure they are numbers
+    const features = [];
+
+    // Create event markers
+    filteredEvents.forEach(event => {
       const lat = parseFloat(String(event.lat)) || 0;
       const lng = parseFloat(String(event.lng)) || 0;
       
       const feature = new Feature({
         geometry: new Point(fromLonLat([lng, lat])),
         event: event,
+        type: 'event'
       });
 
       feature.setStyle(new Style({
@@ -68,7 +77,34 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
         })
       }));
 
-      return feature;
+      features.push(feature);
+    });
+
+    // Create store markers
+    stores.forEach(store => {
+      const lat = parseFloat(String(store.lat)) || 0;
+      const lng = parseFloat(String(store.lng)) || 0;
+      
+      const feature = new Feature({
+        geometry: new Point(fromLonLat([lng, lat])),
+        store: store,
+        type: 'store'
+      });
+
+      feature.setStyle(new Style({
+        image: new CircleStyle({
+          radius: 8,
+          fill: new Fill({
+            color: '#10b981'
+          }),
+          stroke: new Stroke({
+            color: '#ffffff',
+            width: 3
+          })
+        })
+      }));
+
+      features.push(feature);
     });
 
     // Create search radius circle
@@ -125,14 +161,23 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
     map.current.on('click', (event) => {
       const feature = map.current?.forEachFeatureAtPixel(event.pixel, (feature) => feature);
       
-      if (feature && feature.get('event')) {
+      if (feature) {
         const coordinates = (feature.getGeometry() as Point).getCoordinates();
-        const event = feature.get('event');
         
-        setSelectedEvent(event);
-        overlayRef.current?.setPosition(coordinates);
+        if (feature.get('event')) {
+          const event = feature.get('event');
+          setSelectedEvent(event);
+          setSelectedStore(null);
+          overlayRef.current?.setPosition(coordinates);
+        } else if (feature.get('store')) {
+          const store = feature.get('store');
+          setSelectedStore(store);
+          setSelectedEvent(null);
+          overlayRef.current?.setPosition(coordinates);
+        }
       } else {
         setSelectedEvent(null);
+        setSelectedStore(null);
         overlayRef.current?.setPosition(undefined);
       }
     });
@@ -146,7 +191,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
       map.current?.setTarget(undefined);
       map.current = null;
     };
-  }, [searchCenter, searchRadius, filteredEvents]);
+  }, [searchCenter, searchRadius, filteredEvents, stores]);
 
   // Update view when center changes
   useEffect(() => {
@@ -176,6 +221,40 @@ const MapComponent: React.FC<MapComponentProps> = ({ searchCenter, searchRadius,
               overlayRef.current?.setPosition(undefined);
             }}
           />
+        )}
+        {selectedStore && (
+          <div className="bg-white rounded-lg shadow-lg p-4 max-w-sm">
+            <div className="flex justify-between items-start mb-2">
+              <h3 className="font-semibold text-lg">{selectedStore.name}</h3>
+              <button 
+                onClick={() => {
+                  setSelectedStore(null);
+                  overlayRef.current?.setPosition(undefined);
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ×
+              </button>
+            </div>
+            <p className="text-sm text-gray-600 mb-2">{selectedStore.address}</p>
+            <p className="text-sm text-gray-600 mb-2">{selectedStore.zip_code} {selectedStore.city}</p>
+            {selectedStore.phone && (
+              <p className="text-sm text-gray-600 mb-2">📞 {selectedStore.phone}</p>
+            )}
+            {selectedStore.email && (
+              <p className="text-sm text-gray-600 mb-2">✉️ {selectedStore.email}</p>
+            )}
+            {selectedStore.website && (
+              <a 
+                href={selectedStore.website} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-sm text-blue-600 hover:underline"
+              >
+                🌐 Site web
+              </a>
+            )}
+          </div>
         )}
       </div>
     </div>
