@@ -7,10 +7,12 @@ import { MapStore } from './useMapData';
 export const useStores = () => {
   const [stores, setStores] = useState<MapStore[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchStores = async () => {
     try {
       setLoading(true);
+      setError(null);
       const { data, error } = await supabase
         .from('stores')
         .select('*')
@@ -35,9 +37,11 @@ export const useStores = () => {
       setStores(mappedStores);
     } catch (error) {
       console.error('Error fetching stores:', error);
+      const errorMessage = 'Impossible de charger les magasins';
+      setError(errorMessage);
       toast({
         title: "Erreur",
-        description: "Impossible de charger les magasins",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -52,6 +56,7 @@ export const useStores = () => {
   return {
     stores,
     loading,
+    error,
     refetch: fetchStores
   };
 };
