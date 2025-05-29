@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
@@ -103,15 +104,20 @@ const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
     // Mettre à jour les coordonnées en arrière-plan si nécessaire
     if (coordinates.latitude !== game.latitude || coordinates.longitude !== game.longitude) {
       // Ne pas attendre cette mise à jour pour ne pas ralentir l'affichage
-      supabase
-        .from('airsoft_games')
-        .update({
-          latitude: coordinates.latitude,
-          longitude: coordinates.longitude
-        })
-        .eq('id', game.id)
-        .then(() => console.log(`Updated coordinates for game ${game.id}`))
-        .catch(error => console.error('Failed to update coordinates:', error));
+      (async () => {
+        try {
+          await supabase
+            .from('airsoft_games')
+            .update({
+              latitude: coordinates.latitude,
+              longitude: coordinates.longitude
+            })
+            .eq('id', game.id);
+          console.log(`Updated coordinates for game ${game.id}`);
+        } catch (error) {
+          console.error('Failed to update coordinates:', error);
+        }
+      })();
     }
     
     return {
@@ -164,15 +170,20 @@ const fetchStoresData = async (): Promise<MapStore[]> => {
     
     // Mettre à jour les coordonnées en arrière-plan si nécessaire
     if (coordinates.latitude !== store.latitude || coordinates.longitude !== store.longitude) {
-      supabase
-        .from('stores')
-        .update({
-          latitude: coordinates.latitude,
-          longitude: coordinates.longitude
-        })
-        .eq('id', store.id)
-        .then(() => console.log(`Updated coordinates for store ${store.id}`))
-        .catch(error => console.error('Failed to update store coordinates:', error));
+      (async () => {
+        try {
+          await supabase
+            .from('stores')
+            .update({
+              latitude: coordinates.latitude,
+              longitude: coordinates.longitude
+            })
+            .eq('id', store.id);
+          console.log(`Updated coordinates for store ${store.id}`);
+        } catch (error) {
+          console.error('Failed to update store coordinates:', error);
+        }
+      })();
     }
     
     return {
