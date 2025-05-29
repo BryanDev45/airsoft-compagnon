@@ -2,6 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 interface UserResult {
   id: string;
@@ -19,7 +20,7 @@ interface UserResult {
 }
 
 // Fonction de recherche d'utilisateurs
-async function searchUsers(query: string): Promise<UserResult[]> {
+async function searchUsers(query: string, isAdmin: boolean = false): Promise<UserResult[]> {
   try {
     // First, get the basic user profiles
     let queryBuilder = supabase
@@ -36,8 +37,12 @@ async function searchUsers(query: string): Promise<UserResult[]> {
         is_verified,
         team_id
       `)
-      .eq('Ban', false)
       .limit(20);
+    
+    // Si ce n'est pas un admin, exclure les utilisateurs bannis
+    if (!isAdmin) {
+      queryBuilder = queryBuilder.eq('Ban', false);
+    }
     
     // Ajouter le filtre de recherche seulement si une requête est fournie
     if (query && query.length > 0) {
@@ -118,14 +123,36 @@ async function searchUsers(query: string): Promise<UserResult[]> {
 }
 
 export const useUserSearch = (searchQuery: string) => {
+  const { user } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Vérifier si l'utilisateur est admin
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (user) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('Admin')
+          .eq('id', user.id)
+          .single();
+        
+        setIsAdmin(profileData?.Admin === true);
+      } else {
+        setIsAdmin(false);
+      }
+    };
+    
+    checkAdminStatus();
+  }, [user]);
+
   // Utilisez useQuery pour mettre en cache et optimiser la recherche
   const {
     data: users = [],
     isLoading,
     refetch
   } = useQuery({
-    queryKey: ['userSearch', searchQuery],
-    queryFn: () => searchUsers(searchQuery),
+    queryKey: ['userSearch', searchQuery, isAdmin],
+    queryFn: () => searchUsers(searchQuery, isAdmin),
     enabled: true, // Permettre la recherche même sans caractères minimum
     staleTime: 30000, // Cache valide pendant 30 secondes
     refetchOnWindowFocus: false,

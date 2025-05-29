@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Star, UserPlus, UserMinus, MessageSquare, Shield } from "lucide-react";
+import { MapPin, Star, UserPlus, UserMinus, MessageSquare, Shield, Ban } from "lucide-react";
 import { useAuth } from '@/hooks/useAuth';
 
 interface UserResult {
@@ -33,12 +33,16 @@ const UserCard: React.FC<UserCardProps> = ({ userData, friendshipStatus, onFrien
   const { user } = useAuth();
 
   return (
-    <Card className="group overflow-hidden transition-all duration-200 hover:shadow-md border-l-4 border-l-transparent hover:border-l-airsoft-red bg-gradient-to-r from-white to-gray-50/50">
+    <Card className={`group overflow-hidden transition-all duration-200 hover:shadow-md border-l-4 ${
+      userData.Ban 
+        ? 'border-l-red-500 bg-gradient-to-r from-red-50 to-gray-50/50 opacity-75' 
+        : 'border-l-transparent hover:border-l-airsoft-red bg-gradient-to-r from-white to-gray-50/50'
+    }`}>
       <CardContent className="p-0">
         <div className="flex items-center p-4">
           {/* Avatar Section */}
           <div className="relative flex-shrink-0">
-            <Avatar className="h-14 w-14 ring-2 ring-white shadow-sm">
+            <Avatar className={`h-14 w-14 ring-2 ring-white shadow-sm ${userData.Ban ? 'grayscale' : ''}`}>
               {userData.avatar ? (
                 <AvatarImage src={userData.avatar} alt={userData.username} />
               ) : (
@@ -48,8 +52,15 @@ const UserCard: React.FC<UserCardProps> = ({ userData, friendshipStatus, onFrien
               )}
             </Avatar>
             
+            {/* Ban indicator overlay */}
+            {userData.Ban && (
+              <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full border-2 border-white flex items-center justify-center">
+                <Ban className="h-3 w-3 text-white" />
+              </div>
+            )}
+            
             {/* Team logo */}
-            {userData.team_logo && (
+            {userData.team_logo && !userData.Ban && (
               <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-white rounded-full border-2 border-white overflow-hidden">
                 <img 
                   src={userData.team_logo} 
@@ -60,19 +71,30 @@ const UserCard: React.FC<UserCardProps> = ({ userData, friendshipStatus, onFrien
             )}
           </div>
           
-          {/* Info Section - Now with username on the left */}
+          {/* Info Section */}
           <Link 
             to={`/user/${userData.username}`} 
-            className="ml-4 flex-1 min-w-0 group-hover:text-airsoft-red transition-colors duration-200"
+            className={`ml-4 flex-1 min-w-0 transition-colors duration-200 ${
+              userData.Ban ? 'hover:text-red-600' : 'group-hover:text-airsoft-red'
+            }`}
           >
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-gray-900 truncate group-hover:text-airsoft-red transition-colors duration-200">
+              <h3 className={`font-semibold truncate transition-colors duration-200 ${
+                userData.Ban 
+                  ? 'text-red-700 hover:text-red-800' 
+                  : 'text-gray-900 group-hover:text-airsoft-red'
+              }`}>
                 {userData.username}
               </h3>
-              {userData.is_verified && (
+              {userData.Ban && (
+                <Badge variant="destructive" className="text-xs px-2 py-0.5 bg-red-100 text-red-800 border-red-200">
+                  Banni
+                </Badge>
+              )}
+              {userData.is_verified && !userData.Ban && (
                 <Shield className="h-4 w-4 text-blue-500 flex-shrink-0" />
               )}
-              {userData.team_name && (
+              {userData.team_name && !userData.Ban && (
                 <Badge variant="secondary" className="text-xs px-2 py-0.5">
                   {userData.team_name}
                 </Badge>
@@ -95,7 +117,7 @@ const UserCard: React.FC<UserCardProps> = ({ userData, friendshipStatus, onFrien
           </Link>
           
           {/* Action Buttons */}
-          {user && user.id !== userData.id && (
+          {user && user.id !== userData.id && !userData.Ban && (
             <div className="flex gap-2 ml-4 flex-shrink-0">
               <Button 
                 size="sm" 
@@ -137,6 +159,16 @@ const UserCard: React.FC<UserCardProps> = ({ userData, friendshipStatus, onFrien
                   <UserPlus className="h-4 w-4" />
                 </Button>
               )}
+            </div>
+          )}
+
+          {/* Banned user - no action buttons available */}
+          {userData.Ban && (
+            <div className="ml-4 flex-shrink-0">
+              <Badge variant="destructive" className="bg-red-100 text-red-800 border-red-200">
+                <Ban className="h-3 w-3 mr-1" />
+                Utilisateur banni
+              </Badge>
             </div>
           )}
         </div>
