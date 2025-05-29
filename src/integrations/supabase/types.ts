@@ -320,6 +320,42 @@ export type Database = {
         }
         Relationships: []
       }
+      partners: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          logo: string | null
+          name: string
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          logo?: string | null
+          name: string
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          logo?: string | null
+          name?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           Admin: boolean | null
