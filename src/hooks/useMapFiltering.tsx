@@ -7,7 +7,7 @@ export interface FilterState {
   searchQuery: string;
   selectedType: string;
   selectedDepartment: string;
-  selectedDate: string;
+  selectedDate: Date | undefined;
   selectedCountry: string;
   searchRadius: number[];
   searchCenter: [number, number];
@@ -17,7 +17,7 @@ export function useMapFiltering(events: MapEvent[]) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [selectedDepartment, setSelectedDepartment] = useState('all');
-  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedCountry, setSelectedCountry] = useState('france');
   const [searchRadius, setSearchRadius] = useState([0]);
   const [searchCenter, setSearchCenter] = useState<[number, number]>([2.3522, 46.2276]);
@@ -47,12 +47,12 @@ export function useMapFiltering(events: MapEvent[]) {
                         (selectedType === 'operation' && event.type === 'operation');
     const matchesDepartment = selectedDepartment === 'all' || event.department === selectedDepartment;
     
-    // Fix the date matching logic
+    // Fix the date matching logic to work with Date objects
     let matchesDate = true;
     if (selectedDate) {
-      // Compare only the date part (YYYY-MM-DD) without time
+      const selectedDateStr = selectedDate.toISOString().split('T')[0]; // Convert to YYYY-MM-DD
       const eventDateStr = event.date.split('/').reverse().join('-'); // Convert DD/MM/YYYY to YYYY-MM-DD
-      matchesDate = eventDateStr === selectedDate;
+      matchesDate = eventDateStr === selectedDateStr;
     }
     
     const matchesCountry = selectedCountry === 'all' || event.country === selectedCountry;

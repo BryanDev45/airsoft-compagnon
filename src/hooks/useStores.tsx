@@ -2,29 +2,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-
-export interface Store {
-  id: string;
-  name: string;
-  address: string;
-  zip_code: string;
-  city: string;
-  phone?: string;
-  email?: string;
-  website?: string;
-  latitude: number;
-  longitude: number;
-  picture1?: string;
-  picture2?: string;
-  picture3?: string;
-  picture4?: string;
-  picture5?: string;
-  created_at: string;
-  created_by: string;
-}
+import { MapStore } from './useMapData';
 
 export const useStores = () => {
-  const [stores, setStores] = useState<Store[]>([]);
+  const [stores, setStores] = useState<MapStore[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchStores = async () => {
@@ -36,7 +17,22 @@ export const useStores = () => {
         .order('name');
 
       if (error) throw error;
-      setStores(data || []);
+      
+      const mappedStores: MapStore[] = (data || []).map(store => ({
+        id: store.id,
+        name: store.name,
+        address: store.address,
+        city: store.city,
+        zip_code: store.zip_code,
+        phone: store.phone,
+        email: store.email,
+        website: store.website,
+        lat: store.latitude || 0,
+        lng: store.longitude || 0,
+        image: store.picture1 || store.picture2 || store.picture3 || store.picture4 || store.picture5 || "/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png"
+      }));
+      
+      setStores(mappedStores);
     } catch (error) {
       console.error('Error fetching stores:', error);
       toast({
