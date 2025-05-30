@@ -39,8 +39,14 @@ const TeamSearchResults: React.FC<TeamSearchResultsProps> = ({ searchQuery }) =>
     return (
       <div className="text-center py-8">
         <Users className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Aucune équipe trouvée</h3>
-        <p className="text-gray-500">Essayez de modifier vos critères de recherche</p>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">
+          {searchQuery.trim() ? 'Aucune équipe trouvée' : 'Aucune équipe disponible'}
+        </h3>
+        <p className="text-gray-500">
+          {searchQuery.trim() 
+            ? 'Essayez de modifier vos critères de recherche' 
+            : 'Il n\'y a actuellement aucune équipe enregistrée'}
+        </p>
       </div>
     );
   }

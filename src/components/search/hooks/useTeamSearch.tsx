@@ -18,15 +18,11 @@ export const useTeamSearch = (searchQuery: string) => {
   return useQuery({
     queryKey: ['teams', searchQuery],
     queryFn: async (): Promise<Team[]> => {
-      if (!searchQuery.trim()) {
-        return [];
-      }
-
       let query = supabase
         .from('teams')
         .select('*');
 
-      // Search by name or location
+      // If there's a search query, filter by name or location
       if (searchQuery.trim()) {
         query = query.or(`name.ilike.%${searchQuery}%,location.ilike.%${searchQuery}%`);
       }
@@ -40,6 +36,7 @@ export const useTeamSearch = (searchQuery: string) => {
 
       return data || [];
     },
-    enabled: searchQuery.trim().length > 0,
+    // Always enable the query now, even with empty search
+    enabled: true,
   });
 };
