@@ -5,7 +5,6 @@ import { UserPlus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { useTeamPermissions } from '@/hooks/useTeamPermissions';
 
 interface TeamInviteButtonProps {
   targetUserId: string;
@@ -20,26 +19,21 @@ const TeamInviteButton: React.FC<TeamInviteButtonProps> = ({
   const [isInviting, setIsInviting] = useState(false);
   const [hasInvited, setHasInvited] = useState(false);
   const [userTeam, setUserTeam] = useState<any>(null);
-  const [userTeamId, setUserTeamId] = useState<string | null>(null);
-  
-  // Utiliser les permissions d'équipe
-  const permissions = useTeamPermissions(userTeamId);
+  const [canInvite, setCanInvite] = useState(false);
 
   useEffect(() => {
     const checkInvitationStatus = async () => {
       if (!user || !targetUserId) return;
 
       try {
-        // Vérifier si l'utilisateur a une équipe et est leader ou admin
+        // Vérifier si l'utilisateur a une équipe et est leader
         const { data: profileData } = await supabase
           .from('profiles')
           .select('team_id, is_team_leader')
           .eq('id', user.id)
           .single();
 
-        if (profileData?.team_id) {
-          setUserTeamId(profileData.team_id);
-          
+        if (profileData?.team_id && profileData?.is_team_leader) {
           // Récupérer les informations de l'équipe
           const { data: teamData } = await supabase
             .from('teams')
@@ -48,6 +42,7 @@ const TeamInviteButton: React.FC<TeamInviteButtonProps> = ({
             .single();
 
           setUserTeam(teamData);
+          setCanInvite(true);
 
           // Vérifier si une invitation a déjà été envoyée
           const { data: invitationData } = await supabase
@@ -72,17 +67,7 @@ const TeamInviteButton: React.FC<TeamInviteButtonProps> = ({
     if (!user || !userTeam) {
       toast({
         title: "Erreur",
-        description: "Vous devez être membre d'une équipe pour inviter des joueurs",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Vérifier les permissions
-    if (!permissions.canInviteMembers) {
-      toast({
-        title: "Permission refusée",
-        description: "Vous n'avez pas les permissions nécessaires pour inviter des joueurs dans l'équipe",
+        description: "Vous devez être leader d'une équipe pour inviter des joueurs",
         variant: "destructive"
       });
       return;
@@ -135,8 +120,8 @@ const TeamInviteButton: React.FC<TeamInviteButtonProps> = ({
     }
   };
 
-  // Ne pas afficher le bouton si l'utilisateur ne peut pas inviter ou n'a pas d'équipe
-  if (!user || !permissions.canInviteMembers || user.id === targetUserId || !userTeam) return null;
+  // Ne pas afficher le bouton si l'utilisateur ne peut pas inviter
+  if (!user || !canInvite || user.id === targetUserId) return null;
 
   if (hasInvited) {
     return (
@@ -151,7 +136,7 @@ const TeamInviteButton: React.FC<TeamInviteButtonProps> = ({
       size="sm"
       variant="outline"
       onClick={handleInviteToTeam}
-      disabled={isInviting || permissions.loading}
+      disabled={isInviting}
       className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300"
     >
       <UserPlus className="h-4 w-4 mr-1" />

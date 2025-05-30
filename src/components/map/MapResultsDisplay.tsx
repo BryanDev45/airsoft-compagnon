@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MapEvent, MapStore } from '@/hooks/useMapData';
-import EventImageCarousel from './EventImageCarousel';
 
 interface MapResultsDisplayProps {
   loading: boolean;
@@ -70,50 +69,50 @@ const MapResultsDisplay: React.FC<MapResultsDisplayProps> = ({
         <div>
           <h3 className="text-xl font-semibold mb-4">Parties d'airsoft ({filteredEvents.length})</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredEvents.map((event) => {
-              // Collecter toutes les images disponibles
-              const images = [
-                event.image,
-                event.Picture2,
-                event.Picture3,
-                event.Picture4,
-                event.Picture5
-              ].filter(Boolean);
-
-              return (
-                <Card key={event.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  <EventImageCarousel images={images} title={event.title} />
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg line-clamp-2">{event.title}</CardTitle>
-                    <CardDescription className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4" />
-                      {event.location} ({event.department})
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
+            {filteredEvents.map((event) => (
+              <Card key={event.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <div className="relative h-48">
+                  <img
+                    src={event.image || "/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png"}
+                    alt={event.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute top-2 right-2">
+                    <Badge variant="secondary" className="bg-white/90 text-gray-700">
+                      {event.type}
+                    </Badge>
+                  </div>
+                </div>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg line-clamp-2">{event.title}</CardTitle>
+                  <CardDescription className="flex items-center gap-1">
+                    <MapPin className="h-4 w-4" />
+                    {event.location} ({event.department})
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Calendar className="h-4 w-4" />
+                    {event.date}
+                  </div>
+                  {event.maxPlayers && (
                     <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Calendar className="h-4 w-4" />
-                      {event.date}
+                      <Users className="h-4 w-4" />
+                      Max {event.maxPlayers} joueurs
                     </div>
-                    {event.maxPlayers && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Users className="h-4 w-4" />
-                        Max {event.maxPlayers} joueurs
-                      </div>
-                    )}
-                    {event.price !== undefined && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Euro className="h-4 w-4" />
-                        {event.price}€
-                      </div>
-                    )}
-                    <Button className="w-full mt-4 bg-airsoft-red hover:bg-red-700" asChild>
-                      <a href={`/game/${event.id}`}>Voir les détails</a>
-                    </Button>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                  )}
+                  {event.price !== undefined && (
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Euro className="h-4 w-4" />
+                      {event.price}€
+                    </div>
+                  )}
+                  <Button className="w-full mt-4 bg-airsoft-red hover:bg-red-700" asChild>
+                    <a href={`/game/${event.id}`}>Voir les détails</a>
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       )}

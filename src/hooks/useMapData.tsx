@@ -21,10 +21,6 @@ export interface MapEvent {
   maxPlayers?: number;
   price?: number;
   image?: string;
-  Picture2?: string;
-  Picture3?: string;
-  Picture4?: string;
-  Picture5?: string;
 }
 
 export interface MapStore {
@@ -95,20 +91,17 @@ const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
     
     const gameImage = game.Picture1 || game.Picture2 || game.Picture3 || game.Picture4 || game.Picture5 || "/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png";
     
-    // Déterminer le pays en fonction du code postal ou utiliser France par défaut
-    const country = determineCountryFromZipCode(game.zip_code) || 'France';
-    
     const coordinates = await getValidCoordinates(
       game.latitude,
       game.longitude,
       game.address,
       game.zip_code,
-      game.city,
-      country
+      game.city
     );
     
     // Mettre à jour les coordonnées en arrière-plan si nécessaire
     if (coordinates.latitude !== game.latitude || coordinates.longitude !== game.longitude) {
+      // Ne pas attendre cette mise à jour pour ne pas ralentir l'affichage
       (async () => {
         try {
           await supabase
@@ -132,16 +125,12 @@ const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
       location: game.city,
       department: game.zip_code?.substring(0, 2) || "",
       type: game.game_type || "woodland",
-      country: country,
+      country: "france",
       lat: coordinates.latitude,
       lng: coordinates.longitude,
       maxPlayers: game.max_players,
       price: game.price,
-      image: gameImage,
-      Picture2: game.Picture2,
-      Picture3: game.Picture3,
-      Picture4: game.Picture4,
-      Picture5: game.Picture5
+      image: gameImage
     };
   }) || []);
   
@@ -162,16 +151,12 @@ const fetchStoresData = async (): Promise<MapStore[]> => {
   const formattedStores = await Promise.all(data?.map(async (store) => {
     const storeImage = store.picture1 || store.picture2 || store.picture3 || store.picture4 || store.picture5 || "/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png";
     
-    // Déterminer le pays en fonction du code postal ou de la ville
-    const country = determineCountryFromZipCode(store.zip_code) || determineCountryFromCity(store.city) || 'France';
-    
     const coordinates = await getValidCoordinates(
       store.latitude,
       store.longitude,
       store.address,
       store.zip_code,
-      store.city,
-      country
+      store.city
     );
     
     // Mettre à jour les coordonnées en arrière-plan si nécessaire
@@ -215,82 +200,6 @@ const fetchStoresData = async (): Promise<MapStore[]> => {
   setStorageWithExpiry(STORES_CACHE_KEY, formattedStores, CACHE_DURATIONS.MEDIUM);
   
   return formattedStores;
-};
-
-// Fonction pour déterminer le pays en fonction du code postal
-const determineCountryFromZipCode = (zipCode: string): string | null => {
-  if (!zipCode) return null;
-  
-  const zip = zipCode.trim();
-  
-  // Codes postaux français (5 chiffres)
-  if (/^\d{5}$/.test(zip)) {
-    return 'France';
-  }
-  
-  // Codes postaux allemands (5 chiffres)
-  if (/^\d{5}$/.test(zip)) {
-    const num = parseInt(zip);
-    if (num >= 1000 && num <= 99999) {
-      return 'Germany';
-    }
-  }
-  
-  // Codes postaux taiwanais (3 ou 5 chiffres)
-  if (/^\d{3}(\d{2})?$/.test(zip)) {
-    const num = parseInt(zip.substring(0, 3));
-    if (num >= 100 && num <= 999) {
-      return 'Taiwan';
-    }
-  }
-  
-  // Codes postaux espagnols (5 chiffres)
-  if (/^\d{5}$/.test(zip)) {
-    const num = parseInt(zip);
-    if (num >= 1000 && num <= 52999) {
-      return 'Spain';
-    }
-  }
-  
-  // Codes postaux italiens (5 chiffres)
-  if (/^\d{5}$/.test(zip)) {
-    const num = parseInt(zip);
-    if (num >= 10000 && num <= 98999) {
-      return 'Italy';
-    }
-  }
-  
-  // Codes postaux britanniques
-  if (/^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i.test(zip)) {
-    return 'United Kingdom';
-  }
-  
-  // Codes postaux canadiens
-  if (/^[A-Z]\d[A-Z]\s?\d[A-Z]\d$/i.test(zip)) {
-    return 'Canada';
-  }
-  
-  // Codes postaux américains
-  if (/^\d{5}(-\d{4})?$/.test(zip)) {
-    return 'USA';
-  }
-  
-  return null;
-};
-
-// Fonction pour déterminer le pays en fonction de la ville
-const determineCountryFromCity = (city: string): string | null => {
-  if (!city) return null;
-  
-  const lowerCity = city.toLowerCase();
-  
-  // Villes taiwanaises connues
-  const taiwaneseCities = ['taipei', 'kaohsiung', 'taichung', 'tainan', 'taoyuan'];
-  if (taiwaneseCities.some(tc => lowerCity.includes(tc))) {
-    return 'Taiwan';
-  }
-  
-  return null;
 };
 
 export function useMapData() {
