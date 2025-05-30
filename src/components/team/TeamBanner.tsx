@@ -1,15 +1,12 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, MapPin, Calendar, Users } from 'lucide-react';
 import TeamSettings from './TeamSettings';
-
 interface TeamBannerProps {
   team: any;
   isTeamMember?: boolean;
   onTeamUpdate?: (updatedTeam: any) => void;
 }
-
 const TeamBanner = ({
   team,
   isTeamMember = false,
@@ -30,7 +27,7 @@ const TeamBanner = ({
         
         <div className="flex items-center gap-6">
           <div className="relative">
-            <img src={team.logo} alt={team.name} className="w-24 h-24 rounded-full border-4 border-white object-cover" />
+            <img src={team.logo} alt={team.name} className="w-24 h-24 rounded-full border-4 border-red object-cover" />
           </div>
           <div>
             <h1 className="text-3xl font-bold text-white">{team.name}</h1>
@@ -54,5 +51,4 @@ const TeamBanner = ({
       </div>
     </div>;
 };
-
 export default TeamBanner;
