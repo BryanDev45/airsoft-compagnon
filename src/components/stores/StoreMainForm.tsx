@@ -5,6 +5,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/comp
 import { Input } from '@/components/ui/input';
 import StoreLocationSection from './StoreLocationSection';
 import StoreContactSection from './StoreContactSection';
+import StoreTypeSelector from './StoreTypeSelector';
 
 interface StoreFormData {
   name: string;
@@ -14,6 +15,7 @@ interface StoreFormData {
   phone: string;
   email: string;
   website: string;
+  storeType: string;
 }
 
 interface StoreMainFormProps {
@@ -44,6 +46,8 @@ export default function StoreMainForm({
           </FormItem>
         )}
       />
+
+      <StoreTypeSelector form={form} />
 
       <StoreLocationSection
         form={form}

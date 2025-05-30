@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -27,6 +26,7 @@ interface StoreFormData {
   phone: string;
   email: string;
   website: string;
+  storeType: string;
 }
 
 const AddStoreDialog: React.FC<AddStoreDialogProps> = ({ 
@@ -51,7 +51,8 @@ const AddStoreDialog: React.FC<AddStoreDialogProps> = ({
       zipCode: '',
       phone: '',
       email: '',
-      website: ''
+      website: '',
+      storeType: 'physical'
     }
   });
 
@@ -65,7 +66,8 @@ const AddStoreDialog: React.FC<AddStoreDialogProps> = ({
         zipCode: editStore.zip_code || '',
         phone: editStore.phone || '',
         email: editStore.email || '',
-        website: editStore.website || ''
+        website: editStore.website || '',
+        storeType: editStore.store_type || 'physical'
       });
       
       if (editStore.lat && editStore.lng) {
@@ -80,7 +82,8 @@ const AddStoreDialog: React.FC<AddStoreDialogProps> = ({
         zipCode: '',
         phone: '',
         email: '',
-        website: ''
+        website: '',
+        storeType: 'physical'
       });
       setCoordinates(null);
     }
@@ -200,6 +203,7 @@ const AddStoreDialog: React.FC<AddStoreDialogProps> = ({
         phone: data.phone || null,
         email: data.email || null,
         website: data.website || null,
+        store_type: data.storeType,
         picture1: finalImageUrls[0] || null,
         picture2: finalImageUrls[1] || null,
         picture3: finalImageUrls[2] || null,

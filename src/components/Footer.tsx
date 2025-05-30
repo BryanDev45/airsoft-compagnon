@@ -3,32 +3,33 @@ import { Link } from 'react-router-dom';
 import { Download, Instagram, Facebook } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { supabase } from '@/integrations/supabase/client';
+
 const Footer = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   useEffect(() => {
     const checkAuth = async () => {
-      const {
-        data
-      } = await supabase.auth.getSession();
+      const { data } = await supabase.auth.getSession();
       setIsAuthenticated(!!data.session);
     };
+
     checkAuth();
-    const {
-      data: {
-        subscription
-      }
-    } = supabase.auth.onAuthStateChange(event => {
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN') {
         setIsAuthenticated(true);
       } else if (event === 'SIGNED_OUT') {
         setIsAuthenticated(false);
       }
     });
+
     return () => {
       subscription.unsubscribe();
     };
   }, []);
-  return <footer className="bg-airsoft-dark text-white">
+
+  return (
+    <footer className="bg-airsoft-dark text-white">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           <div className="flex flex-col items-center md:items-start">
@@ -57,14 +58,19 @@ const Footer = () => {
               <Link to="/toolbox" className="text-gray-400 hover:text-white transition-colors">ToolBox</Link>
               <Link to="/partners" className="text-gray-400 hover:text-white transition-colors">Nos partenaires</Link>
               <Link to="/faq" className="text-gray-400 hover:text-white transition-colors">FAQ</Link>
+              <Link to="/contact" className="text-gray-400 hover:text-white transition-colors">Contact</Link>
               
-              {isAuthenticated ? <>
+              {isAuthenticated ? (
+                <>
                   <Link to="/profile" className="text-gray-400 hover:text-white transition-colors">Mon profil</Link>
                   <Link to="/teams" className="text-gray-400 hover:text-white transition-colors">Mon équipe</Link>
-                </> : <>
+                </>
+              ) : (
+                <>
                   <Link to="/login" className="text-gray-400 hover:text-white transition-colors">Se connecter</Link>
                   <Link to="/register" className="text-gray-400 hover:text-white transition-colors">S'inscrire</Link>
-                </>}
+                </>
+              )}
             </div>
           </div>
           
@@ -91,6 +97,8 @@ const Footer = () => {
           </div>
         </div>
       </div>
-    </footer>;
+    </footer>
+  );
 };
+
 export default Footer;

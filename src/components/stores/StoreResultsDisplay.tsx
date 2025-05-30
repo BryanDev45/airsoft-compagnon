@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { AlertCircle, MapPin, Phone, Mail, Globe } from 'lucide-react';
+import { AlertCircle, MapPin, Phone, Mail, Globe, Store, Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -53,6 +52,30 @@ const StoreResultsDisplay: React.FC<StoreResultsDisplayProps> = ({
 
   const handleEmailClick = (email: string) => {
     window.open(`mailto:${email}`);
+  };
+
+  const getStoreTypeLabel = (storeType: string) => {
+    switch (storeType) {
+      case 'physical':
+        return 'Magasin physique';
+      case 'online':
+        return 'Magasin en ligne';
+      case 'both':
+        return 'Physique et en ligne';
+      default:
+        return 'Magasin physique';
+    }
+  };
+
+  const getStoreTypeIcon = (storeType: string) => {
+    switch (storeType) {
+      case 'online':
+        return <Monitor className="h-4 w-4" />;
+      case 'both':
+        return <Store className="h-4 w-4" />;
+      default:
+        return <Store className="h-4 w-4" />;
+    }
   };
 
   if (loading) {
@@ -116,8 +139,9 @@ const StoreResultsDisplay: React.FC<StoreResultsDisplayProps> = ({
                       title={store.name}
                     />
                     <div className="absolute top-2 right-2 flex gap-2">
-                      <Badge variant="secondary" className="bg-emerald-500 text-white">
-                        Magasin
+                      <Badge variant="secondary" className="bg-emerald-500 text-white flex items-center gap-1">
+                        {getStoreTypeIcon(store.store_type)}
+                        {getStoreTypeLabel(store.store_type)}
                       </Badge>
                       {isAdmin && (
                         <StoreAdminActions 
