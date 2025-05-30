@@ -40,9 +40,7 @@ const FAQ = () => {
             </AccordionItem>
             
             <AccordionItem value="item-3">
-              <AccordionTrigger className="text-lg font-medium">
-                Est-ce que Airsoft Compagnon est gratuit ?
-              </AccordionTrigger>
+              <AccordionTrigger className="text-lg font-medium">Est-ce que Airsoft Companion est gratuit ?</AccordionTrigger>
               <AccordionContent className="text-gray-600">
                 Oui ! Airsoft Compagnon est entièrement gratuit pour les utilisateurs cherchant des parties et pour 
                 les organisateurs créant des événements de base. Nous proposons également des fonctionnalités premium 
@@ -51,9 +49,7 @@ const FAQ = () => {
             </AccordionItem>
             
             <AccordionItem value="item-4">
-              <AccordionTrigger className="text-lg font-medium">
-                Comment puis-je créer une partie sur Airsoft Compagnon ?
-              </AccordionTrigger>
+              <AccordionTrigger className="text-lg font-medium">Comment puis-je créer une partie sur Airsoft Companion ?</AccordionTrigger>
               <AccordionContent className="text-gray-600">
                 Pour créer une partie, vous devez d'abord vous inscrire sur la plateforme. Ensuite, 
                 accédez à votre tableau de bord et cliquez sur "Créer une partie". Remplissez les informations 
