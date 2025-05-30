@@ -1,294 +1,223 @@
 
-import React, { useState } from 'react';
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { toast } from '@/components/ui/use-toast';
+import React, { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { useMapLocation } from '@/hooks/useMapLocation';
-import { useImageUpload } from '@/hooks/useImageUpload';
-import { ScrollArea } from "@/components/ui/scroll-area";
-
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { 
-  AlertDialog, 
-  AlertDialogAction, 
-  AlertDialogCancel, 
-  AlertDialogContent, 
-  AlertDialogDescription, 
-  AlertDialogFooter, 
-  AlertDialogHeader, 
-  AlertDialogTitle 
-} from '@/components/ui/alert-dialog';
-
-import StoreForm from './StoreForm';
-
-const formSchema = z.object({
-  name: z.string().min(2, { message: "Le nom doit contenir au moins 2 caractères" }),
-  address: z.string().min(5, { message: "L'adresse doit être complète" }),
-  zipCode: z.string().min(5, { message: "Code postal invalide" }),
-  city: z.string().min(2, { message: "La ville est requise" }),
-  phone: z.string().optional(),
-  email: z.string().email({ message: "Email invalide" }).optional().or(z.literal('')),
-  website: z.string().url({ message: "URL invalide" }).optional().or(z.literal('')),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import { MapStore } from '@/hooks/useMapData';
+import StoreLocationSection from './StoreLocationSection';
+import StoreContactSection from './StoreContactSection';
+import StoreImageUploadSection from './StoreImageUploadSection';
 
 interface AddStoreDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  editStore?: MapStore;
+  onSuccess?: () => void;
 }
 
-export default function AddStoreDialog({ open, onOpenChange }: AddStoreDialogProps) {
+const AddStoreDialog: React.FC<AddStoreDialogProps> = ({ 
+  open, 
+  onOpenChange, 
+  editStore,
+  onSuccess 
+}) => {
   const { user } = useAuth();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [coordinates, setCoordinates] = useState<[number, number] | null>(null);
-  const [isGeocoding, setIsGeocoding] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showImageConfirmDialog, setShowImageConfirmDialog] = useState(false);
-  
-  const { images, preview, handleImageChange, removeImage, clearImages } = useImageUpload(5);
-  
-  const { geocodeLocation } = useMapLocation(searchQuery, (coords) => {
-    setCoordinates(coords);
-    setIsGeocoding(false);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    address: '',
+    city: '',
+    zip_code: '',
+    phone: '',
+    email: '',
+    website: '',
+    picture1: '',
+    picture2: '',
+    picture3: '',
+    picture4: '',
+    picture5: '',
+    latitude: 0,
+    longitude: 0
   });
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      address: "",
-      zipCode: "",
-      city: "",
-      phone: "",
-      email: "",
-      website: ""
-    }
-  });
-
-  const onSubmit = async (data: FormValues) => {
-    if (!user) {
-      toast({
-        title: "Erreur",
-        description: "Vous devez être connecté pour ajouter un magasin",
-        variant: "destructive"
+  // Initialiser le formulaire avec les données du magasin à modifier
+  useEffect(() => {
+    if (editStore) {
+      setFormData({
+        name: editStore.name || '',
+        address: editStore.address || '',
+        city: editStore.city || '',
+        zip_code: editStore.zip_code || '',
+        phone: editStore.phone || '',
+        email: editStore.email || '',
+        website: editStore.website || '',
+        picture1: editStore.image || '',
+        picture2: '',
+        picture3: '',
+        picture4: '',
+        picture5: '',
+        latitude: editStore.lat || 0,
+        longitude: editStore.lng || 0
       });
-      return;
-    }
-
-    if (!coordinates) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de localiser l'adresse. Veuillez vérifier et réessayer",
-        variant: "destructive"
+    } else {
+      // Réinitialiser le formulaire pour un nouveau magasin
+      setFormData({
+        name: '',
+        address: '',
+        city: '',
+        zip_code: '',
+        phone: '',
+        email: '',
+        website: '',
+        picture1: '',
+        picture2: '',
+        picture3: '',
+        picture4: '',
+        picture5: '',
+        latitude: 0,
+        longitude: 0
       });
-      return;
     }
+  }, [editStore, open]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    setLoading(true);
     
-    setIsSubmitting(true);
-
     try {
-      // Insérer d'abord les données du magasin
-      const { data: storeData, error: storeError } = await supabase.from('stores').insert({
-        name: data.name,
-        address: data.address,
-        zip_code: data.zipCode,
-        city: data.city,
-        latitude: coordinates[1],
-        longitude: coordinates[0],
-        phone: data.phone || null,
-        email: data.email || null,
-        website: data.website || null,
-        created_by: user.id
-      }).select('id').single();
+      const storeData = {
+        name: formData.name,
+        address: formData.address,
+        city: formData.city,
+        zip_code: formData.zip_code,
+        phone: formData.phone || null,
+        email: formData.email || null,
+        website: formData.website || null,
+        picture1: formData.picture1 || null,
+        picture2: formData.picture2 || null,
+        picture3: formData.picture3 || null,
+        picture4: formData.picture4 || null,
+        picture5: formData.picture5 || null,
+        latitude: formData.latitude,
+        longitude: formData.longitude,
+      };
 
-      if (storeError) throw storeError;
+      let result;
       
-      // Si des images ont été téléchargées, les enregistrer
-      if (images.length > 0) {
-        const storeId = storeData.id;
-        const imageUrls: Record<string, string> = {};
-        
-        // Télécharger chaque image
-        for (let i = 0; i < Math.min(images.length, 5); i++) {
-          const image = images[i];
-          const fileExt = image.name.split('.').pop();
-          const fileName = `${storeId}_${i + 1}_${Date.now()}.${fileExt}`;
-          
-          // Télécharger l'image dans le bucket Supabase
-          const { error: uploadError, data: uploadData } = await supabase.storage
-            .from('stores')
-            .upload(fileName, image, {
-              cacheControl: '3600',
-              upsert: true
-            });
-          
-          if (uploadError) {
-            console.error(`Erreur lors du téléchargement de l'image ${fileName}:`, uploadError);
-            continue;
-          }
-          
-          // Obtenir l'URL publique de l'image téléchargée
-          const { data: publicUrlData } = supabase.storage
-            .from('stores')
-            .getPublicUrl(fileName);
-          
-          if (publicUrlData) {
-            imageUrls[`picture${i + 1}`] = publicUrlData.publicUrl;
-          }
-        }
-        
-        // Mettre à jour le magasin avec les URLs des images
-        if (Object.keys(imageUrls).length > 0) {
-          const { error: updateError } = await supabase
-            .from('stores')
-            .update(imageUrls)
-            .eq('id', storeId);
-          
-          if (updateError) {
-            console.error("Erreur lors de la mise à jour des URLs d'images:", updateError);
-          }
-        }
+      if (editStore) {
+        // Mode modification
+        result = await supabase
+          .from('stores')
+          .update(storeData)
+          .eq('id', editStore.id);
+      } else {
+        // Mode création
+        result = await supabase
+          .from('stores')
+          .insert({
+            ...storeData,
+            created_by: user.id
+          });
       }
 
+      if (result.error) throw result.error;
+
       toast({
-        title: "Succès",
-        description: "Le magasin a été ajouté avec succès",
+        title: editStore ? "Magasin modifié" : "Magasin ajouté",
+        description: editStore 
+          ? "Le magasin a été modifié avec succès." 
+          : "Le magasin a été ajouté avec succès."
       });
 
-      // Réinitialiser le formulaire et fermer la boîte de dialogue
-      form.reset();
-      setCoordinates(null);
-      clearImages();
       onOpenChange(false);
-    } catch (error: any) {
+      if (onSuccess) onSuccess();
+      
+    } catch (error) {
+      console.error('Erreur:', error);
       toast({
         title: "Erreur",
-        description: error.message || "Une erreur est survenue lors de l'ajout du magasin",
+        description: editStore 
+          ? "Impossible de modifier le magasin." 
+          : "Impossible d'ajouter le magasin.",
         variant: "destructive"
       });
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
-  };
-
-  const handleAddressChange = async () => {
-    const address = form.getValues('address');
-    const zipCode = form.getValues('zipCode');
-    const city = form.getValues('city');
-    
-    if (address && zipCode && city) {
-      setIsGeocoding(true);
-      const fullAddress = `${address}, ${zipCode} ${city}`;
-      setSearchQuery(fullAddress);
-      
-      // Géocodage direct pour une réponse plus rapide
-      const coords = await geocodeLocation(fullAddress);
-      if (coords) {
-        setCoordinates(coords);
-      }
-      setIsGeocoding(false);
-    }
-  };
-  
-  const handleDialogClose = (open: boolean) => {
-    if (!open && (form.formState.isDirty || images.length > 0)) {
-      setShowImageConfirmDialog(true);
-      return;
-    }
-    
-    onOpenChange(open);
-  };
-  
-  const confirmClose = () => {
-    form.reset();
-    clearImages();
-    setShowImageConfirmDialog(false);
-    onOpenChange(false);
   };
 
   return (
-    <>
-      <Dialog open={open} onOpenChange={handleDialogClose}>
-        <DialogContent className="sm:max-w-[600px] max-h-[85vh] flex flex-col overflow-hidden rounded-lg border-neutral-200 shadow-lg">
-          <DialogHeader className="pb-4 border-b border-neutral-200">
-            <DialogTitle className="text-xl font-semibold text-neutral-800">Ajouter un magasin</DialogTitle>
-            <DialogDescription className="text-neutral-600">
-              Saisissez les informations du magasin. Tous les champs marqués * sont obligatoires.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="flex-grow overflow-hidden my-2">
-            <ScrollArea className="h-[calc(60vh-80px)] pr-4">
-              <div className="px-1 pb-4">
-                <StoreForm 
-                  form={form}
-                  isGeocoding={isGeocoding}
-                  coordinates={coordinates}
-                  handleAddressChange={handleAddressChange}
-                  handleImageChange={handleImageChange}
-                  removeImage={removeImage}
-                  images={images}
-                  preview={preview}
-                  onSubmit={onSubmit}
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>
+            {editStore ? 'Modifier le magasin' : 'Ajouter un nouveau magasin'}
+          </DialogTitle>
+        </DialogHeader>
+        
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="name">Nom du magasin *</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  required
                 />
               </div>
-            </ScrollArea>
+
+              <StoreLocationSection
+                formData={formData}
+                setFormData={setFormData}
+              />
+
+              <StoreContactSection
+                formData={formData}
+                setFormData={setFormData}
+              />
+            </div>
+
+            <div>
+              <StoreImageUploadSection
+                formData={formData}
+                setFormData={setFormData}
+              />
+            </div>
           </div>
 
-          <DialogFooter className="pt-4 border-t border-neutral-200 bg-neutral-50 rounded-b-lg">
+          <div className="flex justify-end gap-2 pt-4 border-t">
             <Button 
               type="button" 
-              variant="outline"
-              className="border-neutral-300 hover:bg-neutral-100"
-              onClick={() => handleDialogClose(false)}
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              disabled={loading}
             >
               Annuler
             </Button>
             <Button 
-              onClick={form.handleSubmit(onSubmit)}
-              disabled={isSubmitting || isGeocoding || !coordinates}
-              className="bg-airsoft-red hover:bg-red-700 text-white"
+              type="submit" 
+              disabled={loading}
+              className="bg-airsoft-red hover:bg-red-700"
             >
-              {isSubmitting ? 'Ajout en cours...' : 'Ajouter le magasin'}
+              {loading 
+                ? (editStore ? 'Modification...' : 'Ajout...') 
+                : (editStore ? 'Modifier' : 'Ajouter')
+              }
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Dialogue de confirmation pour quitter sans sauvegarder */}
-      <AlertDialog open={showImageConfirmDialog} onOpenChange={setShowImageConfirmDialog}>
-        <AlertDialogContent className="rounded-lg border-neutral-200 shadow-lg">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-lg font-semibold text-neutral-800">Annuler les modifications ?</AlertDialogTitle>
-            <AlertDialogDescription className="text-neutral-600">
-              Toutes les informations saisies et images téléchargées seront perdues. Êtes-vous sûr de vouloir quitter ?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="pt-4 border-t border-neutral-200">
-            <AlertDialogCancel className="border-neutral-300 hover:bg-neutral-100" onClick={() => setShowImageConfirmDialog(false)}>
-              Continuer la saisie
-            </AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmClose} 
-              className="bg-airsoft-red hover:bg-red-700 text-white"
-            >
-              Quitter sans sauvegarder
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
-}
+};
+
+export default AddStoreDialog;
