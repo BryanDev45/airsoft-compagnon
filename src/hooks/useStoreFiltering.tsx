@@ -12,9 +12,12 @@ export interface StoreFilterState {
 
 export function useStoreFiltering(stores: MapStore[]) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [selectedCountry, setSelectedCountry] = useState('france');
   const [searchRadius, setSearchRadius] = useState([0]);
   const [searchCenter, setSearchCenter] = useState<[number, number]>([2.3522, 46.2276]);
+  const [isMapView, setIsMapView] = useState(true);
+  const [selectedStore, setSelectedStore] = useState<MapStore | null>(null);
 
   const countryCoordinates: Record<string, [number, number]> = {
     france: [2.3522, 46.2276],
@@ -59,12 +62,18 @@ export function useStoreFiltering(stores: MapStore[]) {
   return {
     searchQuery,
     setSearchQuery,
+    selectedDepartment,
+    setSelectedDepartment,
     selectedCountry,
     setSelectedCountry,
     searchRadius,
     setSearchRadius,
     searchCenter,
     setSearchCenter,
+    isMapView,
+    setIsMapView,
+    selectedStore,
+    setSelectedStore,
     filteredStores,
     countryCoordinates
   };

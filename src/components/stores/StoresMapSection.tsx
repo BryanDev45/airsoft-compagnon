@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import LocationMap from '../map/LocationMap';
+import StoresMap from './StoresMap';
 import StoreFiltersSidebar from './StoreFiltersSidebar';
 import StoreResultsDisplay from './StoreResultsDisplay';
 import { useStores } from '@/hooks/useStores';
@@ -100,10 +100,8 @@ const StoresMapSection = () => {
         <Card className="overflow-hidden">
           {isMapView ? (
             <div className="h-[600px]">
-              <LocationMap
-                events={[]}
+              <StoresMap
                 stores={filteredStores}
-                onEventSelect={() => {}}
                 onStoreSelect={setSelectedStore}
                 selectedStore={selectedStore}
                 isAdmin={isAdmin}
