@@ -27,7 +27,7 @@ const TeamBanner = ({
         
         <div className="flex items-center gap-6">
           <div className="relative">
-            <img src={team.logo} alt={team.name} className="w-24 h-24 rounded-full border-4 border-red object-cover" />
+            <img src={team.logo} alt={team.name} className="w-24 h-24 rounded-full border-3 border-red object-cover" />
           </div>
           <div>
             <h1 className="text-3xl font-bold text-white">{team.name}</h1>
