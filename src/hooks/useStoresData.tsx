@@ -55,6 +55,7 @@ export const fetchStoresData = async (): Promise<MapStore[]> => {
       website: store.website,
       lat: coordinates.latitude,
       lng: coordinates.longitude,
+      store_type: store.store_type || 'physical',
       image: storeImage,
       picture2: store.picture2,
       picture3: store.picture3,

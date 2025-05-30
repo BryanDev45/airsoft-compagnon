@@ -33,6 +33,7 @@ export interface MapStore {
   website?: string;
   lat: number;
   lng: number;
+  store_type: string;
   image?: string;
   picture2?: string;
   picture3?: string;
