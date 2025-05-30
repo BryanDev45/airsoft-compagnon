@@ -1,104 +1,125 @@
 
 import React from 'react';
-import { MapPin, Search, Filter, Map, List } from 'lucide-react';
+import { MapPin, Search, Filter, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Toggle } from '@/components/ui/toggle';
+import { Slider } from '@/components/ui/slider';
+import { cn } from '@/lib/utils';
+
+interface StoreFilterState {
+  searchQuery: string;
+  selectedCountry: string;
+  searchRadius: number[];
+  searchCenter: [number, number];
+}
 
 interface StoreFiltersSidebarProps {
-  searchQuery: string;
-  onSearchChange: (query: string) => void;
-  selectedDepartment: string;
-  onDepartmentChange: (department: string) => void;
-  isMapView: boolean;
-  onViewToggle: (isMap: boolean) => void;
-  storeCount: number;
+  loading: boolean;
+  filteredStoresCount: number;
+  filterState: StoreFilterState;
+  setSearchQuery: (query: string) => void;
+  setSelectedCountry: (country: string) => void;
+  setSearchRadius: (radius: number[]) => void;
+  getCurrentPosition: () => void;
 }
 
 const StoreFiltersSidebar: React.FC<StoreFiltersSidebarProps> = ({
-  searchQuery,
-  onSearchChange,
-  selectedDepartment,
-  onDepartmentChange,
-  isMapView,
-  onViewToggle,
-  storeCount
+  loading,
+  filteredStoresCount,
+  filterState,
+  setSearchQuery,
+  setSelectedCountry,
+  setSearchRadius,
+  getCurrentPosition
 }) => {
+  const {
+    searchQuery,
+    selectedCountry,
+    searchRadius
+  } = filterState;
+
   return (
-    <div className="p-6 space-y-6">
+    <div className="w-full md:w-1/4 bg-gray-800 p-6 border-r border-gray-700">
       <div className="flex items-center gap-2 mb-6">
         <Filter className="h-5 w-5 text-airsoft-red" />
-        <h2 className="text-xl font-semibold">Filtres</h2>
+        <h2 className="text-xl font-semibold text-white">Filtres de recherche</h2>
       </div>
 
-      {/* Recherche */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Recherche
-        </label>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            type="text"
-            placeholder="Nom, ville, adresse..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-9"
+      <div className="space-y-6">
+        {/* Recherche par lieu */}
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            Lieu
+          </label>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="Nom, ville, adresse..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 bg-gray-700 border-gray-600 text-white placeholder:text-gray-400"
+            />
+          </div>
+          <Button
+            onClick={getCurrentPosition}
+            variant="outline"
+            className="w-full mt-2 text-sm bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
+            size="sm"
+          >
+            <MapPin className="h-4 w-4 mr-1" />
+            Ma position
+          </Button>
+        </div>
+
+        {/* Pays */}
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            Pays
+          </label>
+          <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+            <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+              <SelectValue placeholder="Tous les pays" />
+            </SelectTrigger>
+            <SelectContent className="bg-gray-700 border-gray-600">
+              <SelectItem value="all">Tous les pays</SelectItem>
+              <SelectItem value="france">France</SelectItem>
+              <SelectItem value="belgique">Belgique</SelectItem>
+              <SelectItem value="suisse">Suisse</SelectItem>
+              <SelectItem value="luxembourg">Luxembourg</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Rayon de recherche */}
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            Rayon de recherche: {searchRadius[0]} km
+          </label>
+          <Slider
+            value={searchRadius}
+            onValueChange={setSearchRadius}
+            max={200}
+            min={5}
+            step={5}
+            className="w-full"
           />
         </div>
-      </div>
 
-      {/* Département */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Département
-        </label>
-        <Select value={selectedDepartment} onValueChange={onDepartmentChange}>
-          <SelectTrigger>
-            <SelectValue placeholder="Tous les départements" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tous les départements</SelectItem>
-            <SelectItem value="75">Paris (75)</SelectItem>
-            <SelectItem value="69">Rhône (69)</SelectItem>
-            <SelectItem value="13">Bouches-du-Rhône (13)</SelectItem>
-            <SelectItem value="31">Haute-Garonne (31)</SelectItem>
-            <SelectItem value="59">Nord (59)</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Toggle vue */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Mode d'affichage
-        </label>
-        <div className="flex gap-2">
-          <Toggle 
-            pressed={isMapView} 
-            onPressedChange={onViewToggle}
-            className="flex-1"
-          >
-            <Map className="h-4 w-4 mr-1" />
-            Carte
-          </Toggle>
-          <Toggle 
-            pressed={!isMapView} 
-            onPressedChange={(pressed) => onViewToggle(!pressed)}
-            className="flex-1"
-          >
-            <List className="h-4 w-4 mr-1" />
-            Liste
-          </Toggle>
+        {/* Résultats */}
+        <div className="pt-4 border-t border-gray-600">
+          <div className="text-sm text-gray-300">
+            {loading ? (
+              <div className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Recherche en cours...
+              </div>
+            ) : (
+              <p className="font-medium">{filteredStoresCount} magasins trouvés</p>
+            )}
+          </div>
         </div>
-      </div>
-
-      {/* Résultats */}
-      <div className="pt-4 border-t">
-        <p className="text-sm text-gray-600 font-medium">
-          {storeCount} magasin{storeCount > 1 ? 's' : ''} trouvé{storeCount > 1 ? 's' : ''}
-        </p>
       </div>
     </div>
   );
