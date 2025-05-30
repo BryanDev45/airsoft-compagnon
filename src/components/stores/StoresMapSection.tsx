@@ -1,105 +1,132 @@
 
-import React from 'react';
-import { useStores } from '@/hooks/useStores';
-import { useStoreFiltering } from '@/hooks/useStoreFiltering';
-import { useMapLocation } from '@/hooks/useMapLocation';
-import MapComponent from '../map/MapComponent';
+import React, { useState } from 'react';
+import { Card } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import LocationMap from '../map/LocationMap';
 import StoreFiltersSidebar from './StoreFiltersSidebar';
 import StoreResultsDisplay from './StoreResultsDisplay';
-import { AlertCircle } from 'lucide-react';
-import { Button } from '../ui/button';
+import { useStores } from '@/hooks/useStores';
+import { useStoreFiltering } from '@/hooks/useStoreFiltering';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useEffect } from 'react';
+import AddStoreDialog from './AddStoreDialog';
 
-const StoresMapSection: React.FC = () => {
-  const { stores, loading: storesLoading, error: storesError } = useStores();
-  
+const StoresMapSection = () => {
+  const { stores, loading, error, refetch } = useStores();
+  const { user } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [editStore, setEditStore] = useState(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
   const {
+    filteredStores,
     searchQuery,
     setSearchQuery,
-    selectedCountry,
-    setSelectedCountry,
-    searchRadius,
-    setSearchRadius,
-    searchCenter,
-    setSearchCenter,
-    filteredStores
+    selectedDepartment,
+    setSelectedDepartment,
+    isMapView,
+    setIsMapView,
+    selectedStore,
+    setSelectedStore
   } = useStoreFiltering(stores);
 
-  const { getCurrentPosition } = useMapLocation(searchQuery, setSearchCenter);
-  
-  const loading = storesLoading;
-  const error = storesError;
-  
-  const handleRetry = () => {
-    window.location.reload();
-  };
-  
-  return (
-    <div className="py-12 md:py-0">
-      <div className="max-w-7xl mx-auto px-4 py-[30px]">
-        <div className="bg-white rounded-lg overflow-hidden shadow-xl mb-8 border border-gray-200">
-          <div className="flex flex-col md:flex-row h-full">
-            <StoreFiltersSidebar
-              loading={loading}
-              filteredStoresCount={filteredStores.length}
-              filterState={{
-                searchQuery,
-                selectedCountry,
-                searchRadius,
-                searchCenter
-              }}
-              setSearchQuery={setSearchQuery}
-              setSelectedCountry={setSelectedCountry}
-              setSearchRadius={setSearchRadius}
-              getCurrentPosition={getCurrentPosition}
-            />
-            
-            <div className="w-full md:w-3/4 h-[600px] relative">
-              {loading ? (
-                <div className="flex items-center justify-center h-full">
-                  <div className="text-center">
-                    <div className="h-12 w-12 border-4 border-airsoft-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-gray-500">Chargement de la carte...</p>
-                  </div>
-                </div>
-              ) : error ? (
-                <div className="flex items-center justify-center h-full flex-col">
-                  <div className="text-center">
-                    <AlertCircle className="h-12 w-12 text-airsoft-red mx-auto mb-4" />
-                    <p className="text-gray-700 mb-3 font-semibold">Impossible de charger les magasins</p>
-                    <p className="text-gray-500 mb-6">Veuillez vérifier votre connexion internet et réessayer</p>
-                    <Button 
-                      className="bg-airsoft-red hover:bg-red-700"
-                      onClick={handleRetry}
-                    >
-                      Réessayer
-                    </Button>
-                  </div>
-                </div>
-              ) : filteredStores.length > 0 ? (
-                <MapComponent 
-                  searchCenter={searchCenter} 
-                  searchRadius={searchRadius[0]} 
-                  filteredEvents={[]}
-                  stores={filteredStores}
-                />
-              ) : (
-                <div className="flex items-center justify-center h-full">
-                  <div className="text-center">
-                    <p className="text-gray-500">Aucun magasin trouvé correspondant à vos critères</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+  // Vérifier si l'utilisateur est admin
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (user) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('Admin')
+          .eq('id', user.id)
+          .single();
         
-        <StoreResultsDisplay 
-          loading={loading} 
-          error={error} 
-          filteredStores={filteredStores}
-          handleRetry={handleRetry} 
-        />
+        setIsAdmin(profileData?.Admin === true);
+      } else {
+        setIsAdmin(false);
+      }
+    };
+    
+    checkAdminStatus();
+  }, [user]);
+
+  const handleEditStore = (store: any) => {
+    setEditStore(store);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleStoreSuccess = () => {
+    console.log('Store operation successful, refetching stores...');
+    refetch();
+    setIsEditDialogOpen(false);
+    setEditStore(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-lg">Chargement des magasins...</div>
       </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-lg text-red-600">Erreur lors du chargement des magasins</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      {/* Sidebar des filtres */}
+      <div className="lg:col-span-1">
+        <Card className="h-fit">
+          <StoreFiltersSidebar
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            selectedDepartment={selectedDepartment}
+            onDepartmentChange={setSelectedDepartment}
+            isMapView={isMapView}
+            onViewToggle={setIsMapView}
+            storeCount={filteredStores.length}
+          />
+        </Card>
+      </div>
+
+      {/* Contenu principal */}
+      <div className="lg:col-span-3">
+        <Card className="overflow-hidden">
+          {isMapView ? (
+            <div className="h-[600px]">
+              <LocationMap
+                events={[]}
+                stores={filteredStores}
+                onEventSelect={() => {}}
+                onStoreSelect={setSelectedStore}
+                selectedStore={selectedStore}
+                isAdmin={isAdmin}
+                onEditStore={handleEditStore}
+              />
+            </div>
+          ) : (
+            <StoreResultsDisplay
+              stores={filteredStores}
+              isAdmin={isAdmin}
+              onEditStore={handleEditStore}
+            />
+          )}
+        </Card>
+      </div>
+
+      {/* Dialog d'édition de magasin */}
+      <AddStoreDialog 
+        open={isEditDialogOpen} 
+        onOpenChange={setIsEditDialogOpen}
+        editStore={editStore}
+        onSuccess={handleStoreSuccess}
+      />
     </div>
   );
 };
