@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { MapStore } from '@/hooks/useMapData';
 import { useForm } from 'react-hook-form';
 import StoreMainForm from './StoreMainForm';
 import StoreImageManager from './StoreImageManager';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface AddStoreDialogProps {
   open: boolean;
@@ -34,6 +36,7 @@ const AddStoreDialog: React.FC<AddStoreDialogProps> = ({
   onSuccess 
 }) => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<File[]>([]);
   const [preview, setPreview] = useState<string[]>([]);
@@ -223,6 +226,10 @@ const AddStoreDialog: React.FC<AddStoreDialogProps> = ({
       }
 
       if (result.error) throw result.error;
+
+      // Invalider le cache des stores pour forcer un reload
+      queryClient.invalidateQueries({ queryKey: ['stores'] });
+      queryClient.invalidateQueries({ queryKey: ['mapStores'] });
 
       toast({
         title: editStore ? "Magasin modifié" : "Magasin ajouté",

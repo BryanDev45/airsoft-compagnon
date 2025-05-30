@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { getValidCoordinates } from '@/utils/geocodingUtils';
 import { getStorageWithExpiry, setStorageWithExpiry, CACHE_DURATIONS } from '@/utils/cacheUtils';
+import { useLocation } from 'react-router-dom';
 
 export interface MapEvent {
   id: string;
@@ -46,13 +47,6 @@ const STORES_CACHE_KEY = 'map_stores_data';
 const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
   const cacheKey = `${GAMES_CACHE_KEY}_${userId || 'anonymous'}`;
   
-  // Vérifier le cache d'abord
-  const cachedGames = getStorageWithExpiry(cacheKey);
-  if (cachedGames) {
-    console.log('Using cached games data');
-    return cachedGames;
-  }
-
   const today = new Date().toISOString().split('T')[0];
   
   let query = supabase
@@ -147,13 +141,6 @@ const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
 };
 
 const fetchStoresData = async (): Promise<MapStore[]> => {
-  // Vérifier le cache d'abord
-  const cachedStores = getStorageWithExpiry(STORES_CACHE_KEY);
-  if (cachedStores) {
-    console.log('Using cached stores data');
-    return cachedStores;
-  }
-
   const { data, error } = await supabase
     .from('stores')
     .select('*')
@@ -218,6 +205,7 @@ const fetchStoresData = async (): Promise<MapStore[]> => {
 export function useMapData() {
   const { toast } = useToast();
   const { user } = useAuth();
+  const location = useLocation();
 
   // Utiliser React Query pour les événements
   const { 
@@ -270,6 +258,14 @@ export function useMapData() {
       }
     }
   });
+
+  // Refetch data when navigating to /parties page
+  useEffect(() => {
+    if (location.pathname === '/parties') {
+      refetchEvents();
+      refetchStores();
+    }
+  }, [location.pathname, refetchEvents, refetchStores]);
 
   const loading = eventsLoading || storesLoading;
   const error = eventsError || storesError;

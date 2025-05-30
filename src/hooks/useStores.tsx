@@ -5,17 +5,11 @@ import { toast } from '@/components/ui/use-toast';
 import { MapStore } from './useMapData';
 import { getStorageWithExpiry, setStorageWithExpiry, CACHE_DURATIONS } from '@/utils/cacheUtils';
 import { useQuery } from '@tanstack/react-query';
+import { useLocation } from 'react-router-dom';
 
 const STORES_CACHE_KEY = 'stores_data';
 
 const fetchStoresData = async (): Promise<MapStore[]> => {
-  // Vérifier d'abord le cache local
-  const cachedStores = getStorageWithExpiry(STORES_CACHE_KEY);
-  if (cachedStores) {
-    console.log('Using cached stores data');
-    return cachedStores;
-  }
-
   const { data, error } = await supabase
     .from('stores')
     .select('*')
@@ -48,6 +42,8 @@ const fetchStoresData = async (): Promise<MapStore[]> => {
 };
 
 export const useStores = () => {
+  const location = useLocation();
+
   const {
     data: stores = [],
     isLoading: loading,
@@ -72,6 +68,13 @@ export const useStores = () => {
       }
     }
   });
+
+  // Refetch data when navigating to /parties page
+  useEffect(() => {
+    if (location.pathname === '/parties') {
+      refetch();
+    }
+  }, [location.pathname, refetch]);
 
   const error = queryError ? 'Impossible de charger les magasins' : null;
 
