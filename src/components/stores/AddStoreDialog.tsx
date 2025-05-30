@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -72,9 +73,17 @@ const AddStoreDialog: React.FC<AddStoreDialogProps> = ({
         setCoordinates([editStore.lat, editStore.lng]);
       }
       
-      // Handle existing image
-      if (editStore.image) {
-        setPreview([editStore.image]);
+      // Handle existing images - collect all available images
+      const existingImages = [
+        editStore.image,
+        editStore.picture2,
+        editStore.picture3,
+        editStore.picture4,
+        editStore.picture5
+      ].filter(Boolean);
+      
+      if (existingImages.length > 0) {
+        setPreview(existingImages);
       }
     } else {
       // Reset form for new store
@@ -98,10 +107,12 @@ const AddStoreDialog: React.FC<AddStoreDialogProps> = ({
     const newImages = [...images, ...files].slice(0, 5);
     setImages(newImages);
 
-    // Create preview URLs
-    const newPreviews = newImages.map(file => {
-      if (typeof file === 'string') return file;
-      return URL.createObjectURL(file);
+    // Create preview URLs for new files
+    const newPreviews = [...preview];
+    files.forEach(file => {
+      if (newPreviews.length < 5) {
+        newPreviews.push(URL.createObjectURL(file));
+      }
     });
     setPreview(newPreviews);
   };
@@ -135,35 +146,73 @@ const AddStoreDialog: React.FC<AddStoreDialogProps> = ({
     }
   };
 
+  const uploadImage = async (file: File, index: number): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `stores/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('stores')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('stores')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error(`Error uploading image ${index + 1}:`, error);
+      return null;
+    }
+  };
+
   const onSubmit = async (data: StoreFormData) => {
     if (!user) return;
 
     setLoading(true);
     
     try {
-      let imageUrl = '';
+      // Upload all new images
+      const imageUrls: (string | null)[] = [];
       
-      // Upload first image if exists
-      if (images.length > 0 && images[0] instanceof File) {
-        const file = images[0];
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
-        const filePath = `stores/${fileName}`;
+      for (let i = 0; i < Math.min(images.length, 5); i++) {
+        if (images[i] instanceof File) {
+          const url = await uploadImage(images[i], i);
+          imageUrls.push(url);
+        }
+      }
 
-        const { error: uploadError } = await supabase.storage
-          .from('stores')
-          .upload(filePath, file);
+      // For edit mode, preserve existing images that weren't replaced
+      let finalImageUrls: (string | null)[] = [];
+      
+      if (editStore) {
+        const existingImages = [
+          editStore.image,
+          editStore.picture2,
+          editStore.picture3,
+          editStore.picture4,
+          editStore.picture5
+        ];
+        
+        // Start with existing images
+        finalImageUrls = [...existingImages];
+        
+        // Replace with new uploaded images
+        imageUrls.forEach((url, index) => {
+          if (url) {
+            finalImageUrls[index] = url;
+          }
+        });
+      } else {
+        finalImageUrls = imageUrls;
+      }
 
-        if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('stores')
-          .getPublicUrl(filePath);
-
-        imageUrl = publicUrl;
-      } else if (preview.length > 0 && typeof preview[0] === 'string') {
-        // Keep existing image URL for edit mode
-        imageUrl = preview[0];
+      // Ensure we have exactly 5 slots (fill missing with null)
+      while (finalImageUrls.length < 5) {
+        finalImageUrls.push(null);
       }
 
       const storeData = {
@@ -174,11 +223,11 @@ const AddStoreDialog: React.FC<AddStoreDialogProps> = ({
         phone: data.phone || null,
         email: data.email || null,
         website: data.website || null,
-        picture1: imageUrl || null,
-        picture2: null,
-        picture3: null,
-        picture4: null,
-        picture5: null,
+        picture1: finalImageUrls[0] || null,
+        picture2: finalImageUrls[1] || null,
+        picture3: finalImageUrls[2] || null,
+        picture4: finalImageUrls[3] || null,
+        picture5: finalImageUrls[4] || null,
         latitude: coordinates?.[0] || 0,
         longitude: coordinates?.[1] || 0,
       };

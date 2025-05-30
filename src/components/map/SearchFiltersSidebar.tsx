@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { MapPin, Search, Filter, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -156,16 +157,16 @@ const SearchFiltersSidebar: React.FC<SearchFiltersSidebarProps> = ({
   } = filterState;
 
   return (
-    <div className="w-full md:w-1/4 bg-gray-50 p-6 border-r border-gray-200">
+    <div className="w-full md:w-1/4 bg-gray-800 p-6 border-r border-gray-700">
       <div className="flex items-center gap-2 mb-6">
         <Filter className="h-5 w-5 text-airsoft-red" />
-        <h2 className="text-xl font-semibold">Filtres de recherche</h2>
+        <h2 className="text-xl font-semibold text-white">Filtres de recherche</h2>
       </div>
 
       <div className="space-y-6">
         {/* Recherche par lieu */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             Lieu
           </label>
           <div className="relative">
@@ -175,13 +176,13 @@ const SearchFiltersSidebar: React.FC<SearchFiltersSidebarProps> = ({
               placeholder="Ville, département..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
+              className="pl-9 bg-gray-700 border-gray-600 text-white placeholder:text-gray-400"
             />
           </div>
           <Button
             onClick={getCurrentPosition}
             variant="outline"
-            className="w-full mt-2 text-sm"
+            className="w-full mt-2 text-sm bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
             size="sm"
           >
             <MapPin className="h-4 w-4 mr-1" />
@@ -191,14 +192,14 @@ const SearchFiltersSidebar: React.FC<SearchFiltersSidebarProps> = ({
 
         {/* Type d'événement */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             Type
           </label>
           <Select value={selectedType} onValueChange={setSelectedType}>
-            <SelectTrigger>
+            <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
               <SelectValue placeholder="Tous les types" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-gray-700 border-gray-600">
               <SelectItem value="all">Tous les types</SelectItem>
               <SelectItem value="dominicale">Parties dominicales</SelectItem>
               <SelectItem value="operation">Opérations</SelectItem>
@@ -208,14 +209,14 @@ const SearchFiltersSidebar: React.FC<SearchFiltersSidebarProps> = ({
 
         {/* Département */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             Département
           </label>
           <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
-            <SelectTrigger>
+            <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
               <SelectValue placeholder="Tous les départements" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-gray-700 border-gray-600">
               <SelectItem value="all">Tous les départements</SelectItem>
               {departments.map((dept) => (
                 <SelectItem key={dept.value} value={dept.value}>
@@ -228,7 +229,7 @@ const SearchFiltersSidebar: React.FC<SearchFiltersSidebarProps> = ({
 
         {/* Date */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             Date
           </label>
           <Popover>
@@ -236,8 +237,8 @@ const SearchFiltersSidebar: React.FC<SearchFiltersSidebarProps> = ({
               <Button
                 variant="outline"
                 className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !selectedDate && "text-muted-foreground"
+                  "w-full justify-start text-left font-normal bg-gray-700 border-gray-600 text-white hover:bg-gray-600",
+                  !selectedDate && "text-gray-400"
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
@@ -248,13 +249,14 @@ const SearchFiltersSidebar: React.FC<SearchFiltersSidebarProps> = ({
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
+            <PopoverContent className="w-auto p-0 bg-gray-700 border-gray-600">
               <Calendar
                 mode="single"
                 selected={selectedDate}
                 onSelect={setSelectedDate}
                 initialFocus
                 locale={fr}
+                className="bg-gray-700 text-white"
               />
             </PopoverContent>
           </Popover>
@@ -262,14 +264,14 @@ const SearchFiltersSidebar: React.FC<SearchFiltersSidebarProps> = ({
 
         {/* Pays */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             Pays
           </label>
           <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-            <SelectTrigger>
+            <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
               <SelectValue placeholder="Tous les pays" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-gray-700 border-gray-600">
               <SelectItem value="all">Tous les pays</SelectItem>
               <SelectItem value="france">France</SelectItem>
               <SelectItem value="belgique">Belgique</SelectItem>
@@ -281,7 +283,7 @@ const SearchFiltersSidebar: React.FC<SearchFiltersSidebarProps> = ({
 
         {/* Rayon de recherche */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             Rayon de recherche: {searchRadius[0]} km
           </label>
           <Slider
@@ -295,8 +297,8 @@ const SearchFiltersSidebar: React.FC<SearchFiltersSidebarProps> = ({
         </div>
 
         {/* Résultats */}
-        <div className="pt-4 border-t border-gray-200">
-          <div className="text-sm text-gray-600">
+        <div className="pt-4 border-t border-gray-600">
+          <div className="text-sm text-gray-300">
             {loading ? (
               <div className="flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />

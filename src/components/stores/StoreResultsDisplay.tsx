@@ -97,7 +97,10 @@ const StoreResultsDisplay: React.FC<StoreResultsDisplayProps> = ({
             // Récupérer toutes les images du magasin
             const storeImages = [
               store.image,
-              // On peut ajouter d'autres images si elles sont disponibles dans les données
+              store.picture2,
+              store.picture3,
+              store.picture4,
+              store.picture5,
             ].filter(Boolean);
 
             return (

@@ -40,16 +40,16 @@ const StoreFiltersSidebar: React.FC<StoreFiltersSidebarProps> = ({
   } = filterState;
 
   return (
-    <div className="w-full md:w-1/4 bg-gray-50 p-6 border-r border-gray-200">
+    <div className="w-full md:w-1/4 bg-gray-800 p-6 border-r border-gray-700">
       <div className="flex items-center gap-2 mb-6">
         <Filter className="h-5 w-5 text-airsoft-red" />
-        <h2 className="text-xl font-semibold">Filtres de recherche</h2>
+        <h2 className="text-xl font-semibold text-white">Filtres de recherche</h2>
       </div>
 
       <div className="space-y-6">
         {/* Recherche par lieu */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             Lieu
           </label>
           <div className="relative">
@@ -59,13 +59,13 @@ const StoreFiltersSidebar: React.FC<StoreFiltersSidebarProps> = ({
               placeholder="Nom, ville, adresse..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
+              className="pl-9 bg-gray-700 border-gray-600 text-white placeholder:text-gray-400"
             />
           </div>
           <Button
             onClick={getCurrentPosition}
             variant="outline"
-            className="w-full mt-2 text-sm"
+            className="w-full mt-2 text-sm bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
             size="sm"
           >
             <MapPin className="h-4 w-4 mr-1" />
@@ -75,14 +75,14 @@ const StoreFiltersSidebar: React.FC<StoreFiltersSidebarProps> = ({
 
         {/* Pays */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             Pays
           </label>
           <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-            <SelectTrigger>
+            <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
               <SelectValue placeholder="Tous les pays" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-gray-700 border-gray-600">
               <SelectItem value="all">Tous les pays</SelectItem>
               <SelectItem value="france">France</SelectItem>
               <SelectItem value="belgique">Belgique</SelectItem>
@@ -94,7 +94,7 @@ const StoreFiltersSidebar: React.FC<StoreFiltersSidebarProps> = ({
 
         {/* Rayon de recherche */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             Rayon de recherche: {searchRadius[0]} km
           </label>
           <Slider
@@ -108,8 +108,8 @@ const StoreFiltersSidebar: React.FC<StoreFiltersSidebarProps> = ({
         </div>
 
         {/* Résultats */}
-        <div className="pt-4 border-t border-gray-200">
-          <div className="text-sm text-gray-600">
+        <div className="pt-4 border-t border-gray-600">
+          <div className="text-sm text-gray-300">
             {loading ? (
               <div className="flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
