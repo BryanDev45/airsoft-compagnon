@@ -56,7 +56,7 @@ const Contact = () => {
                 <h3 className="font-bold text-xl mb-2">Email</h3>
                 <p className="text-gray-600 mb-4">N'hésitez pas à nous écrire</p>
                 <a href="mailto:contact@airsoftcompagnon.fr" className="text-airsoft-red hover:underline font-medium">
-                  contact@airsoftcompagnon.fr
+                  contact@airsoftcompanion.com
                 </a>
               </CardContent>
             </Card>
