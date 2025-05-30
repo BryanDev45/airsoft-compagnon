@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { MapStore } from '@/hooks/useMapData';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import StoreImageCarousel from './StoreImageCarousel';
+import GameImageCarousel from '../map/GameImageCarousel';
 import StoreAdminActions from './StoreAdminActions';
 
 interface StoreResultsDisplayProps {
@@ -106,9 +106,9 @@ const StoreResultsDisplay: React.FC<StoreResultsDisplayProps> = ({
             return (
               <Card key={store.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="relative">
-                  <StoreImageCarousel 
+                  <GameImageCarousel 
                     images={storeImages}
-                    storeName={store.name}
+                    title={store.name}
                   />
                   <div className="absolute top-2 right-2 flex gap-2">
                     <Badge variant="secondary" className="bg-emerald-500 text-white">

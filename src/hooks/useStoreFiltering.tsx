@@ -1,7 +1,9 @@
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { calculateDistance } from '../utils/mapUtils';
 import { MapStore } from './useMapData';
+import { useFilterState } from './filters/useFilterState';
+import { useCountryCoordinates } from './filters/useCountryCoordinates';
 
 export interface StoreFilterState {
   searchQuery: string;
@@ -11,25 +13,22 @@ export interface StoreFilterState {
 }
 
 export function useStoreFiltering(stores: MapStore[]) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCountry, setSelectedCountry] = useState('france');
-  const [searchRadius, setSearchRadius] = useState([0]);
-  const [searchCenter, setSearchCenter] = useState<[number, number]>([2.3522, 46.2276]);
+  const {
+    searchQuery,
+    setSearchQuery,
+    selectedCountry,
+    setSelectedCountry,
+    searchRadius,
+    setSearchRadius,
+    searchCenter,
+    setSearchCenter
+  } = useFilterState();
 
-  const countryCoordinates: Record<string, [number, number]> = {
-    france: [2.3522, 46.2276],
-    belgique: [4.3517, 50.8503],
-    suisse: [8.2275, 46.8182],
-    allemagne: [10.4515, 51.1657],
-    espagne: [-3.7492, 40.4637],
-    italie: [12.5674, 41.8719]
-  };
+  const { countryCoordinates, updateSearchCenterForCountry } = useCountryCoordinates();
 
   // Effect to update search center when country changes
   useEffect(() => {
-    if (selectedCountry !== 'all' && countryCoordinates[selectedCountry]) {
-      setSearchCenter(countryCoordinates[selectedCountry]);
-    }
+    updateSearchCenterForCountry(selectedCountry, setSearchCenter);
   }, [selectedCountry]);
 
   const filteredStores = stores.filter(store => {
