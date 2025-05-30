@@ -6,25 +6,15 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, Users, UserPlus } from "lucide-react";
 import { Link } from 'react-router-dom';
 import TeamApplicationButton from './TeamApplicationButton';
-
-interface Team {
-  id: string;
-  name: string;
-  description?: string;
-  location?: string;
-  member_count?: number;
-  is_recruiting?: boolean;
-  is_association?: boolean;
-  logo?: string;
-  leader_id?: string;
-}
+import { useTeamSearch } from './hooks/useTeamSearch';
 
 interface TeamSearchResultsProps {
-  teams: Team[];
-  isLoading: boolean;
+  searchQuery: string;
 }
 
-const TeamSearchResults: React.FC<TeamSearchResultsProps> = ({ teams, isLoading }) => {
+const TeamSearchResults: React.FC<TeamSearchResultsProps> = ({ searchQuery }) => {
+  const { data: teams = [], isLoading } = useTeamSearch(searchQuery);
+
   if (isLoading) {
     return (
       <div className="space-y-4">
