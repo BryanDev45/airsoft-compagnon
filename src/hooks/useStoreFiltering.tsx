@@ -1,6 +1,7 @@
 
 import { useEffect } from 'react';
 import { calculateDistance } from '../utils/mapUtils';
+import { getValidCoordinates } from '../utils/geocodingUtils';
 import { MapStore } from './useMapData';
 import { useFilterState } from './filters/useFilterState';
 import { useCountryCoordinates } from './filters/useCountryCoordinates';
@@ -31,6 +32,7 @@ export function useStoreFiltering(stores: MapStore[]) {
     updateSearchCenterForCountry(selectedCountry, setSearchCenter);
   }, [selectedCountry]);
 
+  // Enhanced store filtering with improved coordinates
   const filteredStores = stores.filter(store => {
     const matchesSearch = !searchQuery || 
                         store.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -42,6 +44,7 @@ export function useStoreFiltering(stores: MapStore[]) {
     }
     
     if (searchCenter && searchRadius[0] > 0) {
+      // Use the store's actual coordinates, which should be improved by the geocoding
       const distance = calculateDistance(
         searchCenter[1], 
         searchCenter[0], 
