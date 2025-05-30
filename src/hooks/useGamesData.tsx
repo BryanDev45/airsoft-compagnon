@@ -38,6 +38,7 @@ export const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
     .gte('date', today)
     .order('date', { ascending: true });
   
+  // Toujours permettre la visualisation des parties publiques, même sans connexion
   if (!userId) {
     query = query.eq('is_private', false);
   } else {

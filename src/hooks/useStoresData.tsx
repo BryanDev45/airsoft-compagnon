@@ -15,7 +15,7 @@ export const fetchStoresData = async (): Promise<MapStore[]> => {
 
   if (error) throw error;
 
-  const formattedStores = await Promise.all(data?.map(async (store) => {
+  const formattedStores = await Promise.all(data?.map(async (store: any) => {
     const storeImage = store.picture1 || store.picture2 || store.picture3 || store.picture4 || store.picture5 || "/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png";
     
     const coordinates = await getValidCoordinates(

@@ -465,6 +465,7 @@ export type Database = {
           picture3: string | null
           picture4: string | null
           picture5: string | null
+          store_type: string | null
           website: string | null
           zip_code: string
         }
@@ -484,6 +485,7 @@ export type Database = {
           picture3?: string | null
           picture4?: string | null
           picture5?: string | null
+          store_type?: string | null
           website?: string | null
           zip_code: string
         }
@@ -503,6 +505,7 @@ export type Database = {
           picture3?: string | null
           picture4?: string | null
           picture5?: string | null
+          store_type?: string | null
           website?: string | null
           zip_code?: string
         }
