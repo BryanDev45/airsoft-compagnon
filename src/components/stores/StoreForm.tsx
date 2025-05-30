@@ -5,17 +5,15 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import StoreLocationSection from './StoreLocationSection';
 import StoreContactSection from './StoreContactSection';
-import StoreImageUploadSection from './StoreImageUploadSection';
+import StoreImageManager from './StoreImageManager';
 
 interface StoreFormProps {
   form: UseFormReturn<any>;
   isGeocoding: boolean;
   coordinates: [number, number] | null;
   handleAddressChange: () => void;
-  handleImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  removeImage: (index: number) => void;
-  images: File[];
-  preview: string[];
+  onImagesChange: (images: File[], previews: string[]) => void;
+  editStore?: any;
   onSubmit: (values: any) => void;
 }
 
@@ -24,10 +22,8 @@ const StoreForm = ({
   isGeocoding,
   coordinates,
   handleAddressChange,
-  handleImageChange,
-  removeImage,
-  images,
-  preview,
+  onImagesChange,
+  editStore,
   onSubmit
 }: StoreFormProps) => {
   return (
@@ -68,11 +64,9 @@ const StoreForm = ({
         
         <div className="space-y-4 pt-2">
           <h3 className="text-sm font-medium text-neutral-700">Images</h3>
-          <StoreImageUploadSection 
-            images={images}
-            preview={preview}
-            handleImageChange={handleImageChange}
-            removeImage={removeImage}
+          <StoreImageManager 
+            editStore={editStore}
+            onImagesChange={onImagesChange}
           />
         </div>
       </form>
