@@ -1,10 +1,11 @@
 
 import React from 'react';
-import { Calendar, Clock, Users, Euro, AlertCircle, MapPin, Phone, Mail, Globe } from 'lucide-react';
+import { Calendar, Users, Euro, AlertCircle, MapPin, Phone, Mail, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MapEvent, MapStore } from '@/hooks/useMapData';
+import GameImageCarousel from './GameImageCarousel';
 
 interface MapResultsDisplayProps {
   loading: boolean;
@@ -71,11 +72,10 @@ const MapResultsDisplay: React.FC<MapResultsDisplayProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredEvents.map((event) => (
               <Card key={event.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="relative h-48">
-                  <img
-                    src={event.image || "/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png"}
-                    alt={event.title}
-                    className="w-full h-full object-cover"
+                <div className="relative">
+                  <GameImageCarousel 
+                    images={event.images || []} 
+                    title={event.title} 
                   />
                   <div className="absolute top-2 right-2">
                     <Badge variant="secondary" className="bg-white/90 text-gray-700">
