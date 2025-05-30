@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-
 interface TeamAboutProps {
   team: {
     name: string;
@@ -23,17 +21,22 @@ interface TeamAboutProps {
       memberCount: number;
       gamesPlayed: number;
       averageRating: string;
-    }
+    };
   };
   handleContactTeam: () => void;
   handleShare: () => void;
   isTeamMember?: boolean;
 }
-
-const TeamAbout = ({ team, handleContactTeam, handleShare, isTeamMember }: TeamAboutProps) => {
+const TeamAbout = ({
+  team,
+  handleContactTeam,
+  handleShare,
+  isTeamMember
+}: TeamAboutProps) => {
   const [isJoining, setIsJoining] = useState(false);
-  const { user } = useAuth();
-
+  const {
+    user
+  } = useAuth();
   const handleJoinTeam = async () => {
     if (!user) {
       toast({
@@ -43,19 +46,15 @@ const TeamAbout = ({ team, handleContactTeam, handleShare, isTeamMember }: TeamA
       });
       return;
     }
-
     try {
       setIsJoining(true);
-      
+
       // Vérifier si l'utilisateur est déjà membre d'une équipe
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('team_id')
-        .eq('id', user.id)
-        .single();
-      
+      const {
+        data: profileData,
+        error: profileError
+      } = await supabase.from('profiles').select('team_id').eq('id', user.id).single();
       if (profileError) throw profileError;
-      
       if (profileData?.team_id) {
         toast({
           title: "Déjà membre d'une équipe",
@@ -64,55 +63,45 @@ const TeamAbout = ({ team, handleContactTeam, handleShare, isTeamMember }: TeamA
         });
         return;
       }
-      
+
       // Vérifier si une demande existe déjà
-      const { data: existingRequest, error: requestError } = await supabase
-        .from('team_members')
-        .select('*')
-        .eq('team_id', team.id)
-        .eq('user_id', user.id);
-        
+      const {
+        data: existingRequest,
+        error: requestError
+      } = await supabase.from('team_members').select('*').eq('team_id', team.id).eq('user_id', user.id);
       if (requestError) throw requestError;
-      
       if (existingRequest && existingRequest.length > 0) {
         toast({
           title: "Demande existante",
-          description: "Vous avez déjà fait une demande pour rejoindre cette équipe",
+          description: "Vous avez déjà fait une demande pour rejoindre cette équipe"
         });
         return;
       }
-      
+
       // Créer la demande avec le statut "pending"
-      const { data, error } = await supabase
-        .from('team_members')
-        .insert([
-          { 
-            team_id: team.id, 
-            user_id: user.id,
-            status: 'pending',
-            role: 'Membre'
-          }
-        ]);
-        
+      const {
+        data,
+        error
+      } = await supabase.from('team_members').insert([{
+        team_id: team.id,
+        user_id: user.id,
+        status: 'pending',
+        role: 'Membre'
+      }]);
       if (error) throw error;
-      
+
       // Créer une notification pour le leader de l'équipe
-      await supabase
-        .from('notifications')
-        .insert([
-          {
-            user_id: team.leader_id,
-            title: 'Nouvelle demande d\'adhésion',
-            message: `Un joueur souhaite rejoindre votre équipe ${team.name}`,
-            type: 'team_request',
-            link: `/team/${team.id}`,
-            related_id: team.id
-          }
-        ]);
-      
+      await supabase.from('notifications').insert([{
+        user_id: team.leader_id,
+        title: 'Nouvelle demande d\'adhésion',
+        message: `Un joueur souhaite rejoindre votre équipe ${team.name}`,
+        type: 'team_request',
+        link: `/team/${team.id}`,
+        related_id: team.id
+      }]);
       toast({
         title: "Demande envoyée",
-        description: "Votre demande pour rejoindre cette équipe a été envoyée, vous serez notifié quand elle sera acceptée",
+        description: "Votre demande pour rejoindre cette équipe a été envoyée, vous serez notifié quand elle sera acceptée"
       });
     } catch (error: any) {
       console.error('Erreur:', error);
@@ -128,9 +117,7 @@ const TeamAbout = ({ team, handleContactTeam, handleShare, isTeamMember }: TeamA
 
   // Vérifier si l'utilisateur fait déjà partie d'une équipe
   const shouldShowJoinButton = team.is_recruiting && !isTeamMember && user && !user?.team_id;
-
-  return (
-    <Card className="overflow-hidden rounded-xl shadow-md border-gray-100 transition-all hover:shadow-lg">
+  return <Card className="overflow-hidden rounded-xl shadow-md border-gray-100 transition-all hover:shadow-lg">
       <CardContent className="p-6 relative">
         <div className="space-y-6">
           <div>
@@ -139,17 +126,13 @@ const TeamAbout = ({ team, handleContactTeam, handleShare, isTeamMember }: TeamA
             </h2>
             
             <div className="flex flex-wrap gap-2 mb-4">
-              {team.is_recruiting && (
-                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 font-medium px-3 py-1">
+              {team.is_recruiting && <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 font-medium px-3 py-1">
                   <UserPlus className="h-3.5 w-3.5 mr-1" /> Recrutement ouvert
-                </Badge>
-              )}
+                </Badge>}
               
-              {team.is_association && (
-                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-medium px-3 py-1">
+              {team.is_association && <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-medium px-3 py-1">
                   Association loi 1901
-                </Badge>
-              )}
+                </Badge>}
             </div>
             
             <div className="bg-gray-50 rounded-lg p-4 border border-gray-100 mb-6">
@@ -163,26 +146,20 @@ const TeamAbout = ({ team, handleContactTeam, handleShare, isTeamMember }: TeamA
             <div className="space-y-4">
               <h3 className="font-semibold text-sm text-gray-500 uppercase tracking-wider">Informations</h3>
               <div className="space-y-3">
-                {team.location && (
-                  <div className="flex items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg">
+                {team.location && <div className="flex items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg">
                     <MapPin className="h-4 w-4 mr-2 text-airsoft-red" />
                     <span>{team.location}</span>
-                  </div>
-                )}
+                  </div>}
                 
-                {team.contact && (
-                  <div className="flex items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg">
+                {team.contact && <div className="flex items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg">
                     <Mail className="h-4 w-4 mr-2 text-airsoft-red" />
                     <span>{team.contact}</span>
-                  </div>
-                )}
+                  </div>}
                 
-                {team.founded && (
-                  <div className="flex items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg">
+                {team.founded && <div className="flex items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg">
                     <CalendarIcon className="h-4 w-4 mr-2 text-airsoft-red" />
                     <span>Fondée en {team.founded}</span>
-                  </div>
-                )}
+                  </div>}
               </div>
             </div>
             
@@ -206,39 +183,23 @@ const TeamAbout = ({ team, handleContactTeam, handleShare, isTeamMember }: TeamA
           </div>
           
           <div className="flex flex-col sm:flex-row gap-3 pt-4 mt-2 border-t border-gray-100">
-            {shouldShowJoinButton && (
-              <Button 
-                className="w-full bg-airsoft-red hover:bg-red-700"
-                onClick={handleJoinTeam}
-                disabled={isJoining}
-              >
+            {shouldShowJoinButton && <Button className="w-full bg-airsoft-red hover:bg-red-700" onClick={handleJoinTeam} disabled={isJoining}>
                 <UserPlus className="h-4 w-4 mr-2" />
                 {isJoining ? "En cours..." : "Rejoindre l'équipe"}
-              </Button>
-            )}
+              </Button>}
             
-            <Button 
-              className="w-full" 
-              variant="outline"
-              onClick={handleContactTeam}
-            >
+            <Button variant="outline" onClick={handleContactTeam} className="w-full bg-airsoft-red text-zinc-50">
               <Mail className="h-4 w-4 mr-2" />
               Contacter
             </Button>
             
-            <Button 
-              className="w-full" 
-              variant="outline"
-              onClick={handleShare}
-            >
+            <Button variant="outline" onClick={handleShare} className="w-full bg-airsoft-red text-zinc-50">
               <ShareIcon className="h-4 w-4 mr-2" />
               Partager
             </Button>
           </div>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
-
 export default TeamAbout;
