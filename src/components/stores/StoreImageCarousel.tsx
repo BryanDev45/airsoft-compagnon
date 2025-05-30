@@ -11,8 +11,12 @@ interface StoreImageCarouselProps {
 const StoreImageCarousel: React.FC<StoreImageCarouselProps> = ({ images, storeName }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // Filtrer les images non nulles et non vides
-  const validImages = images.filter(img => img && img.trim() !== '');
+  // Filtrer les images non nulles et non vides, en enlevant les doublons
+  const validImages = Array.from(new Set(
+    images.filter(img => img && img.trim() !== '' && img !== 'null')
+  ));
+  
+  console.log('StoreImageCarousel - Valid images:', validImages);
   
   if (validImages.length === 0) {
     return (
@@ -21,6 +25,9 @@ const StoreImageCarousel: React.FC<StoreImageCarouselProps> = ({ images, storeNa
           src="/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png"
           alt={storeName}
           className="w-full h-full object-cover"
+          onError={(e) => {
+            console.error('Error loading default image for store:', storeName);
+          }}
         />
       </div>
     );
@@ -48,6 +55,12 @@ const StoreImageCarousel: React.FC<StoreImageCarouselProps> = ({ images, storeNa
         src={validImages[currentImageIndex]}
         alt={`${storeName} - Image ${currentImageIndex + 1}`}
         className="w-full h-full object-cover"
+        onError={(e) => {
+          console.error('Error loading image:', validImages[currentImageIndex], 'for store:', storeName);
+          // Fallback to default image
+          const target = e.target as HTMLImageElement;
+          target.src = "/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png";
+        }}
       />
       
       {validImages.length > 1 && (
@@ -75,11 +88,16 @@ const StoreImageCarousel: React.FC<StoreImageCarouselProps> = ({ images, storeNa
           {/* Indicateurs de points */}
           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
             {validImages.map((_, index) => (
-              <div
+              <button
                 key={index}
                 className={`w-2 h-2 rounded-full transition-colors ${
                   index === currentImageIndex ? 'bg-white' : 'bg-white/50'
                 }`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setCurrentImageIndex(index);
+                }}
               />
             ))}
           </div>
