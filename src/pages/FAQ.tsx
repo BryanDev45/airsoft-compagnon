@@ -1,13 +1,10 @@
-
 import React from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { MessageSquare } from 'lucide-react';
-
 const FAQ = () => {
-  return (
-    <div className="min-h-screen flex flex-col">
+  return <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow py-12">
         <div className="max-w-4xl mx-auto px-4">
@@ -34,9 +31,7 @@ const FAQ = () => {
             </AccordionItem>
             
             <AccordionItem value="item-2">
-              <AccordionTrigger className="text-lg font-medium">
-                Comment fonctionne Airsoft Compagnon ?
-              </AccordionTrigger>
+              <AccordionTrigger className="text-lg font-medium">Comment fonctionne Airsoft Companion ?</AccordionTrigger>
               <AccordionContent className="text-gray-600">
                 Airsoft Compagnon est une plateforme qui permet aux joueurs de trouver facilement des parties d'airsoft et 
                 des équipements près de chez eux. Les organisateurs peuvent également créer et gérer leurs événements sur la plateforme. 
@@ -129,8 +124,6 @@ const FAQ = () => {
         </div>
       </main>
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default FAQ;
