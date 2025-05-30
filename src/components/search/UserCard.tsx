@@ -122,7 +122,7 @@ const UserCard: React.FC<UserCardProps> = ({ userData, friendshipStatus, onFrien
               <Button 
                 size="sm" 
                 variant="outline" 
-                className="h-9 w-9 p-0 border-gray-200 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200" 
+                className="h-9 w-9 p-0 border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white transition-all duration-200" 
                 title="Envoyer un message"
               >
                 <MessageSquare className="h-4 w-4" />
@@ -132,7 +132,7 @@ const UserCard: React.FC<UserCardProps> = ({ userData, friendshipStatus, onFrien
                 <Button 
                   size="sm" 
                   variant="outline" 
-                  className="h-9 w-9 p-0 border-red-200 hover:border-red-300 hover:bg-red-50 hover:text-red-600 transition-all duration-200" 
+                  className="h-9 w-9 p-0 border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition-all duration-200" 
                   title="Supprimer des amis"
                   onClick={() => onFriendAction(userData.id, 'remove')}
                 >
@@ -142,17 +142,17 @@ const UserCard: React.FC<UserCardProps> = ({ userData, friendshipStatus, onFrien
                 <Button 
                   size="sm" 
                   variant="outline" 
-                  className="h-9 w-9 p-0 border-gray-200 bg-gray-50 cursor-not-allowed" 
+                  className="h-9 w-9 p-0 border-yellow-500 text-yellow-500 bg-yellow-50 cursor-not-allowed" 
                   title="Demande en cours"
                   disabled
                 >
-                  <UserPlus className="h-4 w-4 text-gray-400" />
+                  <UserPlus className="h-4 w-4" />
                 </Button>
               ) : (
                 <Button 
                   size="sm" 
                   variant="outline" 
-                  className="h-9 w-9 p-0 border-green-200 hover:border-green-300 hover:bg-green-50 hover:text-green-600 transition-all duration-200" 
+                  className="h-9 w-9 p-0 border-green-500 text-green-500 hover:bg-green-500 hover:text-white transition-all duration-200" 
                   title="Ajouter en ami"
                   onClick={() => onFriendAction(userData.id, 'add')}
                 >

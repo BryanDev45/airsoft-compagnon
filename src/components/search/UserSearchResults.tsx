@@ -16,7 +16,7 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) =>
 
   const handleFriendActionWithRefresh = async (targetUserId: string, action: 'add' | 'remove') => {
     await handleFriendAction(targetUserId, action);
-    // Rafraîchir les résultats
+    // Refresh the results to update friendship status
     refetch();
   };
 
