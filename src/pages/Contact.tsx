@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import Header from '../components/Header';
@@ -22,9 +23,21 @@ const Contact = () => {
 
   const onSubmit = (data: any) => {
     console.log(data);
+    
+    // Créer le lien mailto avec la nouvelle adresse
+    const subject = encodeURIComponent(`Contact: ${data.subject}`);
+    const body = encodeURIComponent(
+      `Nom: ${data.name}\n` +
+      `Email: ${data.email}\n\n` +
+      `Message:\n${data.message}`
+    );
+    
+    // Ouvrir le client email avec l'adresse support@airsoft-companion.com
+    window.open(`mailto:support@airsoft-companion.com?subject=${subject}&body=${body}`);
+    
     toast({
-      title: "Message envoyé",
-      description: "Nous vous répondrons dans les plus brefs délais."
+      title: "Message préparé",
+      description: "Votre client email s'est ouvert avec le message pré-rempli."
     });
     form.reset();
   };
@@ -55,8 +68,8 @@ const Contact = () => {
                 </div>
                 <h3 className="font-bold text-xl mb-2">Email</h3>
                 <p className="text-gray-600 mb-4">N'hésitez pas à nous écrire</p>
-                <a href="mailto:contact@airsoftcompagnon.fr" className="text-airsoft-red hover:underline font-medium">
-                  contact@airsoftcompanion.com
+                <a href="mailto:support@airsoft-companion.com" className="text-airsoft-red hover:underline font-medium">
+                  support@airsoft-companion.com
                 </a>
               </CardContent>
             </Card>

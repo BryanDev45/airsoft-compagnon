@@ -14,9 +14,15 @@ const MissingStoreNotice: React.FC = () => {
       "Site web (si disponible) : \n" +
       "Téléphone (si disponible) : \n" +
       "Email (si disponible) : \n\n" +
-      "Merci pour votre travail !\n\nCordialement"
+      "PHOTOS À JOINDRE :\n" +
+      "Merci de joindre jusqu'à 5 photos de votre magasin :\n" +
+      "- 1 logo du magasin\n" +
+      "- 1 photo de la devanture/façade\n" +
+      "- 3 photos de l'intérieur du magasin (rayons, produits, espace de vente)\n\n" +
+      "Ces photos nous aideront à mieux présenter votre magasin sur notre plateforme.\n\n" +
+      "Merci pour votre contribution !\n\nCordialement"
     );
-    window.open(`mailto:contact@airsoftcommunity.fr?subject=${subject}&body=${body}`);
+    window.open(`mailto:support@airsoft-companion.com?subject=${subject}&body=${body}`);
   };
 
   return (
@@ -32,7 +38,8 @@ const MissingStoreNotice: React.FC = () => {
             </h4>
             <p className="text-sm text-blue-700 mb-3">
               Si vous connaissez un magasin d'airsoft qui n'est pas référencé sur notre carte, 
-              vous pouvez nous contacter pour demander son ajout.
+              vous pouvez nous contacter pour demander son ajout. N'oubliez pas de joindre 
+              des photos (logo, devanture, intérieur) pour une meilleure présentation.
             </p>
             <Button 
               onClick={handleContactTeam}
