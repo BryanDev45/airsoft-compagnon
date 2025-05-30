@@ -1,25 +1,27 @@
+
 import { Calendar, MapPin, Users, Euro } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { MapEvent } from '@/hooks/useMapData';
+import EventImageCarousel from './EventImageCarousel';
 
 interface EventCardProps {
   event: MapEvent;
 }
 
 const EventCard = ({ event }: EventCardProps) => {
-  const defaultImage = "/lovable-uploads/8c35b648-4640-4896-943d-3e329c86a080.png";
+  // Collecter toutes les images disponibles
+  const images = [
+    event.image,
+    event.Picture2,
+    event.Picture3,
+    event.Picture4,
+    event.Picture5
+  ].filter(Boolean);
   
   return (
     <Link to={`/game/${event.id}`} className="block">
       <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
-        <AspectRatio ratio={16/9}>
-          <img 
-            src={event.image || defaultImage} 
-            alt={event.title}
-            className="object-cover w-full h-full"
-          />
-        </AspectRatio>
+        <EventImageCarousel images={images} title={event.title} />
         <div className="p-6">
           <h3 className="text-xl font-semibold mb-2">{event.title}</h3>
           <div className="space-y-2">

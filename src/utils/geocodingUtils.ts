@@ -13,8 +13,9 @@ export const areCoordinatesValid = (lat: number | null, lng: number | null): boo
   // Check if coordinates are close to 0,0 (null island)
   const isCloseToZero = Math.abs(lat) < 0.1 && Math.abs(lng) < 0.1;
   
-  // Check if coordinates are in a reasonable range for France/Europe
-  const isInReasonableRange = lat >= 40 && lat <= 55 && lng >= -5 && lng <= 10;
+  // Élargir la plage pour accepter les adresses internationales
+  // Plage élargie pour couvrir l'Europe, l'Asie et d'autres régions
+  const isInReasonableRange = lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
   
   return !isCloseToZero && isInReasonableRange;
 };
@@ -27,10 +28,19 @@ export const geocodeAddress = async (
   country: string = 'France'
 ): Promise<Coordinates | null> => {
   try {
-    const fullAddress = `${address}, ${zipCode} ${city}, ${country}`;
+    // Pour les adresses non françaises, adapter le format
+    let fullAddress;
+    if (country && country.toLowerCase() !== 'france') {
+      // Format international : adresse, ville code_postal, pays
+      fullAddress = `${address}, ${city} ${zipCode}, ${country}`;
+    } else {
+      // Format français traditionnel
+      fullAddress = `${address}, ${zipCode} ${city}, ${country}`;
+    }
+    
     console.log('Geocoding address:', fullAddress);
     
-    const geocodingUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}&limit=1`;
+    const geocodingUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}&limit=1&countrycodes=${getCountryCode(country)}`;
     
     const response = await fetch(geocodingUrl, {
       headers: {
@@ -55,6 +65,30 @@ export const geocodeAddress = async (
       return coordinates;
     }
     
+    // Si pas de résultat avec l'adresse complète, essayer juste avec la ville et le pays
+    console.log('No results for full address, trying city and country...');
+    const cityCountryUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(`${city}, ${country}`)}&limit=1&countrycodes=${getCountryCode(country)}`;
+    
+    const cityResponse = await fetch(cityCountryUrl, {
+      headers: {
+        'User-Agent': 'AirsoftCommunityApp/1.0'
+      }
+    });
+    
+    if (cityResponse.ok) {
+      const cityData = await cityResponse.json();
+      if (cityData && cityData.length > 0) {
+        const { lat, lon } = cityData[0];
+        const coordinates: Coordinates = {
+          longitude: parseFloat(lon),
+          latitude: parseFloat(lat)
+        };
+        
+        console.log('City geocoding successful:', coordinates);
+        return coordinates;
+      }
+    }
+    
     console.log('No geocoding results found for:', fullAddress);
     return null;
   } catch (error) {
@@ -63,10 +97,64 @@ export const geocodeAddress = async (
   }
 };
 
+// Fonction pour obtenir le code pays ISO pour Nominatim
+const getCountryCode = (country: string): string => {
+  const countryMap: { [key: string]: string } = {
+    'france': 'fr',
+    'germany': 'de',
+    'deutschland': 'de',
+    'spain': 'es',
+    'españa': 'es',
+    'italy': 'it',
+    'italia': 'it',
+    'united kingdom': 'gb',
+    'uk': 'gb',
+    'belgium': 'be',
+    'belgique': 'be',
+    'nederland': 'nl',
+    'netherlands': 'nl',
+    'poland': 'pl',
+    'polska': 'pl',
+    'czech republic': 'cz',
+    'taiwan': 'tw',
+    'usa': 'us',
+    'united states': 'us',
+    'canada': 'ca',
+    'switzerland': 'ch',
+    'suisse': 'ch',
+    'austria': 'at',
+    'österreich': 'at'
+  };
+  
+  const lowerCountry = country.toLowerCase().trim();
+  return countryMap[lowerCountry] || '';
+};
+
 // Default coordinates for France (Paris)
 export const DEFAULT_FRANCE_COORDINATES: Coordinates = {
   longitude: 2.3522,
   latitude: 48.8566
+};
+
+// Coordonnées par défaut selon le pays
+export const getDefaultCoordinatesByCountry = (country: string): Coordinates => {
+  const defaultCoords: { [key: string]: Coordinates } = {
+    'taiwan': { longitude: 121.5654, latitude: 25.0330 }, // Taipei
+    'germany': { longitude: 13.4050, latitude: 52.5200 }, // Berlin
+    'spain': { longitude: -3.7026, latitude: 40.4165 }, // Madrid
+    'italy': { longitude: 12.4964, latitude: 41.9028 }, // Rome
+    'uk': { longitude: -0.1276, latitude: 51.5074 }, // Londres
+    'belgium': { longitude: 4.3517, latitude: 50.8503 }, // Bruxelles
+    'netherlands': { longitude: 4.9041, latitude: 52.3676 }, // Amsterdam
+    'poland': { longitude: 21.0122, latitude: 52.2297 }, // Varsovie
+    'usa': { longitude: -74.0059, latitude: 40.7128 }, // New York
+    'canada': { longitude: -75.6972, latitude: 45.4215 }, // Ottawa
+    'switzerland': { longitude: 7.4474, latitude: 46.9481 }, // Berne
+    'austria': { longitude: 16.3738, latitude: 48.2082 } // Vienne
+  };
+  
+  const lowerCountry = country.toLowerCase().trim();
+  return defaultCoords[lowerCountry] || DEFAULT_FRANCE_COORDINATES;
 };
 
 // Function to get valid coordinates for a location, with fallback to geocoding
@@ -75,7 +163,8 @@ export const getValidCoordinates = async (
   storedLng: number | null,
   address: string,
   zipCode: string,
-  city: string
+  city: string,
+  country: string = 'France'
 ): Promise<Coordinates> => {
   // First, try to use stored coordinates if they are valid
   if (areCoordinatesValid(storedLat, storedLng)) {
@@ -86,12 +175,12 @@ export const getValidCoordinates = async (
   }
   
   // If stored coordinates are invalid, try geocoding
-  const geocodedCoords = await geocodeAddress(address, zipCode, city);
+  const geocodedCoords = await geocodeAddress(address, zipCode, city, country);
   if (geocodedCoords) {
     return geocodedCoords;
   }
   
-  // Fallback to default coordinates
-  console.log('Using default coordinates for:', { address, zipCode, city });
-  return DEFAULT_FRANCE_COORDINATES;
+  // Fallback to default coordinates based on country
+  console.log('Using default coordinates for country:', country);
+  return getDefaultCoordinatesByCountry(country);
 };

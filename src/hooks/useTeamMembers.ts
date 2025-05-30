@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { TeamData, TeamMember } from '@/types/team';
 import { useNavigate } from 'react-router-dom';
+import { useTeamPermissions } from './useTeamPermissions';
 
 export const useTeamMembers = (
   team: TeamData, 
@@ -15,6 +16,9 @@ export const useTeamMembers = (
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [pendingMembers, setPendingMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(false);
+  
+  // Utiliser les permissions d'équipe
+  const permissions = useTeamPermissions(team?.id || null);
 
   // Fetch team members when component mounts
   useEffect(() => {
@@ -102,7 +106,15 @@ export const useTeamMembers = (
   };
 
   const handleAcceptMember = async (memberId: string) => {
-    if (!isTeamLeader || loading) return;
+    // Vérifier les permissions
+    if (!permissions.canAcceptMembers || loading) {
+      toast({
+        title: "Permission refusée",
+        description: "Vous n'avez pas les permissions nécessaires pour accepter des membres.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setLoading(true);
     
@@ -160,7 +172,15 @@ export const useTeamMembers = (
   };
   
   const handleRejectMember = async (memberId: string) => {
-    if (!isTeamLeader || loading) return;
+    // Vérifier les permissions
+    if (!permissions.canAcceptMembers || loading) {
+      toast({
+        title: "Permission refusée",
+        description: "Vous n'avez pas les permissions nécessaires pour rejeter des membres.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setLoading(true);
     
@@ -205,7 +225,15 @@ export const useTeamMembers = (
   };
   
   const handleRemoveMember = async (memberId: string) => {
-    if (!isTeamLeader) return;
+    // Vérifier les permissions
+    if (!permissions.canManageTeam) {
+      toast({
+        title: "Permission refusée",
+        description: "Vous n'avez pas les permissions nécessaires pour supprimer des membres.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     if (!confirm("Êtes-vous sûr de vouloir supprimer ce membre de l'équipe ?")) {
       return;
@@ -241,7 +269,15 @@ export const useTeamMembers = (
   };
   
   const handleUpdateMemberRole = async (memberId: string, newRole: string) => {
-    if (!isTeamLeader) return;
+    // Vérifier les permissions
+    if (!permissions.canManageTeam) {
+      toast({
+        title: "Permission refusée",
+        description: "Vous n'avez pas les permissions nécessaires pour modifier les rôles.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setLoading(true);
     
@@ -335,6 +371,7 @@ export const useTeamMembers = (
     handleRejectMember,
     handleRemoveMember,
     handleUpdateMemberRole,
-    handleLeaveTeam
+    handleLeaveTeam,
+    permissions
   };
 };
