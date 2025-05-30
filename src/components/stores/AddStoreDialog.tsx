@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -81,8 +80,6 @@ const AddStoreDialog: React.FC<AddStoreDialogProps> = ({
         website: ''
       });
       setCoordinates(null);
-      setImages([]);
-      setPreview([]);
     }
   }, [editStore, open, form]);
 
@@ -142,8 +139,6 @@ const AddStoreDialog: React.FC<AddStoreDialogProps> = ({
     setLoading(true);
     
     try {
-      console.log('Starting store submission:', { editStore: !!editStore, data });
-      
       // Prepare image URLs array
       let finalImageUrls: (string | null)[] = [];
       
@@ -155,17 +150,21 @@ const AddStoreDialog: React.FC<AddStoreDialogProps> = ({
           editStore.picture3,
           editStore.picture4,
           editStore.picture5
-        ].filter(Boolean) as string[];
+        ];
         
-        // Add existing images that are still in preview
-        for (const previewUrl of preview) {
-          if (existingImages.includes(previewUrl)) {
-            finalImageUrls.push(previewUrl);
-          }
-        }
+        // Count how many existing images we're keeping
+        const existingImageCount = existingImages.filter(Boolean).length;
+        const previewImageCount = preview.length;
+        const keptExistingImages = Math.min(existingImageCount, previewImageCount);
         
-        // Upload new images (the ones in images array)
-        for (const file of images) {
+        // Keep existing images that are still in preview
+        finalImageUrls = preview.slice(0, keptExistingImages).filter(url => 
+          existingImages.includes(url)
+        );
+        
+        // Upload new images
+        const newImageFiles = images;
+        for (const file of newImageFiles) {
           if (finalImageUrls.length < 5) {
             const uploadedUrl = await uploadImage(file);
             if (uploadedUrl) {
@@ -207,18 +206,14 @@ const AddStoreDialog: React.FC<AddStoreDialogProps> = ({
         longitude: coordinates?.[1] || 0,
       };
 
-      console.log('Store data prepared:', storeData);
-
       let result;
       
       if (editStore) {
-        console.log('Updating store with ID:', editStore.id);
         result = await supabase
           .from('stores')
           .update(storeData)
           .eq('id', editStore.id);
       } else {
-        console.log('Creating new store');
         result = await supabase
           .from('stores')
           .insert({
@@ -227,12 +222,7 @@ const AddStoreDialog: React.FC<AddStoreDialogProps> = ({
           });
       }
 
-      console.log('Supabase result:', result);
-
-      if (result.error) {
-        console.error('Supabase error:', result.error);
-        throw result.error;
-      }
+      if (result.error) throw result.error;
 
       toast({
         title: editStore ? "Magasin modifié" : "Magasin ajouté",
@@ -241,17 +231,11 @@ const AddStoreDialog: React.FC<AddStoreDialogProps> = ({
           : "Le magasin a été ajouté avec succès."
       });
 
-      // Close dialog first
       onOpenChange(false);
-      
-      // Call success callback if provided (this should trigger refetch)
-      if (onSuccess) {
-        console.log('Calling onSuccess callback');
-        onSuccess();
-      }
+      if (onSuccess) onSuccess();
       
     } catch (error) {
-      console.error('Erreur lors de la sauvegarde:', error);
+      console.error('Erreur:', error);
       toast({
         title: "Erreur",
         description: editStore 

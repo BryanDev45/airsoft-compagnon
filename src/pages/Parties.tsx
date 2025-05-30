@@ -16,7 +16,6 @@ import TeamSearchResults from '../components/search/TeamSearchResults';
 import { useAuth } from '../hooks/useAuth';
 import AddStoreDialog from '../components/stores/AddStoreDialog';
 import { supabase } from '@/integrations/supabase/client';
-import { useStores } from '../hooks/useStores';
 
 // This component will automatically scroll to top on mount
 const ScrollToTop = () => {
@@ -36,7 +35,6 @@ const Recherche = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddStoreDialogOpen, setIsAddStoreDialogOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const { refetch: refetchStores } = useStores();
 
   // Vérifier si l'utilisateur est admin
   useEffect(() => {
@@ -71,11 +69,6 @@ const Recherche = () => {
     } else {
       navigate('/login');
     }
-  };
-
-  const handleStoreSuccess = () => {
-    console.log('Store operation successful, refetching stores...');
-    refetchStores();
   };
 
   return <div className="min-h-screen flex flex-col">
@@ -170,8 +163,7 @@ const Recherche = () => {
       {/* Dialog d'ajout de magasin */}
       <AddStoreDialog 
         open={isAddStoreDialogOpen} 
-        onOpenChange={setIsAddStoreDialogOpen}
-        onSuccess={handleStoreSuccess}
+        onOpenChange={setIsAddStoreDialogOpen} 
       />
     </div>;
 };
