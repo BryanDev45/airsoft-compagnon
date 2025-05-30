@@ -38,7 +38,8 @@ export const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
     .gte('date', today)
     .order('date', { ascending: true });
   
-  // Toujours permettre la visualisation des parties publiques, même sans connexion
+  // Si l'utilisateur n'est pas connecté, montrer seulement les parties publiques
+  // Si l'utilisateur est connecté, montrer les parties publiques + ses parties privées
   if (!userId) {
     query = query.eq('is_private', false);
   } else {
@@ -49,7 +50,7 @@ export const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
   
   if (error) throw error;
 
-  const formattedEvents = await Promise.all(data?.map(async (game) => {
+  const formattedEvents = await Promise.all((data || []).map(async (game) => {
     const gameDate = new Date(game.date);
     const formattedDate = `${gameDate.getDate().toString().padStart(2, '0')}/${(gameDate.getMonth() + 1).toString().padStart(2, '0')}/${gameDate.getFullYear()}`;
     
@@ -102,7 +103,7 @@ export const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
       images: gameImages,
       image: gameImages[0] || "/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png"
     };
-  }) || []);
+  }));
   
   // Mettre en cache pour 10 minutes
   setStorageWithExpiry(cacheKey, formattedEvents, CACHE_DURATIONS.SHORT * 2);

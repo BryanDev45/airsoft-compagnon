@@ -9,6 +9,7 @@ import { getStorageWithExpiry, setStorageWithExpiry, clearCacheByPrefix, CACHE_D
 const USER_CACHE_KEY = 'auth_user';
 const SESSION_CACHE_KEY = 'auth_session';
 const AUTH_STATE_KEY = 'auth_state';
+const REMEMBER_ME_KEY = 'auth_remember_me';
 
 export const useAuthActions = () => {
   const [loading, setLoading] = useState(false);
@@ -50,11 +51,20 @@ export const useAuthActions = () => {
       if (data && data.user) {
         console.log("Login successful, user data received");
         
-        // Cache the auth state
-        const ttl = rememberMe ? CACHE_DURATIONS.LONG : CACHE_DURATIONS.MEDIUM;
+        // Cache the auth state with appropriate duration
+        const ttl = rememberMe ? CACHE_DURATIONS.LONG : CACHE_DURATIONS.SHORT;
         setStorageWithExpiry(USER_CACHE_KEY, data.user, ttl);
         setStorageWithExpiry(SESSION_CACHE_KEY, data.session, ttl);
         setStorageWithExpiry(AUTH_STATE_KEY, { isAuthenticated: true, value: true }, ttl);
+        
+        // Store remember me preference
+        if (rememberMe) {
+          localStorage.setItem(REMEMBER_ME_KEY, 'true');
+        } else {
+          localStorage.setItem(REMEMBER_ME_KEY, 'false');
+          // Set up session storage listener for auto-logout
+          setupSessionLogout();
+        }
         
         toast({
           title: "Connexion réussie",
@@ -84,6 +94,21 @@ export const useAuthActions = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const setupSessionLogout = () => {
+    // Auto-logout when window is closed if remember me is not checked
+    window.addEventListener('beforeunload', () => {
+      const rememberMe = localStorage.getItem(REMEMBER_ME_KEY) === 'true';
+      if (!rememberMe) {
+        // Silent logout without navigation or toast
+        supabase.auth.signOut();
+        localStorage.removeItem(USER_CACHE_KEY);
+        localStorage.removeItem(SESSION_CACHE_KEY);
+        localStorage.removeItem(AUTH_STATE_KEY);
+        localStorage.removeItem(REMEMBER_ME_KEY);
+      }
+    });
   };
 
   const register = async (email: string, password: string, userData: any) => {
@@ -138,18 +163,29 @@ export const useAuthActions = () => {
     try {
       setLoading(true);
       
-      // Perform Supabase logout
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      // Perform Supabase logout first, handle errors gracefully
+      try {
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+          console.warn('Supabase logout error (non-critical):', error);
+        }
+      } catch (supabaseError) {
+        console.warn('Supabase logout failed (continuing with local cleanup):', supabaseError);
+      }
       
-      // Clear all auth-related cache
-      localStorage.removeItem(USER_CACHE_KEY);
-      localStorage.removeItem(SESSION_CACHE_KEY);
-      localStorage.removeItem(AUTH_STATE_KEY);
-      clearCacheByPrefix('userProfile_');
-      clearCacheByPrefix('profile_data');
-      clearCacheByPrefix('user_stats');
-      clearCacheByPrefix('notifications');
+      // Always clear local storage regardless of Supabase response
+      try {
+        localStorage.removeItem(USER_CACHE_KEY);
+        localStorage.removeItem(SESSION_CACHE_KEY);
+        localStorage.removeItem(AUTH_STATE_KEY);
+        localStorage.removeItem(REMEMBER_ME_KEY);
+        clearCacheByPrefix('userProfile_');
+        clearCacheByPrefix('profile_data');
+        clearCacheByPrefix('user_stats');
+        clearCacheByPrefix('notifications');
+      } catch (cacheError) {
+        console.warn('Cache cleanup error (non-critical):', cacheError);
+      }
       
       // Navigate to login page
       navigate('/login');
@@ -160,11 +196,22 @@ export const useAuthActions = () => {
       });
     } catch (error: any) {
       console.error('Error during logout:', error);
-      toast({
-        title: "Erreur de déconnexion",
-        description: error.message || "Une erreur est survenue",
-        variant: "destructive",
-      });
+      // Even if there's an error, force the logout by clearing storage and navigating
+      try {
+        localStorage.clear();
+        navigate('/login');
+        toast({
+          title: "Déconnexion effectuée",
+          description: "Vous avez été déconnecté",
+        });
+      } catch (fallbackError) {
+        console.error('Fallback logout failed:', fallbackError);
+        toast({
+          title: "Erreur de déconnexion",
+          description: "Veuillez actualiser la page",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }

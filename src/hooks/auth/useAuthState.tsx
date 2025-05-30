@@ -7,6 +7,7 @@ import { getStorageWithExpiry, setStorageWithExpiry, CACHE_DURATIONS } from '@/u
 const USER_CACHE_KEY = 'auth_user';
 const SESSION_CACHE_KEY = 'auth_session';
 const AUTH_STATE_KEY = 'auth_state';
+const REMEMBER_ME_KEY = 'auth_remember_me';
 
 export const useAuthState = () => {
   const [user, setUser] = useState<any>(null);
@@ -18,7 +19,28 @@ export const useAuthState = () => {
     let mounted = true;
     let authTimeout: NodeJS.Timeout | undefined;
     
-    // First, try to get from storage cache
+    // Check if session should be maintained
+    const checkSessionValidity = () => {
+      const rememberMe = localStorage.getItem(REMEMBER_ME_KEY) === 'true';
+      const cachedAuthState = getStorageWithExpiry(AUTH_STATE_KEY);
+      
+      // If user didn't choose "remember me" and there's no valid cached state, clear everything
+      if (!rememberMe && !cachedAuthState) {
+        localStorage.removeItem(USER_CACHE_KEY);
+        localStorage.removeItem(SESSION_CACHE_KEY);
+        localStorage.removeItem(AUTH_STATE_KEY);
+        return false;
+      }
+      return true;
+    };
+    
+    // First, check session validity
+    if (!checkSessionValidity()) {
+      setInitialLoading(false);
+      return;
+    }
+    
+    // Try to get from storage cache
     const cachedUser = getStorageWithExpiry(USER_CACHE_KEY);
     const cachedSession = getStorageWithExpiry(SESSION_CACHE_KEY);
     const cachedAuthState = getStorageWithExpiry(AUTH_STATE_KEY);
@@ -56,6 +78,7 @@ export const useAuthState = () => {
           localStorage.removeItem(USER_CACHE_KEY);
           localStorage.removeItem(SESSION_CACHE_KEY);
           localStorage.removeItem(AUTH_STATE_KEY);
+          localStorage.removeItem(REMEMBER_ME_KEY);
         }
       }
     );
@@ -151,9 +174,14 @@ export const useAuthState = () => {
         // Update state and cache
         setUser(fullUser);
         setSession(currentSession);
-        setStorageWithExpiry(USER_CACHE_KEY, fullUser, CACHE_DURATIONS.MEDIUM);
-        setStorageWithExpiry(SESSION_CACHE_KEY, currentSession, CACHE_DURATIONS.MEDIUM);
-        setStorageWithExpiry(AUTH_STATE_KEY, { isAuthenticated: true, value: true }, CACHE_DURATIONS.MEDIUM);
+        
+        // Determine cache duration based on remember me preference
+        const rememberMe = localStorage.getItem(REMEMBER_ME_KEY) === 'true';
+        const cacheDuration = rememberMe ? CACHE_DURATIONS.MEDIUM : CACHE_DURATIONS.SHORT;
+        
+        setStorageWithExpiry(USER_CACHE_KEY, fullUser, cacheDuration);
+        setStorageWithExpiry(SESSION_CACHE_KEY, currentSession, cacheDuration);
+        setStorageWithExpiry(AUTH_STATE_KEY, { isAuthenticated: true, value: true }, cacheDuration);
       } else {
         console.warn("No profile found for user:", userId);
       }
