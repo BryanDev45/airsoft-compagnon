@@ -34,6 +34,10 @@ export interface MapStore {
   lat: number;
   lng: number;
   image?: string;
+  picture2?: string;
+  picture3?: string;
+  picture4?: string;
+  picture5?: string;
 }
 
 const GAMES_CACHE_KEY = 'map_games_data';
@@ -197,7 +201,11 @@ const fetchStoresData = async (): Promise<MapStore[]> => {
       website: store.website,
       lat: coordinates.latitude,
       lng: coordinates.longitude,
-      image: storeImage
+      image: storeImage,
+      picture2: store.picture2,
+      picture3: store.picture3,
+      picture4: store.picture4,
+      picture5: store.picture5
     };
   }) || []);
   

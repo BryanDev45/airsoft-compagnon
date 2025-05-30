@@ -34,7 +34,11 @@ const fetchStoresData = async (): Promise<MapStore[]> => {
     website: store.website,
     lat: store.latitude || 0,
     lng: store.longitude || 0,
-    image: store.picture1 || store.picture2 || store.picture3 || store.picture4 || store.picture5 || "/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png"
+    image: store.picture1 || store.picture2 || store.picture3 || store.picture4 || store.picture5 || "/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png",
+    picture2: store.picture2,
+    picture3: store.picture3,
+    picture4: store.picture4,
+    picture5: store.picture5
   }));
   
   // Mettre en cache pour 30 minutes
