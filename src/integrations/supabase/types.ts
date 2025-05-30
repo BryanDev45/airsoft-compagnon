@@ -546,6 +546,36 @@ export type Database = {
           },
         ]
       }
+      team_invitations: {
+        Row: {
+          created_at: string
+          id: string
+          invited_user_id: string
+          inviter_user_id: string
+          status: string
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invited_user_id: string
+          inviter_user_id: string
+          status?: string
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invited_user_id?: string
+          inviter_user_id?: string
+          status?: string
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       team_members: {
         Row: {
           id: string

@@ -3,9 +3,10 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 
 const Hero = () => {
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+  const { user } = useAuth();
   
   return (
     <div className="relative bg-airsoft-dark text-white overflow-hidden clip-bottom">
@@ -26,9 +27,9 @@ const Hero = () => {
           </div>
           
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link to={isAuthenticated ? "/profile" : "/register"}>
+            <Link to={user ? "/profile" : "/register"}>
               <Button className="bg-airsoft-red hover:bg-red-700 text-white px-8 py-6 text-lg rounded-md shadow-lg transform transition-transform hover:scale-105" size="lg">
-                {isAuthenticated ? "Mon profil" : "Nous rejoindre"} <ArrowRight className="ml-2" />
+                {user ? "Mon profil" : "Nous rejoindre"} <ArrowRight className="ml-2" />
               </Button>
             </Link>
             <Button variant="outline" className="bg-airsoft-red hover:bg-red-700 text-white px-8 py-6 text-lg rounded-md shadow-lg transform transition-transform hover:scale-105" size="lg">

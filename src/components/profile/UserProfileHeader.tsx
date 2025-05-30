@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { UserPlus, UserMinus, Check, ShieldX } from "lucide-react";
@@ -5,6 +6,7 @@ import RatingStars from './RatingStars';
 import ReportUserButton from './ReportUserButton';
 import ProfileHeader from './ProfileHeader';
 import BanUserDialog from './BanUserDialog';
+import TeamInviteButton from '../search/TeamInviteButton';
 
 interface UserProfileHeaderProps {
   profileData: any;
@@ -87,6 +89,14 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
                 </>
               )}
             </Button>
+          )}
+
+          {/* Team invitation button - only show if player has no team */}
+          {currentUserId && !userData?.team_id && (
+            <TeamInviteButton
+              targetUserId={userData?.id}
+              targetUsername={userData?.username}
+            />
           )}
           
           <div className="flex items-center gap-2">

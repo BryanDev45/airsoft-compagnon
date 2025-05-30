@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Star, UserPlus, UserMinus, MessageSquare, Shield, Ban } from "lucide-react";
 import { useAuth } from '@/hooks/useAuth';
+import TeamInviteButton from './TeamInviteButton';
 
 interface UserResult {
   id: string;
@@ -158,6 +159,14 @@ const UserCard: React.FC<UserCardProps> = ({ userData, friendshipStatus, onFrien
                 >
                   <UserPlus className="h-4 w-4" />
                 </Button>
+              )}
+
+              {/* Team invitation button - only show if player has no team */}
+              {!userData.team_id && (
+                <TeamInviteButton
+                  targetUserId={userData.id}
+                  targetUsername={userData.username}
+                />
               )}
             </div>
           )}
