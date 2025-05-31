@@ -1,6 +1,8 @@
+
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { useGamesData } from './useGamesData';
 import { useStoresData } from './useStoresData';
 
@@ -41,14 +43,19 @@ export interface MapStore {
 
 export function useMapData() {
   const { toast } = useToast();
+  const { user, initialLoading } = useAuth();
   const location = useLocation();
 
+  // Ne passer l'ID utilisateur que s'il est authentifié ET que le chargement initial est terminé
+  // Sinon, laisser undefined pour voir les parties publiques
+  const userId = (!initialLoading && user?.id) ? user.id : undefined;
+  
   const { 
     data: events = [], 
     isLoading: eventsLoading, 
     error: eventsError, 
     refetch: refetchEvents 
-  } = useGamesData(); // 👈 Plus d'argument userId ici
+  } = useGamesData(userId);
 
   const { 
     data: stores = [], 
@@ -84,7 +91,8 @@ export function useMapData() {
     }
   }, [location.pathname, refetchEvents, refetchStores]);
 
-  const loading = (eventsLoading || storesLoading);
+  // Ne pas considérer comme en cours de chargement si on attend juste l'auth
+  const loading = (eventsLoading || storesLoading) && !initialLoading;
   const error = eventsError || storesError;
 
   return { 
