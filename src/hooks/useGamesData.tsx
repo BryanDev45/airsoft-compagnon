@@ -1,18 +1,9 @@
+export const fetchGamesData = async (): Promise<MapEvent[]> => {
+  const cacheKey = 'map_games_data_public';
 
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { getValidCoordinates } from '@/utils/geocodingUtils';
-import { setStorageWithExpiry, CACHE_DURATIONS } from '@/utils/cacheUtils';
-import { MapEvent } from './useMapData';
-
-const GAMES_CACHE_KEY = 'map_games_data';
-
-export const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
-  const cacheKey = `${GAMES_CACHE_KEY}_${userId || 'anonymous'}`;
-  
   const today = new Date().toISOString().split('T')[0];
   
-  let query = supabase
+  const { data, error } = await supabase
     .from('airsoft_games')
     .select(`
       id, 
@@ -36,25 +27,15 @@ export const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
       Picture5
     `)
     .gte('date', today)
+    .eq('is_private', false) // 👈 Affiche uniquement les parties publiques
     .order('date', { ascending: true });
-  
-  // Si l'utilisateur est connecté, montrer ses parties privées + les parties publiques
-  // Si l'utilisateur n'est pas connecté, montrer seulement les parties publiques
-  if (userId) {
-    query = query.or(`is_private.eq.false,and(is_private.eq.true,created_by.eq.${userId})`);
-  } else {
-    // Pour les utilisateurs non connectés, montrer uniquement les parties publiques
-    query = query.eq('is_private', false);
-  }
-  
-  const { data, error } = await query;
-  
+
   if (error) throw error;
 
   const formattedEvents = await Promise.all((data || []).map(async (game) => {
     const gameDate = new Date(game.date);
     const formattedDate = `${gameDate.getDate().toString().padStart(2, '0')}/${(gameDate.getMonth() + 1).toString().padStart(2, '0')}/${gameDate.getFullYear()}`;
-    
+
     const gameImages = [
       game.Picture1,
       game.Picture2,
@@ -62,7 +43,7 @@ export const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
       game.Picture4,
       game.Picture5
     ].filter(Boolean);
-    
+
     const coordinates = await getValidCoordinates(
       game.latitude,
       game.longitude,
@@ -70,8 +51,8 @@ export const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
       game.zip_code,
       game.city
     );
-    
-    // Mettre à jour les coordonnées en arrière-plan si nécessaire
+
+    // Mise à jour des coordonnées si nécessaires
     if (coordinates.latitude !== game.latitude || coordinates.longitude !== game.longitude) {
       (async () => {
         try {
@@ -88,7 +69,7 @@ export const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
         }
       })();
     }
-    
+
     return {
       id: game.id,
       title: game.title,
@@ -105,20 +86,19 @@ export const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
       image: gameImages[0] || "/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png"
     };
   }));
-  
-  // Mettre en cache pour 10 minutes
+
   setStorageWithExpiry(cacheKey, formattedEvents, CACHE_DURATIONS.SHORT * 2);
-  
+
   return formattedEvents;
 };
 
-export function useGamesData(userId?: string) {
+export function useGamesData() {
   return useQuery({
-    queryKey: ['mapEvents', userId || 'anonymous'],
-    queryFn: () => fetchGamesData(userId),
+    queryKey: ['mapEvents'],
+    queryFn: fetchGamesData,
     refetchOnWindowFocus: false,
-    staleTime: CACHE_DURATIONS.SHORT * 2, // 10 minutes
-    gcTime: CACHE_DURATIONS.MEDIUM, // 30 minutes
+    staleTime: CACHE_DURATIONS.SHORT * 2,
+    gcTime: CACHE_DURATIONS.MEDIUM,
     retry: 1
   });
 }
