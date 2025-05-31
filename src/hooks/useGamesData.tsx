@@ -1,3 +1,10 @@
+
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { getValidCoordinates } from '@/utils/geocodingUtils';
+import { setStorageWithExpiry, CACHE_DURATIONS } from '@/utils/cacheUtils';
+import { MapEvent } from './useMapData';
+
 export const fetchGamesData = async (): Promise<MapEvent[]> => {
   const cacheKey = 'map_games_data_public';
 
