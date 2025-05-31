@@ -14,6 +14,7 @@ import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import Circle from 'ol/geom/Circle';
 import Overlay from 'ol/Overlay';
 import MapMarker from './MapMarker';
+import StoreImageCarousel from '../stores/StoreImageCarousel';
 import { MapEvent, MapStore } from '@/hooks/useMapData';
 
 interface MapComponentProps {
@@ -223,37 +224,62 @@ const MapComponent: React.FC<MapComponentProps> = ({
           />
         )}
         {selectedStore && (
-          <div className="bg-white rounded-lg shadow-lg p-4 max-w-sm">
-            <div className="flex justify-between items-start mb-2">
-              <h3 className="font-semibold text-lg">{selectedStore.name}</h3>
-              <button 
-                onClick={() => {
-                  setSelectedStore(null);
-                  overlayRef.current?.setPosition(undefined);
-                }}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                ×
-              </button>
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden max-w-sm border border-gray-200">
+            {/* Image carousel pour le magasin */}
+            <div className="relative h-32">
+              <StoreImageCarousel 
+                images={[
+                  selectedStore.image,
+                  selectedStore.picture2,
+                  selectedStore.picture3,
+                  selectedStore.picture4,
+                  selectedStore.picture5
+                ].filter(Boolean)}
+                storeName={selectedStore.name}
+              />
             </div>
-            <p className="text-sm text-gray-600 mb-2">{selectedStore.address}</p>
-            <p className="text-sm text-gray-600 mb-2">{selectedStore.zip_code} {selectedStore.city}</p>
-            {selectedStore.phone && (
-              <p className="text-sm text-gray-600 mb-2">📞 {selectedStore.phone}</p>
-            )}
-            {selectedStore.email && (
-              <p className="text-sm text-gray-600 mb-2">✉️ {selectedStore.email}</p>
-            )}
-            {selectedStore.website && (
-              <a 
-                href={selectedStore.website} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-sm text-blue-600 hover:underline"
-              >
-                🌐 Site web
-              </a>
-            )}
+            
+            {/* Contenu du magasin */}
+            <div className="p-4">
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="font-semibold text-lg text-gray-900">{selectedStore.name}</h3>
+                <button 
+                  onClick={() => {
+                    setSelectedStore(null);
+                    overlayRef.current?.setPosition(undefined);
+                  }}
+                  className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+                >
+                  ×
+                </button>
+              </div>
+              
+              <div className="space-y-2">
+                <p className="text-sm text-gray-600 flex items-start gap-1">
+                  <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  <span>{selectedStore.address}, {selectedStore.zip_code} {selectedStore.city}</span>
+                </p>
+                
+                {selectedStore.phone && (
+                  <p className="text-sm text-gray-600">📞 {selectedStore.phone}</p>
+                )}
+                
+                {selectedStore.email && (
+                  <p className="text-sm text-gray-600">✉️ {selectedStore.email}</p>
+                )}
+                
+                {selectedStore.website && (
+                  <a 
+                    href={selectedStore.website} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:underline inline-flex items-center gap-1"
+                  >
+                    🌐 Site web
+                  </a>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </div>

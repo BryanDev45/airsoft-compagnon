@@ -43,11 +43,12 @@ export interface MapStore {
 
 export function useMapData() {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, initialLoading } = useAuth();
   const location = useLocation();
 
-  // Passer l'ID utilisateur seulement s'il est connecté et authentifié, sinon undefined pour voir les parties publiques
-  const userId = user?.id || undefined;
+  // Ne passer l'ID utilisateur que s'il est authentifié ET que le chargement initial est terminé
+  // Sinon, laisser undefined pour voir les parties publiques
+  const userId = (!initialLoading && user?.id) ? user.id : undefined;
   
   const { 
     data: events = [], 
@@ -90,7 +91,8 @@ export function useMapData() {
     }
   }, [location.pathname, refetchEvents, refetchStores]);
 
-  const loading = eventsLoading || storesLoading;
+  // Ne pas considérer comme en cours de chargement si on attend juste l'auth
+  const loading = (eventsLoading || storesLoading) && !initialLoading;
   const error = eventsError || storesError;
 
   return { 
