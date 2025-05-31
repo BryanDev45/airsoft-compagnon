@@ -48,7 +48,7 @@ export function useMapData() {
 
   // Ne passer l'ID utilisateur que s'il est authentifié ET que le chargement initial est terminé
   // Sinon, laisser undefined pour voir les parties publiques
-  const userId = (!initialLoading && user?.id) ? user.id : undefined;
+  //const userId = (!initialLoading && user?.id) ? user.id : undefined;
   
   const { 
     data: events = [], 
