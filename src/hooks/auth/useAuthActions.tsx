@@ -1,5 +1,6 @@
+
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { getStorageWithExpiry, setStorageWithExpiry, clearCacheByPrefix, CACHE_DURATIONS } from '@/utils/cacheUtils';
@@ -13,7 +14,6 @@ const REMEMBER_ME_KEY = 'auth_remember_me';
 export const useAuthActions = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
 
   const login = async (email: string, password: string, rememberMe: boolean = false) => {
     if (!email || !password) {
@@ -71,9 +71,8 @@ export const useAuthActions = () => {
           description: "Bienvenue sur Airsoft Compagnon",
         });
         
-        // Navigate to the intended destination or profile page
-        const redirectTo = (location.state as any)?.from || '/profile';
-        navigate(redirectTo, { replace: true });
+        // Navigate to profile page
+        navigate('/profile');
         return true;
       } else {
         console.error("No user data returned from login");
