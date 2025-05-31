@@ -38,12 +38,12 @@ export const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
     .gte('date', today)
     .order('date', { ascending: true });
   
-  // Si l'utilisateur n'est pas connecté, montrer seulement les parties publiques
-  // Si l'utilisateur est connecté, montrer les parties publiques + ses parties privées
-  if (!userId) {
-    query = query.eq('is_private', false);
+  // Toujours montrer les parties publiques, même pour les utilisateurs non connectés
+  // Si l'utilisateur est connecté, montrer également ses parties privées
+  if (userId) {
+    query = query.or(`is_private.eq.false,and(is_private.eq.true,created_by.eq.${userId})`);
   } else {
-    query = query.or(`is_private.eq.false,created_by.eq.${userId}`);
+    query = query.eq('is_private', false);
   }
   
   const { data, error } = await query;

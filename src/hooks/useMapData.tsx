@@ -46,6 +46,7 @@ export function useMapData() {
   const { user } = useAuth();
   const location = useLocation();
 
+  // Passer l'ID utilisateur seulement s'il est connecté, sinon undefined pour voir les parties publiques
   const { 
     data: events = [], 
     isLoading: eventsLoading, 

@@ -9,8 +9,17 @@ interface EventCardProps {
 }
 
 const EventCard = ({ event }: EventCardProps) => {
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Empêcher la propagation d'événements qui pourraient causer des problèmes d'auth
+    e.stopPropagation();
+  };
+
   return (
-    <Link to={`/game/${event.id}`} className="block">
+    <Link 
+      to={`/game/${event.id}`} 
+      className="block"
+      onClick={handleCardClick}
+    >
       <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
         <GameImageCarousel 
           images={event.images || []} 
