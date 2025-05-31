@@ -53,7 +53,10 @@ export const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
   
   const { data, error } = await query;
   
-  if (error) throw error;
+  if (error) {
+    console.error('Error fetching games data:', error);
+    throw error;
+  }
 
   const formattedEvents = await Promise.all((data || []).map(async (game) => {
     const gameDate = new Date(game.date);

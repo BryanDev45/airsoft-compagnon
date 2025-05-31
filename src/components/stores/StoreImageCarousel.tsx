@@ -20,7 +20,7 @@ const StoreImageCarousel: React.FC<StoreImageCarouselProps> = ({ images, storeNa
   
   if (validImages.length === 0) {
     return (
-      <div className="relative h-48 bg-gray-200 flex items-center justify-center">
+      <div className="relative w-full h-full bg-gray-200 flex items-center justify-center">
         <img
           src="/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png"
           alt={storeName}
@@ -50,7 +50,7 @@ const StoreImageCarousel: React.FC<StoreImageCarouselProps> = ({ images, storeNa
   };
 
   return (
-    <div className="relative h-48 group">
+    <div className="relative w-full h-full group">
       <img
         src={validImages[currentImageIndex]}
         alt={`${storeName} - Image ${currentImageIndex + 1}`}
@@ -69,7 +69,7 @@ const StoreImageCarousel: React.FC<StoreImageCarouselProps> = ({ images, storeNa
           <Button
             variant="outline"
             size="icon"
-            className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 bg-white/80 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 bg-white/90 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
             onClick={goToPrevious}
           >
             <ChevronLeft className="h-4 w-4" />
@@ -79,19 +79,19 @@ const StoreImageCarousel: React.FC<StoreImageCarouselProps> = ({ images, storeNa
           <Button
             variant="outline"
             size="icon"
-            className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 bg-white/80 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 bg-white/90 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
             onClick={goToNext}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
 
           {/* Indicateurs de points */}
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
             {validImages.map((_, index) => (
               <button
                 key={index}
-                className={`w-2 h-2 rounded-full transition-colors ${
-                  index === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                className={`w-2 h-2 rounded-full transition-colors shadow-sm ${
+                  index === currentImageIndex ? 'bg-white' : 'bg-white/60'
                 }`}
                 onClick={(e) => {
                   e.preventDefault();

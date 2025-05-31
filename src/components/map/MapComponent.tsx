@@ -224,9 +224,9 @@ const MapComponent: React.FC<MapComponentProps> = ({
           />
         )}
         {selectedStore && (
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden max-w-sm border border-gray-200">
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden max-w-md w-[400px] border border-gray-200">
             {/* Image carousel pour le magasin */}
-            <div className="relative h-32">
+            <div className="relative h-40">
               <StoreImageCarousel 
                 images={[
                   selectedStore.image,
@@ -240,32 +240,38 @@ const MapComponent: React.FC<MapComponentProps> = ({
             </div>
             
             {/* Contenu du magasin */}
-            <div className="p-4">
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="font-semibold text-lg text-gray-900">{selectedStore.name}</h3>
+            <div className="p-4 space-y-3">
+              <div className="flex justify-between items-start">
+                <h3 className="font-semibold text-lg text-gray-900 pr-2">{selectedStore.name}</h3>
                 <button 
                   onClick={() => {
                     setSelectedStore(null);
                     overlayRef.current?.setPosition(undefined);
                   }}
-                  className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+                  className="text-gray-400 hover:text-gray-600 text-xl leading-none flex-shrink-0"
                 >
                   ×
                 </button>
               </div>
               
               <div className="space-y-2">
-                <p className="text-sm text-gray-600 flex items-start gap-1">
-                  <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                  <span>{selectedStore.address}, {selectedStore.zip_code} {selectedStore.city}</span>
+                <p className="text-sm text-gray-600 flex items-start gap-2">
+                  <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0 text-gray-400" />
+                  <span className="break-words">{selectedStore.address}, {selectedStore.zip_code} {selectedStore.city}</span>
                 </p>
                 
                 {selectedStore.phone && (
-                  <p className="text-sm text-gray-600">📞 {selectedStore.phone}</p>
+                  <p className="text-sm text-gray-600 flex items-center gap-2">
+                    <span className="text-gray-400">📞</span>
+                    <span>{selectedStore.phone}</span>
+                  </p>
                 )}
                 
                 {selectedStore.email && (
-                  <p className="text-sm text-gray-600">✉️ {selectedStore.email}</p>
+                  <p className="text-sm text-gray-600 flex items-center gap-2">
+                    <span className="text-gray-400">✉️</span>
+                    <span className="break-all">{selectedStore.email}</span>
+                  </p>
                 )}
                 
                 {selectedStore.website && (
@@ -273,9 +279,10 @@ const MapComponent: React.FC<MapComponentProps> = ({
                     href={selectedStore.website} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-sm text-blue-600 hover:underline inline-flex items-center gap-1"
+                    className="text-sm text-blue-600 hover:underline inline-flex items-center gap-2"
                   >
-                    🌐 Site web
+                    <span className="text-gray-400">🌐</span>
+                    <span>Site web</span>
                   </a>
                 )}
               </div>
