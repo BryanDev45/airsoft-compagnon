@@ -46,13 +46,15 @@ export function useMapData() {
   const { user } = useAuth();
   const location = useLocation();
 
-  // Passer l'ID utilisateur seulement s'il est connecté, sinon undefined pour voir les parties publiques
+  // Passer l'ID utilisateur seulement s'il est connecté et authentifié, sinon undefined pour voir les parties publiques
+  const userId = user?.id || undefined;
+  
   const { 
     data: events = [], 
     isLoading: eventsLoading, 
     error: eventsError, 
     refetch: refetchEvents 
-  } = useGamesData(user?.id);
+  } = useGamesData(userId);
 
   const { 
     data: stores = [], 

@@ -51,19 +51,31 @@ export const useAuthActions = () => {
       if (data && data.user) {
         console.log("Login successful, user data received");
         
-        // Cache the auth state with appropriate duration
-        const ttl = rememberMe ? CACHE_DURATIONS.LONG : CACHE_DURATIONS.SHORT;
-        setStorageWithExpiry(USER_CACHE_KEY, data.user, ttl);
-        setStorageWithExpiry(SESSION_CACHE_KEY, data.session, ttl);
-        setStorageWithExpiry(AUTH_STATE_KEY, { isAuthenticated: true, value: true }, ttl);
+        // Store remember me preference first
+        localStorage.setItem(REMEMBER_ME_KEY, rememberMe.toString());
         
-        // Store remember me preference
+        // Cache the auth state with appropriate duration
+        // Si "resté connecté" n'est pas coché, utiliser sessionStorage pour la session et localStorage pour les autres données
         if (rememberMe) {
-          localStorage.setItem(REMEMBER_ME_KEY, 'true');
+          // Utiliser localStorage avec une durée longue
+          const ttl = CACHE_DURATIONS.LONG;
+          setStorageWithExpiry(USER_CACHE_KEY, data.user, ttl);
+          setStorageWithExpiry(SESSION_CACHE_KEY, data.session, ttl);
+          setStorageWithExpiry(AUTH_STATE_KEY, { isAuthenticated: true, value: true }, ttl);
         } else {
-          localStorage.setItem(REMEMBER_ME_KEY, 'false');
-          // Set up session storage listener for auto-logout
-          setupSessionLogout();
+          // Utiliser sessionStorage pour que les données persistent pendant la session du navigateur
+          sessionStorage.setItem(USER_CACHE_KEY, JSON.stringify({
+            data: data.user,
+            expiry: Date.now() + CACHE_DURATIONS.LONG // Très longue durée pour la session
+          }));
+          sessionStorage.setItem(SESSION_CACHE_KEY, JSON.stringify({
+            data: data.session,
+            expiry: Date.now() + CACHE_DURATIONS.LONG
+          }));
+          sessionStorage.setItem(AUTH_STATE_KEY, JSON.stringify({
+            data: { isAuthenticated: true, value: true },
+            expiry: Date.now() + CACHE_DURATIONS.LONG
+          }));
         }
         
         toast({
@@ -94,21 +106,6 @@ export const useAuthActions = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const setupSessionLogout = () => {
-    // Auto-logout when window is closed if remember me is not checked
-    window.addEventListener('beforeunload', () => {
-      const rememberMe = localStorage.getItem(REMEMBER_ME_KEY) === 'true';
-      if (!rememberMe) {
-        // Silent logout without navigation or toast
-        supabase.auth.signOut();
-        localStorage.removeItem(USER_CACHE_KEY);
-        localStorage.removeItem(SESSION_CACHE_KEY);
-        localStorage.removeItem(AUTH_STATE_KEY);
-        localStorage.removeItem(REMEMBER_ME_KEY);
-      }
-    });
   };
 
   const register = async (email: string, password: string, userData: any) => {
@@ -173,12 +170,19 @@ export const useAuthActions = () => {
         console.warn('Supabase logout failed (continuing with local cleanup):', supabaseError);
       }
       
-      // Always clear local storage regardless of Supabase response
+      // Always clear local storage and session storage regardless of Supabase response
       try {
+        // Clear localStorage
         localStorage.removeItem(USER_CACHE_KEY);
         localStorage.removeItem(SESSION_CACHE_KEY);
         localStorage.removeItem(AUTH_STATE_KEY);
         localStorage.removeItem(REMEMBER_ME_KEY);
+        
+        // Clear sessionStorage
+        sessionStorage.removeItem(USER_CACHE_KEY);
+        sessionStorage.removeItem(SESSION_CACHE_KEY);
+        sessionStorage.removeItem(AUTH_STATE_KEY);
+        
         clearCacheByPrefix('userProfile_');
         clearCacheByPrefix('profile_data');
         clearCacheByPrefix('user_stats');
@@ -199,6 +203,7 @@ export const useAuthActions = () => {
       // Even if there's an error, force the logout by clearing storage and navigating
       try {
         localStorage.clear();
+        sessionStorage.clear();
         navigate('/login');
         toast({
           title: "Déconnexion effectuée",
