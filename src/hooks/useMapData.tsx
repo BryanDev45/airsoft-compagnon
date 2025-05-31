@@ -43,12 +43,12 @@ export interface MapStore {
 
 export function useMapData() {
   const { toast } = useToast();
-  const { user, initialLoading } = useAuth();
+  const { user } = useAuth();
   const location = useLocation();
 
-  // Ne passer l'ID utilisateur que s'il est authentifié ET que le chargement initial est terminé
-  // Sinon, laisser undefined pour voir les parties publiques
-  const userId = (!initialLoading && user?.id) ? user.id : undefined;
+  // Toujours charger les données, même sans authentification
+  // Si l'utilisateur est connecté, passer son ID pour voir aussi ses parties privées
+  const userId = user?.id;
   
   const { 
     data: events = [], 
@@ -91,8 +91,7 @@ export function useMapData() {
     }
   }, [location.pathname, refetchEvents, refetchStores]);
 
-  // Ne pas considérer comme en cours de chargement si on attend juste l'auth
-  const loading = (eventsLoading || storesLoading) && !initialLoading;
+  const loading = eventsLoading || storesLoading;
   const error = eventsError || storesError;
 
   return { 

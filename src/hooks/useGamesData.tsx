@@ -10,7 +10,11 @@ const GAMES_CACHE_KEY = 'map_games_data';
 export const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
   const cacheKey = `${GAMES_CACHE_KEY}_${userId || 'anonymous'}`;
   
-  const today = new Date().toISOString().split('T')[0];
+  // Obtenir la date d'aujourd'hui et celle de demain pour exclure les parties d'aujourd'hui
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowISO = tomorrow.toISOString().split('T')[0];
   
   let query = supabase
     .from('airsoft_games')
@@ -35,7 +39,7 @@ export const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
       Picture4,
       Picture5
     `)
-    .gte('date', today)
+    .gte('date', tomorrowISO) // Exclure les parties d'aujourd'hui et du passé
     .order('date', { ascending: true });
   
   // Si l'utilisateur est connecté, montrer ses parties privées + les parties publiques
