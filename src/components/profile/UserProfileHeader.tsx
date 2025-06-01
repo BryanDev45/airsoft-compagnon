@@ -48,7 +48,9 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
   const isOwnProfile = currentUserId === userData?.id;
 
   // Utiliser la réputation mise à jour si disponible, sinon utiliser celle du profil
-  const displayedReputation = userReputation !== null ? userReputation : profileData?.reputation || 0;
+  // Ne pas afficher la réputation si elle est 0 ou null
+  const displayedReputation = userReputation !== null && userReputation > 0 ? userReputation : 
+                              (profileData?.reputation && profileData.reputation > 0 ? profileData.reputation : null);
 
   return (
     <div className="relative">

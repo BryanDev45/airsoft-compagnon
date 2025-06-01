@@ -67,21 +67,21 @@ const GameParticipantsTab: React.FC<GameParticipantsTabProps> = ({
           {participants.map((participant) => (
             <div 
               key={participant.id} 
-              className="bg-white p-4 rounded-md border flex items-center gap-3 cursor-pointer hover:bg-gray-50 transition-colors"
+              className="bg-white p-4 rounded-md border flex items-center gap-3 cursor-pointer hover:bg-gray-50 transition-colors overflow-hidden"
               onClick={() => handleProfileClick(participant.profile?.username)}
             >
-              <Avatar className="h-12 w-12">
+              <Avatar className="h-12 w-12 flex-shrink-0">
                 <AvatarImage 
                   src={participant.profile?.avatar || ""} 
                   alt={participant.profile?.username || ""}
                 />
                 <AvatarFallback>{getInitials(participant.profile?.username)}</AvatarFallback>
               </Avatar>
-              <div className="flex-grow">
-                <div className="font-medium">{participant.profile?.username || "Utilisateur"}</div>
-                <div className="text-sm text-gray-500">{participant.profile?.team || "Aucune équipe"}</div>
+              <div className="flex-grow min-w-0">
+                <div className="font-medium truncate">{participant.profile?.username || "Utilisateur"}</div>
+                <div className="text-sm text-gray-500 truncate">{participant.profile?.team || "Aucune équipe"}</div>
               </div>
-              <span className={`text-xs px-2 py-1 rounded-full ${getRoleColor(participant.role)}`}>
+              <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap flex-shrink-0 ${getRoleColor(participant.role)}`}>
                 {participant.role || "Participant"}
               </span>
             </div>
