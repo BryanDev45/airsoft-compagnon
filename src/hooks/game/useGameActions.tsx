@@ -66,6 +66,7 @@ export const useGameActions = (gameData: any, id: string | undefined, loadPartic
           return;
         }
 
+        // S'assurer que user_id est bien défini lors de l'insertion
         const { error } = await supabase
           .from('game_participants')
           .insert({

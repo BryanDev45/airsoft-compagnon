@@ -184,51 +184,26 @@ export const NotificationList = () => {
     }
   };
 
-  const handleTeamInvitationClick = async (notification: Notification) => {
+  const handleAcceptTeamInvitation = async (notification: Notification) => {
     if (!notification.related_id) return;
 
-    try {
-      const { data: invitation, error } = await supabase
-        .from('team_invitations')
-        .select(`
-          *,
-          teams (name, logo),
-          profiles!team_invitations_inviter_user_id_fkey (username)
-        `)
-        .eq('id', notification.related_id)
-        .single();
-
-      if (error) throw error;
-
-      setSelectedInvitation(invitation);
-      setShowInvitationDialog(true);
-    } catch (error) {
-      console.error('Error fetching invitation details:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les détails de l'invitation",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleAcceptTeamInvitation = async (invitationId: string) => {
     try {
       setProcessingInvitation(true);
       
       const { error } = await supabase
         .from('team_invitations')
         .update({ status: 'accepted' })
-        .eq('id', invitationId);
+        .eq('id', notification.related_id);
 
       if (error) throw error;
+
+      await handleMarkAsRead(notification.id);
 
       toast({
         title: "Invitation acceptée",
         description: "Vous avez rejoint l'équipe avec succès"
       });
 
-      setShowInvitationDialog(false);
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     } catch (error) {
       console.error('Error accepting team invitation:', error);
@@ -242,23 +217,26 @@ export const NotificationList = () => {
     }
   };
 
-  const handleRejectTeamInvitation = async (invitationId: string) => {
+  const handleRejectTeamInvitation = async (notification: Notification) => {
+    if (!notification.related_id) return;
+
     try {
       setProcessingInvitation(true);
       
       const { error } = await supabase
         .from('team_invitations')
         .update({ status: 'rejected' })
-        .eq('id', invitationId);
+        .eq('id', notification.related_id);
 
       if (error) throw error;
+
+      await handleMarkAsRead(notification.id);
 
       toast({
         title: "Invitation refusée",
         description: "Vous avez refusé l'invitation"
       });
 
-      setShowInvitationDialog(false);
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     } catch (error) {
       console.error('Error rejecting team invitation:', error);
@@ -273,11 +251,6 @@ export const NotificationList = () => {
   };
 
   const handleNotificationClick = async (notification: Notification) => {
-    if (notification.type === 'team_invitation' && !notification.read) {
-      await handleTeamInvitationClick(notification);
-      return;
-    }
-
     await handleMarkAsRead(notification.id);
     if (notification.link) {
       navigate(notification.link);
@@ -360,13 +333,25 @@ export const NotificationList = () => {
                       </Button>
                     </div>
                   ) : notification.type === 'team_invitation' && !notification.read ? (
-                    <div className="flex mt-2 justify-end">
+                    <div className="flex mt-2 space-x-2 justify-end">
+                      <Button 
+                        variant="default"
+                        size="sm"
+                        className="bg-green-600 hover:bg-green-700"
+                        onClick={() => handleAcceptTeamInvitation(notification)}
+                        disabled={processingInvitation}
+                      >
+                        <UserCheck className="h-4 w-4 mr-1" />
+                        Accepter
+                      </Button>
                       <Button 
                         variant="outline"
                         size="sm"
-                        onClick={() => handleNotificationClick(notification)}
+                        onClick={() => handleRejectTeamInvitation(notification)}
+                        disabled={processingInvitation}
                       >
-                        Voir l'invitation
+                        <UserMinus className="h-4 w-4 mr-1" />
+                        Refuser
                       </Button>
                     </div>
                   ) : (
@@ -388,17 +373,6 @@ export const NotificationList = () => {
           </div>
         )}
       </div>
-
-      {selectedInvitation && (
-        <TeamInvitationDialog
-          open={showInvitationDialog}
-          onOpenChange={setShowInvitationDialog}
-          invitation={selectedInvitation}
-          onAccept={handleAcceptTeamInvitation}
-          onReject={handleRejectTeamInvitation}
-          isProcessing={processingInvitation}
-        />
-      )}
     </>
   );
 };
