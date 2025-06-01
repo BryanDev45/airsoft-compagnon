@@ -139,6 +139,8 @@ const Team = () => {
                 handleContactTeam={handleContactTeam} 
                 handleShare={handleShare} 
                 isTeamMember={isTeamMember}
+                currentUserId={currentUserId}
+                onTeamUpdate={handleTeamUpdate}
               />
             </div>
 

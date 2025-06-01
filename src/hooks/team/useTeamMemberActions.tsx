@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -196,13 +195,26 @@ export const useTeamMemberActions = (
     setLoading(true);
     
     try {
-      const { error } = await supabase
+      // Supprimer le membre de l'équipe
+      const { error: teamMemberError } = await supabase
         .from('team_members')
         .delete()
         .eq('team_id', team.id)
         .eq('user_id', user.id);
         
-      if (error) throw error;
+      if (teamMemberError) throw teamMemberError;
+
+      // Mettre à jour le profil pour supprimer les informations d'équipe
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          team: null,
+          team_id: null,
+          is_team_leader: false
+        })
+        .eq('id', user.id);
+
+      if (profileError) throw profileError;
       
       toast({
         title: "Équipe quittée",

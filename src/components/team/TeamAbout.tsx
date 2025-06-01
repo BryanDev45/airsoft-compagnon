@@ -4,19 +4,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Users, Calendar, Share2, Mail, Trophy } from 'lucide-react';
+import TeamApplicationButton from './TeamApplicationButton';
 
 interface TeamAboutProps {
   team: any;
   handleContactTeam: () => void;
   handleShare: () => void;
   isTeamMember: boolean;
+  currentUserId?: string;
+  onTeamUpdate?: () => void;
 }
 
 const TeamAbout: React.FC<TeamAboutProps> = ({ 
   team, 
   handleContactTeam, 
   handleShare, 
-  isTeamMember 
+  isTeamMember,
+  currentUserId,
+  onTeamUpdate
 }) => {
   return (
     <div className="space-y-6">
@@ -75,13 +80,23 @@ const TeamAbout: React.FC<TeamAboutProps> = ({
         </CardHeader>
         <CardContent className="space-y-3">
           {!isTeamMember && (
-            <Button 
-              className="w-full bg-airsoft-red hover:bg-red-700"
-              onClick={handleContactTeam}
-            >
-              <Mail className="h-4 w-4 mr-2" />
-              Contacter l'équipe
-            </Button>
+            <>
+              <TeamApplicationButton
+                teamId={team.id}
+                teamName={team.name}
+                leaderId={team.leader_id}
+                isRecruiting={team.is_recruiting}
+                currentUserId={currentUserId}
+                onApplicationSent={onTeamUpdate}
+              />
+              <Button 
+                className="w-full bg-airsoft-red hover:bg-red-700"
+                onClick={handleContactTeam}
+              >
+                <Mail className="h-4 w-4 mr-2" />
+                Contacter l'équipe
+              </Button>
+            </>
           )}
           <Button 
             variant="outline" 
