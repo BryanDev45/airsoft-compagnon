@@ -86,7 +86,7 @@ const GameDetails = () => {
 
   const isPastGame = gameData ? new Date(gameData.date) < new Date() : false;
   const isCreator = user && gameData ? user.id === gameData.created_by : false;
-  const canEditOrDelete = isCreator || isAdmin;
+  const canEditOrDelete = (isCreator || isAdmin) && !isPastGame;
 
   const gameImages = gameData ? [
     gameData.Picture1,
@@ -121,8 +121,9 @@ const GameDetails = () => {
                 onShare={handleShareGame}
                 isCreator={isCreator}
                 isPastGame={isPastGame}
+                isAdmin={isAdmin}
                 onEdit={canEditOrDelete ? handleEditGame : undefined}
-                onDelete={canEditOrDelete && !isPastGame ? handleDeleteGame : undefined}
+                onDelete={canEditOrDelete ? handleDeleteGame : undefined}
               />
               
               <div className="my-6">

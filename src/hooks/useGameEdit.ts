@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "@/components/ui/use-toast";
@@ -101,6 +100,21 @@ export const useGameEdit = (gameId: string | undefined) => {
     });
   };
 
+  // Check if user is admin
+  const isUserAdmin = async (): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.rpc('is_current_user_admin');
+      if (error) {
+        console.error('Error checking admin status:', error);
+        return false;
+      }
+      return data || false;
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+      return false;
+    }
+  };
+
   // Fetch game data
   useEffect(() => {
     const fetchGameData = async () => {
@@ -124,7 +138,7 @@ export const useGameEdit = (gameId: string | undefined) => {
           return;
         }
 
-        // Check if user is creator
+        // Check if user is authenticated
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
           toast({
@@ -137,18 +151,20 @@ export const useGameEdit = (gameId: string | undefined) => {
         }
 
         const isCreator = session.user.id === game.created_by;
+        const userIsAdmin = await isUserAdmin();
         
         // Check if game date has passed
         const gameDate = new Date(game.date);
         const today = new Date();
         const isPastGame = gameDate < today;
 
-        if (!isCreator || isPastGame) {
+        // Allow editing if user is creator OR admin, but not for past games
+        if ((!isCreator && !userIsAdmin) || isPastGame) {
           toast({
             title: "Non autorisé",
             description: isPastGame ? 
               "Impossible de modifier une partie passée" : 
-              "Vous n'êtes pas l'organisateur de cette partie",
+              "Vous n'êtes pas autorisé à modifier cette partie",
             variant: "destructive"
           });
           navigate(`/game/${gameId}`);
@@ -231,14 +247,10 @@ export const useGameEdit = (gameId: string | undefined) => {
         return;
       }
       
-      // Add files to images state
       const updatedImages = [...images, ...newFiles];
       setImages(updatedImages);
       
-      // Generate preview for new files
       const newPreviews = newFiles.map(file => URL.createObjectURL(file));
-      
-      // Update preview with both existing and new images
       setPreview([...existingImages, ...preview.slice(existingImages.length), ...newPreviews]);
       
       console.log(`${newFiles.length} nouvelles images ajoutées, total maintenant: ${updatedImages.length} + ${existingImages.length} existantes`);
@@ -246,31 +258,24 @@ export const useGameEdit = (gameId: string | undefined) => {
   };
 
   const removeImage = (index: number) => {
-    // Create a copy of the preview array
     const newPreview = [...preview];
     
-    // Check if we're removing an existing image or a new one
     if (index < existingImages.length) {
-      // Removing an existing image
       const newExistingImages = [...existingImages];
       newExistingImages.splice(index, 1);
       setExistingImages(newExistingImages);
       
-      // Remove from preview
       newPreview.splice(index, 1);
       setPreview(newPreview);
       
       console.log(`Image existante supprimée à l'index ${index}, restantes: ${newExistingImages.length}`);
     } else {
-      // Removing a new image
       const adjustedIndex = index - existingImages.length;
       
-      // Remove from images array
       const newImages = [...images];
       newImages.splice(adjustedIndex, 1);
       setImages(newImages);
       
-      // Remove from preview
       newPreview.splice(index, 1);
       setPreview(newPreview);
       
@@ -316,13 +321,11 @@ export const useGameEdit = (gameId: string | undefined) => {
       };
 
       // Gérer les images existantes d'abord
-      // Réinitialiser tous les champs d'image à null
       const pictureFields = ['Picture1', 'Picture2', 'Picture3', 'Picture4', 'Picture5'];
       pictureFields.forEach(field => {
         updateData[field] = null;
       });
 
-      // Puis ajouter les images existantes conservées
       existingImages.forEach((img, index) => {
         if (index < 5) {
           updateData[`Picture${index + 1}`] = img;
@@ -331,7 +334,6 @@ export const useGameEdit = (gameId: string | undefined) => {
 
       console.log("Données de mise à jour initiales avec images existantes:", updateData);
 
-      // Mettre à jour les données du jeu dans la base de données
       const { error: updateError } = await supabase
         .from('airsoft_games')
         .update(updateData)
@@ -339,11 +341,9 @@ export const useGameEdit = (gameId: string | undefined) => {
 
       if (updateError) throw updateError;
 
-      // Télécharger les nouvelles images si nécessaire
       if (images.length > 0) {
         console.log(`Téléchargement de ${images.length} nouvelles images`);
         
-        // Utiliser uploadGameImages qui gère maintenant la mise à jour des champs Picture1-5
         const { data: imageUrls, error: imageError } = await uploadGameImages(gameId, images);
         
         if (imageError) {

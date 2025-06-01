@@ -36,6 +36,7 @@ interface GameHeaderProps {
   isPastGame?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
+  isAdmin?: boolean;
 }
 
 const GameHeader: React.FC<GameHeaderProps> = ({
@@ -57,7 +58,8 @@ const GameHeader: React.FC<GameHeaderProps> = ({
   isCreator = false,
   isPastGame = false,
   onEdit,
-  onDelete
+  onDelete,
+  isAdmin = false
 }) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   
@@ -69,12 +71,14 @@ const GameHeader: React.FC<GameHeaderProps> = ({
   // Format time
   const formatTime = (timeString: string | null) => {
     if (!timeString) return '';
-    // Handle PostgreSQL time format (HH:MM:SS)
     const [hours, minutes] = timeString.split(':');
     return `${hours}:${minutes}`;
   };
   
   const formattedTimeRange = `${formatTime(startTime)} - ${formatTime(endTime)}`;
+
+  // Show edit/delete buttons if user is creator OR admin (but not for past games)
+  const canEditOrDelete = (isCreator || isAdmin) && !isPastGame;
 
   return (
     <div className="bg-gradient-to-r from-airsoft-dark to-[#1A1F2C] text-white py-8 shadow-md">
@@ -88,6 +92,11 @@ const GameHeader: React.FC<GameHeaderProps> = ({
               <Badge className={`${!isPastGame ? 'bg-airsoft-red' : 'bg-gray-600'}`}>
                 {!isPastGame ? "À venir" : "Terminé"}
               </Badge>
+              {isAdmin && !isCreator && (
+                <Badge variant="outline" className="border-yellow-400 text-yellow-400 bg-yellow-400/10">
+                  Admin
+                </Badge>
+              )}
             </div>
             <h1 className="text-3xl font-bold">{title}</h1>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm text-gray-200 mt-2">
@@ -114,7 +123,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
           </div>
           <div className="flex flex-wrap gap-2 mt-4 md:mt-0 md:flex-col lg:flex-row">
             <div className="flex gap-2">
-              {isCreator && !isPastGame && (
+              {canEditOrDelete && (
                 <>
                   {onDelete && (
                     <Button 
@@ -177,6 +186,11 @@ const GameHeader: React.FC<GameHeaderProps> = ({
             <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
             <AlertDialogDescription>
               Êtes-vous sûr de vouloir supprimer cette partie ? Cette action est irréversible.
+              {isAdmin && !isCreator && (
+                <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-yellow-800 text-sm">
+                  <strong>Note:</strong> Vous supprimez cette partie en tant qu'administrateur.
+                </div>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

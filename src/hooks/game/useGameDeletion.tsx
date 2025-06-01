@@ -32,6 +32,7 @@ export const useGameDeletion = (gameData: any, id: string | undefined) => {
     const userIsAdmin = await isUserAdmin();
     const isCreator = user.id === gameData.created_by;
     
+    // Permettre la suppression si l'utilisateur est le créateur OU s'il est admin
     if (!isCreator && !userIsAdmin) {
       toast({
         variant: "destructive",
@@ -82,7 +83,9 @@ export const useGameDeletion = (gameData: any, id: string | undefined) => {
       
       toast({
         title: "Partie supprimée",
-        description: "La partie a été supprimée avec succès."
+        description: userIsAdmin && !isCreator ? 
+          "La partie a été supprimée par un administrateur." :
+          "La partie a été supprimée avec succès."
       });
       
       navigate('/parties');
