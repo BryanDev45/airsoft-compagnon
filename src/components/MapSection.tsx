@@ -15,6 +15,11 @@ const MapSection: React.FC = () => {
   const { user } = useAuth();
   const { loading: eventsLoading, events, error: eventsError } = useMapData();
   
+  console.log('MapSection - User:', user ? 'authenticated' : 'anonymous');
+  console.log('MapSection - Events loaded:', events.length);
+  console.log('MapSection - Loading:', eventsLoading);
+  console.log('MapSection - Error:', eventsError);
+  
   const {
     searchQuery,
     setSearchQuery,
@@ -37,6 +42,8 @@ const MapSection: React.FC = () => {
   
   const loading = eventsLoading;
   const error = eventsError;
+  
+  console.log('MapSection - Filtered events:', filteredEvents.length);
   
   const handleRetry = () => {
     window.location.reload();
@@ -79,7 +86,7 @@ const MapSection: React.FC = () => {
                     <p className="text-gray-500">Chargement de la carte...</p>
                   </div>
                 </div>
-              ) : error ? (
+              ) : error && !events.length ? (
                 <div className="flex items-center justify-center h-full flex-col">
                   <div className="text-center">
                     <AlertCircle className="h-12 w-12 text-airsoft-red mx-auto mb-4" />
@@ -103,7 +110,14 @@ const MapSection: React.FC = () => {
               ) : (
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center">
-                    <p className="text-gray-500">Aucune partie trouvée correspondant à vos critères</p>
+                    <p className="text-gray-500">
+                      {!user && events.length === 0 
+                        ? "Aucune partie publique disponible actuellement" 
+                        : "Aucune partie trouvée correspondant à vos critères"}
+                    </p>
+                    {!user && events.length === 0 && (
+                      <p className="text-gray-400 mt-2">Les parties publiques s'afficheront ici</p>
+                    )}
                   </div>
                 </div>
               )}
@@ -113,7 +127,7 @@ const MapSection: React.FC = () => {
         
         <MapResultsDisplay 
           loading={loading} 
-          error={error} 
+          error={error && !events.length ? error : null} 
           filteredEvents={filteredEvents} 
           stores={[]}
           handleRetry={handleRetry} 

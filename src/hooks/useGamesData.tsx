@@ -48,8 +48,11 @@ export const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
     query = query.or(`is_private.eq.false,and(is_private.eq.true,created_by.eq.${userId})`);
   } else {
     // Pour les utilisateurs non connectés, montrer uniquement les parties publiques
-    query = query.eq('is_private', false);
+    // S'assurer que is_private est soit false soit null (pour les anciennes parties)
+    query = query.or('is_private.eq.false,is_private.is.null');
   }
+  
+  console.log('Fetching games for user:', userId || 'anonymous');
   
   const { data, error } = await query;
   
@@ -57,6 +60,8 @@ export const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
     console.error('Error fetching games data:', error);
     throw error;
   }
+
+  console.log('Raw games data from Supabase:', data);
 
   const formattedEvents = await Promise.all((data || []).map(async (game) => {
     const gameDate = new Date(game.date);
@@ -112,6 +117,8 @@ export const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
       image: gameImages[0] || "/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png"
     };
   }));
+  
+  console.log('Formatted events:', formattedEvents);
   
   // Mettre en cache pour 10 minutes
   setStorageWithExpiry(cacheKey, formattedEvents, CACHE_DURATIONS.SHORT * 2);

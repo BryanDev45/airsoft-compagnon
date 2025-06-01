@@ -48,7 +48,11 @@ export function useMapData() {
 
   // Toujours charger les données, même sans authentification
   // Si l'utilisateur est connecté, passer son ID pour voir aussi ses parties privées
+  // Sinon, passer undefined pour voir seulement les parties publiques
   const userId = user?.id;
+  
+  console.log('useMapData - Current user:', user ? 'authenticated' : 'anonymous');
+  console.log('useMapData - User ID being passed:', userId);
   
   const { 
     data: events = [], 
@@ -64,9 +68,10 @@ export function useMapData() {
     refetch: refetchStores 
   } = useStoresData();
 
-  // Handle errors
+  // Handle errors (mais pas les erreurs de réseau temporaires)
   useEffect(() => {
-    if (eventsError && eventsError.message !== "Failed to fetch") {
+    if (eventsError && eventsError.message !== "Failed to fetch" && !eventsError.message?.includes('network')) {
+      console.error('Events error:', eventsError);
       toast({
         title: "Erreur",
         description: "Impossible de charger les parties",
@@ -74,7 +79,8 @@ export function useMapData() {
       });
     }
     
-    if (storesError && storesError.message !== "Failed to fetch") {
+    if (storesError && storesError.message !== "Failed to fetch" && !storesError.message?.includes('network')) {
+      console.error('Stores error:', storesError);
       toast({
         title: "Erreur",
         description: "Impossible de charger les magasins",
@@ -86,6 +92,7 @@ export function useMapData() {
   // Refetch data when navigating to /parties page
   useEffect(() => {
     if (location.pathname === '/parties') {
+      console.log('Refetching data for /parties page');
       refetchEvents();
       refetchStores();
     }
@@ -93,6 +100,10 @@ export function useMapData() {
 
   const loading = eventsLoading || storesLoading;
   const error = eventsError || storesError;
+
+  console.log('useMapData - Events loaded:', events.length);
+  console.log('useMapData - Loading state:', loading);
+  console.log('useMapData - Error state:', error);
 
   return { 
     loading, 
