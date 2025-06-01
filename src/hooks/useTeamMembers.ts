@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
@@ -126,21 +125,10 @@ export const useTeamMembers = (
         return;
       }
       
-      // Only update the UI if the database update was successful
-      setPendingMembers(prev => {
-        // Find the accepted member
-        const acceptedMember = prev.find(m => m.id === memberId);
-        if (!acceptedMember) return prev;
-        
-        // Create a copy of the member with updated status
-        const updatedMember = { ...acceptedMember, status: 'confirmed' };
-        
-        // Add the member to the confirmed members list
-        setTeamMembers(currentMembers => [...currentMembers, updatedMember]);
-        
-        // Return pending members without the accepted one
-        return prev.filter(m => m.id !== memberId);
-      });
+      console.log("Member accepted successfully, refreshing team members list");
+      
+      // Refresh the team members list to get updated data
+      await fetchTeamMembers();
       
       toast({
         title: "Membre accepté",

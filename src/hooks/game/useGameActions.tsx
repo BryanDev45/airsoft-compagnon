@@ -105,6 +105,7 @@ export const useGameActions = (gameData: any, id: string | undefined, loadPartic
     
     try {
       setLoadingRegistration(true);
+      console.log('Attempting to unregister user:', user.id, 'from game:', id);
       
       const { error } = await supabase
         .from('game_participants')
@@ -116,6 +117,8 @@ export const useGameActions = (gameData: any, id: string | undefined, loadPartic
         console.error('Unregistration error:', error);
         throw error;
       }
+      
+      console.log('Successfully unregistered from game');
       
       toast({
         title: "Désinscription réussie",
@@ -155,27 +158,42 @@ export const useGameActions = (gameData: any, id: string | undefined, loadPartic
     
     try {
       setDeletingGame(true);
+      console.log('Attempting to delete game:', id, 'User is admin:', userIsAdmin, 'Is creator:', isCreator);
       
+      // Supprimer d'abord les participants
       const { error: participantsError } = await supabase
         .from('game_participants')
         .delete()
         .eq('game_id', id);
       
-      if (participantsError) throw participantsError;
+      if (participantsError) {
+        console.error('Error deleting participants:', participantsError);
+        throw participantsError;
+      }
       
+      // Supprimer les commentaires
       const { error: commentsError } = await supabase
         .from('game_comments')
         .delete()
         .eq('game_id', id);
         
-      if (commentsError) throw commentsError;
+      if (commentsError) {
+        console.error('Error deleting comments:', commentsError);
+        throw commentsError;
+      }
       
+      // Supprimer la partie
       const { error: gameError } = await supabase
         .from('airsoft_games')
         .delete()
         .eq('id', id);
         
-      if (gameError) throw gameError;
+      if (gameError) {
+        console.error('Error deleting game:', gameError);
+        throw gameError;
+      }
+      
+      console.log('Successfully deleted game');
       
       toast({
         title: "Partie supprimée",
