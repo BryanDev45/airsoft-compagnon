@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -10,6 +9,8 @@ import { LogOut, Bell, Users, UserIcon } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/use-toast";
 import { useAuth } from '@/hooks/auth/useAuth';
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AuthSectionProps {
   isDesktop?: boolean;
@@ -24,6 +25,24 @@ export const AuthSection: React.FC<AuthSectionProps> = ({
 }) => {
   const navigate = useNavigate();
   const { user, logout, initialLoading } = useAuth();
+
+  // Fetch notifications for the user
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['notifications', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+        
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id,
+  });
 
   const handleLogout = async () => {
     await logout();
@@ -83,7 +102,7 @@ export const AuthSection: React.FC<AuthSectionProps> = ({
             <SheetHeader>
               <SheetTitle className="text-xl">Notifications</SheetTitle>
             </SheetHeader>
-            <NotificationList />
+            <NotificationList notifications={notifications} />
             <SheetFooter className="mt-4">
               <SheetClose asChild>
                 <Button variant="outline" className="w-full">Fermer</Button>
@@ -138,7 +157,7 @@ export const AuthSection: React.FC<AuthSectionProps> = ({
               <SheetHeader>
                 <SheetTitle className="text-xl">Notifications</SheetTitle>
               </SheetHeader>
-              <NotificationList />
+              <NotificationList notifications={notifications} />
               <SheetFooter className="mt-4">
                 <SheetClose asChild>
                   <Button variant="outline" className="w-full">Fermer</Button>
