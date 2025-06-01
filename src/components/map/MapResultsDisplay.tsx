@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { MapEvent, MapStore } from '@/hooks/useMapData';
 import GameImageCarousel from './GameImageCarousel';
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from '@/integrations/supabase/client';
 
 interface MapResultsDisplayProps {
   loading: boolean;
@@ -22,6 +24,34 @@ const MapResultsDisplay: React.FC<MapResultsDisplayProps> = ({
   stores = [],
   handleRetry
 }) => {
+  // Récupérer le nombre de participants pour chaque partie
+  const { data: participantCounts = {} } = useQuery({
+    queryKey: ['participant-counts', filteredEvents.map(e => e.id)],
+    queryFn: async () => {
+      if (filteredEvents.length === 0) return {};
+      
+      const gameIds = filteredEvents.map(event => event.id);
+      const { data, error } = await supabase
+        .from('game_participants')
+        .select('game_id')
+        .in('game_id', gameIds)
+        .eq('status', 'Confirmé');
+      
+      if (error) throw error;
+      
+      // Compter les participants par partie
+      const counts: Record<string, number> = {};
+      gameIds.forEach(id => counts[id] = 0);
+      
+      data?.forEach(participant => {
+        counts[participant.game_id] = (counts[participant.game_id] || 0) + 1;
+      });
+      
+      return counts;
+    },
+    enabled: filteredEvents.length > 0,
+  });
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -70,49 +100,52 @@ const MapResultsDisplay: React.FC<MapResultsDisplayProps> = ({
         <div>
           <h3 className="text-xl font-semibold mb-4">Parties d'airsoft ({filteredEvents.length})</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredEvents.map((event) => (
-              <Card key={event.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="relative">
-                  <GameImageCarousel 
-                    images={event.images || []} 
-                    title={event.title} 
-                  />
-                  <div className="absolute top-2 right-2">
-                    <Badge variant="secondary" className="bg-white/90 text-gray-700">
-                      {event.type}
-                    </Badge>
+            {filteredEvents.map((event) => {
+              const registeredCount = participantCounts[event.id] || 0;
+              const maxPlayers = event.maxPlayers || 0;
+              
+              return (
+                <Card key={event.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  <div className="relative">
+                    <GameImageCarousel 
+                      images={event.images || []} 
+                      title={event.title} 
+                    />
+                    <div className="absolute top-2 right-2">
+                      <Badge variant="secondary" className="bg-white/90 text-gray-700">
+                        {event.type}
+                      </Badge>
+                    </div>
                   </div>
-                </div>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg line-clamp-2">{event.title}</CardTitle>
-                  <CardDescription className="flex items-center gap-1">
-                    <MapPin className="h-4 w-4" />
-                    {event.location} ({event.department})
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Calendar className="h-4 w-4" />
-                    {event.date}
-                  </div>
-                  {event.maxPlayers && (
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg line-clamp-2">{event.title}</CardTitle>
+                    <CardDescription className="flex items-center gap-1">
+                      <MapPin className="h-4 w-4" />
+                      {event.location} ({event.department})
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Calendar className="h-4 w-4" />
+                      {event.date}
+                    </div>
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Users className="h-4 w-4" />
-                      Max {event.maxPlayers} joueurs
+                      {registeredCount}/{maxPlayers} joueurs
                     </div>
-                  )}
-                  {event.price !== undefined && (
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Euro className="h-4 w-4" />
-                      {event.price}€
-                    </div>
-                  )}
-                  <Button className="w-full mt-4 bg-airsoft-red hover:bg-red-700" asChild>
-                    <a href={`/game/${event.id}`}>Voir les détails</a>
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+                    {event.price !== undefined && (
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Euro className="h-4 w-4" />
+                        {event.price}€
+                      </div>
+                    )}
+                    <Button className="w-full mt-4 bg-airsoft-red hover:bg-red-700" asChild>
+                      <a href={`/game/${event.id}`}>Voir les détails</a>
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       )}
