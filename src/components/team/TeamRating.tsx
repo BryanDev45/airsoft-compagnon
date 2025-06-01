@@ -34,7 +34,7 @@ const TeamRating: React.FC<TeamRatingProps> = ({
       if (!currentUserId || isTeamMember) return;
       
       try {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('team_ratings')
           .select('rating')
           .eq('rater_id', currentUserId)
@@ -66,7 +66,7 @@ const TeamRating: React.FC<TeamRatingProps> = ({
       
       if (hasRated) {
         // Mettre à jour la note existante
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('team_ratings')
           .update({ rating, updated_at: new Date().toISOString() })
           .eq('rater_id', currentUserId)
@@ -75,7 +75,7 @@ const TeamRating: React.FC<TeamRatingProps> = ({
         if (error) throw error;
       } else {
         // Créer une nouvelle note
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('team_ratings')
           .insert({
             rater_id: currentUserId,
@@ -90,7 +90,7 @@ const TeamRating: React.FC<TeamRatingProps> = ({
       setUserRating(rating);
       
       // Mettre à jour la note moyenne de l'équipe
-      const { data: ratings, error: avgError } = await supabase
+      const { data: ratings, error: avgError } = await (supabase as any)
         .from('team_ratings')
         .select('rating')
         .eq('team_id', teamId);
@@ -98,7 +98,7 @@ const TeamRating: React.FC<TeamRatingProps> = ({
       if (avgError) throw avgError;
       
       if (ratings && ratings.length > 0) {
-        const avgRating = ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length;
+        const avgRating = ratings.reduce((sum: number, r: any) => sum + r.rating, 0) / ratings.length;
         
         const { error: updateError } = await supabase
           .from('teams')

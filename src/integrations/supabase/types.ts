@@ -614,6 +614,41 @@ export type Database = {
           },
         ]
       }
+      team_ratings: {
+        Row: {
+          created_at: string
+          id: string
+          rater_id: string
+          rating: number
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          rater_id: string
+          rating: number
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          rater_id?: string
+          rating?: number
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_ratings_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       teams: {
         Row: {
           banner: string | null
