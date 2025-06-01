@@ -108,7 +108,7 @@ const TeamDialogs = ({
               className="bg-airsoft-red hover:bg-red-700"
               asChild
             >
-              <Link to={`/profile`}>Voir profil complet</Link>
+              <Link to={`/user/${selectedMember?.username}`}>Voir profil complet</Link>
             </Button>
           </div>
         </DialogContent>
