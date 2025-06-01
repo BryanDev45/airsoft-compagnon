@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+import React from 'react';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 interface GameImageCarouselProps {
@@ -10,59 +11,40 @@ interface GameImageCarouselProps {
 const GameImageCarousel: React.FC<GameImageCarouselProps> = ({ images, title }) => {
   const defaultImage = "/lovable-uploads/dabf8bbc-44a7-4c03-bebe-009592f0c6c8.png";
   const displayImages = images.length > 0 ? images : [defaultImage];
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   if (displayImages.length === 1) {
     return (
-      <div className="w-full">
-        <AspectRatio ratio={16/9}>
-          <img 
-            src={displayImages[0]} 
-            alt={title}
-            className="object-cover w-full h-full rounded-lg transition-transform duration-300 hover:scale-105"
-          />
-        </AspectRatio>
-      </div>
+      <AspectRatio ratio={16/9}>
+        <img 
+          src={displayImages[0]} 
+          alt={title}
+          className="object-cover w-full h-full"
+        />
+      </AspectRatio>
     );
   }
 
   return (
-    <div className="w-full space-y-4">
-      {/* Image principale */}
-      <div className="relative">
-        <AspectRatio ratio={16/9}>
-          <img 
-            src={displayImages[selectedImageIndex]} 
-            alt={`${title} - Image ${selectedImageIndex + 1}`}
-            className="object-cover w-full h-full rounded-lg transition-transform duration-300 hover:scale-105 cursor-pointer"
-          />
-        </AspectRatio>
-        <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-          {selectedImageIndex + 1} / {displayImages.length}
-        </div>
-      </div>
-
-      {/* Miniatures */}
-      <div className="flex gap-2 overflow-x-auto pb-2">
-        {displayImages.map((image, index) => (
-          <button
-            key={index}
-            onClick={() => setSelectedImageIndex(index)}
-            className={`flex-shrink-0 transition-all duration-200 hover:scale-105 ${
-              index === selectedImageIndex 
-                ? 'ring-2 ring-airsoft-red shadow-lg' 
-                : 'opacity-70 hover:opacity-100'
-            }`}
-          >
-            <div className="w-20 h-14 rounded-md overflow-hidden">
-              <img 
-                src={image} 
-                alt={`${title} - Miniature ${index + 1}`}
-                className="object-cover w-full h-full"
-              />
-            </div>
-          </button>
-        ))}
+    <div className="relative">
+      <Carousel className="w-full">
+        <CarouselContent>
+          {displayImages.map((image, index) => (
+            <CarouselItem key={index}>
+              <AspectRatio ratio={16/9}>
+                <img 
+                  src={image} 
+                  alt={`${title} - Image ${index + 1}`}
+                  className="object-cover w-full h-full"
+                />
+              </AspectRatio>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 border-none text-white" />
+        <CarouselNext className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 border-none text-white" />
+      </Carousel>
+      <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+        {displayImages.length} photos
       </div>
     </div>
   );
