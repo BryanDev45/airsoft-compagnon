@@ -21,8 +21,11 @@ interface NotificationItemProps {
   onRejectFriend?: (notification: Notification) => void;
   onAcceptTeam?: (notification: Notification) => void;
   onRejectTeam?: (notification: Notification) => void;
+  onAcceptTeamRequest?: (notification: Notification) => void;
+  onRejectTeamRequest?: (notification: Notification) => void;
   onNavigate?: (notification: Notification) => void;
   processingInvitation?: boolean;
+  processingRequest?: boolean;
 }
 
 const NotificationItem: React.FC<NotificationItemProps> = ({
@@ -32,8 +35,11 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
   onRejectFriend,
   onAcceptTeam,
   onRejectTeam,
+  onAcceptTeamRequest,
+  onRejectTeamRequest,
   onNavigate,
-  processingInvitation = false
+  processingInvitation = false,
+  processingRequest = false
 }) => {
   return (
     <div 
@@ -99,6 +105,28 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
             size="sm"
             onClick={() => onRejectTeam(notification)}
             disabled={processingInvitation}
+          >
+            <UserMinus className="h-4 w-4 mr-1" />
+            Refuser
+          </Button>
+        </div>
+      ) : notification.type === 'team_request' && !notification.read && onAcceptTeamRequest && onRejectTeamRequest ? (
+        <div className="flex mt-2 space-x-2 justify-end">
+          <Button 
+            variant="default"
+            size="sm"
+            className="bg-blue-600 hover:bg-blue-700"
+            onClick={() => onAcceptTeamRequest(notification)}
+            disabled={processingRequest}
+          >
+            <UserCheck className="h-4 w-4 mr-1" />
+            Accepter
+          </Button>
+          <Button 
+            variant="outline"
+            size="sm"
+            onClick={() => onRejectTeamRequest(notification)}
+            disabled={processingRequest}
           >
             <UserMinus className="h-4 w-4 mr-1" />
             Refuser

@@ -1,14 +1,13 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { BellOff, Trash2 } from 'lucide-react';
+import { Bell } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/useAuth";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useNotificationActions } from "@/hooks/notifications/useNotificationActions";
-import { useFriendRequestActions } from "@/hooks/notifications/useFriendRequestActions";
-import { useTeamInvitationActions } from "@/hooks/notifications/useTeamInvitationActions";
+import { DropdownMenuContent } from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useNotificationActions } from '@/hooks/notifications/useNotificationActions';
+import { useFriendRequestActions } from '@/hooks/notifications/useFriendRequestActions';
+import { useTeamInvitationActions } from '@/hooks/notifications/useTeamInvitationActions';
+import { useTeamRequestActions } from '@/hooks/notifications/useTeamRequestActions';
 import NotificationItem from './NotificationItem';
 
 interface Notification {
@@ -22,79 +21,34 @@ interface Notification {
   related_id: string | null;
 }
 
-export const NotificationList = () => {
-  const navigate = useNavigate();
-  const { user } = useAuth();
+interface NotificationListProps {
+  notifications: Notification[];
+}
 
-  const { data: notifications = [], isLoading } = useQuery({
-    queryKey: ['notifications'],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+const NotificationList: React.FC<NotificationListProps> = ({ notifications }) => {
+  const { handleDeleteNotification, handleMarkAsRead, handleNavigateToNotification } = useNotificationActions();
+  const { processingInvitation: processingFriend, handleAcceptFriendRequest, handleRejectFriendRequest } = useFriendRequestActions(handleMarkAsRead);
+  const { processingInvitation, handleAcceptTeamInvitation, handleRejectTeamInvitation } = useTeamInvitationActions(handleMarkAsRead);
+  const { processingRequest, handleAcceptTeamRequest, handleRejectTeamRequest } = useTeamRequestActions(handleMarkAsRead);
 
-      if (error) throw error;
-      return data as Notification[];
-    },
-    enabled: !!user,
-  });
-
-  const {
-    handleMarkAsRead,
-    handleMarkAllAsRead,
-    handleDeleteNotification,
-    handleDeleteAllRead
-  } = useNotificationActions();
-
-  const {
-    handleAcceptFriendRequest,
-    handleRejectFriendRequest
-  } = useFriendRequestActions(handleMarkAsRead);
-
-  const {
-    processingInvitation,
-    handleAcceptTeamInvitation,
-    handleRejectTeamInvitation
-  } = useTeamInvitationActions(handleMarkAsRead);
-
-  const handleNotificationClick = async (notification: Notification) => {
-    await handleMarkAsRead(notification.id);
-    if (notification.link) {
-      navigate(notification.link);
-    }
-  };
-
-  if (isLoading) {
-    return <div className="text-center py-4">Chargement...</div>;
+  if (!notifications || notifications.length === 0) {
+    return (
+      <DropdownMenuContent align="end" className="w-80">
+        <div className="flex flex-col items-center justify-center py-8 text-gray-500">
+          <Bell className="h-8 w-8 mb-2" />
+          <p className="text-sm">Aucune notification</p>
+        </div>
+      </DropdownMenuContent>
+    );
   }
 
   return (
-    <div className="max-h-[calc(100vh-120px)] overflow-y-auto pr-2">
-      {notifications.length > 0 ? (
-        <>
-          <div className="mb-4 flex justify-between">
-            <Button 
-              variant="ghost" 
-              className="text-sm h-8 px-2"
-              onClick={handleDeleteAllRead}
-            >
-              <Trash2 className="h-4 w-4 mr-1" />
-              Supprimer les lues
-            </Button>
-            <Button 
-              variant="ghost" 
-              className="text-sm h-8 px-2"
-              onClick={handleMarkAllAsRead}
-            >
-              Tout marquer comme lu
-            </Button>
-          </div>
-          <div className="space-y-4">
-            {notifications.map(notification => (
+    <DropdownMenuContent align="end" className="w-80">
+      <div className="p-4">
+        <h3 className="font-semibold text-lg mb-3">Notifications</h3>
+        <ScrollArea className="h-96">
+          <div className="space-y-3">
+            {notifications.map((notification) => (
               <NotificationItem
                 key={notification.id}
                 notification={notification}
@@ -103,18 +57,18 @@ export const NotificationList = () => {
                 onRejectFriend={handleRejectFriendRequest}
                 onAcceptTeam={handleAcceptTeamInvitation}
                 onRejectTeam={handleRejectTeamInvitation}
-                onNavigate={handleNotificationClick}
-                processingInvitation={processingInvitation}
+                onAcceptTeamRequest={handleAcceptTeamRequest}
+                onRejectTeamRequest={handleRejectTeamRequest}
+                onNavigate={handleNavigateToNotification}
+                processingInvitation={processingInvitation || processingFriend}
+                processingRequest={processingRequest}
               />
             ))}
           </div>
-        </>
-      ) : (
-        <div className="text-center py-10">
-          <BellOff className="mx-auto h-12 w-12 text-gray-400 mb-3" />
-          <p className="text-gray-500">Vous n'avez aucune notification</p>
-        </div>
-      )}
-    </div>
+        </ScrollArea>
+      </div>
+    </DropdownMenuContent>
   );
 };
+
+export default NotificationList;

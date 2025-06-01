@@ -9,7 +9,7 @@ interface GameImageCarouselProps {
 }
 
 const GameImageCarousel: React.FC<GameImageCarouselProps> = ({ images, title }) => {
-  const defaultImage = "/lovable-uploads/8c35b648-4640-4896-943d-3e329c86a080.png";
+  const defaultImage = "/lovable-uploads/dabf8bbc-44a7-4c03-bebe-009592f0c6c8.png";
   const displayImages = images.length > 0 ? images : [defaultImage];
 
   if (displayImages.length === 1) {

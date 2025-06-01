@@ -14,24 +14,18 @@ interface GameImagesProps {
 }
 
 const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
-  // Filtrer les images valides
+  const defaultImage = "/lovable-uploads/dabf8bbc-44a7-4c03-bebe-009592f0c6c8.png";
+  
+  // Filtrer les images valides et ajouter l'image par défaut si aucune image
   const validImages = images.filter(Boolean) as string[];
-
-  // Ne pas afficher le carrousel s'il n'y a pas d'images
-  if (validImages.length === 0) {
-    return (
-      <div className="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center">
-        <p className="text-gray-500">Aucune image disponible</p>
-      </div>
-    );
-  }
+  const displayImages = validImages.length > 0 ? validImages : [defaultImage];
 
   // Afficher une seule image si il n'y en a qu'une
-  if (validImages.length === 1) {
+  if (displayImages.length === 1) {
     return (
       <div className="w-full h-64 rounded-lg overflow-hidden">
         <img
-          src={validImages[0]}
+          src={displayImages[0]}
           alt={title}
           className="w-full h-full object-cover"
         />
@@ -44,7 +38,7 @@ const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
     <div className="w-full">
       <Carousel className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl mx-auto">
         <CarouselContent>
-          {validImages.map((image, index) => (
+          {displayImages.map((image, index) => (
             <CarouselItem key={index}>
               <div className="w-full h-64 rounded-lg overflow-hidden">
                 <img
