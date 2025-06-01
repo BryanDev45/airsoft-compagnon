@@ -2,32 +2,13 @@
 import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Crosshair, Eye, AlertCircle, Lock } from 'lucide-react';
+import { GameData } from '@/types/game';
 
 interface GameEquipmentTabProps {
-  aegFpsMin: number | null;
-  aegFpsMax: number | null;
-  dmrFpsMax: number | null;
-  eyeProtectionRequired: boolean | null;
-  fullFaceProtectionRequired: boolean | null;
-  hasToilets: boolean | null;
-  hasParking: boolean | null;
-  hasEquipmentRental: boolean | null;
-  manualValidation: boolean | null;
-  isPrivate: boolean | null;
+  gameData: GameData;
 }
 
-const GameEquipmentTab: React.FC<GameEquipmentTabProps> = ({
-  aegFpsMin,
-  aegFpsMax,
-  dmrFpsMax,
-  eyeProtectionRequired,
-  fullFaceProtectionRequired,
-  hasToilets,
-  hasParking,
-  hasEquipmentRental,
-  manualValidation,
-  isPrivate
-}) => {
+const GameEquipmentTab: React.FC<GameEquipmentTabProps> = ({ gameData }) => {
   return (
     <>
       <h2 className="text-xl font-semibold mb-4">Équipement et limitations</h2>
@@ -41,11 +22,11 @@ const GameEquipmentTab: React.FC<GameEquipmentTabProps> = ({
           <div className="space-y-2 text-gray-700">
             <div className="flex items-center justify-between">
               <span>AEG / GBB :</span>
-              <Badge className="bg-amber-500">{aegFpsMin} - {aegFpsMax} FPS</Badge>
+              <Badge className="bg-amber-500">{gameData.aeg_fps_min} - {gameData.aeg_fps_max} FPS</Badge>
             </div>
             <div className="flex items-center justify-between">
               <span>Sniper / DMR :</span>
-              <Badge className="bg-amber-500">Max {dmrFpsMax} FPS</Badge>
+              <Badge className="bg-amber-500">Max {gameData.dmr_fps_max} FPS</Badge>
             </div>
           </div>
         </div>
@@ -58,14 +39,14 @@ const GameEquipmentTab: React.FC<GameEquipmentTabProps> = ({
           <div className="space-y-2 text-gray-700">
             <div className="flex items-center justify-between">
               <span>Protection oculaire :</span>
-              <Badge className={eyeProtectionRequired ? "bg-green-500" : "bg-red-500"}>
-                {eyeProtectionRequired ? "Obligatoire" : "Facultative"}
+              <Badge className={gameData.eye_protection_required ? "bg-green-500" : "bg-red-500"}>
+                {gameData.eye_protection_required ? "Obligatoire" : "Facultative"}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-left">Protection intégrale :</span>
-              <Badge className={fullFaceProtectionRequired ? "bg-green-500" : "bg-amber-500"}>
-                {fullFaceProtectionRequired ? "Obligatoire" : "Recommandée"}
+              <Badge className={gameData.full_face_protection_required ? "bg-green-500" : "bg-amber-500"}>
+                {gameData.full_face_protection_required ? "Obligatoire" : "Recommandée"}
               </Badge>
             </div>
           </div>
@@ -81,20 +62,20 @@ const GameEquipmentTab: React.FC<GameEquipmentTabProps> = ({
           <div className="space-y-2 text-gray-700">
             <div className="flex items-center justify-between">
               <span>Toilettes :</span>
-              <Badge className={hasToilets ? "bg-green-500" : "bg-red-500"}>
-                {hasToilets ? "Disponibles" : "Non disponibles"}
+              <Badge className={gameData.has_toilets ? "bg-green-500" : "bg-red-500"}>
+                {gameData.has_toilets ? "Disponibles" : "Non disponibles"}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
               <span>Parking :</span>
-              <Badge className={hasParking ? "bg-green-500" : "bg-red-500"}>
-                {hasParking ? "Disponible" : "Non disponible"}
+              <Badge className={gameData.has_parking ? "bg-green-500" : "bg-red-500"}>
+                {gameData.has_parking ? "Disponible" : "Non disponible"}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-left">Location de matériel:</span>
-              <Badge className={hasEquipmentRental ? "bg-green-500" : "bg-red-500"}>
-                {hasEquipmentRental ? "Disponible" : "Non disponible"}
+              <Badge className={gameData.has_equipment_rental ? "bg-green-500" : "bg-red-500"}>
+                {gameData.has_equipment_rental ? "Disponible" : "Non disponible"}
               </Badge>
             </div>
           </div>
@@ -108,14 +89,14 @@ const GameEquipmentTab: React.FC<GameEquipmentTabProps> = ({
           <div className="space-y-2 text-gray-700">
             <div className="flex items-center justify-between">
               <span>Validation :</span>
-              <Badge className={manualValidation ? "bg-amber-500" : "bg-green-500"}>
-                {manualValidation ? "Requise" : "Automatique"}
+              <Badge className={gameData.manual_validation ? "bg-amber-500" : "bg-green-500"}>
+                {gameData.manual_validation ? "Requise" : "Automatique"}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
               <span>Partie privée :</span>
-              <Badge className={isPrivate ? "bg-amber-500" : "bg-green-500"}>
-                {isPrivate ? "Oui" : "Non"}
+              <Badge className={gameData.is_private ? "bg-amber-500" : "bg-green-500"}>
+                {gameData.is_private ? "Oui" : "Non"}
               </Badge>
             </div>
           </div>
