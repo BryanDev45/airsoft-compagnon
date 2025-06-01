@@ -13,6 +13,23 @@ export const useGameActions = (gameData: any, id: string | undefined, loadPartic
   const [showRegistrationDialog, setShowRegistrationDialog] = useState(false);
   const [deletingGame, setDeletingGame] = useState(false);
 
+  // Vérifier si l'utilisateur est admin
+  const isUserAdmin = async (): Promise<boolean> => {
+    if (!user) return false;
+    
+    try {
+      const { data, error } = await supabase.rpc('is_current_user_admin');
+      if (error) {
+        console.error('Error checking admin status:', error);
+        return false;
+      }
+      return data || false;
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+      return false;
+    }
+  };
+
   const handleRegistration = async (isRegistered: boolean) => {
     if (!user) {
       navigate('/login');
@@ -92,7 +109,13 @@ export const useGameActions = (gameData: any, id: string | undefined, loadPartic
   };
 
   const handleDeleteGame = async () => {
-    if (!user || !id || !gameData || user.id !== gameData.created_by) {
+    if (!user || !id || !gameData) return;
+    
+    // Vérifier si l'utilisateur est le créateur ou un admin
+    const userIsAdmin = await isUserAdmin();
+    const isCreator = user.id === gameData.created_by;
+    
+    if (!isCreator && !userIsAdmin) {
       toast({
         variant: "destructive",
         title: "Erreur",
@@ -153,6 +176,7 @@ export const useGameActions = (gameData: any, id: string | undefined, loadPartic
     deletingGame,
     handleRegistration,
     handleUnregister,
-    handleDeleteGame
+    handleDeleteGame,
+    isUserAdmin
   };
 };

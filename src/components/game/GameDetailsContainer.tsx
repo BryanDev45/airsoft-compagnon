@@ -1,13 +1,11 @@
 
 import React from 'react';
-import { GameData, GameParticipant } from '@/types/game';
-import { Profile } from '@/types/profile';
-import GameTabs from './GameTabs';
-import GameCommentsTab from './GameCommentsTab';
-import GameParticipantsTab from './GameParticipantsTab';
 import GameDetailsTab from './GameDetailsTab';
 import GameRulesTab from './GameRulesTab';
+import GameParticipantsTab from './GameParticipantsTab';
 import GameEquipmentTab from './GameEquipmentTab';
+import GameCommentsTab from './GameCommentsTab';
+import { GameData, GameParticipant } from '@/types/game';
 
 interface GameDetailsContainerProps {
   selectedTab: string;
@@ -15,6 +13,7 @@ interface GameDetailsContainerProps {
   participants: GameParticipant[];
   creatorRating: number | null;
   navigateToCreatorProfile: () => void;
+  isCreator?: boolean;
 }
 
 const GameDetailsContainer: React.FC<GameDetailsContainerProps> = ({
@@ -22,35 +21,42 @@ const GameDetailsContainer: React.FC<GameDetailsContainerProps> = ({
   gameData,
   participants,
   creatorRating,
-  navigateToCreatorProfile
+  navigateToCreatorProfile,
+  isCreator = false
 }) => {
+  const renderTabContent = () => {
+    switch (selectedTab) {
+      case 'details':
+        return (
+          <GameDetailsTab 
+            gameData={gameData}
+            creatorRating={creatorRating}
+            navigateToCreatorProfile={navigateToCreatorProfile}
+          />
+        );
+      case 'rules':
+        return <GameRulesTab gameData={gameData} />;
+      case 'participants':
+        return (
+          <GameParticipantsTab 
+            participants={participants}
+            gameTitle={gameData.title}
+            gameDate={gameData.date}
+            isCreator={isCreator}
+          />
+        );
+      case 'equipment':
+        return <GameEquipmentTab gameData={gameData} />;
+      case 'comments':
+        return <GameCommentsTab gameId={gameData.id} />;
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div className="mt-4 bg-white rounded-lg shadow-sm p-6">
-      {selectedTab === 'details' && (
-        <GameDetailsTab 
-          description={gameData.description} 
-          creator={gameData.creator} 
-          creatorRating={creatorRating}
-          navigateToCreatorProfile={navigateToCreatorProfile}
-        />
-      )}
-      {selectedTab === 'participants' && <GameParticipantsTab participants={participants} />}
-      {selectedTab === 'comments' && <GameCommentsTab gameId={gameData.id} />}
-      {selectedTab === 'rules' && <GameRulesTab rules={gameData.rules} />}
-      {selectedTab === 'equipment' && (
-        <GameEquipmentTab
-          aegFpsMin={gameData.aeg_fps_min}
-          aegFpsMax={gameData.aeg_fps_max}
-          dmrFpsMax={gameData.dmr_fps_max}
-          eyeProtectionRequired={gameData.eye_protection_required}
-          fullFaceProtectionRequired={gameData.full_face_protection_required}
-          hasToilets={gameData.has_toilets}
-          hasParking={gameData.has_parking}
-          hasEquipmentRental={gameData.has_equipment_rental}
-          manualValidation={gameData.manual_validation}
-          isPrivate={gameData.is_private}
-        />
-      )}
+    <div className="bg-white rounded-lg shadow-md p-6">
+      {renderTabContent()}
     </div>
   );
 };

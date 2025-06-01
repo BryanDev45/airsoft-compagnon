@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from "@/components/ui/use-toast";
 import { useAuth } from '@/hooks/useAuth';
@@ -20,6 +20,7 @@ const GameDetails = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [selectedTab, setSelectedTab] = useState('details');
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const {
     gameData,
@@ -38,8 +39,21 @@ const GameDetails = () => {
     setShowRegistrationDialog,
     handleRegistration,
     handleUnregister,
-    handleDeleteGame
+    handleDeleteGame,
+    isUserAdmin
   } = useGameActions(gameData, id, loadParticipants);
+
+  // Vérifier si l'utilisateur est admin
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (user) {
+        const adminStatus = await isUserAdmin();
+        setIsAdmin(adminStatus);
+      }
+    };
+    
+    checkAdminStatus();
+  }, [user, isUserAdmin]);
 
   const handleShareGame = () => {
     setShowShareDialog(true);
@@ -72,6 +86,7 @@ const GameDetails = () => {
 
   const isPastGame = gameData ? new Date(gameData.date) < new Date() : false;
   const isCreator = user && gameData ? user.id === gameData.created_by : false;
+  const canEditOrDelete = isCreator || isAdmin;
 
   const gameImages = gameData ? [
     gameData.Picture1,
@@ -106,8 +121,8 @@ const GameDetails = () => {
                 onShare={handleShareGame}
                 isCreator={isCreator}
                 isPastGame={isPastGame}
-                onEdit={isCreator ? handleEditGame : undefined}
-                onDelete={isCreator && !isPastGame ? handleDeleteGame : undefined}
+                onEdit={canEditOrDelete ? handleEditGame : undefined}
+                onDelete={canEditOrDelete && !isPastGame ? handleDeleteGame : undefined}
               />
               
               <div className="my-6">
@@ -123,6 +138,7 @@ const GameDetails = () => {
                     participants={participants}
                     creatorRating={creatorRating}
                     navigateToCreatorProfile={navigateToCreatorProfile}
+                    isCreator={isCreator}
                   />
                 </div>
                 <GameSidebar

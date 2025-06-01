@@ -3,13 +3,24 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { GameParticipant } from '@/types/game';
+import ParticipantsPdfButton from './ParticipantsPdfButton';
+import { useAuth } from '@/hooks/useAuth';
 
 interface GameParticipantsTabProps {
   participants: GameParticipant[];
+  gameTitle?: string;
+  gameDate?: string;
+  isCreator?: boolean;
 }
 
-const GameParticipantsTab: React.FC<GameParticipantsTabProps> = ({ participants }) => {
+const GameParticipantsTab: React.FC<GameParticipantsTabProps> = ({ 
+  participants, 
+  gameTitle = '', 
+  gameDate = '', 
+  isCreator = false 
+}) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   // Helper function to get initials from username
   const getInitials = (username: string | null): string => {
@@ -36,7 +47,16 @@ const GameParticipantsTab: React.FC<GameParticipantsTabProps> = ({ participants 
 
   return (
     <>
-      <h2 className="text-xl font-semibold mb-4">Participants ({participants.length})</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold">Participants ({participants.length})</h2>
+        {isCreator && participants.length > 0 && (
+          <ParticipantsPdfButton 
+            gameTitle={gameTitle}
+            gameDate={gameDate}
+            participants={participants}
+          />
+        )}
+      </div>
       
       {participants.length === 0 ? (
         <div className="text-center py-8 bg-gray-50 rounded-md">
