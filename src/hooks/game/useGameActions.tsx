@@ -29,14 +29,26 @@ export const useGameActions = (gameData: any, id: string | undefined, loadPartic
   const handleRegistration = async (isRegistered: boolean) => {
     const result = await handleRegistrationBase(isRegistered);
     
-    // Invalider le cache pour forcer la mise à jour des données
+    // Force une mise à jour immédiate des données
     if (id) {
-      await queryClient.invalidateQueries({
-        queryKey: ['gameParticipants', id]
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ['gameData', id]
-      });
+      // Invalider et refetch immédiatement
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ['gameParticipants', id]
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ['gameData', id]
+        }),
+        queryClient.refetchQueries({
+          queryKey: ['gameParticipants', id]
+        }),
+        queryClient.refetchQueries({
+          queryKey: ['gameData', id]
+        })
+      ]);
+      
+      // Forcer le rechargement des participants avec la fonction callback
+      await loadParticipants();
     }
     
     if (result?.showDialog) {
@@ -47,14 +59,26 @@ export const useGameActions = (gameData: any, id: string | undefined, loadPartic
   const handleUnregister = async () => {
     await handleUnregisterBase();
     
-    // Invalider le cache pour forcer la mise à jour des données
+    // Force une mise à jour immédiate des données
     if (id) {
-      await queryClient.invalidateQueries({
-        queryKey: ['gameParticipants', id]
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ['gameData', id]
-      });
+      // Invalider et refetch immédiatement
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ['gameParticipants', id]
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ['gameData', id]
+        }),
+        queryClient.refetchQueries({
+          queryKey: ['gameParticipants', id]
+        }),
+        queryClient.refetchQueries({
+          queryKey: ['gameData', id]
+        })
+      ]);
+      
+      // Forcer le rechargement des participants avec la fonction callback
+      await loadParticipants();
     }
     
     // Fermer la boîte de dialogue après désinscription

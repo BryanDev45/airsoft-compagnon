@@ -20,6 +20,7 @@ export const useGameRegistration = (gameData: any, id: string | undefined, loadP
     
     try {
       setLoadingRegistration(true);
+      console.log('Starting registration process for user:', user.id, 'game:', id, 'isRegistered:', isRegistered);
       
       if (isRegistered) {
         return { showDialog: true };
@@ -38,6 +39,7 @@ export const useGameRegistration = (gameData: any, id: string | undefined, loadP
         }
 
         if (existingParticipation) {
+          console.log('User already registered, forcing data refresh');
           toast({
             title: "Déjà inscrit",
             description: "Vous êtes déjà inscrit à cette partie."
@@ -46,6 +48,7 @@ export const useGameRegistration = (gameData: any, id: string | undefined, loadP
           return { showDialog: false };
         }
 
+        console.log('Inserting new participation');
         const { error } = await supabase
           .from('game_participants')
           .insert({
@@ -60,11 +63,14 @@ export const useGameRegistration = (gameData: any, id: string | undefined, loadP
           throw error;
         }
         
+        console.log('Registration successful, refreshing data');
+        
         toast({
           title: "Inscription réussie",
           description: "Vous êtes maintenant inscrit à cette partie."
         });
         
+        // Forcer le rechargement immédiat des participants
         await loadParticipants();
         return { showDialog: false };
       }
@@ -86,7 +92,7 @@ export const useGameRegistration = (gameData: any, id: string | undefined, loadP
     
     try {
       setLoadingRegistration(true);
-      console.log('Attempting to unregister user:', user.id, 'from game:', id);
+      console.log('Starting unregistration process for user:', user.id, 'from game:', id);
       
       const { error } = await supabase
         .from('game_participants')
@@ -99,13 +105,14 @@ export const useGameRegistration = (gameData: any, id: string | undefined, loadP
         throw error;
       }
       
-      console.log('Successfully unregistered from game');
+      console.log('Unregistration successful, refreshing data');
       
       toast({
         title: "Désinscription réussie",
         description: "Vous avez été désinscrit de cette partie."
       });
       
+      // Forcer le rechargement immédiat des participants
       await loadParticipants();
       
     } catch (error) {
