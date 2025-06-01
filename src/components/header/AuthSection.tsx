@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose, SheetFooter, SheetTrigger } from "@/components/ui/sheet";
-import { NotificationList } from '@/components/notifications/NotificationList';
+import NotificationList from '@/components/notifications/NotificationList';
 import { LogOut, Bell, Users, UserIcon } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/use-toast";

@@ -1,4 +1,5 @@
 
+import { useState } from 'react';
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
@@ -10,9 +11,12 @@ interface Notification {
 
 export const useFriendRequestActions = (handleMarkAsRead: (id: string) => Promise<void>) => {
   const queryClient = useQueryClient();
+  const [processingInvitation, setProcessingInvitation] = useState(false);
 
   const handleAcceptFriendRequest = async (notification: Notification) => {
     try {
+      setProcessingInvitation(true);
+      
       const { error } = await supabase
         .from('friendships')
         .update({ status: 'accepted' })
@@ -35,11 +39,15 @@ export const useFriendRequestActions = (handleMarkAsRead: (id: string) => Promis
         description: "Impossible d'accepter la demande d'ami",
         variant: "destructive"
       });
+    } finally {
+      setProcessingInvitation(false);
     }
   };
 
   const handleRejectFriendRequest = async (notification: Notification) => {
     try {
+      setProcessingInvitation(true);
+      
       const { error } = await supabase
         .from('friendships')
         .update({ status: 'rejected' })
@@ -62,10 +70,13 @@ export const useFriendRequestActions = (handleMarkAsRead: (id: string) => Promis
         description: "Impossible de rejeter la demande d'ami",
         variant: "destructive"
       });
+    } finally {
+      setProcessingInvitation(false);
     }
   };
 
   return {
+    processingInvitation,
     handleAcceptFriendRequest,
     handleRejectFriendRequest
   };

@@ -1,12 +1,18 @@
-
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+
+interface Notification {
+  id: string;
+  link: string | null;
+}
 
 export const useNotificationActions = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const handleMarkAsRead = async (notificationId: string) => {
     try {
@@ -20,6 +26,13 @@ export const useNotificationActions = () => {
       queryClient.invalidateQueries({ queryKey: ['unreadNotifications'] });
     } catch (error) {
       console.error('Error marking notification as read:', error);
+    }
+  };
+
+  const handleNavigateToNotification = async (notification: Notification) => {
+    if (notification.link) {
+      await handleMarkAsRead(notification.id);
+      navigate(notification.link);
     }
   };
 
@@ -97,6 +110,7 @@ export const useNotificationActions = () => {
     handleMarkAsRead,
     handleMarkAllAsRead,
     handleDeleteNotification,
-    handleDeleteAllRead
+    handleDeleteAllRead,
+    handleNavigateToNotification
   };
 };
