@@ -16,9 +16,9 @@ export const useUserProfileUtils = () => {
     return false;
   };
   
-  const fetchProfileData = async (profileId: string | undefined) => {
-    console.log("Fetching profile data for user ID:", profileId);
-    return true;
+  const fetchProfileData = async () => {
+    console.log("fetchProfileData called, but not available in UserProfile view");
+    // Return void to match the expected signature
   };
 
   return {
