@@ -36,7 +36,7 @@ export const useGameActions = (gameData: any, id: string | undefined, loadPartic
       return;
     }
     
-    if (!gameData) return;
+    if (!gameData || !id) return;
     
     try {
       setLoadingRegistration(true);
@@ -44,6 +44,28 @@ export const useGameActions = (gameData: any, id: string | undefined, loadPartic
       if (isRegistered) {
         setShowRegistrationDialog(true);
       } else {
+        // Vérifier d'abord si l'utilisateur est déjà inscrit
+        const { data: existingParticipation, error: checkError } = await supabase
+          .from('game_participants')
+          .select('id')
+          .eq('game_id', id)
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (checkError) {
+          console.error('Error checking existing participation:', checkError);
+          throw checkError;
+        }
+
+        if (existingParticipation) {
+          toast({
+            title: "Déjà inscrit",
+            description: "Vous êtes déjà inscrit à cette partie."
+          });
+          await loadParticipants();
+          return;
+        }
+
         const { error } = await supabase
           .from('game_participants')
           .insert({
@@ -53,7 +75,10 @@ export const useGameActions = (gameData: any, id: string | undefined, loadPartic
             status: 'Confirmé'
           });
           
-        if (error) throw error;
+        if (error) {
+          console.error('Registration error:', error);
+          throw error;
+        }
         
         toast({
           title: "Inscription réussie",
@@ -86,7 +111,10 @@ export const useGameActions = (gameData: any, id: string | undefined, loadPartic
         .eq('game_id', id)
         .eq('user_id', user.id);
         
-      if (error) throw error;
+      if (error) {
+        console.error('Unregistration error:', error);
+        throw error;
+      }
       
       toast({
         title: "Désinscription réussie",

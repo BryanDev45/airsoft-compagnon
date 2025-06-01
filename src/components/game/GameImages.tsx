@@ -1,164 +1,64 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
-  CarouselPrevious
+  CarouselPrevious,
 } from "@/components/ui/carousel";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { useToast } from "@/components/ui/use-toast";
 
 interface GameImagesProps {
-  images: string[];
+  images: (string | null)[];
   title: string;
 }
 
 const GameImages: React.FC<GameImagesProps> = ({ images, title }) => {
-  // Images par défaut à utiliser si aucune image valide n'est fournie
-  const defaultImages = [
-    "https://images.unsplash.com/photo-1624881513483-c1f3760fe7ad?q=80&w=2070&auto=format&fit=crop", 
-    "https://images.unsplash.com/photo-1624881514789-5a8a7a82b9b0?q=80&w=2070&auto=format&fit=crop", 
-    "https://images.unsplash.com/photo-1625008928888-27fde18fd355?q=80&w=2069&auto=format&fit=crop"
-  ];
+  // Filtrer les images valides
+  const validImages = images.filter(Boolean) as string[];
 
-  // État local pour stocker les images filtrées
-  const [displayImages, setDisplayImages] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const { toast } = useToast();
-  
-  // Référence pour vérifier si le composant est monté
-  const isMounted = useRef(true);
-  
-  // Configurer isMounted lors du montage/démontage
-  useEffect(() => {
-    isMounted.current = true;
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
-  
-  // Filtrer les images à chaque changement du tableau images
-  useEffect(() => {
-    setIsLoading(true);
-    console.log("GameImages - Images reçues:", images);
-    
-    // Vérifier si images est défini et non nul
-    if (!images || !Array.isArray(images)) {
-      console.log("GameImages - Images non valides, utilisation des images par défaut");
-      if (isMounted.current) {
-        setDisplayImages(defaultImages);
-        setIsLoading(false);
-      }
-      return;
-    }
-    
-    // Filtrer les images null, undefined ou vides
-    const filteredImages = images.filter(img => img && img.trim() !== '');
-    console.log("GameImages - Images filtrées:", filteredImages);
-    
-    // N'utiliser les images par défaut que si aucune image valide n'est fournie
-    if (isMounted.current) {
-      setDisplayImages(filteredImages.length > 0 ? filteredImages : defaultImages);
-      setIsLoading(false);
-    }
-  }, [images]);
-
-  // Gérer les erreurs de chargement d'image
-  const handleImageError = (index: number, e: React.SyntheticEvent<HTMLImageElement>) => {
-    console.error(`Erreur de chargement de l'image ${index}:`, displayImages[index]);
-    
-    // Remplacer l'image qui a échoué par une image par défaut
-    const fallbackIndex = Math.min(index, defaultImages.length - 1);
-    e.currentTarget.src = defaultImages[fallbackIndex];
-  };
-
-  const handleThumbnailClick = (index: number) => {
-    setActiveIndex(index);
-  };
-  
-  const handlePrevious = () => {
-    setActiveIndex(prev => (prev === 0 ? displayImages.length - 1 : prev - 1));
-  };
-  
-  const handleNext = () => {
-    setActiveIndex(prev => (prev === displayImages.length - 1 ? 0 : prev + 1));
-  };
-
-  // Si aucune image n'est disponible ou si le chargement est en cours, afficher un placeholder
-  if (isLoading) {
+  // Ne pas afficher le carrousel s'il n'y a pas d'images
+  if (validImages.length === 0) {
     return (
-      <div className="rounded-lg overflow-hidden mb-8 bg-gray-200 animate-pulse">
-        <div className="w-full h-[300px]"></div>
+      <div className="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center">
+        <p className="text-gray-500">Aucune image disponible</p>
       </div>
     );
   }
 
+  // Afficher une seule image si il n'y en a qu'une
+  if (validImages.length === 1) {
+    return (
+      <div className="w-full h-64 rounded-lg overflow-hidden">
+        <img
+          src={validImages[0]}
+          alt={title}
+          className="w-full h-full object-cover"
+        />
+      </div>
+    );
+  }
+
+  // Afficher le carrousel s'il y a plusieurs images
   return (
-    <div className="mb-8">
-      {displayImages.length > 0 && (
-        <div className="relative">
-          {displayImages.map((img, idx) => (
-            <div key={idx} className={`${activeIndex === idx ? 'block' : 'hidden'}`}>
-              <AspectRatio ratio={16/9} className="bg-gray-100">
-                <div className="w-full h-full relative">
-                  <img 
-                    src={img} 
-                    alt={`${title} - image ${idx + 1}`} 
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                    onError={(e) => handleImageError(idx, e)}
-                  />
-                  <div className="absolute inset-0 pointer-events-none border-8 border-white/10 shadow-[inset_0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[inset_0_0_30px_rgba(139,92,246,0.4)] transition-all duration-300"></div>
-                </div>
-              </AspectRatio>
-            </div>
+    <div className="w-full">
+      <Carousel className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl mx-auto">
+        <CarouselContent>
+          {validImages.map((image, index) => (
+            <CarouselItem key={index}>
+              <div className="w-full h-64 rounded-lg overflow-hidden">
+                <img
+                  src={image}
+                  alt={`${title} - Image ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </CarouselItem>
           ))}
-          
-          {displayImages.length > 1 && (
-            <>
-              <button 
-                onClick={handlePrevious}
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full"
-                aria-label="Image précédente"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m15 18-6-6 6-6"/>
-                </svg>
-              </button>
-              <button 
-                onClick={handleNext}
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full"
-                aria-label="Image suivante"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m9 18 6-6-6-6"/>
-                </svg>
-              </button>
-            </>
-          )}
-        </div>
-      )}
-      
-      {displayImages.length > 1 && (
-        <div className="bg-white p-2 grid grid-cols-5 gap-2 mt-2 rounded-lg">
-          {displayImages.slice(0, 5).map((img, idx) => (
-            <div 
-              key={idx}
-              className={`h-20 relative cursor-pointer overflow-hidden rounded border-2 transition-all duration-200 ${activeIndex === idx ? 'border-airsoft-red scale-[1.03]' : 'border-transparent hover:border-airsoft-red/50'}`}
-              onClick={() => handleThumbnailClick(idx)}
-            >
-              <img 
-                src={img} 
-                alt={`${title} ${idx + 1}`} 
-                className="h-full w-full object-cover hover:opacity-90 transition-opacity"
-                onError={(e) => handleImageError(idx, e)}
-              />
-            </div>
-          ))}
-        </div>
-      )}
+        </CarouselContent>
+        <CarouselPrevious />
+        <CarouselNext />
+      </Carousel>
     </div>
   );
 };
