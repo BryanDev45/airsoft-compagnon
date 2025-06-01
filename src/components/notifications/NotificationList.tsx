@@ -1,13 +1,15 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, BellOff, UserCheck, UserMinus, Trash2 } from 'lucide-react';
+import { BellOff, Trash2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "@/components/ui/use-toast";
-import TeamInvitationDialog from './TeamInvitationDialog';
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useNotificationActions } from "@/hooks/notifications/useNotificationActions";
+import { useFriendRequestActions } from "@/hooks/notifications/useFriendRequestActions";
+import { useTeamInvitationActions } from "@/hooks/notifications/useTeamInvitationActions";
+import NotificationItem from './NotificationItem';
 
 interface Notification {
   id: string;
@@ -23,10 +25,6 @@ interface Notification {
 export const NotificationList = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const queryClient = useQueryClient();
-  const [selectedInvitation, setSelectedInvitation] = useState<any>(null);
-  const [showInvitationDialog, setShowInvitationDialog] = useState(false);
-  const [processingInvitation, setProcessingInvitation] = useState(false);
 
   const { data: notifications = [], isLoading } = useQuery({
     queryKey: ['notifications'],
@@ -45,210 +43,23 @@ export const NotificationList = () => {
     enabled: !!user,
   });
 
-  const handleMarkAsRead = async (notificationId: string) => {
-    try {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ read: true })
-        .eq('id', notificationId);
+  const {
+    handleMarkAsRead,
+    handleMarkAllAsRead,
+    handleDeleteNotification,
+    handleDeleteAllRead
+  } = useNotificationActions();
 
-      if (error) throw error;
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['unreadNotifications'] });
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
-    }
-  };
+  const {
+    handleAcceptFriendRequest,
+    handleRejectFriendRequest
+  } = useFriendRequestActions(handleMarkAsRead);
 
-  const handleMarkAllAsRead = async () => {
-    try {
-      if (!user?.id) return;
-      
-      const { error } = await supabase
-        .from('notifications')
-        .update({ read: true })
-        .eq('user_id', user.id)
-        .eq('read', false);
-
-      if (error) throw error;
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['unreadNotifications'] });
-    } catch (error) {
-      console.error('Error marking all notifications as read:', error);
-    }
-  };
-
-  const handleDeleteNotification = async (notificationId: string) => {
-    try {
-      console.log("Deleting notification:", notificationId);
-      
-      const { error } = await supabase
-        .from('notifications')
-        .delete()
-        .eq('id', notificationId);
-
-      if (error) {
-        console.error('Error deleting notification:', error);
-        throw error;
-      }
-      
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['unreadNotifications'] });
-      
-      toast({
-        title: "Notification supprimée",
-        description: "La notification a été supprimée avec succès"
-      });
-    } catch (error) {
-      console.error('Error deleting notification:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de supprimer la notification",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleDeleteAllRead = async () => {
-    try {
-      if (!user?.id) return;
-      
-      const { error } = await supabase
-        .from('notifications')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('read', true);
-
-      if (error) throw error;
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      toast({
-        title: "Notifications supprimées",
-        description: "Les notifications lues ont été supprimées"
-      });
-    } catch (error) {
-      console.error('Error deleting read notifications:', error);
-    }
-  };
-
-  const handleAcceptFriendRequest = async (notification: Notification) => {
-    try {
-      const { error } = await supabase
-        .from('friendships')
-        .update({ status: 'accepted' })
-        .eq('id', notification.related_id);
-
-      if (error) throw error;
-      
-      await handleMarkAsRead(notification.id);
-      
-      toast({
-        title: "Demande acceptée",
-        description: "Vous êtes maintenant amis",
-      });
-      
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-    } catch (error) {
-      console.error('Error accepting friend request:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'accepter la demande d'ami",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleRejectFriendRequest = async (notification: Notification) => {
-    try {
-      const { error } = await supabase
-        .from('friendships')
-        .update({ status: 'rejected' })
-        .eq('id', notification.related_id);
-
-      if (error) throw error;
-      
-      await handleMarkAsRead(notification.id);
-      
-      toast({
-        title: "Demande rejetée",
-        description: "La demande d'ami a été rejetée",
-      });
-      
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-    } catch (error) {
-      console.error('Error rejecting friend request:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de rejeter la demande d'ami",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleAcceptTeamInvitation = async (notification: Notification) => {
-    if (!notification.related_id) return;
-
-    try {
-      setProcessingInvitation(true);
-      
-      const { error } = await supabase
-        .from('team_invitations')
-        .update({ status: 'accepted' })
-        .eq('id', notification.related_id);
-
-      if (error) throw error;
-
-      await handleMarkAsRead(notification.id);
-
-      toast({
-        title: "Invitation acceptée",
-        description: "Vous avez rejoint l'équipe avec succès"
-      });
-
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-    } catch (error) {
-      console.error('Error accepting team invitation:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'accepter l'invitation",
-        variant: "destructive"
-      });
-    } finally {
-      setProcessingInvitation(false);
-    }
-  };
-
-  const handleRejectTeamInvitation = async (notification: Notification) => {
-    if (!notification.related_id) return;
-
-    try {
-      setProcessingInvitation(true);
-      
-      const { error } = await supabase
-        .from('team_invitations')
-        .update({ status: 'rejected' })
-        .eq('id', notification.related_id);
-
-      if (error) throw error;
-
-      await handleMarkAsRead(notification.id);
-
-      toast({
-        title: "Invitation refusée",
-        description: "Vous avez refusé l'invitation"
-      });
-
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-    } catch (error) {
-      console.error('Error rejecting team invitation:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de refuser l'invitation",
-        variant: "destructive"
-      });
-    } finally {
-      setProcessingInvitation(false);
-    }
-  };
+  const {
+    processingInvitation,
+    handleAcceptTeamInvitation,
+    handleRejectTeamInvitation
+  } = useTeamInvitationActions(handleMarkAsRead);
 
   const handleNotificationClick = async (notification: Notification) => {
     await handleMarkAsRead(notification.id);
@@ -262,117 +73,48 @@ export const NotificationList = () => {
   }
 
   return (
-    <>
-      <div className="max-h-[calc(100vh-120px)] overflow-y-auto pr-2">
-        {notifications.length > 0 ? (
-          <>
-            <div className="mb-4 flex justify-between">
-              <Button 
-                variant="ghost" 
-                className="text-sm h-8 px-2"
-                onClick={handleDeleteAllRead}
-              >
-                <Trash2 className="h-4 w-4 mr-1" />
-                Supprimer les lues
-              </Button>
-              <Button 
-                variant="ghost" 
-                className="text-sm h-8 px-2"
-                onClick={handleMarkAllAsRead}
-              >
-                Tout marquer comme lu
-              </Button>
-            </div>
-            <div className="space-y-4">
-              {notifications.map(notification => (
-                <div 
-                  key={notification.id} 
-                  className={`p-4 rounded-lg border ${notification.read ? 'bg-gray-50 border-gray-200' : 'bg-blue-50 border-blue-200'} transition-colors hover:bg-gray-100`}
-                >
-                  <div className="flex justify-between items-start mb-1">
-                    <h3 className="font-medium text-gray-900">{notification.title}</h3>
-                    <div className="flex gap-1">
-                      <p className="text-xs text-gray-500 mt-1">
-                        {new Date(notification.created_at).toLocaleDateString('fr-FR', {
-                          day: 'numeric',
-                          month: 'short',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </p>
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
-                        onClick={() => handleDeleteNotification(notification.id)}
-                      >
-                        <Trash2 size={14} />
-                      </Button>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">{notification.message}</p>
-                  
-                  {notification.type === 'friend_request' && !notification.read ? (
-                    <div className="flex mt-2 space-x-2 justify-end">
-                      <Button 
-                        variant="default"
-                        size="sm"
-                        className="bg-airsoft-red hover:bg-red-700"
-                        onClick={() => handleAcceptFriendRequest(notification)}
-                      >
-                        <UserCheck className="h-4 w-4 mr-1" />
-                        Accepter
-                      </Button>
-                      <Button 
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleRejectFriendRequest(notification)}
-                      >
-                        <UserMinus className="h-4 w-4 mr-1" />
-                        Refuser
-                      </Button>
-                    </div>
-                  ) : notification.type === 'team_invitation' && !notification.read ? (
-                    <div className="flex mt-2 space-x-2 justify-end">
-                      <Button 
-                        variant="default"
-                        size="sm"
-                        className="bg-green-600 hover:bg-green-700"
-                        onClick={() => handleAcceptTeamInvitation(notification)}
-                        disabled={processingInvitation}
-                      >
-                        <UserCheck className="h-4 w-4 mr-1" />
-                        Accepter
-                      </Button>
-                      <Button 
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleRejectTeamInvitation(notification)}
-                        disabled={processingInvitation}
-                      >
-                        <UserMinus className="h-4 w-4 mr-1" />
-                        Refuser
-                      </Button>
-                    </div>
-                  ) : (
-                    <div 
-                      className="cursor-pointer" 
-                      onClick={() => handleNotificationClick(notification)}
-                    >
-                      {/* Clickable area for standard notifications */}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </>
-        ) : (
-          <div className="text-center py-10">
-            <BellOff className="mx-auto h-12 w-12 text-gray-400 mb-3" />
-            <p className="text-gray-500">Vous n'avez aucune notification</p>
+    <div className="max-h-[calc(100vh-120px)] overflow-y-auto pr-2">
+      {notifications.length > 0 ? (
+        <>
+          <div className="mb-4 flex justify-between">
+            <Button 
+              variant="ghost" 
+              className="text-sm h-8 px-2"
+              onClick={handleDeleteAllRead}
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              Supprimer les lues
+            </Button>
+            <Button 
+              variant="ghost" 
+              className="text-sm h-8 px-2"
+              onClick={handleMarkAllAsRead}
+            >
+              Tout marquer comme lu
+            </Button>
           </div>
-        )}
-      </div>
-    </>
+          <div className="space-y-4">
+            {notifications.map(notification => (
+              <NotificationItem
+                key={notification.id}
+                notification={notification}
+                onDelete={handleDeleteNotification}
+                onAcceptFriend={handleAcceptFriendRequest}
+                onRejectFriend={handleRejectFriendRequest}
+                onAcceptTeam={handleAcceptTeamInvitation}
+                onRejectTeam={handleRejectTeamInvitation}
+                onNavigate={handleNotificationClick}
+                processingInvitation={processingInvitation}
+              />
+            ))}
+          </div>
+        </>
+      ) : (
+        <div className="text-center py-10">
+          <BellOff className="mx-auto h-12 w-12 text-gray-400 mb-3" />
+          <p className="text-gray-500">Vous n'avez aucune notification</p>
+        </div>
+      )}
+    </div>
   );
 };
