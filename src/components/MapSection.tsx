@@ -111,12 +111,14 @@ const MapSection: React.FC = () => {
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center">
                     <p className="text-gray-500">
-                      {!user && events.length === 0 
-                        ? "Aucune partie publique disponible actuellement" 
+                      {events.length === 0 
+                        ? "Aucune partie disponible actuellement" 
                         : "Aucune partie trouvée correspondant à vos critères"}
                     </p>
-                    {!user && events.length === 0 && (
-                      <p className="text-gray-400 mt-2">Les parties publiques s'afficheront ici</p>
+                    {events.length === 0 && (
+                      <p className="text-gray-400 mt-2">
+                        {user ? "Aucune partie n'est programmée pour le moment" : "Connectez-vous pour voir plus de parties"}
+                      </p>
                     )}
                   </div>
                 </div>

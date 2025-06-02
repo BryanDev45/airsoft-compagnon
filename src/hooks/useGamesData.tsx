@@ -48,7 +48,7 @@ export const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
     query = query.or(`is_private.eq.false,and(is_private.eq.true,created_by.eq.${userId})`);
   } else {
     // Pour les utilisateurs non connectés, montrer uniquement les parties publiques
-    // S'assurer que is_private est soit false soit null (pour les anciennes parties)
+    // Inclure les parties où is_private est false OU null (pour compatibilité avec les anciennes parties)
     query = query.or('is_private.eq.false,is_private.is.null');
   }
   
