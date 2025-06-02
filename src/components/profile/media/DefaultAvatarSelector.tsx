@@ -23,18 +23,22 @@ const DefaultAvatarSelector: React.FC<DefaultAvatarSelectorProps> = ({
 
   return (
     <div className="space-y-4">
-      <div className="text-sm font-medium mb-2">Avatars par défaut</div>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="text-sm font-medium mb-3">Avatars par défaut</div>
+      <div className="grid grid-cols-3 gap-4">
         {defaultAvatars.map((avatarUrl, index) => (
           <Button
             key={index}
             variant="outline"
-            className={`p-2 h-auto ${selectedAvatar === avatarUrl ? 'ring-2 ring-airsoft-red' : ''}`}
+            className={`p-3 h-auto transition-all duration-200 hover:scale-105 ${
+              selectedAvatar === avatarUrl 
+                ? 'ring-2 ring-airsoft-red shadow-md' 
+                : 'hover:shadow-sm'
+            }`}
             onClick={() => onSelectAvatar(avatarUrl)}
           >
-            <Avatar className="w-12 h-12">
+            <Avatar className="w-16 h-16">
               <AvatarImage src={avatarUrl} alt={`Avatar ${index + 1}`} />
-              <AvatarFallback>A{index + 1}</AvatarFallback>
+              <AvatarFallback className="text-lg">A{index + 1}</AvatarFallback>
             </Avatar>
           </Button>
         ))}
