@@ -31,22 +31,10 @@ export const useTeamLeaving = (
     setLoading(true);
     
     try {
-      // Get current user data to refresh auth state
-      const { data: userData } = await supabase.auth.getUser();
+      console.log("Starting team leave process for user:", user.id, "team:", team.id);
       
-      // Delete the team member record
-      const { error: teamMemberError } = await supabase
-        .from('team_members')
-        .delete()
-        .eq('team_id', team.id)
-        .eq('user_id', user.id);
-        
-      if (teamMemberError) {
-        console.error("Error leaving team:", teamMemberError);
-        throw teamMemberError;
-      }
-
-      // Update the user profile to remove team information
+      // First, update the user profile to remove team information
+      // This needs to be done first to avoid potential RLS conflicts
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
@@ -60,6 +48,31 @@ export const useTeamLeaving = (
         console.error("Error updating profile:", profileError);
         throw profileError;
       }
+      
+      console.log("Profile updated successfully");
+
+      // Then delete the team member record
+      const { error: teamMemberError } = await supabase
+        .from('team_members')
+        .delete()
+        .eq('team_id', team.id)
+        .eq('user_id', user.id);
+        
+      if (teamMemberError) {
+        console.error("Error leaving team:", teamMemberError);
+        // If team member deletion fails, try to revert profile changes
+        await supabase
+          .from('profiles')
+          .update({
+            team: team.name,
+            team_id: team.id,
+            is_team_leader: false
+          })
+          .eq('id', user.id);
+        throw teamMemberError;
+      }
+      
+      console.log("Team member record deleted successfully");
       
       toast({
         title: "Équipe quittée",

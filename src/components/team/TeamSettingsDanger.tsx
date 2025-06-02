@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Trash2, LogOut } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { TeamData } from '@/types/team';
+import { useTeamLeaving } from '@/hooks/team/actions/useTeamLeaving';
 
 interface TeamSettingsDangerProps {
   team: TeamData;
@@ -17,13 +19,17 @@ interface TeamSettingsDangerProps {
 
 const TeamSettingsDanger = ({ 
   team, 
-  loading, 
+  loading: externalLoading, 
   setLoading, 
   isTeamLeader, 
   user,
   onClose
 }: TeamSettingsDangerProps) => {
   const navigate = useNavigate();
+  const { loading: leavingLoading, handleLeaveTeam } = useTeamLeaving(team, user, isTeamLeader, onClose);
+  
+  // Combine external loading state with internal loading
+  const isLoading = externalLoading || leavingLoading;
   
   const handleDeleteTeam = async () => {
     // Only team leaders can delete the team
@@ -43,13 +49,42 @@ const TeamSettingsDanger = ({
     setLoading(true);
     
     try {
-      // Delete all team members first
+      console.log("Starting team deletion process for team:", team.id);
+      
+      // Update all team members' profiles first
+      const { data: teamMembers } = await supabase
+        .from('team_members')
+        .select('user_id')
+        .eq('team_id', team.id);
+        
+      if (teamMembers && teamMembers.length > 0) {
+        const userIds = teamMembers.map(member => member.user_id);
+        
+        const { error: profileUpdateError } = await supabase
+          .from('profiles')
+          .update({
+            team: null,
+            team_id: null,
+            is_team_leader: false
+          })
+          .in('id', userIds);
+          
+        if (profileUpdateError) {
+          console.error("Error updating member profiles:", profileUpdateError);
+          throw profileUpdateError;
+        }
+      }
+      
+      // Delete all team members
       const { error: membersError } = await supabase
         .from('team_members')
         .delete()
         .eq('team_id', team.id);
         
-      if (membersError) throw membersError;
+      if (membersError) {
+        console.error("Error deleting team members:", membersError);
+        throw membersError;
+      }
       
       // Then delete the team
       const { error } = await supabase
@@ -57,7 +92,10 @@ const TeamSettingsDanger = ({
         .delete()
         .eq('id', team.id);
         
-      if (error) throw error;
+      if (error) {
+        console.error("Error deleting team:", error);
+        throw error;
+      }
       
       toast({
         title: "Équipe supprimée",
@@ -77,53 +115,6 @@ const TeamSettingsDanger = ({
       setLoading(false);
     }
   };
-  
-  const handleLeaveTeam = async () => {
-    if (!user?.id || !team?.id) return;
-    
-    // Prevent the team leader from leaving without transferring ownership
-    if (isTeamLeader) {
-      toast({
-        title: "Action impossible",
-        description: "En tant que leader de l'équipe, vous devez transférer la propriété avant de quitter ou supprimer l'équipe.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (!confirm("Êtes-vous sûr de vouloir quitter cette équipe ?")) {
-      return;
-    }
-    
-    setLoading(true);
-    
-    try {
-      const { error } = await supabase
-        .from('team_members')
-        .delete()
-        .eq('team_id', team.id)
-        .eq('user_id', user.id);
-        
-      if (error) throw error;
-      
-      toast({
-        title: "Équipe quittée",
-        description: "Vous avez quitté l'équipe avec succès.",
-      });
-      
-      onClose();
-      navigate('/');
-    } catch (error: any) {
-      console.error("Erreur lors du départ de l'équipe:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de quitter l'équipe: " + error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="space-y-4">
@@ -137,11 +128,11 @@ const TeamSettingsDanger = ({
           <Button 
             variant="destructive" 
             onClick={handleLeaveTeam}
-            disabled={loading}
+            disabled={isLoading}
             className="flex items-center"
           >
             <LogOut className="h-4 w-4 mr-2" />
-            {loading ? "Traitement..." : "Quitter cette équipe"}
+            {isLoading ? "Traitement..." : "Quitter cette équipe"}
           </Button>
         </div>
       ) : (
@@ -154,11 +145,11 @@ const TeamSettingsDanger = ({
           <Button 
             variant="destructive" 
             onClick={handleDeleteTeam}
-            disabled={loading}
+            disabled={isLoading}
             className="flex items-center"
           >
             <Trash2 className="h-4 w-4 mr-2" />
-            {loading ? "Suppression..." : "Supprimer cette équipe"}
+            {isLoading ? "Suppression..." : "Supprimer cette équipe"}
           </Button>
         </div>
       )}
