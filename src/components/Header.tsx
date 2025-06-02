@@ -8,6 +8,7 @@ import { LanguageSelector } from './header/LanguageSelector';
 import { MobileMenu } from './header/MobileMenu';
 import { useNotifications } from './header/useNotifications';
 import { useAuth } from '@/hooks/auth/useAuth';
+import MessagingIcon from './messaging/MessagingIcon';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -36,6 +37,7 @@ const Header = () => {
           <LanguageSelector />
 
           <div className="flex items-center gap-4 ml-4">
+            {isAuthenticated && <MessagingIcon />}
             <AuthSection 
               notificationCount={notificationCount} 
               handleSheetOpenChange={handleSheetOpenChange} 
