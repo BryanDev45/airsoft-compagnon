@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -8,8 +9,9 @@ import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload, Image as ImageIcon, RefreshCw } from 'lucide-react';
+import AvatarUploader from './media/AvatarUploader';
+import BannerUploader from './media/BannerUploader';
 
 interface ProfileEditBioDialogProps {
   open: boolean;
@@ -31,11 +33,6 @@ const ProfileEditBioDialog = ({
   const [currentTab, setCurrentTab] = useState("bio");
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
-  const [defaultAvatars, setDefaultAvatars] = useState<string[]>([]);
-  
-  useEffect(() => {
-    setDefaultAvatars([]);
-  }, []);
   
   useEffect(() => {
     const fetchCurrentImages = async () => {
@@ -112,29 +109,6 @@ const ProfileEditBioDialog = ({
     }
   };
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        toast({
-          title: "Erreur",
-          description: "La taille de l'image ne doit pas dépasser 2MB",
-          variant: "destructive"
-        });
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = () => {
-        setAvatarPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSelectDefaultAvatar = (src: string) => {
-    setAvatarPreview(src);
-  };
-
   const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -200,96 +174,17 @@ const ProfileEditBioDialog = ({
           </TabsContent>
           
           <TabsContent value="avatar" className="space-y-4">
-            <div className="flex flex-col items-center">
-              <div className="mb-4">
-                <Avatar className="w-32 h-32">
-                  <AvatarImage src={avatarPreview || "/placeholder.svg"} alt="Avatar preview" />
-                  <AvatarFallback>
-                    <ImageIcon className="h-10 w-10 text-gray-400" />
-                  </AvatarFallback>
-                </Avatar>
-              </div>
-              
-              <div className="flex gap-3 mb-2">
-                <Label 
-                  htmlFor="avatar-upload" 
-                  className="flex items-center gap-1 bg-airsoft-red hover:bg-red-700 text-white px-3 py-2 rounded-md cursor-pointer text-sm"
-                >
-                  <Upload size={16} />
-                  Télécharger
-                </Label>
-                <input 
-                  id="avatar-upload" 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={handleAvatarChange} 
-                  className="hidden" 
-                />
-                
-                {avatarPreview && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setAvatarPreview(null)}
-                    className="flex items-center gap-1"
-                  >
-                    <RefreshCw size={16} />
-                    Réinitialiser
-                  </Button>
-                )}
-              </div>
-              <p className="text-xs text-gray-500 text-center">
-                Formats acceptés : JPG, PNG. Taille maximale : 2MB.
-              </p>
-            </div>
+            <AvatarUploader 
+              avatarPreview={avatarPreview}
+              onAvatarChange={setAvatarPreview}
+            />
           </TabsContent>
           
           <TabsContent value="banner" className="space-y-4">
-            <div className="flex flex-col items-center">
-              <div className="mb-4 w-full">
-                <div className="h-32 w-full rounded-lg overflow-hidden bg-gradient-to-r from-blue-600 to-airsoft-red flex items-center justify-center">
-                  {bannerPreview ? (
-                    <img 
-                      src={bannerPreview} 
-                      alt="Banner preview" 
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <ImageIcon className="h-10 w-10 text-white" />
-                  )}
-                </div>
-              </div>
-              <div className="flex gap-3 mb-2">
-                <Label 
-                  htmlFor="banner-upload" 
-                  className="flex items-center gap-1 bg-airsoft-red hover:bg-red-700 text-white px-3 py-2 rounded-md cursor-pointer text-sm"
-                >
-                  <Upload size={16} />
-                  Télécharger
-                </Label>
-                <input 
-                  id="banner-upload" 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={handleBannerChange} 
-                  className="hidden" 
-                />
-                {bannerPreview && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setBannerPreview(null)}
-                    className="flex items-center gap-1"
-                  >
-                    <RefreshCw size={16} />
-                    Réinitialiser
-                  </Button>
-                )}
-              </div>
-              <p className="text-xs text-gray-500 text-center">
-                Format recommandé : 1500x500px. Taille maximale : 5MB.
-              </p>
-            </div>
+            <BannerUploader 
+              bannerPreview={bannerPreview}
+              onBannerChange={setBannerPreview}
+            />
           </TabsContent>
         </Tabs>
 
