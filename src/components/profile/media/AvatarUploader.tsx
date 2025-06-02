@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
 import { Upload, RefreshCw, ImageIcon } from 'lucide-react';
+import DefaultAvatarSelector from './DefaultAvatarSelector';
 
 interface AvatarUploaderProps {
   avatarPreview: string | null;
@@ -34,8 +35,12 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
     }
   };
 
+  const handleSelectDefaultAvatar = (avatarUrl: string) => {
+    onAvatarChange(avatarUrl);
+  };
+
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center space-y-6">
       <div className="mb-4">
         <Avatar className="w-32 h-32">
           <AvatarImage src={avatarPreview || "/placeholder.svg"} alt="Avatar preview" />
@@ -73,9 +78,15 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
           </Button>
         )}
       </div>
-      <p className="text-xs text-gray-500 text-center">
+      
+      <p className="text-xs text-gray-500 text-center mb-4">
         Formats acceptés : JPG, PNG. Taille maximale : 2MB.
       </p>
+
+      <DefaultAvatarSelector 
+        onSelectAvatar={handleSelectDefaultAvatar}
+        selectedAvatar={avatarPreview}
+      />
     </div>
   );
 };
