@@ -27,14 +27,43 @@ export const useTeamSearch = (searchQuery: string) => {
         query = query.or(`name.ilike.%${searchQuery}%,location.ilike.%${searchQuery}%`);
       }
 
-      const { data, error } = await query.order('name');
+      const { data: teamsData, error } = await query.order('name');
 
       if (error) {
         console.error('Error searching teams:', error);
         throw error;
       }
 
-      return data || [];
+      if (!teamsData) return [];
+
+      // Get actual member counts for each team
+      const teamIds = teamsData.map(team => team.id);
+      
+      const { data: memberCounts, error: memberError } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .in('team_id', teamIds)
+        .eq('status', 'confirmed');
+
+      if (memberError) {
+        console.error('Error fetching member counts:', memberError);
+        // Return teams with existing member_count if query fails
+        return teamsData;
+      }
+
+      // Count members per team
+      const memberCountMap: Record<string, number> = {};
+      teamIds.forEach(id => memberCountMap[id] = 0);
+      
+      memberCounts?.forEach(member => {
+        memberCountMap[member.team_id] = (memberCountMap[member.team_id] || 0) + 1;
+      });
+
+      // Return teams with updated member counts
+      return teamsData.map(team => ({
+        ...team,
+        member_count: memberCountMap[team.id] || 0
+      }));
     },
     // Always enable the query now, even with empty search
     enabled: true,

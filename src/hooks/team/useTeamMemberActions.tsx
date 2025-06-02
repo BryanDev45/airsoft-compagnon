@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -195,16 +196,22 @@ export const useTeamMemberActions = (
     setLoading(true);
     
     try {
-      // Supprimer le membre de l'équipe
+      // Get current user data to refresh auth state
+      const { data: userData } = await supabase.auth.getUser();
+      
+      // Delete the team member record
       const { error: teamMemberError } = await supabase
         .from('team_members')
         .delete()
         .eq('team_id', team.id)
         .eq('user_id', user.id);
         
-      if (teamMemberError) throw teamMemberError;
+      if (teamMemberError) {
+        console.error("Error leaving team:", teamMemberError);
+        throw teamMemberError;
+      }
 
-      // Mettre à jour le profil pour supprimer les informations d'équipe
+      // Update the user profile to remove team information
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
@@ -214,15 +221,22 @@ export const useTeamMemberActions = (
         })
         .eq('id', user.id);
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error("Error updating profile:", profileError);
+        throw profileError;
+      }
       
       toast({
         title: "Équipe quittée",
         description: "Vous avez quitté l'équipe avec succès.",
       });
       
+      // Close dialogs and redirect
       onClose();
-      navigate('/');
+      
+      // Force a page reload to refresh all team-related state
+      window.location.href = '/';
+      
     } catch (error: any) {
       console.error("Erreur lors du départ de l'équipe:", error);
       toast({
