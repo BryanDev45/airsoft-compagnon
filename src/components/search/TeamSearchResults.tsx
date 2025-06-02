@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Users, UserPlus } from "lucide-react";
+import { MapPin, Users, UserPlus, Star } from "lucide-react";
 import { Link } from 'react-router-dom';
 import TeamApplicationButton from './TeamApplicationButton';
 import { useTeamSearch } from './hooks/useTeamSearch';
@@ -112,6 +112,12 @@ const TeamSearchResults: React.FC<TeamSearchResultsProps> = ({ searchQuery }) =>
                     <Users className="h-3.5 w-3.5 flex-shrink-0" />
                     <span>{team.member_count || 0} membres</span>
                   </div>
+                  {team.rating && team.rating > 0 && (
+                    <div className="flex items-center gap-1">
+                      <Star className="h-3.5 w-3.5 flex-shrink-0 text-yellow-400 fill-yellow-400" />
+                      <span className="font-medium">{team.rating.toFixed(1)}</span>
+                    </div>
+                  )}
                 </div>
               </Link>
               

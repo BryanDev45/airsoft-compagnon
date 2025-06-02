@@ -34,14 +34,14 @@ const TeamRating: React.FC<TeamRatingProps> = ({
       if (!currentUserId || isTeamMember) return;
       
       try {
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
           .from('team_ratings')
           .select('rating')
           .eq('rater_id', currentUserId)
           .eq('team_id', teamId)
           .maybeSingle();
           
-        if (error && error.code !== 'PGRST116') {
+        if (error) {
           console.error('Error checking existing rating:', error);
           return;
         }
@@ -66,7 +66,7 @@ const TeamRating: React.FC<TeamRatingProps> = ({
       
       if (hasRated) {
         // Mettre à jour la note existante
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from('team_ratings')
           .update({ rating, updated_at: new Date().toISOString() })
           .eq('rater_id', currentUserId)
@@ -75,7 +75,7 @@ const TeamRating: React.FC<TeamRatingProps> = ({
         if (error) throw error;
       } else {
         // Créer une nouvelle note
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from('team_ratings')
           .insert({
             rater_id: currentUserId,
@@ -90,7 +90,7 @@ const TeamRating: React.FC<TeamRatingProps> = ({
       setUserRating(rating);
       
       // Mettre à jour la note moyenne de l'équipe
-      const { data: ratings, error: avgError } = await (supabase as any)
+      const { data: ratings, error: avgError } = await supabase
         .from('team_ratings')
         .select('rating')
         .eq('team_id', teamId);

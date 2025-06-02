@@ -12,6 +12,7 @@ interface Team {
   is_association?: boolean;
   logo?: string;
   leader_id?: string;
+  rating?: number;
 }
 
 export const useTeamSearch = (searchQuery: string) => {
@@ -59,10 +60,11 @@ export const useTeamSearch = (searchQuery: string) => {
         memberCountMap[member.team_id] = (memberCountMap[member.team_id] || 0) + 1;
       });
 
-      // Return teams with updated member counts
+      // Return teams with updated member counts and rating
       return teamsData.map(team => ({
         ...team,
-        member_count: memberCountMap[team.id] || 0
+        member_count: memberCountMap[team.id] || 0,
+        rating: team.rating || 0
       }));
     },
     // Always enable the query now, even with empty search
