@@ -2,16 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Upload, Image as ImageIcon, RefreshCw } from 'lucide-react';
-import AvatarUploader from './media/AvatarUploader';
-import BannerUploader from './media/BannerUploader';
+import ProfileEditTabs from './media/ProfileEditTabs';
 
 interface ProfileEditBioDialogProps {
   open: boolean;
@@ -109,25 +103,6 @@ const ProfileEditBioDialog = ({
     }
   };
 
-  const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "Erreur",
-          description: "La taille de l'image ne doit pas dépasser 5MB",
-          variant: "destructive"
-        });
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = () => {
-        setBannerPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
@@ -138,55 +113,18 @@ const ProfileEditBioDialog = ({
           </DialogDescription>
         </DialogHeader>
         
-        <Tabs value={currentTab} onValueChange={setCurrentTab} className="mt-4">
-          <TabsList className="grid grid-cols-3 mb-4">
-            <TabsTrigger value="bio">Informations</TabsTrigger>
-            <TabsTrigger value="avatar">Avatar</TabsTrigger>
-            <TabsTrigger value="banner">Bannière</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="bio" className="space-y-4">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="username">Nom d'utilisateur</Label>
-                <Input
-                  id="username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Votre nom d'utilisateur"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="bio">Bio</Label>
-                <Textarea
-                  id="bio"
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  placeholder="Parlez de vous en quelques mots..."
-                  className="min-h-[120px]"
-                />
-                <p className="text-xs text-gray-500">
-                  Cette description sera visible sur votre profil public
-                </p>
-              </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="avatar" className="space-y-4">
-            <AvatarUploader 
-              avatarPreview={avatarPreview}
-              onAvatarChange={setAvatarPreview}
-            />
-          </TabsContent>
-          
-          <TabsContent value="banner" className="space-y-4">
-            <BannerUploader 
-              bannerPreview={bannerPreview}
-              onBannerChange={setBannerPreview}
-            />
-          </TabsContent>
-        </Tabs>
+        <ProfileEditTabs
+          currentTab={currentTab}
+          onTabChange={setCurrentTab}
+          username={username}
+          bio={bio}
+          avatarPreview={avatarPreview}
+          bannerPreview={bannerPreview}
+          onUsernameChange={setUsername}
+          onBioChange={setBio}
+          onAvatarChange={setAvatarPreview}
+          onBannerChange={setBannerPreview}
+        />
 
         <DialogFooter className="mt-6">
           <Button 

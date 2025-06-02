@@ -13,12 +13,12 @@ const DefaultAvatarSelector: React.FC<DefaultAvatarSelectorProps> = ({
   selectedAvatar 
 }) => {
   const defaultAvatars = [
-    "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?auto=format&fit=crop&w=150&h=150&q=80",
-    "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=150&h=150&q=80", 
-    "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=150&h=150&q=80",
-    "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=150&h=150&q=80",
-    "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&w=150&h=150&q=80",
-    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80"
+    "/lovable-uploads/dc20bd05-193b-4100-bf42-cfbbb20433ad.png",
+    "/lovable-uploads/dbca34c0-4c90-48de-b573-3ee4118da4d1.png",
+    "/lovable-uploads/b4ffe288-3017-4672-a679-cb442d6f00e0.png",
+    "/lovable-uploads/79637843-91ff-413e-80fc-ac24713183c3.png",
+    "/lovable-uploads/52a37106-d8af-4a71-9d67-4d69bd884c8f.png",
+    "/lovable-uploads/49b5c95b-338d-461a-a797-2eef2ab61a57.png"
   ];
 
   return (
