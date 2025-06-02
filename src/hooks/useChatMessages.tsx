@@ -40,7 +40,11 @@ export const useChatMessages = (conversationId: string) => {
         return null;
       }
 
-      return data;
+      return {
+        id: data.id,
+        type: data.type as 'direct' | 'team',
+        name: data.name
+      };
     },
     enabled: !!conversationId,
   });
