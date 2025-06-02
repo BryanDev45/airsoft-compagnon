@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -10,6 +9,7 @@ import { Save, Copy } from 'lucide-react';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { usePartyForm } from '@/hooks/usePartyForm';
 import { useLastGame } from '@/hooks/useLastGame';
+import { useLastGameImages } from '@/hooks/useLastGameImages';
 import { ScrollToTop } from "../components/ui/scroll-to-top";
 import { toast } from "@/components/ui/use-toast";
 
@@ -38,11 +38,14 @@ const CreateParty = () => {
     images, 
     preview, 
     handleImageChange, 
-    removeImage 
+    removeImage,
+    setImages,
+    setPreview
   } = useImageUpload(5);
   
   const { form, isSubmitting, onSubmit } = usePartyForm(images);
   const { lastGame, isLoading } = useLastGame();
+  const { isLoadingImages, fetchLastGameImages, convertUrlsToFiles } = useLastGameImages();
 
   // Scroll to top on mount
   useEffect(() => {
@@ -50,7 +53,7 @@ const CreateParty = () => {
   }, []);
   
   // Fonction pour préremplir le formulaire avec les données de la dernière partie
-  const fillFromLastGame = () => {
+  const fillFromLastGame = async () => {
     if (!lastGame || hasFilledFromLastGame) return;
     
     // Créer les dates avec les heures par défaut
@@ -92,6 +95,31 @@ const CreateParty = () => {
       terms: false
     });
     
+    // Copy images from last game
+    try {
+      const imageUrls = await fetchLastGameImages(lastGame.id);
+      if (imageUrls.length > 0) {
+        const imageFiles = await convertUrlsToFiles(imageUrls);
+        if (imageFiles.length > 0) {
+          setImages(imageFiles);
+          const newPreviews = imageFiles.map(file => URL.createObjectURL(file));
+          setPreview(newPreviews);
+          
+          toast({
+            title: "Images copiées",
+            description: `${imageFiles.length} image(s) de votre dernière partie ont été ajoutées`,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors de la copie des images:', error);
+      toast({
+        title: "Attention",
+        description: "Les informations ont été copiées mais les images n'ont pas pu être récupérées",
+        variant: "destructive"
+      });
+    }
+    
     setHasFilledFromLastGame(true);
     
     toast({
@@ -125,10 +153,11 @@ const CreateParty = () => {
                   type="button" 
                   variant="outline" 
                   onClick={fillFromLastGame}
+                  disabled={isLoadingImages}
                   className="flex items-center gap-2"
                 >
                   <Copy className="h-4 w-4" />
-                  Copier ma dernière partie
+                  {isLoadingImages ? "Copie en cours..." : "Copier ma dernière partie"}
                 </Button>
               )}
             </div>
