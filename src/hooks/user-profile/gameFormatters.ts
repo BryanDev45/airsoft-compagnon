@@ -1,9 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-// Common constants
-export const DEFAULT_IMAGE = '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png';
-
 export interface FormattedGame {
   id: string;
   title: string;
@@ -15,71 +12,71 @@ export interface FormattedGame {
   city: string;
   max_players: number;
   participantsCount: number;
-  price: number | null;
+  price: number;
   image: string;
   role: string;
-  status: 'À venir' | 'Terminé';
+  status: string;
   team: string;
   result: string;
-  time?: string;
 }
 
-export interface RawGame {
-  id: string;
-  title: string;
-  date: string;
-  address: string;
-  city: string;
-  zip_code: string;
-  max_players?: number;
-  price?: number;
-  start_time?: string;
-  end_time?: string;
-  Picture1?: string;
-  Picture2?: string;
-  Picture3?: string;
-  Picture4?: string;
-  Picture5?: string;
-  [key: string]: any;
-}
-
-export interface GameParticipant {
-  game_id: string;
-  user_id: string;
-  role: string;
-  status: string;
-}
-
-/**
- * Retrieves participant counts for a list of games
- */
 export const fetchParticipantCounts = async (gameIds: string[]): Promise<Record<string, number>> => {
-  if (gameIds.length === 0) return {};
-  
   const counts: Record<string, number> = {};
   
-  // Optimization: get counts in a single query instead of multiple
-  for (const gameId of gameIds) {
-    const { data, error, count } = await supabase
-      .from('game_participants')
-      .select('*', { count: 'exact', head: true })
-      .eq('game_id', gameId);
+  if (gameIds.length === 0) return counts;
+  
+  const { data, error } = await supabase
+    .from('game_participants')
+    .select('game_id')
+    .in('game_id', gameIds);
     
-    if (!error && count !== null) {
-      counts[gameId] = count;
-    }
+  if (error) {
+    console.error('Error fetching participant counts:', error);
+    return counts;
   }
   
+  // Compter les participants par jeu
+  data?.forEach(participant => {
+    counts[participant.game_id] = (counts[participant.game_id] || 0) + 1;
+  });
+  
   return counts;
-}
+};
 
-/**
- * Formats an organized game
- */
-export const formatCreatedGame = (game: RawGame, participantCount: number): FormattedGame => {
+export const formatParticipatedGame = (
+  gameData: any, 
+  participant: any, 
+  participantCount: number
+): FormattedGame => {
+  const gameDate = new Date(gameData.date);
+  const isUpcoming = gameDate > new Date();
+  
+  return {
+    id: gameData.id,
+    title: gameData.title,
+    date: new Date(gameData.date).toLocaleDateString('fr-FR'),
+    rawDate: gameData.date,
+    location: gameData.city,
+    address: gameData.address,
+    zip_code: gameData.zip_code,
+    city: gameData.city,
+    max_players: gameData.max_players,
+    participantsCount: participantCount,
+    price: gameData.price,
+    image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
+    role: participant.role,
+    status: isUpcoming ? 'À venir' : 'Terminé',
+    team: 'Indéfini',
+    result: participant.status
+  };
+};
+
+export const formatCreatedGame = (
+  game: any, 
+  participantCount: number
+): FormattedGame => {
   const gameDate = new Date(game.date);
   const isUpcoming = gameDate > new Date();
-  const gameImage = game.Picture1 || game.Picture2 || game.Picture3 || game.Picture4 || game.Picture5 || DEFAULT_IMAGE;
   
   return {
     id: game.id,
@@ -90,13 +87,10 @@ export const formatCreatedGame = (game: RawGame, participantCount: number): Form
     address: game.address,
     zip_code: game.zip_code,
     city: game.city,
-    max_players: game.max_players || 0,
+    max_players: game.max_players,
     participantsCount: participantCount,
-    price: game.price || 0,
-    time: game.start_time && game.end_time 
-      ? `${game.start_time.substring(0, 5)} - ${game.end_time.substring(0, 5)}` 
-      : undefined,
-    image: gameImage,
+    price: game.price,
+    image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
     role: 'Organisateur',
     status: isUpcoming ? 'À venir' : 'Terminé',
     team: 'Organisateur',
@@ -104,33 +98,35 @@ export const formatCreatedGame = (game: RawGame, participantCount: number): Form
   };
 };
 
-/**
- * Formats a game in which the user participates
- */
-export const formatParticipatedGame = (game: RawGame, participant: GameParticipant, participantCount: number): FormattedGame => {
-  const gameDate = new Date(game.date);
-  const isUpcoming = gameDate > new Date();
-  const gameImage = game.Picture1 || game.Picture2 || game.Picture3 || game.Picture4 || game.Picture5 || DEFAULT_IMAGE;
-  
-  return {
-    id: game.id,
-    title: game.title,
-    date: new Date(game.date).toLocaleDateString('fr-FR'),
-    rawDate: game.date,
-    location: game.city,
-    address: game.address,
-    zip_code: game.zip_code,
-    city: game.city,
-    max_players: game.max_players || 0,
-    participantsCount: participantCount,
-    price: game.price || 0,
-    time: game.start_time && game.end_time 
-      ? `${game.start_time.substring(0, 5)} - ${game.end_time.substring(0, 5)}` 
-      : undefined,
-    image: gameImage,
-    role: participant.role,
-    status: isUpcoming ? 'À venir' : 'Terminé',
-    team: 'Indéfini',
-    result: participant.status
-  };
+// Fonction pour compter et mettre à jour les statistiques de parties jouées
+export const updateUserGamesStats = async (userId: string, allGames: FormattedGame[]): Promise<void> => {
+  try {
+    // Compter uniquement les parties terminées (passées)
+    const completedGames = allGames.filter(game => game.status === 'Terminé');
+    
+    // Compter les parties jouées (en tant que participant OU organisateur)
+    const gamesPlayed = completedGames.length;
+    
+    // Compter les parties organisées
+    const gamesOrganized = completedGames.filter(game => game.role === 'Organisateur').length;
+    
+    console.log(`Updating stats for user ${userId}: played=${gamesPlayed}, organized=${gamesOrganized}`);
+    
+    // Mettre à jour les statistiques
+    const { error } = await supabase
+      .from('user_stats')
+      .update({ 
+        games_played: gamesPlayed,
+        games_organized: gamesOrganized 
+      })
+      .eq('user_id', userId);
+      
+    if (error) {
+      console.error("Error updating user stats:", error);
+    } else {
+      console.log("Successfully updated user stats");
+    }
+  } catch (error) {
+    console.error("Error in updateUserGamesStats:", error);
+  }
 };

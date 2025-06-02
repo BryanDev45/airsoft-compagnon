@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { FormattedGame, fetchParticipantCounts, formatParticipatedGame, formatCreatedGame } from './gameFormatters';
+import { FormattedGame, fetchParticipantCounts, formatParticipatedGame, formatCreatedGame, updateUserGamesStats } from './gameFormatters';
 import { useQuery } from '@tanstack/react-query';
 
 /**
@@ -44,7 +44,6 @@ async function fetchUserGames(userId: string | undefined): Promise<FormattedGame
     
     // Traiter les jeux participés
     let formattedGames: FormattedGame[] = [];
-    let pastGamesCount = 0;
     
     if (gameParticipants.length > 0) {
       const participatedGameIds = gameParticipants.map(p => p.game_id);
@@ -65,13 +64,6 @@ async function fetchUserGames(userId: string | undefined): Promise<FormattedGame
         for (const participant of gameParticipants) {
           const gameData = participatedGames.find(g => g.id === participant.game_id);
           if (gameData) {
-            const gameDate = new Date(gameData.date);
-            
-            // Compter toutes les parties passées auxquelles l'utilisateur a participé (y compris organisées)
-            if (gameDate < new Date()) {
-              pastGamesCount++;
-            }
-            
             formattedGames.push(
               formatParticipatedGame(
                 gameData, 
@@ -84,23 +76,12 @@ async function fetchUserGames(userId: string | undefined): Promise<FormattedGame
       }
     }
     
-    // Traiter les jeux créés et compter les parties passées organisées
+    // Traiter les jeux créés
     if (createdGames.length > 0) {
       const createdIds = createdGames.map(g => g.id);
       const createdCounts = await fetchParticipantCounts(createdIds);
       
-      // Compter les parties passées organisées qui ne sont pas déjà comptées comme participation
       for (const game of createdGames) {
-        const gameDate = new Date(game.date);
-        
-        // Vérifier si l'utilisateur était aussi participant à cette partie
-        const wasParticipant = gameParticipants.some(p => p.game_id === game.id);
-        
-        // Si la partie est passée et que l'utilisateur n'était pas déjà compté comme participant
-        if (gameDate < new Date() && !wasParticipant) {
-          pastGamesCount++;
-        }
-        
         formattedGames.push(
           formatCreatedGame(
             game, 
@@ -108,30 +89,6 @@ async function fetchUserGames(userId: string | undefined): Promise<FormattedGame
           )
         );
       }
-      
-      // Mettre à jour les statistiques pour les jeux organisés
-      try {
-        await supabase
-          .from('user_stats')
-          .update({ games_organized: createdGames.length })
-          .eq('user_id', userId);
-          
-        console.log("Updated games_organized count to:", createdGames.length);
-      } catch (error) {
-        console.error("Error updating games_organized count:", error);
-      }
-    }
-    
-    // Mettre à jour le compteur de parties jouées avec le total correct
-    try {
-      await supabase
-        .from('user_stats')
-        .update({ games_played: pastGamesCount })
-        .eq('user_id', userId);
-        
-      console.log("Updated games_played count to:", pastGamesCount);
-    } catch (error) {
-      console.error("Error updating games_played count:", error);
     }
     
     // Supprimer les doublons
@@ -145,6 +102,9 @@ async function fetchUserGames(userId: string | undefined): Promise<FormattedGame
       if (a.status !== 'À venir' && b.status === 'À venir') return 1;
       return new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime();
     });
+    
+    // Mettre à jour les statistiques avec la nouvelle fonction corrigée
+    await updateUserGamesStats(userId, formattedGames);
     
     return formattedGames;
     
