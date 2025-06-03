@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 interface Conversation {
   id: string;
   type: 'direct' | 'team';
-  name?: string;
+  name?: string; // Made optional to match actual usage
   participants: Array<{
     id: string;
     username: string;
