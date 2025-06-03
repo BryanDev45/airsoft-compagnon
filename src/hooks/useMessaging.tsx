@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -258,7 +259,7 @@ export const useMessaging = () => {
 
         // Filtrer les conversations nulles et trier par dernière activité
         const validConversations = conversationsWithDetails
-          .filter((conv): conv is Conversation => conv !== null)
+          .filter((conv) => conv !== null)
           .sort((a, b) => {
             // Prioriser les conversations avec des messages non lus
             if (a.unread_count > 0 && b.unread_count === 0) return -1;
