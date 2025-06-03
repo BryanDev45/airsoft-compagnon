@@ -30,6 +30,8 @@ async function fetchUserGames(userId: string | undefined): Promise<FormattedGame
   if (!userId) return [];
   
   try {
+    console.log(`Récupération des parties pour l'utilisateur: ${userId}`);
+    
     // Exécute les requêtes en parallèle pour de meilleures performances
     const [participantsResult, createdGamesResult] = await Promise.all([
       supabase.from('game_participants').select('*').eq('user_id', userId),
@@ -41,6 +43,8 @@ async function fetchUserGames(userId: string | undefined): Promise<FormattedGame
 
     const gameParticipants = participantsResult.data || [];
     const createdGames = createdGamesResult.data || [];
+    
+    console.log(`Trouvé ${gameParticipants.length} participations et ${createdGames.length} parties créées`);
     
     // Traiter les jeux participés
     let formattedGames: FormattedGame[] = [];
@@ -103,8 +107,10 @@ async function fetchUserGames(userId: string | undefined): Promise<FormattedGame
       return new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime();
     });
     
-    // Mettre à jour les statistiques avec la nouvelle fonction corrigée
+    // Mettre à jour les statistiques pour l'utilisateur spécifique (pas l'utilisateur connecté)
     await updateUserGamesStats(userId, formattedGames);
+    
+    console.log(`Parties formatées: ${formattedGames.length} pour l'utilisateur ${userId}`);
     
     return formattedGames;
     

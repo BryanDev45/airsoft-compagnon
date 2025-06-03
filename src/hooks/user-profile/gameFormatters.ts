@@ -5,128 +5,140 @@ export interface FormattedGame {
   id: string;
   title: string;
   date: string;
-  rawDate: string;
+  time: string;
   location: string;
-  address: string;
-  zip_code: string;
-  city: string;
-  max_players: number;
-  participantsCount: number;
-  price: number;
-  image: string;
-  role: string;
+  participants: number;
+  maxParticipants: number;
   status: string;
-  team: string;
-  result: string;
+  type: string;
+  role?: string;
+  rawDate: string;
+  isCreator?: boolean;
 }
 
-export const fetchParticipantCounts = async (gameIds: string[]): Promise<Record<string, number>> => {
-  const counts: Record<string, number> = {};
+/**
+ * Récupère efficacement les compteurs de participants pour plusieurs parties
+ */
+export const fetchParticipantCounts = async (gameIds: string[]): Promise<{ [key: string]: number }> => {
+  if (gameIds.length === 0) return {};
   
-  if (gameIds.length === 0) return counts;
-  
-  const { data, error } = await supabase
-    .from('game_participants')
-    .select('game_id')
-    .in('game_id', gameIds);
+  try {
+    const { data, error } = await supabase
+      .from('game_participants')
+      .select('game_id')
+      .in('game_id', gameIds)
+      .eq('status', 'Confirmé');
     
-  if (error) {
-    console.error('Error fetching participant counts:', error);
+    if (error) throw error;
+    
+    // Compter les participants par partie
+    const counts: { [key: string]: number } = {};
+    data?.forEach(participant => {
+      counts[participant.game_id] = (counts[participant.game_id] || 0) + 1;
+    });
+    
     return counts;
+  } catch (error) {
+    console.error('Erreur lors du comptage des participants:', error);
+    return {};
   }
-  
-  // Compter les participants par jeu
-  data?.forEach(participant => {
-    counts[participant.game_id] = (counts[participant.game_id] || 0) + 1;
-  });
-  
-  return counts;
 };
 
-export const formatParticipatedGame = (
-  gameData: any, 
-  participant: any, 
-  participantCount: number
-): FormattedGame => {
+/**
+ * Formate une partie à laquelle l'utilisateur participe
+ */
+export const formatParticipatedGame = (gameData: any, participant: any, participantCount: number): FormattedGame => {
   const gameDate = new Date(gameData.date);
-  const isUpcoming = gameDate > new Date();
+  const currentDate = new Date();
+  
+  let status = 'Terminée';
+  if (gameDate > currentDate) {
+    status = 'À venir';
+  } else if (gameDate.toDateString() === currentDate.toDateString()) {
+    status = 'En cours';
+  }
   
   return {
     id: gameData.id,
     title: gameData.title,
-    date: new Date(gameData.date).toLocaleDateString('fr-FR'),
+    date: gameDate.toLocaleDateString('fr-FR'),
+    time: `${gameData.start_time.slice(0, 5)} - ${gameData.end_time.slice(0, 5)}`,
+    location: `${gameData.city}, ${gameData.zip_code}`,
+    participants: participantCount,
+    maxParticipants: gameData.max_players,
+    status,
+    type: gameData.game_type,
+    role: participant.role || 'Participant',
     rawDate: gameData.date,
-    location: gameData.city,
-    address: gameData.address,
-    zip_code: gameData.zip_code,
-    city: gameData.city,
-    max_players: gameData.max_players,
-    participantsCount: participantCount,
-    price: gameData.price,
-    image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
-    role: participant.role,
-    status: isUpcoming ? 'À venir' : 'Terminé',
-    team: 'Indéfini',
-    result: participant.status
+    isCreator: false
   };
 };
 
-export const formatCreatedGame = (
-  game: any, 
-  participantCount: number
-): FormattedGame => {
-  const gameDate = new Date(game.date);
-  const isUpcoming = gameDate > new Date();
+/**
+ * Formate une partie créée par l'utilisateur
+ */
+export const formatCreatedGame = (gameData: any, participantCount: number): FormattedGame => {
+  const gameDate = new Date(gameData.date);
+  const currentDate = new Date();
+  
+  let status = 'Terminée';
+  if (gameDate > currentDate) {
+    status = 'À venir';
+  } else if (gameDate.toDateString() === currentDate.toDateString()) {
+    status = 'En cours';
+  }
   
   return {
-    id: game.id,
-    title: game.title,
-    date: new Date(game.date).toLocaleDateString('fr-FR'),
-    rawDate: game.date,
-    location: game.city,
-    address: game.address,
-    zip_code: game.zip_code,
-    city: game.city,
-    max_players: game.max_players,
-    participantsCount: participantCount,
-    price: game.price,
-    image: '/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png',
+    id: gameData.id,
+    title: gameData.title,
+    date: gameDate.toLocaleDateString('fr-FR'),
+    time: `${gameData.start_time.slice(0, 5)} - ${gameData.end_time.slice(0, 5)}`,
+    location: `${gameData.city}, ${gameData.zip_code}`,
+    participants: participantCount,
+    maxParticipants: gameData.max_players,
+    status,
+    type: gameData.game_type,
     role: 'Organisateur',
-    status: isUpcoming ? 'À venir' : 'Terminé',
-    team: 'Organisateur',
-    result: 'Organisateur'
+    rawDate: gameData.date,
+    isCreator: true
   };
 };
 
-// Fonction corrigée pour compter et mettre à jour les statistiques de parties jouées
-export const updateUserGamesStats = async (userId: string, allGames: FormattedGame[]): Promise<void> => {
+/**
+ * Met à jour les statistiques de jeu d'un utilisateur spécifique
+ */
+export const updateUserGamesStats = async (userId: string, games: FormattedGame[]): Promise<void> => {
+  if (!userId || games.length === 0) return;
+  
   try {
-    // Compter uniquement les parties terminées (passées)
-    const completedGames = allGames.filter(game => game.status === 'Terminé');
+    // Calculer les statistiques
+    const gamesPlayed = games.filter(game => game.status === 'Terminée').length;
+    const gamesOrganized = games.filter(game => game.isCreator && game.status === 'Terminée').length;
     
-    // Compter TOUTES les parties passées (en tant que participant ET organisateur)
-    const totalPastGames = completedGames.length;
+    console.log(`Mise à jour des statistiques pour l'utilisateur ${userId}:`, {
+      gamesPlayed,
+      gamesOrganized,
+      totalGames: games.length
+    });
     
-    // Compter seulement les parties organisées passées
-    const pastOrganizedGames = completedGames.filter(game => game.role === 'Organisateur').length;
-    
-    console.log(`Updating stats for user ${userId}: total_played=${totalPastGames}, organized=${pastOrganizedGames}`);
-    
-    // Mettre à jour les statistiques
+    // Mettre à jour les statistiques dans la base de données pour l'utilisateur spécifique
     const { error } = await supabase
       .from('user_stats')
-      .update({ 
-        games_played: totalPastGames,
-        games_organized: pastOrganizedGames 
-      })
-      .eq('user_id', userId);
-      
+      .upsert({
+        user_id: userId,
+        games_played: gamesPlayed,
+        games_organized: gamesOrganized,
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id'
+      });
+    
     if (error) {
-      console.error("Error updating user stats:", error);
+      console.error('Erreur lors de la mise à jour des statistiques:', error);
     } else {
-      console.log("Successfully updated user stats");
+      console.log('Statistiques mises à jour avec succès');
     }
   } catch (error) {
-    console.error("Error in updateUserGamesStats:", error);
+    console.error('Erreur lors du calcul des statistiques:', error);
   }
 };
