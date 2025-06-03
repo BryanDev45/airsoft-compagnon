@@ -245,7 +245,7 @@ export const useMessaging = () => {
               return {
                 id: conv.id,
                 type: conv.type as 'direct' | 'team',
-                name: conv.name,
+                name: conv.name || undefined,
                 participants,
                 lastMessage,
                 unread_count
