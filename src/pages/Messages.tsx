@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import { useMessaging } from '@/hooks/useMessaging';
 import ConversationList from '@/components/messaging/ConversationList';
 import ChatView from '@/components/messaging/ChatView';
