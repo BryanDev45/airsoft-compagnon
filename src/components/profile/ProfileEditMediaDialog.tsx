@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import AvatarUploader from './media/AvatarUploader';
@@ -51,7 +52,7 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[520px]">
+      <DialogContent className="sm:max-w-[520px] max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Personnaliser votre profil</DialogTitle>
           <DialogDescription>
@@ -59,26 +60,31 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs value={currentTab} onValueChange={setCurrentTab} className="mt-4">
-          <TabsList className="grid grid-cols-2 mb-4">
-            <TabsTrigger value="avatar">Avatar</TabsTrigger>
-            <TabsTrigger value="banner">Bannière</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="avatar" className="space-y-4">
-            <AvatarUploader 
-              avatarPreview={avatarPreview}
-              onAvatarChange={setAvatarPreview}
-            />
-          </TabsContent>
-          
-          <TabsContent value="banner" className="space-y-4">
-            <BannerUploader 
-              bannerPreview={bannerPreview}
-              onBannerChange={setBannerPreview}
-            />
-          </TabsContent>
-        </Tabs>
+        <ScrollArea className="flex-1 max-h-[60vh] overflow-y-auto">
+          <div className="px-1">
+            <Tabs value={currentTab} onValueChange={setCurrentTab} className="mt-4">
+              <TabsList className="grid grid-cols-2 mb-4">
+                <TabsTrigger value="avatar">Avatar</TabsTrigger>
+                <TabsTrigger value="banner">Bannière</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="avatar" className="space-y-4">
+                <AvatarUploader 
+                  avatarPreview={avatarPreview}
+                  onAvatarChange={setAvatarPreview}
+                />
+              </TabsContent>
+              
+              <TabsContent value="banner" className="space-y-4">
+                <BannerUploader 
+                  bannerPreview={bannerPreview}
+                  onBannerChange={setBannerPreview}
+                />
+              </TabsContent>
+            </Tabs>
+          </div>
+        </ScrollArea>
+
         <DialogFooter className="mt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Annuler
