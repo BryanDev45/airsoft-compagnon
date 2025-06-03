@@ -52,40 +52,48 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[520px] max-h-[90vh] flex flex-col">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[520px] h-[85vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Personnaliser votre profil</DialogTitle>
           <DialogDescription>
             Personnalisez votre avatar et votre bannière de profil
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 max-h-[60vh] overflow-y-auto">
-          <div className="px-1">
-            <Tabs value={currentTab} onValueChange={setCurrentTab} className="mt-4">
-              <TabsList className="grid grid-cols-2 mb-4">
-                <TabsTrigger value="avatar">Avatar</TabsTrigger>
-                <TabsTrigger value="banner">Bannière</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="avatar" className="space-y-4">
-                <AvatarUploader 
-                  avatarPreview={avatarPreview}
-                  onAvatarChange={setAvatarPreview}
-                />
+        <div className="flex-1 min-h-0">
+          <Tabs value={currentTab} onValueChange={setCurrentTab} className="h-full flex flex-col">
+            <TabsList className="grid grid-cols-2 mb-4 flex-shrink-0">
+              <TabsTrigger value="avatar">Avatar</TabsTrigger>
+              <TabsTrigger value="banner">Bannière</TabsTrigger>
+            </TabsList>
+            
+            <div className="flex-1 min-h-0">
+              <TabsContent value="avatar" className="h-full m-0">
+                <ScrollArea className="h-full pr-4">
+                  <div className="space-y-4">
+                    <AvatarUploader 
+                      avatarPreview={avatarPreview}
+                      onAvatarChange={setAvatarPreview}
+                    />
+                  </div>
+                </ScrollArea>
               </TabsContent>
               
-              <TabsContent value="banner" className="space-y-4">
-                <BannerUploader 
-                  bannerPreview={bannerPreview}
-                  onBannerChange={setBannerPreview}
-                />
+              <TabsContent value="banner" className="h-full m-0">
+                <ScrollArea className="h-full pr-4">
+                  <div className="space-y-4">
+                    <BannerUploader 
+                      bannerPreview={bannerPreview}
+                      onBannerChange={setBannerPreview}
+                    />
+                  </div>
+                </ScrollArea>
               </TabsContent>
-            </Tabs>
-          </div>
-        </ScrollArea>
+            </div>
+          </Tabs>
+        </div>
 
-        <DialogFooter className="mt-4">
+        <DialogFooter className="flex-shrink-0 mt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Annuler
           </Button>

@@ -98,26 +98,26 @@ export const formatCreatedGame = (
   };
 };
 
-// Fonction pour compter et mettre à jour les statistiques de parties jouées
+// Fonction corrigée pour compter et mettre à jour les statistiques de parties jouées
 export const updateUserGamesStats = async (userId: string, allGames: FormattedGame[]): Promise<void> => {
   try {
     // Compter uniquement les parties terminées (passées)
     const completedGames = allGames.filter(game => game.status === 'Terminé');
     
-    // Compter les parties jouées (en tant que participant OU organisateur)
-    const gamesPlayed = completedGames.length;
+    // Compter TOUTES les parties passées (en tant que participant ET organisateur)
+    const totalPastGames = completedGames.length;
     
-    // Compter les parties organisées
-    const gamesOrganized = completedGames.filter(game => game.role === 'Organisateur').length;
+    // Compter seulement les parties organisées passées
+    const pastOrganizedGames = completedGames.filter(game => game.role === 'Organisateur').length;
     
-    console.log(`Updating stats for user ${userId}: played=${gamesPlayed}, organized=${gamesOrganized}`);
+    console.log(`Updating stats for user ${userId}: total_played=${totalPastGames}, organized=${pastOrganizedGames}`);
     
     // Mettre à jour les statistiques
     const { error } = await supabase
       .from('user_stats')
       .update({ 
-        games_played: gamesPlayed,
-        games_organized: gamesOrganized 
+        games_played: totalPastGames,
+        games_organized: pastOrganizedGames 
       })
       .eq('user_id', userId);
       

@@ -29,7 +29,7 @@ export const useUserGames = (userId: string | undefined) => {
       console.log("Participated games:", gameParticipants);
       
       let formattedGames: any[] = [];
-      let pastGamesCount = 0; // Compteur pour les parties déjà jouées
+      let totalPastGamesCount = 0; // Compteur pour toutes les parties passées (participées + organisées)
       
       // 3. Format participated games
       if (gameParticipants && gameParticipants.length > 0) {
@@ -70,16 +70,16 @@ export const useUserGames = (userId: string | undefined) => {
                 const gameDate = new Date(gameData.date);
                 const isUpcoming = gameDate > new Date();
                 
-                // Incrémenter le compteur si la partie est déjà passée
+                // Compter seulement les parties passées pour les statistiques
                 if (!isUpcoming) {
-                  pastGamesCount++;
+                  totalPastGamesCount++;
                 }
                 
                 return {
                   id: gameData.id,
                   title: gameData.title,
                   date: new Date(gameData.date).toLocaleDateString('fr-FR'),
-                  rawDate: gameData.date, // Ajout de la date brute pour le tri
+                  rawDate: gameData.date,
                   location: gameData.city,
                   address: gameData.address,
                   city: gameData.city,
@@ -105,7 +105,9 @@ export const useUserGames = (userId: string | undefined) => {
         }
       }
       
-      // 4. Format created games
+      // 4. Format created games et compter les parties organisées passées
+      let pastOrganizedGamesCount = 0;
+      
       if (createdGames && createdGames.length > 0) {
         // Pour chaque partie créée, récupérer le nombre de participants
         const createdGameParticipantCounts = await Promise.all(
@@ -131,13 +133,18 @@ export const useUserGames = (userId: string | undefined) => {
           const gameDate = new Date(game.date);
           const isUpcoming = gameDate > new Date();
           
-          // Ne pas compter les parties organisées dans les parties "jouées"
+          // Compter les parties organisées passées pour les statistiques
+          if (!isUpcoming) {
+            pastOrganizedGamesCount++;
+            // Ajouter aussi au compteur total des parties jouées car organiser = jouer
+            totalPastGamesCount++;
+          }
           
           return {
             id: game.id,
             title: game.title,
             date: new Date(game.date).toLocaleDateString('fr-FR'),
-            rawDate: game.date, // Ajout de la date brute pour le tri
+            rawDate: game.date,
             location: game.city,
             address: game.address,
             city: game.city,
@@ -159,30 +166,23 @@ export const useUserGames = (userId: string | undefined) => {
         formattedGames = [...formattedGames, ...organizedGames];
       }
       
-      // 5. Update the games_organized count in user_stats if needed
-      if (createdGames && createdGames.length > 0) {
-        const { error: updateError } = await supabase
-          .from('user_stats')
-          .update({ games_organized: createdGames.length })
-          .eq('user_id', userId);
-          
-        if (updateError) {
-          console.error("Error updating games_organized count:", updateError);
-        } else {
-          console.log("Updated games_organized count to:", createdGames.length);
-        }
-      }
+      // 5. Mettre à jour les statistiques avec le bon comptage
+      console.log(`Mise à jour des statistiques pour l'utilisateur ${userId}:`);
+      console.log(`- Parties jouées (total): ${totalPastGamesCount}`);
+      console.log(`- Parties organisées: ${pastOrganizedGamesCount}`);
       
-      // Mettre à jour le compteur de parties jouées
-      const { error: updateGamesPlayedError } = await supabase
+      const { error: updateError } = await supabase
         .from('user_stats')
-        .update({ games_played: pastGamesCount })
+        .update({ 
+          games_played: totalPastGamesCount,
+          games_organized: pastOrganizedGamesCount 
+        })
         .eq('user_id', userId);
         
-      if (updateGamesPlayedError) {
-        console.error("Error updating games_played count:", updateGamesPlayedError);
+      if (updateError) {
+        console.error("Error updating user stats:", updateError);
       } else {
-        console.log("Updated games_played count to:", pastGamesCount);
+        console.log("Successfully updated user stats");
       }
       
       // Remove duplicates
