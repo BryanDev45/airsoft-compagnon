@@ -16,6 +16,9 @@ export const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
   tomorrow.setDate(tomorrow.getDate() + 1);
   const tomorrowISO = tomorrow.toISOString().split('T')[0];
   
+  console.log('Fetching games for user:', userId || 'anonymous');
+  console.log('Filtering games from date:', tomorrowISO);
+  
   let query = supabase
     .from('airsoft_games')
     .select(`
@@ -42,17 +45,16 @@ export const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
     .gte('date', tomorrowISO) // Exclure les parties d'aujourd'hui et du passé
     .order('date', { ascending: true });
   
-  // Si l'utilisateur est connecté, montrer ses parties privées + les parties publiques
-  // Si l'utilisateur n'est pas connecté, montrer seulement les parties publiques
+  // CORRECTION: Logique simplifiée pour la visibilité des parties
   if (userId) {
-    query = query.or(`is_private.eq.false,and(is_private.eq.true,created_by.eq.${userId})`);
+    // Utilisateur connecté : parties publiques + ses parties privées
+    query = query.or(`is_private.eq.false,is_private.is.null,and(is_private.eq.true,created_by.eq.${userId})`);
+    console.log('User authenticated - showing public games + user private games');
   } else {
-    // Pour les utilisateurs non connectés, montrer uniquement les parties publiques
-    // Inclure les parties où is_private est false OU null (pour compatibilité avec les anciennes parties)
+    // Utilisateur non connecté : SEULEMENT les parties publiques
     query = query.or('is_private.eq.false,is_private.is.null');
+    console.log('User not authenticated - showing only public games');
   }
-  
-  console.log('Fetching games for user:', userId || 'anonymous');
   
   const { data, error } = await query;
   
@@ -61,7 +63,8 @@ export const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
     throw error;
   }
 
-  console.log('Raw games data from Supabase:', data);
+  console.log('Raw games data from Supabase:', data?.length || 0, 'games found');
+  console.log('Games data sample:', data?.slice(0, 2));
 
   const formattedEvents = await Promise.all((data || []).map(async (game) => {
     const gameDate = new Date(game.date);
@@ -118,7 +121,7 @@ export const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
     };
   }));
   
-  console.log('Formatted events:', formattedEvents);
+  console.log('Formatted events returned:', formattedEvents.length);
   
   // Mettre en cache pour 10 minutes
   setStorageWithExpiry(cacheKey, formattedEvents, CACHE_DURATIONS.SHORT * 2);

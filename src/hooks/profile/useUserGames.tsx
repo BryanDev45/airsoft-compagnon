@@ -1,9 +1,9 @@
 
-import { useUserGamesRefactored } from './useUserGamesRefactored';
+import { useUserGamesFetch } from '../user-profile/useUserGamesFetch';
 
 /**
- * Hook principal pour les parties utilisateur - utilise maintenant la version refactorisée
+ * Hook principal pour les parties utilisateur - utilise la version optimisée avec React Query
  */
 export const useUserGames = (userId: string | undefined) => {
-  return useUserGamesRefactored(userId);
+  return useUserGamesFetch(userId);
 };
