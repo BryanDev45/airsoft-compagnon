@@ -8,18 +8,27 @@ import { useQuery } from '@tanstack/react-query';
  * Hook optimisé pour récupérer les parties d'un utilisateur avec mise en cache
  */
 export const useUserGamesFetch = (userId: string | undefined) => {
-  // Utilise React Query pour le caching et l'optimisation
-  const { data: userGames = [], isLoading: loading } = useQuery({
+  // Force la re-exécution de la requête quand l'userId change
+  const { data: userGames = [], isLoading: loading, refetch } = useQuery({
     queryKey: ['userGames', userId],
     queryFn: () => fetchUserGames(userId),
     enabled: !!userId,
-    staleTime: 60000, // Cache valide pendant 1 minute
-    refetchOnWindowFocus: false
+    staleTime: 30000, // Réduire le cache pour forcer les mises à jour plus fréquentes
+    refetchOnWindowFocus: true, // Actualiser quand on revient sur la fenêtre
+    refetchOnMount: true // Toujours actualiser au montage
   });
+
+  // Force la mise à jour des statistiques quand les parties changent
+  useEffect(() => {
+    if (userId && userGames.length >= 0) {
+      updateUserGamesStats(userId, userGames);
+    }
+  }, [userId, userGames]);
 
   return {
     userGames,
-    loading
+    loading,
+    refetch
   };
 };
 
@@ -106,9 +115,6 @@ async function fetchUserGames(userId: string | undefined): Promise<FormattedGame
       if (a.status !== 'À venir' && b.status === 'À venir') return 1;
       return new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime();
     });
-    
-    // Mettre à jour les statistiques pour l'utilisateur spécifique (pas l'utilisateur connecté)
-    await updateUserGamesStats(userId, formattedGames);
     
     console.log(`Parties formatées: ${formattedGames.length} pour l'utilisateur ${userId}`);
     
