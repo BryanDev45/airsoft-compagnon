@@ -25,12 +25,81 @@ export const useMessaging = () => {
   const { user } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
 
+  // Fonction pour créer une conversation d'équipe si elle n'existe pas
+  const createTeamConversationIfNeeded = async (teamId: string, teamName: string) => {
+    // Vérifier si une conversation d'équipe existe déjà
+    const { data: existingConversation } = await supabase
+      .from('conversations')
+      .select('id')
+      .eq('type', 'team')
+      .eq('team_id', teamId)
+      .single();
+
+    if (!existingConversation) {
+      // Créer la conversation d'équipe
+      const { data: newConversation, error: conversationError } = await supabase
+        .from('conversations')
+        .insert({
+          type: 'team',
+          name: `Équipe ${teamName}`,
+          team_id: teamId
+        })
+        .select('id')
+        .single();
+
+      if (conversationError) {
+        console.error('Error creating team conversation:', conversationError);
+        return;
+      }
+
+      // Ajouter tous les membres de l'équipe à la conversation
+      const { data: teamMembers } = await supabase
+        .from('team_members')
+        .select('user_id')
+        .eq('team_id', teamId)
+        .eq('status', 'confirmed');
+
+      if (teamMembers && teamMembers.length > 0) {
+        const participants = teamMembers.map(member => ({
+          conversation_id: newConversation.id,
+          user_id: member.user_id
+        }));
+
+        await supabase
+          .from('conversation_participants')
+          .insert(participants);
+      }
+    }
+  };
+
   const { data: conversations = [], isLoading } = useQuery({
     queryKey: ['conversations', user?.id],
     queryFn: async (): Promise<Conversation[]> => {
       if (!user?.id) return [];
 
+      // Vérifier si l'utilisateur fait partie d'une équipe et créer la conversation si nécessaire
+      const { data: userProfile } = await supabase
+        .from('profiles')
+        .select('team_id, team')
+        .eq('id', user.id)
+        .single();
+
+      if (userProfile?.team_id && userProfile?.team) {
+        await createTeamConversationIfNeeded(userProfile.team_id, userProfile.team);
+      }
+
       // Récupérer les conversations de l'utilisateur
+      const { data: userParticipations } = await supabase
+        .from('conversation_participants')
+        .select('conversation_id')
+        .eq('user_id', user.id);
+
+      if (!userParticipations || userParticipations.length === 0) {
+        return [];
+      }
+
+      const conversationIds = userParticipations.map(p => p.conversation_id);
+
       const { data: conversationsData, error: conversationsError } = await supabase
         .from('conversations')
         .select(`
@@ -39,6 +108,7 @@ export const useMessaging = () => {
           name,
           created_at
         `)
+        .in('id', conversationIds)
         .order('updated_at', { ascending: false });
 
       if (conversationsError) {
@@ -53,7 +123,7 @@ export const useMessaging = () => {
       // Pour chaque conversation, récupérer les participants et le dernier message
       const conversationsWithDetails = await Promise.all(
         conversationsData.map(async (conv) => {
-          // Récupérer les participants
+          // Récupérer les participants (sauf l'utilisateur actuel pour les conversations directes)
           const { data: participantsData } = await supabase
             .from('conversation_participants')
             .select(`

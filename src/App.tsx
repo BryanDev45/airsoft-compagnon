@@ -22,6 +22,7 @@ import FAQ from './pages/FAQ';
 import CreateParty from './pages/CreateParty';
 import Team from './pages/Team';
 import Toolbox from './pages/Toolbox';
+import Messages from './pages/Messages';
 import AuthGuard from './components/auth/AuthGuard';
 import CreateTeam from './pages/CreateTeam';
 import { useState, useEffect } from 'react';
@@ -125,6 +126,14 @@ function App() {
             element={
               <AuthGuard>
                 <Profile />
+              </AuthGuard>
+            } 
+          />
+          <Route 
+            path="/messages" 
+            element={
+              <AuthGuard>
+                <Messages />
               </AuthGuard>
             } 
           />
