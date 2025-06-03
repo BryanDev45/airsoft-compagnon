@@ -1,9 +1,9 @@
 
-import { useUserGamesFetch } from '../user-profile/useUserGamesFetch';
+import { useUserGames as useUserGamesManual } from '../user-profile/useUserGames';
 
 /**
- * Hook principal pour les parties utilisateur - utilise la version optimisée avec React Query
+ * Hook principal pour les parties utilisateur - utilise la version manuelle qui inclut fetchUserGames
  */
 export const useUserGames = (userId: string | undefined) => {
-  return useUserGamesFetch(userId);
+  return useUserGamesManual(userId);
 };
