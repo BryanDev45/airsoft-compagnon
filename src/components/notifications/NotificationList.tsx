@@ -7,6 +7,7 @@ import { useFriendRequestActions } from '@/hooks/notifications/useFriendRequestA
 import { useTeamInvitationActions } from '@/hooks/notifications/useTeamInvitationActions';
 import { useTeamRequestActions } from '@/hooks/notifications/useTeamRequestActions';
 import NotificationItem from './NotificationItem';
+import AdminNotificationButton from './AdminNotificationButton';
 
 interface Notification {
   id: string;
@@ -29,37 +30,43 @@ const NotificationList: React.FC<NotificationListProps> = ({ notifications }) =>
   const { processingInvitation, handleAcceptTeamInvitation, handleRejectTeamInvitation } = useTeamInvitationActions(handleMarkAsRead);
   const { processingRequest, handleAcceptTeamRequest, handleRejectTeamRequest } = useTeamRequestActions(handleMarkAsRead);
 
-  if (!notifications || notifications.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-8 text-gray-500">
-        <Bell className="h-8 w-8 mb-2" />
-        <p className="text-sm">Aucune notification</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex-1">
-      <ScrollArea className="h-[400px]">
-        <div className="space-y-3 pr-4">
-          {notifications.map((notification) => (
-            <NotificationItem
-              key={notification.id}
-              notification={notification}
-              onDelete={handleDeleteNotification}
-              onAcceptFriend={handleAcceptFriendRequest}
-              onRejectFriend={handleRejectFriendRequest}
-              onAcceptTeam={handleAcceptTeamInvitation}
-              onRejectTeam={handleRejectTeamInvitation}
-              onAcceptTeamRequest={handleAcceptTeamRequest}
-              onRejectTeamRequest={handleRejectTeamRequest}
-              onNavigate={handleNavigateToNotification}
-              processingInvitation={processingInvitation || processingFriend}
-              processingRequest={processingRequest}
-            />
-          ))}
-        </div>
-      </ScrollArea>
+    <div className="flex flex-col h-full">
+      {/* Bouton admin en haut */}
+      <div className="mb-4">
+        <AdminNotificationButton />
+      </div>
+
+      {/* Liste des notifications */}
+      <div className="flex-1">
+        {!notifications || notifications.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 text-gray-500">
+            <Bell className="h-8 w-8 mb-2" />
+            <p className="text-sm">Aucune notification</p>
+          </div>
+        ) : (
+          <ScrollArea className="h-[400px]">
+            <div className="space-y-3 pr-4">
+              {notifications.map((notification) => (
+                <NotificationItem
+                  key={notification.id}
+                  notification={notification}
+                  onDelete={handleDeleteNotification}
+                  onAcceptFriend={handleAcceptFriendRequest}
+                  onRejectFriend={handleRejectFriendRequest}
+                  onAcceptTeam={handleAcceptTeamInvitation}
+                  onRejectTeam={handleRejectTeamInvitation}
+                  onAcceptTeamRequest={handleAcceptTeamRequest}
+                  onRejectTeamRequest={handleRejectTeamRequest}
+                  onNavigate={handleNavigateToNotification}
+                  processingInvitation={processingInvitation || processingFriend}
+                  processingRequest={processingRequest}
+                />
+              ))}
+            </div>
+          </ScrollArea>
+        )}
+      </div>
     </div>
   );
 };
