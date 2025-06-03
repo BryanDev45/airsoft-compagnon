@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { useNavigate } from 'react-router-dom';
 import { useMessaging } from '@/hooks/useMessaging';
 import ConversationList from './ConversationList';
 import ChatView from './ChatView';
@@ -11,6 +12,12 @@ const MessagingIcon: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const { conversations, unreadCount } = useMessaging();
+  const navigate = useNavigate();
+
+  const handleGoToMessagesPage = () => {
+    setIsOpen(false);
+    navigate('/messages');
+  };
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -27,7 +34,18 @@ const MessagingIcon: React.FC = () => {
       <SheetContent className="w-[400px] sm:w-[540px] p-0">
         <div className="h-full flex flex-col">
           <SheetHeader className="p-6 border-b">
-            <SheetTitle>Messages</SheetTitle>
+            <div className="flex items-center justify-between">
+              <SheetTitle>Messages</SheetTitle>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleGoToMessagesPage}
+                className="flex items-center gap-2"
+              >
+                <ExternalLink size={16} />
+                Voir tout
+              </Button>
+            </div>
           </SheetHeader>
           <div className="flex-1 flex">
             {selectedConversationId ? (

@@ -1,144 +1,125 @@
-
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import './App.css';
-import Index from './pages/Index';
+import { QueryProvider } from './providers/QueryProvider';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import ScrollToTop from './components/ScrollToTop';
+import CookieConsent from './components/CookieConsent';
+import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
-import NewPassword from './pages/NewPassword';
 import Profile from './pages/Profile';
 import UserProfile from './pages/UserProfile';
-import Contact from './pages/Contact';
-import Parties from './pages/Parties';
+import CreateGame from './pages/CreateGame';
 import GameDetails from './pages/GameDetails';
 import EditGame from './pages/EditGame';
-import Partners from './pages/Partners';
-import NotFound from './pages/NotFound';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import TermsOfUse from './pages/TermsOfUse';
-import TermsOfSale from './pages/TermsOfSale';
-import CookiesPolicy from './pages/CookiesPolicy';
-import FAQ from './pages/FAQ';
-import CreateParty from './pages/CreateParty';
-import Team from './pages/Team';
-import Toolbox from './pages/Toolbox';
-import AuthGuard from './components/auth/AuthGuard';
+import SearchGames from './pages/SearchGames';
+import ToolBox from './pages/ToolBox';
+import TeamPage from './pages/TeamPage';
 import CreateTeam from './pages/CreateTeam';
-import { useState, useEffect } from 'react';
-import { Toaster } from "@/components/ui/toaster";
-import CookieConsent from './components/CookieConsent';
-import QueryProvider from './components/QueryProvider';
-import { getStorageWithExpiry, setStorageWithExpiry, CACHE_DURATIONS } from '@/utils/cacheUtils';
+import EditTeam from './pages/EditTeam';
+import TeamInvitation from './pages/TeamInvitation';
+import AuthGuard from './guards/AuthGuard';
+import AdminGuard from './guards/AdminGuard';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminGames from './pages/admin/AdminGames';
+import AdminTeams from './pages/admin/AdminTeams';
+import AdminReports from './pages/admin/AdminReports';
+import AdminSettings from './pages/admin/AdminSettings';
+import Messages from './pages/Messages';
 
 function App() {
-  const [cookiesAccepted, setCookiesAccepted] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    const handleRouteChange = () => {
-      window.scrollTo(0, 0);
-    };
-
-    window.addEventListener('popstate', handleRouteChange);
-    handleRouteChange();
-
-    return () => {
-      window.removeEventListener('popstate', handleRouteChange);
-    };
-  }, []);
-
-  useEffect(() => {
-    // Check cookie consent from cache
-    const consentStatus = getStorageWithExpiry('cookieConsent') || localStorage.getItem('cookieConsent');
-    setCookiesAccepted(consentStatus === 'accepted');
-  }, []);
-
-  const handleAcceptCookies = () => {
-    setStorageWithExpiry('cookieConsent', 'accepted', CACHE_DURATIONS.LONG);
-    localStorage.setItem('cookieConsent', 'accepted');
-    setCookiesAccepted(true);
-  };
-
-  const handleDeclineCookies = () => {
-    setStorageWithExpiry('cookieConsent', 'declined', CACHE_DURATIONS.LONG);
-    localStorage.setItem('cookieConsent', 'declined');
-    setCookiesAccepted(false);
-  };
-
   return (
     <QueryProvider>
       <Router>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<Index />} />
-          <Route path="/parties" element={<Parties />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/partners" element={<Partners />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/new-password" element={<NewPassword />} />
-          <Route path="/faq" element={<FAQ />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/terms-of-use" element={<TermsOfUse />} />
-          <Route path="/terms-of-sale" element={<TermsOfSale />} />
-          <Route path="/cookies-policy" element={<CookiesPolicy />} />
-          <Route path="/toolbox" element={<Toolbox />} />
-          <Route path="/game/:id" element={<GameDetails />} />
-          <Route path="/user/:username" element={<UserProfile />} />
-          <Route path="/search" element={<Parties />} />
-          
-          {/* Protected routes */}
-          <Route 
-            path="/parties/create" 
-            element={
-              <AuthGuard>
-                <CreateParty />
-              </AuthGuard>
-            } 
-          />
-          <Route 
-            path="/edit-game/:id" 
-            element={
-              <AuthGuard>
-                <EditGame />
-              </AuthGuard>
-            } 
-          />
-          <Route 
-            path="/team/:id" 
-            element={
-              <AuthGuard>
-                <Team />
-              </AuthGuard>
-            } 
-          />
-          <Route 
-            path="/team/create" 
-            element={
-              <AuthGuard>
-                <CreateTeam />
-              </AuthGuard>
-            } 
-          />
-          <Route 
-            path="/profile" 
-            element={
-              <AuthGuard>
-                <Profile />
-              </AuthGuard>
-            } 
-          />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        
-        {cookiesAccepted === null && (
-          <CookieConsent 
-            onAccept={handleAcceptCookies}
-            onDecline={handleDeclineCookies}
-          />
-        )}
-        
-        <Toaster />
+        <div className="min-h-screen bg-gray-50">
+          <Header />
+          <main>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/profile" element={
+                <AuthGuard>
+                  <Profile />
+                </AuthGuard>
+              } />
+              <Route path="/profile/:userId" element={<UserProfile />} />
+              <Route path="/create-game" element={
+                <AuthGuard>
+                  <CreateGame />
+                </AuthGuard>
+              } />
+              <Route path="/game/:gameId" element={<GameDetails />} />
+              <Route path="/edit-game/:gameId" element={
+                <AuthGuard>
+                  <EditGame />
+                </AuthGuard>
+              } />
+              <Route path="/parties" element={<SearchGames />} />
+              <Route path="/toolbox" element={<ToolBox />} />
+              <Route path="/team/:teamId" element={<TeamPage />} />
+              <Route path="/create-team" element={
+                <AuthGuard>
+                  <CreateTeam />
+                </AuthGuard>
+              } />
+              <Route path="/edit-team/:teamId" element={
+                <AuthGuard>
+                  <EditTeam />
+                </AuthGuard>
+              } />
+              <Route path="/team-invitation/:inviteId" element={
+                <AuthGuard>
+                  <TeamInvitation />
+                </AuthGuard>
+              } />
+              <Route path="/messages" element={
+                <AuthGuard>
+                  <Messages />
+                </AuthGuard>
+              } />
+              <Route path="/admin" element={
+                <AdminGuard>
+                  <AdminDashboard />
+                </AdminGuard>
+              } />
+              <Route path="/admin/users" element={
+                <AdminGuard>
+                  <AdminUsers />
+                </AdminGuard>
+              } />
+              <Route path="/admin/games" element={
+                <AdminGuard>
+                  <AdminGames />
+                </AdminGuard>
+              } />
+              <Route path="/admin/teams" element={
+                <AdminGuard>
+                  <AdminTeams />
+                </AdminGuard>
+              } />
+              <Route path="/admin/reports" element={
+                <AdminGuard>
+                  <AdminReports />
+                </AdminGuard>
+              } />
+              <Route path="/admin/settings" element={
+                <AdminGuard>
+                  <AdminSettings />
+                </AdminGuard>
+              } />
+            </Routes>
+          </main>
+          <Footer />
+          <ScrollToTop />
+          <CookieConsent />
+        </div>
       </Router>
     </QueryProvider>
   );
