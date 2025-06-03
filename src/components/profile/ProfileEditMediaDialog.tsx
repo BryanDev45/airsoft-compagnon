@@ -52,7 +52,7 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[520px] h-[85vh] flex flex-col">
+      <DialogContent className="sm:max-w-[520px] max-h-[90vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>Personnaliser votre profil</DialogTitle>
           <DialogDescription>
@@ -60,17 +60,17 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 min-h-0">
+        <div className="flex-1 min-h-0 overflow-hidden">
           <Tabs value={currentTab} onValueChange={setCurrentTab} className="h-full flex flex-col">
             <TabsList className="grid grid-cols-2 mb-4 flex-shrink-0">
               <TabsTrigger value="avatar">Avatar</TabsTrigger>
               <TabsTrigger value="banner">Bannière</TabsTrigger>
             </TabsList>
             
-            <div className="flex-1 min-h-0">
+            <div className="flex-1 min-h-0 overflow-hidden">
               <TabsContent value="avatar" className="h-full m-0">
-                <ScrollArea className="h-full pr-4">
-                  <div className="space-y-4">
+                <ScrollArea className="h-full w-full">
+                  <div className="space-y-4 p-1">
                     <AvatarUploader 
                       avatarPreview={avatarPreview}
                       onAvatarChange={setAvatarPreview}
@@ -80,8 +80,8 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
               </TabsContent>
               
               <TabsContent value="banner" className="h-full m-0">
-                <ScrollArea className="h-full pr-4">
-                  <div className="space-y-4">
+                <ScrollArea className="h-full w-full">
+                  <div className="space-y-4 p-1">
                     <BannerUploader 
                       bannerPreview={bannerPreview}
                       onBannerChange={setBannerPreview}
