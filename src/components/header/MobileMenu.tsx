@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Wrench, MessageSquare } from 'lucide-react';
+import { Wrench } from 'lucide-react';
 import { AuthSection } from './AuthSection';
 import { LanguageSelector } from './LanguageSelector';
 
@@ -28,13 +28,6 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
         <Wrench size={18} />
         <span>ToolBox</span>
       </Link>
-      
-      {isAuthenticated && (
-        <Link to="/messages" className="hover:text-airsoft-red py-2 transition-colors flex items-center gap-2">
-          <MessageSquare size={18} />
-          <span>Messages</span>
-        </Link>
-      )}
       
       <LanguageSelector isDesktop={false} />
       
