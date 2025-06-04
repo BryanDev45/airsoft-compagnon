@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { MapEvent } from '@/hooks/useMapData';
 import GameImageCarousel from './GameImageCarousel';
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from '@/integrations/supabase/client';
 
 interface MapMarkerProps {
   event: MapEvent;
@@ -14,6 +16,21 @@ interface MapMarkerProps {
 const MapMarker: React.FC<MapMarkerProps> = ({ event, onClose }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // Récupérer le nombre de participants pour cette partie
+  const { data: participantCount = 0 } = useQuery({
+    queryKey: ['participant-count', event.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('game_participants')
+        .select('id')
+        .eq('game_id', event.id)
+        .eq('status', 'Confirmé');
+      
+      if (error) throw error;
+      return data?.length || 0;
+    },
+  });
 
   const handleViewMore = () => {
     if (!user) {
@@ -59,7 +76,7 @@ const MapMarker: React.FC<MapMarkerProps> = ({ event, onClose }) => {
           <div className="flex items-center justify-between text-sm text-gray-600">
             <div className="flex items-center gap-1">
               <Users className="h-4 w-4" />
-              {event.maxPlayers || 20} places max
+              {participantCount}/{event.maxPlayers || 20} joueurs
             </div>
             
             <div className="flex items-center gap-1">
