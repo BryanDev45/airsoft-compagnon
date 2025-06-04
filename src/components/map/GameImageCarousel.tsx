@@ -14,7 +14,7 @@ const GameImageCarousel: React.FC<GameImageCarouselProps> = ({ images, title }) 
 
   if (displayImages.length === 1) {
     return (
-      <AspectRatio ratio={16/9}>
+      <AspectRatio ratio={16/9} className="w-full">
         <img 
           src={displayImages[0]} 
           alt={title}
@@ -25,12 +25,12 @@ const GameImageCarousel: React.FC<GameImageCarouselProps> = ({ images, title }) 
   }
 
   return (
-    <div className="relative">
-      <Carousel className="w-full">
-        <CarouselContent>
+    <div className="relative w-full h-full group">
+      <Carousel className="w-full h-full">
+        <CarouselContent className="h-full">
           {displayImages.map((image, index) => (
-            <CarouselItem key={index}>
-              <AspectRatio ratio={16/9}>
+            <CarouselItem key={index} className="h-full">
+              <AspectRatio ratio={16/9} className="w-full h-full">
                 <img 
                   src={image} 
                   alt={`${title} - Image ${index + 1}`}
@@ -40,10 +40,14 @@ const GameImageCarousel: React.FC<GameImageCarouselProps> = ({ images, title }) 
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 border-none text-white" />
-        <CarouselNext className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 border-none text-white" />
+        
+        {/* Boutons de navigation avec z-index contrôlé */}
+        <CarouselPrevious className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 border-none text-white opacity-0 group-hover:opacity-100 transition-opacity z-20" />
+        <CarouselNext className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 border-none text-white opacity-0 group-hover:opacity-100 transition-opacity z-20" />
       </Carousel>
-      <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+      
+      {/* Indicateur du nombre de photos avec z-index plus bas */}
+      <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded z-10">
         {displayImages.length} photos
       </div>
     </div>
