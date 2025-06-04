@@ -45,14 +45,14 @@ export const fetchGamesData = async (userId?: string): Promise<MapEvent[]> => {
     .gte('date', tomorrowISO) // Exclure les parties d'aujourd'hui et du passé
     .order('date', { ascending: true });
   
-  // CORRECTION : Logique simplifiée et corrigée pour la visibilité des parties
+  // CORRECTION : Logique simplifiée pour la visibilité des parties
   if (userId) {
-    // Utilisateur connecté : parties publiques (is_private false ou null) + ses parties privées
-    query = query.or(`is_private.is.false,is_private.is.null,and(is_private.is.true,created_by.eq.${userId})`);
+    // Utilisateur connecté : parties publiques + ses parties privées
+    query = query.or(`is_private.is.null,is_private.eq.false,and(is_private.eq.true,created_by.eq.${userId})`);
     console.log('User authenticated - showing public games + user private games');
   } else {
-    // Utilisateur non connecté : SEULEMENT les parties publiques (is_private false ou null)
-    query = query.or('is_private.is.false,is_private.is.null');
+    // Utilisateur non connecté : SEULEMENT les parties publiques (is_private null ou false)
+    query = query.or('is_private.is.null,is_private.eq.false');
     console.log('User not authenticated - showing only public games');
   }
   
