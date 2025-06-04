@@ -2,7 +2,7 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Settings, Pencil, Star, ShieldCheck } from 'lucide-react';
+import { Settings, Pencil, Star, ShieldCheck, BadgeCheck } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 
 interface ProfileHeaderProps {
@@ -16,6 +16,7 @@ interface ProfileHeaderProps {
     team_name?: string | null;
     team?: string | null;
     Admin?: boolean | null;
+    is_verified?: boolean | null;
   };
   isOwnProfile?: boolean;
   toggleProfileSettings?: () => void;
@@ -59,6 +60,9 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold">{user?.username || 'Utilisateur'}</h1>
+              {user?.is_verified && (
+                <BadgeCheck className="h-6 w-6 text-blue-500 fill-blue-500" />
+              )}
               {user?.reputation && user.reputation > 0 && (
                 <div className="flex items-center bg-amber-50 px-2 py-1 rounded-full">
                   <Star className="h-4 w-4 text-amber-500 fill-amber-500 mr-1" />
