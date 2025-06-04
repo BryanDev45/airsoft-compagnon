@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Star, UserPlus, UserMinus, MessageSquare, Shield, Ban } from "lucide-react";
 import { useAuth } from '@/hooks/useAuth';
+import { useDirectConversationCreation } from '@/hooks/messaging/useDirectConversationCreation';
 import TeamInviteButton from './TeamInviteButton';
 
 interface UserResult {
@@ -32,6 +33,11 @@ interface UserCardProps {
 
 const UserCard: React.FC<UserCardProps> = ({ userData, friendshipStatus, onFriendAction }) => {
   const { user } = useAuth();
+  const { createDirectConversation, isCreating } = useDirectConversationCreation();
+
+  const handleContactClick = () => {
+    createDirectConversation(userData.id, userData.username);
+  };
 
   return (
     <Card className={`group overflow-hidden transition-all duration-200 hover:shadow-md border-l-4 ${
@@ -125,6 +131,8 @@ const UserCard: React.FC<UserCardProps> = ({ userData, friendshipStatus, onFrien
                 variant="outline" 
                 className="h-9 w-9 p-0 border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white transition-all duration-200" 
                 title="Envoyer un message"
+                onClick={handleContactClick}
+                disabled={isCreating}
               >
                 <MessageSquare className="h-4 w-4" />
               </Button>
