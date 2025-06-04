@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MapEvent, MapStore } from '@/hooks/useMapData';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 import GameImageCarousel from './GameImageCarousel';
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from '@/integrations/supabase/client';
@@ -24,6 +26,9 @@ const MapResultsDisplay: React.FC<MapResultsDisplayProps> = ({
   stores = [],
   handleRetry
 }) => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
   // Récupérer le nombre de participants pour chaque partie
   const { data: participantCounts = {} } = useQuery({
     queryKey: ['participant-counts', filteredEvents.map(e => e.id)],
@@ -51,6 +56,14 @@ const MapResultsDisplay: React.FC<MapResultsDisplayProps> = ({
     },
     enabled: filteredEvents.length > 0,
   });
+
+  const handleGameDetailsClick = (gameId: string) => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    navigate(`/game/${gameId}`);
+  };
 
   if (loading) {
     return (
@@ -139,8 +152,11 @@ const MapResultsDisplay: React.FC<MapResultsDisplayProps> = ({
                         {event.price}€
                       </div>
                     )}
-                    <Button className="w-full mt-4 bg-airsoft-red hover:bg-red-700" asChild>
-                      <a href={`/game/${event.id}`}>Voir les détails</a>
+                    <Button 
+                      className="w-full mt-4 bg-airsoft-red hover:bg-red-700" 
+                      onClick={() => handleGameDetailsClick(event.id)}
+                    >
+                      Voir les détails
                     </Button>
                   </CardContent>
                 </Card>

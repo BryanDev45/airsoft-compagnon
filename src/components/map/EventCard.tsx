@@ -1,7 +1,8 @@
 
 import { Calendar, MapPin, Users, Euro } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { MapEvent } from '@/hooks/useMapData';
+import { useAuth } from '@/hooks/useAuth';
 import GameImageCarousel from './GameImageCarousel';
 
 interface EventCardProps {
@@ -9,15 +10,24 @@ interface EventCardProps {
 }
 
 const EventCard = ({ event }: EventCardProps) => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
   const handleCardClick = (e: React.MouseEvent) => {
-    // Empêcher la propagation d'événements qui pourraient causer des problèmes d'auth
+    e.preventDefault();
     e.stopPropagation();
+    
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    
+    navigate(`/game/${event.id}`);
   };
 
   return (
-    <Link 
-      to={`/game/${event.id}`} 
-      className="block"
+    <div 
+      className="block cursor-pointer"
       onClick={handleCardClick}
     >
       <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
@@ -49,7 +59,7 @@ const EventCard = ({ event }: EventCardProps) => {
           </div>
         </div>
       </div>
-    </Link>
+    </div>
   );
 };
 
