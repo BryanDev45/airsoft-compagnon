@@ -5,20 +5,32 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/use-toast";
 import { Bell } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from "@tanstack/react-query";
 
 interface NotificationTabProps {
   user: any;
+  isActive?: boolean;
 }
 
-const NotificationTab = ({ user }: NotificationTabProps) => {
+const NotificationTab = ({ user, isActive }: NotificationTabProps) => {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const queryClient = useQueryClient();
   
   useEffect(() => {
     if (user && user.newsletter_subscribed !== undefined) {
       setIsSubscribed(!!user.newsletter_subscribed);
     }
   }, [user]);
+
+  // Rafraîchir les notifications quand l'onglet devient actif
+  useEffect(() => {
+    if (isActive && user?.id) {
+      console.log("Refreshing notifications for notifications tab");
+      queryClient.invalidateQueries({ queryKey: ['notifications', user.id] });
+      queryClient.invalidateQueries({ queryKey: ['unreadNotifications', user.id] });
+    }
+  }, [isActive, user?.id, queryClient]);
 
   const handleNewsletterChange = async (checked: boolean) => {
     if (!user || !user.id) {

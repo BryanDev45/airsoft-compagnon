@@ -56,7 +56,7 @@ const ProfileSettingsDialog = ({
           </TabsContent>
 
           <TabsContent value="notifications" className="space-y-4">
-            <NotificationTab user={user} />
+            <NotificationTab user={user} isActive={currentTab === "notifications"} />
           </TabsContent>
         </Tabs>
 
