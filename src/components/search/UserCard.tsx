@@ -5,7 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Star, UserPlus, UserMinus, MessageSquare, Shield, Ban } from "lucide-react";
+import { MapPin, Star, UserPlus, UserMinus, MessageSquare, Ban } from "lucide-react";
+import { VerifiedBadge } from "@/components/ui/verified-badge";
 import { useAuth } from '@/hooks/useAuth';
 import { useDirectConversationCreation } from '@/hooks/messaging/useDirectConversationCreation';
 import TeamInviteButton from './TeamInviteButton';
@@ -99,7 +100,7 @@ const UserCard: React.FC<UserCardProps> = ({ userData, friendshipStatus, onFrien
                 </Badge>
               )}
               {userData.is_verified && !userData.Ban && (
-                <Shield className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                <VerifiedBadge size={16} />
               )}
               {userData.team_name && !userData.Ban && (
                 <Badge variant="secondary" className="text-xs px-2 py-0.5">
