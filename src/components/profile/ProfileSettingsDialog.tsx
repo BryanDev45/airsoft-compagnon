@@ -24,11 +24,15 @@ const ProfileSettingsDialog = ({
   const queryClient = useQueryClient();
 
   const handleOpenChange = (newOpen: boolean) => {
-    // Si on ferme le dialog et qu'on était sur l'onglet notifications, rafraîchir le count
-    if (!newOpen && currentTab === "notifications" && user?.id) {
-      console.log("Closing notifications tab, refreshing notification count");
+    // Si on ferme le dialog, toujours rafraîchir le count des notifications
+    if (!newOpen && user?.id) {
+      console.log("Closing profile settings dialog, refreshing notification count");
       queryClient.invalidateQueries({ queryKey: ['notifications', user.id] });
       queryClient.invalidateQueries({ queryKey: ['unreadNotifications', user.id] });
+      
+      // Supprimer le cache local pour forcer le rechargement
+      const cacheKey = `notifications_count_${user.id}`;
+      localStorage.removeItem(cacheKey);
     }
     onOpenChange(newOpen);
   };

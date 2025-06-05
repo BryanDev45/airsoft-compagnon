@@ -1,3 +1,4 @@
+
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
@@ -89,20 +90,30 @@ export const useNotificationActions = () => {
     try {
       if (!user?.id) return;
       
+      // Supprimer seulement les notifications lues qui ne sont pas des demandes en attente
       const { error } = await supabase
         .from('notifications')
         .delete()
         .eq('user_id', user.id)
-        .eq('read', true);
+        .eq('read', true)
+        .not('type', 'in', '(friend_request,team_invitation,team_request)');
 
       if (error) throw error;
+      
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['unreadNotifications'] });
+      
       toast({
         title: "Notifications supprimées",
-        description: "Les notifications lues ont été supprimées"
+        description: "Les notifications lues ont été supprimées (sauf les demandes en attente)"
       });
     } catch (error) {
       console.error('Error deleting read notifications:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer les notifications lues",
+        variant: "destructive"
+      });
     }
   };
 
