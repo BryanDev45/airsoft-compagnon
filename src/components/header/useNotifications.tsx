@@ -48,8 +48,20 @@ export function useNotifications() {
   });
 
   const handleSheetOpenChange = (open: boolean) => {
-    if (!open && user?.id) {
-      // Invalider le cache quand on ferme la feuille
+    if (!user?.id) return;
+
+    if (open) {
+      // Rafraîchir les données à l'ouverture du volet
+      console.log("Opening notifications sheet, refreshing data");
+      queryClient.invalidateQueries({ queryKey: ['notifications', user.id] });
+      queryClient.invalidateQueries({ queryKey: ['unreadNotifications', user.id] });
+      
+      // Supprimer le cache local pour forcer le rechargement
+      const cacheKey = `${NOTIFICATIONS_CACHE_KEY}_${user.id}`;
+      localStorage.removeItem(cacheKey);
+    } else {
+      // Rafraîchir le compteur à la fermeture du volet
+      console.log("Closing notifications sheet, refreshing count");
       queryClient.invalidateQueries({ queryKey: ['unreadNotifications', user.id] });
       
       // Supprimer le cache local aussi

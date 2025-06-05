@@ -9,7 +9,7 @@ import { LogOut, Bell, Users, UserIcon } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/use-toast";
 import { useAuth } from '@/hooks/auth/useAuth';
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 interface AuthSectionProps {
@@ -25,6 +25,7 @@ export const AuthSection: React.FC<AuthSectionProps> = ({
 }) => {
   const navigate = useNavigate();
   const { user, logout, initialLoading } = useAuth();
+  const queryClient = useQueryClient();
 
   // Fetch notifications for the user
   const { data: notifications = [] } = useQuery({
