@@ -7,6 +7,7 @@ import AccountTab from './settings/AccountTab';
 import PasswordTab from './settings/PasswordTab';
 import VerificationTab from './settings/VerificationTab';
 import NotificationTab from './settings/NotificationTab';
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ProfileSettingsDialogProps {
   open: boolean;
@@ -20,13 +21,24 @@ const ProfileSettingsDialog = ({
   user
 }: ProfileSettingsDialogProps) => {
   const [currentTab, setCurrentTab] = useState("account");
+  const queryClient = useQueryClient();
+
+  const handleOpenChange = (newOpen: boolean) => {
+    // Si on ferme le dialog et qu'on était sur l'onglet notifications, rafraîchir le count
+    if (!newOpen && currentTab === "notifications" && user?.id) {
+      console.log("Closing notifications tab, refreshing notification count");
+      queryClient.invalidateQueries({ queryKey: ['notifications', user.id] });
+      queryClient.invalidateQueries({ queryKey: ['unreadNotifications', user.id] });
+    }
+    onOpenChange(newOpen);
+  };
 
   if (!user) {
     return null;
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Paramètres du compte</DialogTitle>
@@ -61,7 +73,7 @@ const ProfileSettingsDialog = ({
         </Tabs>
 
         <DialogFooter className="mt-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => handleOpenChange(false)}>
             Fermer
           </Button>
         </DialogFooter>

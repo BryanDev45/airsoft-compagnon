@@ -32,6 +32,14 @@ const NotificationTab = ({ user, isActive }: NotificationTabProps) => {
     }
   }, [isActive, user?.id, queryClient]);
 
+  // Rafraîchir le count quand l'onglet devient inactif
+  useEffect(() => {
+    if (!isActive && user?.id) {
+      console.log("Notifications tab became inactive, refreshing count");
+      queryClient.invalidateQueries({ queryKey: ['unreadNotifications', user.id] });
+    }
+  }, [isActive, user?.id, queryClient]);
+
   const handleNewsletterChange = async (checked: boolean) => {
     if (!user || !user.id) {
       toast({
