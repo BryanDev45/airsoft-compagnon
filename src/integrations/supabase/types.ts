@@ -920,6 +920,12 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: number
       }
+      get_user_conversations: {
+        Args: { user_uuid: string }
+        Returns: {
+          conversation_id: string
+        }[]
+      }
       get_user_rating: {
         Args: { p_rater_id: string; p_rated_id: string }
         Returns: number
@@ -927,6 +933,10 @@ export type Database = {
       insert_user_rating: {
         Args: { p_rater_id: string; p_rated_id: string; p_rating: number }
         Returns: undefined
+      }
+      is_conversation_participant: {
+        Args: { conversation_uuid: string; user_uuid: string }
+        Returns: boolean
       }
       is_current_user_admin: {
         Args: Record<PropertyKey, never>

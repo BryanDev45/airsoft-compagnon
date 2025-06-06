@@ -105,23 +105,39 @@ export const formatCreatedGame = (gameData: any, participantCount: number): Form
 };
 
 /**
- * Met à jour les statistiques de jeu d'un utilisateur spécifique
+ * Met à jour les statistiques de jeu d'un utilisateur spécifique - VERSION CORRIGÉE
  */
 export const updateUserGamesStats = async (userId: string, games: FormattedGame[]): Promise<void> => {
-  if (!userId || games.length === 0) return;
+  if (!userId || !Array.isArray(games)) {
+    console.log('Paramètres invalides pour updateUserGamesStats:', { userId, gamesLength: games?.length });
+    return;
+  }
   
   try {
-    // Calculer les statistiques
-    const gamesPlayed = games.filter(game => game.status === 'Terminée').length;
-    const gamesOrganized = games.filter(game => game.isCreator && game.status === 'Terminée').length;
+    // Calculer les statistiques correctement
+    // Parties jouées = toutes les parties terminées où l'utilisateur a participé (pas créées)
+    const gamesPlayed = games.filter(game => 
+      game.status === 'Terminée' && !game.isCreator
+    ).length;
+    
+    // Parties organisées = toutes les parties où l'utilisateur est créateur
+    const gamesOrganized = games.filter(game => 
+      game.isCreator === true
+    ).length;
     
     console.log(`Mise à jour des statistiques pour l'utilisateur ${userId}:`, {
       gamesPlayed,
       gamesOrganized,
-      totalGames: games.length
+      totalGames: games.length,
+      gameDetails: games.map(g => ({ 
+        title: g.title, 
+        status: g.status, 
+        isCreator: g.isCreator,
+        role: g.role 
+      }))
     });
     
-    // Mettre à jour les statistiques dans la base de données pour l'utilisateur spécifique
+    // Utiliser upsert pour créer ou mettre à jour les statistiques
     const { error } = await supabase
       .from('user_stats')
       .upsert({
@@ -130,15 +146,18 @@ export const updateUserGamesStats = async (userId: string, games: FormattedGame[
         games_organized: gamesOrganized,
         updated_at: new Date().toISOString()
       }, {
-        onConflict: 'user_id'
+        onConflict: 'user_id',
+        ignoreDuplicates: false
       });
     
     if (error) {
-      console.error('Erreur lors de la mise à jour des statistiques:', error);
+      console.error('Erreur lors de la mise à jour des statistiques dans Supabase:', error);
+      throw error;
     } else {
-      console.log('Statistiques mises à jour avec succès');
+      console.log(`Statistiques mises à jour avec succès: ${gamesPlayed} parties jouées, ${gamesOrganized} parties organisées`);
     }
   } catch (error) {
-    console.error('Erreur lors du calcul des statistiques:', error);
+    console.error('Erreur lors du calcul/mise à jour des statistiques:', error);
+    throw error;
   }
 };

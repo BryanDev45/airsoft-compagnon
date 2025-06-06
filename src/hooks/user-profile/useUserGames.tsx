@@ -10,12 +10,14 @@ export const useUserGames = (userId: string | undefined) => {
   const [userGames, setUserGames] = useState<FormattedGame[]>([]);
 
   /**
-   * Récupérer les parties d'un utilisateur avec possibilité de rafraîchir manuellement
+   * Récupérer les parties d'un utilisateur avec possibilité de rafraîchir manuellement - VERSION CORRIGÉE
    */
   const fetchUserGames = async () => {
     if (!userId) return;
     
     try {
+      console.log(`Récupération manuelle des parties pour l'utilisateur: ${userId}`);
+      
       // Récupérer les données en parallèle pour de meilleures performances
       const [participantsResponse, createdGamesResponse] = await Promise.all([
         supabase.from('game_participants').select('*').eq('user_id', userId),
@@ -50,13 +52,19 @@ export const useUserGames = (userId: string | undefined) => {
             for (const participant of gameParticipants) {
               const gameData = games.find(g => g.id === participant.game_id);
               if (gameData) {
-                formattedGames.push(
-                  formatParticipatedGame(
-                    gameData, 
-                    participant, 
-                    participantCounts[gameData.id] || 0
-                  )
-                );
+                // Vérifier si l'utilisateur est aussi le créateur de cette partie
+                const isAlsoCreator = gameData.created_by === userId;
+                
+                // Ne pas ajouter la partie si l'utilisateur est le créateur (sera ajoutée dans les parties créées)
+                if (!isAlsoCreator) {
+                  formattedGames.push(
+                    formatParticipatedGame(
+                      gameData, 
+                      participant, 
+                      participantCounts[gameData.id] || 0
+                    )
+                  );
+                }
               }
             }
           }
@@ -89,6 +97,11 @@ export const useUserGames = (userId: string | undefined) => {
         if (a.status === 'À venir' && b.status !== 'À venir') return -1;
         if (a.status !== 'À venir' && b.status === 'À venir') return 1;
         return new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime();
+      });
+      
+      console.log(`Parties formatées (manuel): ${formattedGames.length}`, {
+        participated: formattedGames.filter(g => !g.isCreator).length,
+        created: formattedGames.filter(g => g.isCreator).length
       });
       
       // Mettre à jour les statistiques avec la nouvelle fonction corrigée

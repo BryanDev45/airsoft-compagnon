@@ -2,12 +2,14 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { FormattedGame, fetchParticipantCounts, formatParticipatedGame, formatCreatedGame, updateUserGamesStats } from './gameFormatters';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 /**
  * Hook optimisé pour récupérer les parties d'un utilisateur avec mise en cache
  */
 export const useUserGamesFetch = (userId: string | undefined) => {
+  const queryClient = useQueryClient();
+  
   // Force la re-exécution de la requête quand l'userId change
   const { data: userGames = [], isLoading: loading, refetch } = useQuery({
     queryKey: ['userGames', userId],
@@ -20,10 +22,19 @@ export const useUserGamesFetch = (userId: string | undefined) => {
 
   // Force la mise à jour des statistiques quand les parties changent
   useEffect(() => {
-    if (userId && userGames.length >= 0) {
-      updateUserGamesStats(userId, userGames);
+    if (userId && Array.isArray(userGames) && userGames.length >= 0) {
+      console.log('Déclenchement de la mise à jour des statistiques pour:', userId, userGames.length, 'parties');
+      updateUserGamesStats(userId, userGames)
+        .then(() => {
+          // Invalider le cache des user_stats pour forcer le rechargement
+          queryClient.invalidateQueries({ queryKey: ['user_stats', userId] });
+          queryClient.invalidateQueries({ queryKey: ['profileData', userId] });
+        })
+        .catch(error => {
+          console.error('Erreur lors de la mise à jour des statistiques:', error);
+        });
     }
-  }, [userId, userGames]);
+  }, [userId, userGames, queryClient]);
 
   return {
     userGames,
@@ -33,7 +44,7 @@ export const useUserGamesFetch = (userId: string | undefined) => {
 };
 
 /**
- * Fonction pour récupérer les jeux d'un utilisateur
+ * Fonction pour récupérer les jeux d'un utilisateur - VERSION CORRIGÉE
  */
 async function fetchUserGames(userId: string | undefined): Promise<FormattedGame[]> {
   if (!userId) return [];
@@ -77,13 +88,19 @@ async function fetchUserGames(userId: string | undefined): Promise<FormattedGame
         for (const participant of gameParticipants) {
           const gameData = participatedGames.find(g => g.id === participant.game_id);
           if (gameData) {
-            formattedGames.push(
-              formatParticipatedGame(
-                gameData, 
-                participant, 
-                participantCounts[gameData.id] || 0
-              )
-            );
+            // Vérifier si l'utilisateur est aussi le créateur de cette partie
+            const isAlsoCreator = gameData.created_by === userId;
+            
+            // Ne pas ajouter la partie si l'utilisateur est le créateur (sera ajoutée dans les parties créées)
+            if (!isAlsoCreator) {
+              formattedGames.push(
+                formatParticipatedGame(
+                  gameData, 
+                  participant, 
+                  participantCounts[gameData.id] || 0
+                )
+              );
+            }
           }
         }
       }
@@ -104,7 +121,7 @@ async function fetchUserGames(userId: string | undefined): Promise<FormattedGame
       }
     }
     
-    // Supprimer les doublons
+    // Supprimer les doublons basés sur l'ID (au cas où)
     formattedGames = formattedGames.filter((game, index, self) => 
       index === self.findIndex(g => g.id === game.id)
     );
@@ -116,7 +133,10 @@ async function fetchUserGames(userId: string | undefined): Promise<FormattedGame
       return new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime();
     });
     
-    console.log(`Parties formatées: ${formattedGames.length} pour l'utilisateur ${userId}`);
+    console.log(`Parties formatées: ${formattedGames.length} pour l'utilisateur ${userId}`, {
+      participated: formattedGames.filter(g => !g.isCreator).length,
+      created: formattedGames.filter(g => g.isCreator).length
+    });
     
     return formattedGames;
     
