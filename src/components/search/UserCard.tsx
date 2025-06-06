@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,6 +9,7 @@ import { VerifiedBadge } from "@/components/ui/verified-badge";
 import { useAuth } from '@/hooks/useAuth';
 import { useDirectConversationCreation } from '@/hooks/messaging/useDirectConversationCreation';
 import TeamInviteButton from './TeamInviteButton';
+import { toast } from '@/hooks/use-toast';
 
 interface UserResult {
   id: string;
@@ -36,8 +36,18 @@ const UserCard: React.FC<UserCardProps> = ({ userData, friendshipStatus, onFrien
   const { user } = useAuth();
   const { createDirectConversation, isCreating } = useDirectConversationCreation();
 
-  const handleContactClick = () => {
-    createDirectConversation(userData.id, userData.username);
+  const handleContactClick = async () => {
+    try {
+      console.log('Clic sur contact pour utilisateur:', userData.id, userData.username);
+      await createDirectConversation(userData.id, userData.username);
+    } catch (error) {
+      console.error('Erreur dans handleContactClick:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la création de la conversation",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -135,7 +145,11 @@ const UserCard: React.FC<UserCardProps> = ({ userData, friendshipStatus, onFrien
                 onClick={handleContactClick}
                 disabled={isCreating}
               >
-                <MessageSquare className="h-4 w-4" />
+                {isCreating ? (
+                  <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <MessageSquare className="h-4 w-4" />
+                )}
               </Button>
               
               {friendshipStatus === 'accepted' ? (

@@ -31,107 +31,38 @@ export const useDirectConversationCreation = () => {
     setIsCreating(true);
 
     try {
-      // Vérifier si une conversation directe existe déjà entre les deux utilisateurs
-      const { data: existingConversations, error: checkError } = await supabase
-        .from('conversation_participants')
-        .select(`
-          conversation_id,
-          conversations!inner(
-            id,
-            type
-          )
-        `)
-        .eq('user_id', user.id);
+      console.log('Tentative de création de conversation avec:', targetUserId, targetUsername);
 
-      if (checkError) {
-        console.error('Error checking existing conversations:', checkError);
-        throw checkError;
-      }
-
-      // Filtrer les conversations directes où l'autre utilisateur participe aussi
-      let existingConversationId = null;
-      
-      if (existingConversations && existingConversations.length > 0) {
-        const directConversations = existingConversations.filter(
-          conv => conv.conversations?.type === 'direct'
-        );
-
-        for (const conv of directConversations) {
-          const { data: otherParticipants, error: participantsError } = await supabase
-            .from('conversation_participants')
-            .select('user_id')
-            .eq('conversation_id', conv.conversation_id)
-            .neq('user_id', user.id);
-
-          if (!participantsError && otherParticipants) {
-            const hasTargetUser = otherParticipants.some(p => p.user_id === targetUserId);
-            if (hasTargetUser && otherParticipants.length === 1) {
-              existingConversationId = conv.conversation_id;
-              break;
-            }
-          }
-        }
-      }
-
-      if (existingConversationId) {
-        // Rediriger vers la conversation existante
-        navigate('/messages');
-        toast({
-          title: "Conversation trouvée",
-          description: `Conversation existante avec ${targetUsername} ouverte`,
+      // Utiliser la fonction Supabase pour créer ou récupérer une conversation directe
+      const { data: conversationId, error: createError } = await supabase
+        .rpc('create_direct_conversation', {
+          other_user_id: targetUserId
         });
-        setIsCreating(false);
-        return;
+
+      if (createError) {
+        console.error('Erreur lors de la création/récupération de la conversation:', createError);
+        throw createError;
       }
 
-      // Créer une nouvelle conversation directe
-      const { data: newConversation, error: conversationError } = await supabase
-        .from('conversations')
-        .insert({
-          type: 'direct'
-        })
-        .select('id')
-        .single();
-
-      if (conversationError) {
-        console.error('Error creating conversation:', conversationError);
-        throw conversationError;
+      if (!conversationId) {
+        throw new Error('Aucun ID de conversation retourné');
       }
 
-      // Ajouter les deux participants à la conversation
-      const participants = [
-        {
-          conversation_id: newConversation.id,
-          user_id: user.id
-        },
-        {
-          conversation_id: newConversation.id,
-          user_id: targetUserId
-        }
-      ];
-
-      const { error: participantsError } = await supabase
-        .from('conversation_participants')
-        .insert(participants);
-
-      if (participantsError) {
-        console.error('Error adding participants:', participantsError);
-        throw participantsError;
-      }
+      console.log('Conversation créée/récupérée avec succès:', conversationId);
 
       // Rediriger vers la page des messages
       navigate('/messages');
       
       toast({
-        title: "Conversation créée",
-        description: `Nouvelle conversation avec ${targetUsername} créée`,
+        title: "Conversation prête",
+        description: `Conversation avec ${targetUsername} ouverte`,
       });
 
     } catch (error) {
-      console.error('Error creating direct conversation:', error);
+      console.error('Erreur lors de la création de la conversation directe:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de créer la conversation",
+        description: "Impossible de créer la conversation. Veuillez réessayer.",
         variant: "destructive"
       });
     } finally {
