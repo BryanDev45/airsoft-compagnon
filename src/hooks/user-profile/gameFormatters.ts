@@ -114,15 +114,15 @@ export const updateUserGamesStats = async (userId: string, games: FormattedGame[
   }
   
   try {
-    // Calculer les statistiques correctement
-    // Parties jouées = toutes les parties terminées où l'utilisateur a participé (pas créées)
-    const gamesPlayed = games.filter(game => 
-      game.status === 'Terminée' && !game.isCreator
-    ).length;
-    
-    // Parties organisées = toutes les parties où l'utilisateur est créateur
+    // Parties créées = toutes les parties où l'utilisateur est créateur
     const gamesOrganized = games.filter(game => 
       game.isCreator === true
+    ).length;
+    
+    // Parties jouées = toutes les parties (participation + création) où la date est passée
+    // Un organisateur joue aussi sa propre partie, donc on compte toutes les parties terminées
+    const gamesPlayed = games.filter(game => 
+      game.status === 'Terminée'
     ).length;
     
     console.log(`Mise à jour des statistiques pour l'utilisateur ${userId}:`, {
