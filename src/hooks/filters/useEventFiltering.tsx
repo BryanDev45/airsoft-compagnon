@@ -53,11 +53,11 @@ export function useEventFiltering() {
         matchesCountry = normalizedEventCountry === normalizedSelectedCountry;
       }
       
-      // Filtrage par défaut : ne montrer que les parties à venir (sauf si une date spécifique est sélectionnée)
+      // Filtrage par défaut : ne montrer que les parties futures (pas celles qui commencent aujourd'hui)
       let matchesFutureDate = true;
       if (!selectedDate) {
         const today = new Date().toISOString().split('T')[0];
-        matchesFutureDate = event.date >= today;
+        matchesFutureDate = event.date > today; // Changé de >= à > pour exclure aujourd'hui
       }
       
       if (searchRadius[0] === 0) {

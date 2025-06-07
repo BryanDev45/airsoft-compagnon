@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import GameImageCarousel from './GameImageCarousel';
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from '@/integrations/supabase/client';
+import { formatGameDateRange } from '@/utils/dateUtils';
 
 interface EventCardProps {
   event: MapEvent;
@@ -42,6 +43,9 @@ const EventCard = ({ event }: EventCardProps) => {
     navigate(`/game/${event.id}`);
   };
 
+  // Formater la date en utilisant les nouvelles données
+  const formattedDate = formatGameDateRange(event.date, event.startTime, event.endTime);
+
   return (
     <div 
       className="block cursor-pointer"
@@ -59,7 +63,7 @@ const EventCard = ({ event }: EventCardProps) => {
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-gray-600">
               <Calendar className="h-4 w-4" />
-              <span>{event.date}</span>
+              <span>{formattedDate}</span>
             </div>
             <div className="flex items-center gap-2 text-gray-600">
               <MapPin className="h-4 w-4" />
