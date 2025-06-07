@@ -3,8 +3,7 @@ import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check } from 'lucide-react';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { formatGameDateRange, formatGameTimeRange } from '@/utils/dateUtils';
 
 interface GameInfoCardProps {
   price: number | null;
@@ -29,20 +28,9 @@ const GameInfoCard: React.FC<GameInfoCardProps> = ({
   loadingRegistration,
   onRegister
 }) => {
-  // Format date from ISO to readable format
-  const formattedDate = date ? format(new Date(date), 'dd MMMM yyyy', {
-    locale: fr
-  }) : '';
-
-  // Format time
-  const formatTime = (timeString: string | null) => {
-    if (!timeString) return '';
-    // Handle PostgreSQL time format (HH:MM:SS)
-    const [hours, minutes] = timeString.split(':');
-    return `${hours}:${minutes}`;
-  };
-  
-  const formattedTimeRange = `${formatTime(startTime)} - ${formatTime(endTime)}`;
+  // Format date range and time range using utility functions
+  const formattedDateRange = formatGameDateRange(date, endTime);
+  const formattedTimeRange = formatGameTimeRange(startTime, endTime);
   
   // Vérifie si la partie est déjà passée
   const isPastGame = new Date(date) < new Date();
@@ -59,7 +47,7 @@ const GameInfoCard: React.FC<GameInfoCardProps> = ({
           </div>
           <div className="flex justify-between py-2 border-b">
             <span className="text-gray-600">Date</span>
-            <span>{formattedDate}</span>
+            <span>{formattedDateRange}</span>
           </div>
           <div className="flex justify-between py-2 border-b">
             <span className="text-gray-600">Horaires</span>

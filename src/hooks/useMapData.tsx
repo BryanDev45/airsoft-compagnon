@@ -20,6 +20,7 @@ export interface MapEvent {
   price?: number;
   image?: string;
   images?: string[];
+  endTime?: string; // Ajout pour pouvoir calculer les dates multi-jours
 }
 
 export interface MapStore {

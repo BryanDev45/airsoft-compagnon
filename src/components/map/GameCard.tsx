@@ -8,6 +8,7 @@ import { MapEvent } from '@/hooks/useMapData';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import GameImageCarousel from './GameImageCarousel';
+import { formatGameDateRange } from '@/utils/dateUtils';
 
 interface GameCardProps {
   event: MapEvent;
