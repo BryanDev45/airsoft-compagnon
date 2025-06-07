@@ -65,7 +65,7 @@ const ProfileDialogs = ({
                 <div className="flex items-start gap-2 text-gray-700">
                   <MapPin className="text-airsoft-red flex-shrink-0" size={18} />
                   <div>
-                    <p>{selectedGame.address || 'Lieu non spécifié'}</p>
+                    <p>{selectedGame.address || selectedGame.location || 'Lieu non spécifié'}</p>
                     {selectedGame.zip_code && (
                       <p>{selectedGame.zip_code}</p>
                     )}
@@ -75,8 +75,15 @@ const ProfileDialogs = ({
                 <div className="flex items-center gap-2 text-gray-700">
                   <Users className="text-airsoft-red flex-shrink-0" size={18} />
                   <span>
-                    <span className="font-medium">{selectedGame.participantsCount !== undefined ? selectedGame.participantsCount : 0}</span>
-                    <span className="text-gray-500">/{selectedGame.max_players || '?'}</span> participants
+                    <span className="font-medium">
+                      {selectedGame.participants !== undefined 
+                        ? selectedGame.participants 
+                        : (selectedGame.participantsCount !== undefined ? selectedGame.participantsCount : 0)
+                      }
+                    </span>
+                    <span className="text-gray-500">
+                      /{selectedGame.maxParticipants || selectedGame.max_players || '?'}
+                    </span> participants
                   </span>
                 </div>
                 

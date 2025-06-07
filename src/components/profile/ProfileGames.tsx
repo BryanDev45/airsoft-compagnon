@@ -1,28 +1,36 @@
+
 import React from 'react';
 import { Calendar, User, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+
 interface Game {
   id: string;
   title: string;
   date: string;
   status: string;
   role: string;
+  participants?: number;
+  maxParticipants?: number;
+  price?: number;
+  location?: string;
+  time?: string;
+  // Propriétés héritées pour compatibilité
   participantsCount?: number;
   max_players?: number;
-  price?: number;
   address?: string;
   city?: string;
   zip_code?: string;
-  location?: string;
 }
+
 interface ProfileGamesProps {
   games: Game[];
   handleViewGameDetails: (game: Game) => void;
   handleViewAllGames: () => void;
 }
+
 const ProfileGames = ({
   games,
   handleViewGameDetails,
@@ -42,7 +50,23 @@ const ProfileGames = ({
       return dateB > dateA ? 1 : -1;
     });
   }, [games]);
-  return <Card>
+
+  const handleGameClick = (game: Game) => {
+    // Enrichir les données du jeu avec toutes les informations nécessaires pour le dialog
+    const enrichedGame = {
+      ...game,
+      // S'assurer que toutes les propriétés nécessaires sont présentes
+      participantsCount: game.participants || game.participantsCount || 0,
+      max_players: game.maxParticipants || game.max_players,
+      // Construire l'adresse complète si elle n'existe pas
+      address: game.location || (game.city && game.zip_code ? `${game.city}, ${game.zip_code}` : game.address) || 'Lieu non spécifié'
+    };
+    
+    handleViewGameDetails(enrichedGame);
+  };
+
+  return (
+    <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
           <div>
@@ -61,9 +85,13 @@ const ProfileGames = ({
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {sortedGames && sortedGames.length === 0 ? <p className="text-center text-gray-500 py-6">
+          {sortedGames && sortedGames.length === 0 ? (
+            <p className="text-center text-gray-500 py-6">
               Vous n'avez pas encore participé à des parties.
-            </p> : sortedGames && sortedGames.map(game => <div key={game.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow flex justify-between items-center">
+            </p>
+          ) : (
+            sortedGames && sortedGames.map(game => (
+              <div key={game.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow flex justify-between items-center">
                 <div>
                   <h3 className="font-semibold text-left">{game.title}</h3>
                   <div className="flex items-center gap-4 mt-1 text-sm text-gray-600">
@@ -79,11 +107,18 @@ const ProfileGames = ({
                   <Badge className={game.status === "À venir" ? "bg-blue-500" : game.status === "Terminé" ? "bg-gray-500" : "bg-green-500"}>
                     {game.status}
                   </Badge>
-                  <Button variant="outline" size="sm" className="border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white" onClick={() => handleViewGameDetails(game)}>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white" 
+                    onClick={() => handleGameClick(game)}
+                  >
                     Détails
                   </Button>
                 </div>
-              </div>)}
+              </div>
+            ))
+          )}
         </div>
       </CardContent>
       <CardFooter>
@@ -91,6 +126,8 @@ const ProfileGames = ({
           Voir toutes mes parties
         </Button>
       </CardFooter>
-    </Card>;
+    </Card>
+  );
 };
+
 export default ProfileGames;
