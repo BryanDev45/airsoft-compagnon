@@ -35,30 +35,14 @@ export function useEventFiltering() {
       
       const matchesDepartment = selectedDepartment === 'all' || event.department === selectedDepartment;
       
+      // Filtrage simplifié par date : on compare seulement avec la date de début
       let matchesDate = true;
       if (selectedDate) {
         const selectedDateStr = selectedDate.toISOString().split('T')[0];
+        const gameStartDate = event.date; // Format ISO YYYY-MM-DD
         
-        // La date est déjà au format ISO YYYY-MM-DD
-        const startDateStr = event.date;
-        
-        // Calculer la date de fin
-        let endDateStr = startDateStr; // Par défaut, même jour
-        
-        if (event.startTime && event.endTime) {
-          const startDateTime = new Date(`${startDateStr}T${event.startTime}:00`);
-          const endDateTime = new Date(`${startDateStr}T${event.endTime}:00`);
-          
-          // Si l'heure de fin est antérieure à l'heure de début, la partie se termine le jour suivant
-          if (endDateTime < startDateTime) {
-            const nextDay = new Date(startDateTime);
-            nextDay.setDate(nextDay.getDate() + 1);
-            endDateStr = nextDay.toISOString().split('T')[0];
-          }
-        }
-        
-        // Vérifier si la date sélectionnée se trouve dans la plage de la partie
-        matchesDate = selectedDateStr >= startDateStr && selectedDateStr <= endDateStr;
+        // On vérifie simplement si la date sélectionnée correspond à la date de début de la partie
+        matchesDate = selectedDateStr === gameStartDate;
       }
       
       const matchesCountry = selectedCountry === 'all' || event.country === selectedCountry;
