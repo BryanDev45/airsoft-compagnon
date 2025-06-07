@@ -38,8 +38,37 @@ export function useEventFiltering() {
       let matchesDate = true;
       if (selectedDate) {
         const selectedDateStr = selectedDate.toISOString().split('T')[0];
-        const eventDateStr = event.date.split('/').reverse().join('-');
-        matchesDate = eventDateStr === selectedDateStr;
+        
+        // Extraire la date de début depuis event.date (format français DD/MM/YYYY)
+        let startDate: Date;
+        if (event.date.includes('/')) {
+          // Format français DD/MM/YYYY
+          const [day, month, year] = event.date.split('/');
+          startDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        } else {
+          // Format ISO ou autre
+          startDate = new Date(event.date);
+        }
+        
+        // Calculer la date de fin en utilisant endTime
+        let endDate = new Date(startDate);
+        if (event.endTime) {
+          const [endHours, endMinutes] = event.endTime.split(':');
+          endDate.setHours(parseInt(endHours), parseInt(endMinutes));
+          
+          // Si l'heure de fin est antérieure à l'heure de début, la partie se termine le jour suivant
+          const startHours = startDate.getHours();
+          if (parseInt(endHours) < startHours || (parseInt(endHours) === startHours && parseInt(endMinutes) < startDate.getMinutes())) {
+            endDate.setDate(endDate.getDate() + 1);
+          }
+        }
+        
+        // Vérifier si la date sélectionnée se trouve dans la plage de la partie
+        const selectedDateObj = new Date(selectedDateStr);
+        const startDateStr = startDate.toISOString().split('T')[0];
+        const endDateStr = endDate.toISOString().split('T')[0];
+        
+        matchesDate = selectedDateStr >= startDateStr && selectedDateStr <= endDateStr;
       }
       
       const matchesCountry = selectedCountry === 'all' || event.country === selectedCountry;
