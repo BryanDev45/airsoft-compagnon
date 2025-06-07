@@ -45,10 +45,24 @@ export function useEventFiltering() {
         matchesDate = selectedDateStr === gameStartDate;
       }
       
-      const matchesCountry = selectedCountry === 'all' || event.country === selectedCountry;
+      // Correction du filtrage par pays - normalisation des noms de pays
+      let matchesCountry = true;
+      if (selectedCountry !== 'all') {
+        const normalizedEventCountry = event.country.toLowerCase();
+        const normalizedSelectedCountry = selectedCountry.toLowerCase();
+        matchesCountry = normalizedEventCountry === normalizedSelectedCountry;
+      }
+      
+      // Filtrage par défaut : ne montrer que les parties à venir (sauf si une date spécifique est sélectionnée)
+      let matchesFutureDate = true;
+      if (!selectedDate) {
+        const today = new Date().toISOString().split('T')[0];
+        matchesFutureDate = event.date >= today;
+      }
       
       if (searchRadius[0] === 0) {
-        return matchesSearch && matchesType && matchesDepartment && matchesDate && matchesCountry;
+        return matchesSearch && matchesType && matchesDepartment && matchesDate && 
+               matchesCountry && matchesFutureDate;
       }
       
       if (searchCenter && searchRadius[0] > 0) {
@@ -60,10 +74,11 @@ export function useEventFiltering() {
         );
         
         return matchesSearch && matchesType && matchesDepartment && matchesDate && 
-               matchesCountry && distance <= searchRadius[0];
+               matchesCountry && matchesFutureDate && distance <= searchRadius[0];
       }
       
-      return matchesSearch && matchesType && matchesDepartment && matchesDate && matchesCountry;
+      return matchesSearch && matchesType && matchesDepartment && matchesDate && 
+             matchesCountry && matchesFutureDate;
     });
   };
 

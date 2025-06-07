@@ -10,7 +10,7 @@ export interface BaseFilterState {
 
 export function useFilterState() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCountry, setSelectedCountry] = useState('france');
+  const [selectedCountry, setSelectedCountry] = useState('France');
   const [searchRadius, setSearchRadius] = useState([0]);
   const [searchCenter, setSearchCenter] = useState<[number, number]>([2.3522, 46.2276]);
 

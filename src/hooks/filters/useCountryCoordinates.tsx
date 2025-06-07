@@ -7,12 +7,13 @@ export interface CountryCoordinates {
 
 export function useCountryCoordinates() {
   const countryCoordinates: CountryCoordinates = {
-    france: [2.3522, 46.2276],
-    belgique: [4.3517, 50.8503],
-    suisse: [8.2275, 46.8182],
-    allemagne: [10.4515, 51.1657],
-    espagne: [-3.7492, 40.4637],
-    italie: [12.5674, 41.8719]
+    France: [2.3522, 46.2276],
+    Belgique: [4.3517, 50.8503],
+    Suisse: [8.2275, 46.8182],
+    Luxembourg: [6.1296, 49.8144],
+    Allemagne: [10.4515, 51.1657],
+    Espagne: [-3.7492, 40.4637],
+    Italie: [12.5674, 41.8719]
   };
 
   const updateSearchCenterForCountry = (

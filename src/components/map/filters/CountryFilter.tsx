@@ -22,10 +22,10 @@ const CountryFilter: React.FC<CountryFilterProps> = ({
         </SelectTrigger>
         <SelectContent className="bg-gray-700 border-gray-600">
           <SelectItem value="all">Tous les pays</SelectItem>
-          <SelectItem value="france">France</SelectItem>
-          <SelectItem value="belgique">Belgique</SelectItem>
-          <SelectItem value="suisse">Suisse</SelectItem>
-          <SelectItem value="luxembourg">Luxembourg</SelectItem>
+          <SelectItem value="France">France</SelectItem>
+          <SelectItem value="Belgique">Belgique</SelectItem>
+          <SelectItem value="Suisse">Suisse</SelectItem>
+          <SelectItem value="Luxembourg">Luxembourg</SelectItem>
         </SelectContent>
       </Select>
     </div>
