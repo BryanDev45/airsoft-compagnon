@@ -28,6 +28,9 @@ const GameCard: React.FC<GameCardProps> = ({ event, participantCount }) => {
   };
 
   const maxPlayers = event.maxPlayers || 0;
+  
+  // Formater la date en utilisant les nouvelles données
+  const formattedDate = formatGameDateRange(event.date, event.startTime, event.endTime);
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
@@ -54,7 +57,7 @@ const GameCard: React.FC<GameCardProps> = ({ event, participantCount }) => {
       <CardContent className="pt-0 space-y-3">
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <Calendar className="h-4 w-4" />
-          {event.date}
+          {formattedDate}
         </div>
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <Users className="h-4 w-4" />

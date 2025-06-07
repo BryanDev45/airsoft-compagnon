@@ -2,7 +2,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MapEvent } from "./useMapData";
-import { formatGameDateRange } from "@/utils/dateUtils";
 
 export const useGamesData = (userId?: string) => {
   return useQuery({
@@ -34,7 +33,8 @@ export const useGamesData = (userId?: string) => {
       return (games || []).map(game => ({
         id: game.id,
         title: game.title,
-        date: formatGameDateRange(game.date, game.end_time),
+        // Stocker la date brute pour les calculs
+        date: game.date, // Format ISO YYYY-MM-DD
         location: `${game.city}`,
         department: game.zip_code ? game.zip_code.substring(0, 2) : '',
         type: game.game_type,
@@ -43,6 +43,8 @@ export const useGamesData = (userId?: string) => {
         lng: game.longitude || 0,
         maxPlayers: game.max_players,
         price: game.price,
+        // Ajouter les heures de début et fin pour les calculs
+        startTime: game.start_time,
         endTime: game.end_time,
         images: [
           game.Picture1,

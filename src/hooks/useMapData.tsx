@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
@@ -9,7 +8,7 @@ import { useStoresData } from './useStoresData';
 export interface MapEvent {
   id: string;
   title: string;
-  date: string;
+  date: string; // Format ISO YYYY-MM-DD
   location: string;
   department: string;
   type: string;
@@ -20,7 +19,8 @@ export interface MapEvent {
   price?: number;
   image?: string;
   images?: string[];
-  endTime?: string; // Ajout pour pouvoir calculer les dates multi-jours
+  startTime?: string; // Format HH:MM
+  endTime?: string; // Format HH:MM
 }
 
 export interface MapStore {

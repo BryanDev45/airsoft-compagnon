@@ -39,35 +39,25 @@ export function useEventFiltering() {
       if (selectedDate) {
         const selectedDateStr = selectedDate.toISOString().split('T')[0];
         
-        // Extraire la date de début depuis event.date (format français DD/MM/YYYY)
-        let startDate: Date;
-        if (event.date.includes('/')) {
-          // Format français DD/MM/YYYY
-          const [day, month, year] = event.date.split('/');
-          startDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-        } else {
-          // Format ISO ou autre
-          startDate = new Date(event.date);
-        }
+        // La date est déjà au format ISO YYYY-MM-DD
+        const startDateStr = event.date;
         
-        // Calculer la date de fin en utilisant endTime
-        let endDate = new Date(startDate);
-        if (event.endTime) {
-          const [endHours, endMinutes] = event.endTime.split(':');
-          endDate.setHours(parseInt(endHours), parseInt(endMinutes));
+        // Calculer la date de fin
+        let endDateStr = startDateStr; // Par défaut, même jour
+        
+        if (event.startTime && event.endTime) {
+          const startDateTime = new Date(`${startDateStr}T${event.startTime}:00`);
+          const endDateTime = new Date(`${startDateStr}T${event.endTime}:00`);
           
           // Si l'heure de fin est antérieure à l'heure de début, la partie se termine le jour suivant
-          const startHours = startDate.getHours();
-          if (parseInt(endHours) < startHours || (parseInt(endHours) === startHours && parseInt(endMinutes) < startDate.getMinutes())) {
-            endDate.setDate(endDate.getDate() + 1);
+          if (endDateTime < startDateTime) {
+            const nextDay = new Date(startDateTime);
+            nextDay.setDate(nextDay.getDate() + 1);
+            endDateStr = nextDay.toISOString().split('T')[0];
           }
         }
         
         // Vérifier si la date sélectionnée se trouve dans la plage de la partie
-        const selectedDateObj = new Date(selectedDateStr);
-        const startDateStr = startDate.toISOString().split('T')[0];
-        const endDateStr = endDate.toISOString().split('T')[0];
-        
         matchesDate = selectedDateStr >= startDateStr && selectedDateStr <= endDateStr;
       }
       
