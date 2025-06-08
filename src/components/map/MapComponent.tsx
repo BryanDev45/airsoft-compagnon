@@ -1,181 +1,297 @@
 
-import React, { useEffect, useRef } from 'react';
-import { Map, View } from 'ol';
+import React, { useRef, useEffect, useState } from 'react';
+import { MapPin } from 'lucide-react';
+import Map from 'ol/Map';
+import View from 'ol/View';
 import TileLayer from 'ol/layer/Tile';
 import OSM from 'ol/source/OSM';
+import { fromLonLat, transform } from 'ol/proj';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
-import { Feature } from 'ol';
-import { Point } from 'ol/geom';
-import { fromLonLat } from 'ol/proj';
-import { Style, Icon } from 'ol/style';
-import 'ol/ol.css';
+import Feature from 'ol/Feature';
+import Point from 'ol/geom/Point';
+import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
+import Circle from 'ol/geom/Circle';
+import Overlay from 'ol/Overlay';
+import MapMarker from './MapMarker';
+import StoreImageCarousel from '../stores/StoreImageCarousel';
 import { MapEvent, MapStore } from '@/hooks/useMapData';
 
 interface MapComponentProps {
-  events?: MapEvent[];
+  searchCenter: [number, number];
+  searchRadius: number;
+  filteredEvents: MapEvent[];
   stores?: MapStore[];
-  selectedCategory?: string;
-  centerCoordinates?: [number, number] | null;
-  searchCenter?: [number, number];
-  searchRadius?: number;
-  filteredEvents?: MapEvent[];
-  onEventClick?: (event: MapEvent) => void;
-  onStoreClick?: (store: MapStore) => void;
 }
 
-const MapComponent: React.FC<MapComponentProps> = ({
-  events = [],
-  stores = [],
-  selectedCategory = 'all',
-  centerCoordinates,
-  searchCenter,
-  filteredEvents = [],
-  onEventClick,
-  onStoreClick
+const MapComponent: React.FC<MapComponentProps> = ({ 
+  searchCenter, 
+  searchRadius, 
+  filteredEvents, 
+  stores = [] 
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<Map | null>(null);
-  const vectorLayerRef = useRef<VectorLayer<VectorSource> | null>(null);
+  const map = useRef<Map | null>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [selectedStore, setSelectedStore] = useState<any>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<Overlay | null>(null);
+  const [view, setView] = useState<View | null>(null);
 
-  // Use filteredEvents if provided, otherwise use events
-  const eventsToShow = filteredEvents.length > 0 ? filteredEvents : events;
-  // Use searchCenter if provided, otherwise use centerCoordinates
-  const mapCenter = searchCenter || centerCoordinates || [2.3522, 48.8566];
-
-  // Default Paris coordinates
-  const defaultParis = [2.3522, 48.8566];
-  
-  // Helper function to check if coordinates are the default Paris coordinates
-  const isDefaultParis = (coords: [number, number]) => {
-    return coords[0] === defaultParis[0] && coords[1] === defaultParis[1];
-  };
-
-  // Initialisation de la carte
   useEffect(() => {
-    if (!mapRef.current) return;
+    if (!mapRef.current || !popupRef.current) return;
 
-    const vectorSource = new VectorSource();
-    const vectorLayer = new VectorLayer({
-      source: vectorSource,
+    // Create popup overlay
+    overlayRef.current = new Overlay({
+      element: popupRef.current,
+      autoPan: {
+        animation: {
+          duration: 250
+        }
+      }
     });
-    vectorLayerRef.current = vectorLayer;
 
-    const map = new Map({
+    const features = [];
+
+    // Create event markers
+    filteredEvents.forEach(event => {
+      const lat = parseFloat(String(event.lat)) || 0;
+      const lng = parseFloat(String(event.lng)) || 0;
+      
+      const feature = new Feature({
+        geometry: new Point(fromLonLat([lng, lat])),
+        event: event,
+        type: 'event'
+      });
+
+      feature.setStyle(new Style({
+        image: new CircleStyle({
+          radius: 8,
+          fill: new Fill({
+            color: '#ea384c'
+          }),
+          stroke: new Stroke({
+            color: '#ffffff',
+            width: 3
+          })
+        })
+      }));
+
+      features.push(feature);
+    });
+
+    // Create store markers
+    stores.forEach(store => {
+      const lat = parseFloat(String(store.lat)) || 0;
+      const lng = parseFloat(String(store.lng)) || 0;
+      
+      const feature = new Feature({
+        geometry: new Point(fromLonLat([lng, lat])),
+        store: store,
+        type: 'store'
+      });
+
+      feature.setStyle(new Style({
+        image: new CircleStyle({
+          radius: 8,
+          fill: new Fill({
+            color: '#10b981'
+          }),
+          stroke: new Stroke({
+            color: '#ffffff',
+            width: 3
+          })
+        })
+      }));
+
+      features.push(feature);
+    });
+
+    // Create search radius circle
+    if (searchRadius > 0) {
+      const radiusFeature = new Feature({
+        geometry: new Circle(fromLonLat(searchCenter), searchRadius * 1000)
+      });
+
+      radiusFeature.setStyle(
+        new Style({
+          stroke: new Stroke({
+            color: 'rgba(234, 56, 76, 0.8)',
+            width: 2
+          }),
+          fill: new Fill({
+            color: 'rgba(234, 56, 76, 0.1)'
+          })
+        })
+      );
+
+      features.push(radiusFeature);
+    }
+
+    const vectorSource = new VectorSource({
+      features: features
+    });
+
+    const vectorLayer = new VectorLayer({
+      source: vectorSource
+    });
+
+    const newView = new View({
+      center: fromLonLat(searchCenter),
+      zoom: 6
+    });
+
+    setView(newView);
+
+    // Initialize map
+    map.current = new Map({
       target: mapRef.current,
       layers: [
         new TileLayer({
-          source: new OSM(),
+          source: new OSM()
         }),
-        vectorLayer,
+        vectorLayer
       ],
-      view: new View({
-        center: fromLonLat(mapCenter), // Paris par défaut
-        zoom: !isDefaultParis(mapCenter) ? 10 : 6,
-      }),
+      view: newView
     });
 
-    mapInstanceRef.current = map;
+    map.current.addOverlay(overlayRef.current);
 
-    // Cleanup
+    // Click handler for markers
+    map.current.on('click', (event) => {
+      const feature = map.current?.forEachFeatureAtPixel(event.pixel, (feature) => feature);
+      
+      if (feature) {
+        const coordinates = (feature.getGeometry() as Point).getCoordinates();
+        
+        if (feature.get('event')) {
+          const event = feature.get('event');
+          setSelectedEvent(event);
+          setSelectedStore(null);
+          overlayRef.current?.setPosition(coordinates);
+        } else if (feature.get('store')) {
+          const store = feature.get('store');
+          setSelectedStore(store);
+          setSelectedEvent(null);
+          overlayRef.current?.setPosition(coordinates);
+        }
+      } else {
+        setSelectedEvent(null);
+        setSelectedStore(null);
+        overlayRef.current?.setPosition(undefined);
+      }
+    });
+
+    // Set map as loaded when rendered
+    map.current.once('rendercomplete', () => {
+      setMapLoaded(true);
+    });
+
     return () => {
-      map.setTarget(undefined);
+      map.current?.setTarget(undefined);
+      map.current = null;
     };
-  }, []);
+  }, [searchCenter, searchRadius, filteredEvents, stores]);
 
-  // Mise à jour du centre de la carte
+  // Update view when center changes
   useEffect(() => {
-    if (mapInstanceRef.current && mapCenter) {
-      const view = mapInstanceRef.current.getView();
-      view.setCenter(fromLonLat(mapCenter));
-      view.setZoom(10);
-    }
-  }, [mapCenter]);
-
-  // Mise à jour des marqueurs
-  useEffect(() => {
-    if (!vectorLayerRef.current) return;
-
-    const vectorSource = vectorLayerRef.current.getSource();
-    if (!vectorSource) return;
-
-    // Effacer les marqueurs existants
-    vectorSource.clear();
-
-    // Ajouter les marqueurs d'événements
-    if (selectedCategory === 'all' || selectedCategory === 'parties') {
-      eventsToShow.forEach((event) => {
-        if (event.lat && event.lng) {
-          const feature = new Feature({
-            geometry: new Point(fromLonLat([event.lng, event.lat])),
-            data: { type: 'event', ...event },
-          });
-
-          feature.setStyle(
-            new Style({
-              image: new Icon({
-                anchor: [0.5, 1],
-                src: '/lovable-uploads/dabf8bbc-44a7-4c03-bebe-009592f0c6c8.png',
-                scale: 0.05,
-              }),
-            })
-          );
-
-          vectorSource.addFeature(feature);
-        }
+    if (view && map.current) {
+      view.animate({
+        center: fromLonLat(searchCenter),
+        duration: 1000,
+        zoom: searchRadius > 0 ? 12 : 6
       });
     }
+  }, [searchCenter, searchRadius, view]);
 
-    // Ajouter les marqueurs de magasins
-    if (selectedCategory === 'all' || selectedCategory === 'stores') {
-      stores.forEach((store) => {
-        if (store.lat && store.lng) {
-          const feature = new Feature({
-            geometry: new Point(fromLonLat([store.lng, store.lat])),
-            data: { type: 'store', ...store },
-          });
-
-          feature.setStyle(
-            new Style({
-              image: new Icon({
-                anchor: [0.5, 1],
-                src: '/lovable-uploads/52a37106-d8af-4a71-9d67-4d69bd884c8f.png',
-                scale: 0.05,
-              }),
-            })
-          );
-
-          vectorSource.addFeature(feature);
-        }
-      });
-    }
-
-    // Gestionnaire de clic sur les marqueurs
-    const handleMapClick = (evt: any) => {
-      if (!mapInstanceRef.current) return;
-
-      mapInstanceRef.current.forEachFeatureAtPixel(evt.pixel, (feature) => {
-        const data = feature.get('data');
-        if (data?.type === 'event' && onEventClick) {
-          onEventClick(data);
-        } else if (data?.type === 'store' && onStoreClick) {
-          onStoreClick(data);
-        }
-      });
-    };
-
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.on('click', handleMapClick);
-
-      return () => {
-        if (mapInstanceRef.current) {
-          mapInstanceRef.current.un('click', handleMapClick);
-        }
-      };
-    }
-  }, [eventsToShow, stores, selectedCategory, onEventClick, onStoreClick]);
-
-  return <div ref={mapRef} className="w-full h-full" />;
+  return (
+    <div ref={mapRef} className="w-full h-full rounded-lg overflow-hidden relative">
+      {!mapLoaded && (
+        <div className="absolute inset-0 flex items-center justify-center flex-col bg-gray-200 z-10">
+          <MapPin size={24} className="text-gray-400 mb-2" />
+          <p className="text-center text-gray-500">Chargement de la carte...</p>
+        </div>
+      )}
+      <div ref={popupRef} className="absolute z-50">
+        {selectedEvent && (
+          <MapMarker 
+            event={selectedEvent} 
+            onClose={() => {
+              setSelectedEvent(null);
+              overlayRef.current?.setPosition(undefined);
+            }}
+          />
+        )}
+        {selectedStore && (
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden max-w-md w-[400px] border border-gray-200">
+            {/* Image carousel pour le magasin */}
+            <div className="relative h-40">
+              <StoreImageCarousel 
+                images={[
+                  selectedStore.image,
+                  selectedStore.picture2,
+                  selectedStore.picture3,
+                  selectedStore.picture4,
+                  selectedStore.picture5
+                ].filter(Boolean)}
+                storeName={selectedStore.name}
+              />
+            </div>
+            
+            {/* Contenu du magasin */}
+            <div className="p-4 space-y-3">
+              <div className="flex justify-between items-start">
+                <h3 className="font-semibold text-lg text-gray-900 pr-2">{selectedStore.name}</h3>
+                <button 
+                  onClick={() => {
+                    setSelectedStore(null);
+                    overlayRef.current?.setPosition(undefined);
+                  }}
+                  className="text-gray-400 hover:text-gray-600 text-xl leading-none flex-shrink-0"
+                >
+                  ×
+                </button>
+              </div>
+              
+              <div className="space-y-2">
+                <p className="text-sm text-gray-600 flex items-start gap-2">
+                  <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0 text-gray-400" />
+                  <span className="break-words">{selectedStore.address}, {selectedStore.zip_code} {selectedStore.city}</span>
+                </p>
+                
+                {selectedStore.phone && (
+                  <p className="text-sm text-gray-600 flex items-center gap-2">
+                    <span className="text-gray-400">📞</span>
+                    <span>{selectedStore.phone}</span>
+                  </p>
+                )}
+                
+                {selectedStore.email && (
+                  <p className="text-sm text-gray-600 flex items-center gap-2">
+                    <span className="text-gray-400">✉️</span>
+                    <span className="break-all">{selectedStore.email}</span>
+                  </p>
+                )}
+                
+                {selectedStore.website && (
+                  <a 
+                    href={selectedStore.website} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:underline inline-flex items-center gap-2"
+                  >
+                    <span className="text-gray-400">🌐</span>
+                    <span>Site web</span>
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default MapComponent;
