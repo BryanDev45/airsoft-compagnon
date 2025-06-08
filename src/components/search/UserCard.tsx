@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,9 +37,25 @@ const UserCard: React.FC<UserCardProps> = ({ userData, friendshipStatus, onFrien
   const { user } = useAuth();
   const { createDirectConversation, isCreating } = useDirectConversationCreation();
 
-  const handleContactClick = async () => {
+  const handleContactClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!user) {
+      toast({
+        title: "Connexion requise",
+        description: "Vous devez être connecté pour envoyer un message",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (isCreating) {
+      return; // Empêcher les clics multiples
+    }
+
     try {
-      console.log('Clic sur contact pour utilisateur:', userData.id, userData.username);
+      console.log('Début de création de conversation avec:', userData.id, userData.username);
       await createDirectConversation(userData.id, userData.username);
     } catch (error) {
       console.error('Erreur dans handleContactClick:', error);
