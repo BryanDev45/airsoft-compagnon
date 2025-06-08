@@ -35,26 +35,26 @@ const GameCard: React.FC<GameCardProps> = ({ event, participantCount }) => {
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       <div className="relative">
-        <div className="h-48 w-full overflow-hidden">
+        <div className="h-48 w-full overflow-hidden relative">
           <GameImageCarousel 
             images={event.images || []} 
             title={event.title} 
           />
         </div>
-        <div className="absolute top-2 right-2 z-10">
+        <div className="absolute top-2 right-2 z-20">
           <Badge variant="secondary" className="bg-white/90 text-gray-700">
             {event.type}
           </Badge>
         </div>
       </div>
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-3 relative z-10">
         <CardTitle className="text-lg line-clamp-2">{event.title}</CardTitle>
         <CardDescription className="flex items-center gap-1">
           <MapPin className="h-4 w-4" />
           {event.location} ({event.department})
         </CardDescription>
       </CardHeader>
-      <CardContent className="pt-0 space-y-3">
+      <CardContent className="pt-0 space-y-3 relative z-10">
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <Calendar className="h-4 w-4" />
           {formattedDate}

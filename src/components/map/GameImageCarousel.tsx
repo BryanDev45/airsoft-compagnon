@@ -41,13 +41,13 @@ const GameImageCarousel: React.FC<GameImageCarouselProps> = ({ images, title }) 
           ))}
         </CarouselContent>
         
-        {/* Boutons de navigation avec z-index plus bas pour éviter de masquer le contenu */}
-        <CarouselPrevious className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 border-none text-white opacity-0 group-hover:opacity-100 transition-opacity z-10" />
-        <CarouselNext className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 border-none text-white opacity-0 group-hover:opacity-100 transition-opacity z-10" />
+        {/* Boutons de navigation avec z-index réduit pour ne pas masquer le contenu des cartes */}
+        <CarouselPrevious className="absolute left-2 top-1/2 transform -translate-y-1/2 h-8 w-8 bg-white/90 hover:bg-white border-none text-gray-800 opacity-0 group-hover:opacity-100 transition-opacity z-1" />
+        <CarouselNext className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 bg-white/90 hover:bg-white border-none text-gray-800 opacity-0 group-hover:opacity-100 transition-opacity z-1" />
       </Carousel>
       
-      {/* Indicateur du nombre de photos avec z-index plus bas */}
-      <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded z-5">
+      {/* Indicateur du nombre de photos avec z-index réduit */}
+      <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded z-1">
         {displayImages.length} photos
       </div>
     </div>

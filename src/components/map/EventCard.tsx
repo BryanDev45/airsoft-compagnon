@@ -52,13 +52,13 @@ const EventCard = ({ event }: EventCardProps) => {
       onClick={handleCardClick}
     >
       <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
-        <div className="h-48">
+        <div className="relative h-48 overflow-hidden">
           <GameImageCarousel 
             images={event.images || []} 
             title={event.title} 
           />
         </div>
-        <div className="p-6">
+        <div className="p-6 relative z-10">
           <h3 className="text-xl font-semibold mb-2">{event.title}</h3>
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-gray-600">
