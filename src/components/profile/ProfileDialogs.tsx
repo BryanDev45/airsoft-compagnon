@@ -33,6 +33,18 @@ const ProfileDialogs = ({
     }
   };
   
+  // Helper pour récupérer le prix avec fallback sur différentes propriétés
+  const getGamePrice = (game) => {
+    // Vérifier toutes les propriétés possibles pour le prix
+    const price = game?.price ?? game?.paf ?? game?.cost ?? null;
+    
+    if (price !== null && price !== undefined) {
+      return `${price}€`;
+    }
+    
+    return 'Prix non spécifié';
+  };
+  
   // Debug pour voir le contenu de selectedGame
   console.log("Selected game in dialog:", selectedGame);
   
@@ -89,11 +101,7 @@ const ProfileDialogs = ({
                 
                 <div className="flex items-center gap-2 text-gray-700">
                   <Euro className="text-airsoft-red flex-shrink-0" size={18} />
-                  <span>
-                    {selectedGame.price !== undefined && selectedGame.price !== null 
-                      ? `${selectedGame.price}€` 
-                      : 'Prix non spécifié'}
-                  </span>
+                  <span>{getGamePrice(selectedGame)}</span>
                 </div>
                 
                 <div className="flex items-center gap-2 mt-2">

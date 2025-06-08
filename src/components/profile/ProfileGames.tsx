@@ -23,6 +23,9 @@ interface Game {
   address?: string;
   city?: string;
   zip_code?: string;
+  // Propriétés alternatives pour le prix
+  paf?: number;
+  cost?: number;
 }
 
 interface ProfileGamesProps {
@@ -59,9 +62,12 @@ const ProfileGames = ({
       participantsCount: game.participants || game.participantsCount || 0,
       max_players: game.maxParticipants || game.max_players,
       // Construire l'adresse complète si elle n'existe pas
-      address: game.location || (game.city && game.zip_code ? `${game.city}, ${game.zip_code}` : game.address) || 'Lieu non spécifié'
+      address: game.location || (game.city && game.zip_code ? `${game.city}, ${game.zip_code}` : game.address) || 'Lieu non spécifié',
+      // S'assurer que le prix est correctement transmis avec tous les fallbacks
+      price: game.price ?? game.paf ?? game.cost ?? null
     };
     
+    console.log("Game data being passed to dialog:", enrichedGame);
     handleViewGameDetails(enrichedGame);
   };
 
