@@ -81,6 +81,7 @@ const StoresMapSection: React.FC = () => {
                   searchRadius={searchRadius[0]} 
                   filteredEvents={[]}
                   stores={filteredStores}
+                  selectedCategory="stores"
                 />
               ) : (
                 <div className="flex items-center justify-center h-full">

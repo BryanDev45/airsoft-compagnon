@@ -1,16 +1,16 @@
 
 import React from 'react';
 import MapComponent from './MapComponent';
-import { MapEvent } from '@/hooks/useMapData';
+import { MapEvent, MapStore } from '@/hooks/useMapData';
 
 interface MapContainerProps {
   events: MapEvent[];
-  stores: any[];
+  stores: MapStore[];
   loading: boolean;
   selectedCategory: string;
   centerCoordinates: [number, number] | null;
   onEventClick: (event: MapEvent) => void;
-  onStoreClick: (store: any) => void;
+  onStoreClick: (store: MapStore) => void;
 }
 
 const MapContainer: React.FC<MapContainerProps> = ({

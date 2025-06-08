@@ -10,28 +10,38 @@ import { Point } from 'ol/geom';
 import { fromLonLat } from 'ol/proj';
 import { Style, Icon } from 'ol/style';
 import 'ol/ol.css';
-import { MapEvent } from '@/hooks/useMapData';
+import { MapEvent, MapStore } from '@/hooks/useMapData';
 
 interface MapComponentProps {
-  events: MapEvent[];
-  stores: any[];
-  selectedCategory: string;
-  centerCoordinates: [number, number] | null;
-  onEventClick: (event: MapEvent) => void;
-  onStoreClick: (store: any) => void;
+  events?: MapEvent[];
+  stores?: MapStore[];
+  selectedCategory?: string;
+  centerCoordinates?: [number, number] | null;
+  searchCenter?: [number, number];
+  searchRadius?: number;
+  filteredEvents?: MapEvent[];
+  onEventClick?: (event: MapEvent) => void;
+  onStoreClick?: (store: MapStore) => void;
 }
 
 const MapComponent: React.FC<MapComponentProps> = ({
-  events,
-  stores,
-  selectedCategory,
+  events = [],
+  stores = [],
+  selectedCategory = 'all',
   centerCoordinates,
+  searchCenter,
+  filteredEvents = [],
   onEventClick,
   onStoreClick
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<Map | null>(null);
   const vectorLayerRef = useRef<VectorLayer<VectorSource> | null>(null);
+
+  // Use filteredEvents if provided, otherwise use events
+  const eventsToShow = filteredEvents.length > 0 ? filteredEvents : events;
+  // Use searchCenter if provided, otherwise use centerCoordinates
+  const mapCenter = searchCenter || centerCoordinates || [2.3522, 48.8566];
 
   // Initialisation de la carte
   useEffect(() => {
@@ -52,8 +62,8 @@ const MapComponent: React.FC<MapComponentProps> = ({
         vectorLayer,
       ],
       view: new View({
-        center: fromLonLat(centerCoordinates || [2.3522, 48.8566]), // Paris par défaut
-        zoom: centerCoordinates ? 10 : 6,
+        center: fromLonLat(mapCenter), // Paris par défaut
+        zoom: mapCenter !== [2.3522, 48.8566] ? 10 : 6,
       }),
     });
 
@@ -67,12 +77,12 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
   // Mise à jour du centre de la carte
   useEffect(() => {
-    if (mapInstanceRef.current && centerCoordinates) {
+    if (mapInstanceRef.current && mapCenter) {
       const view = mapInstanceRef.current.getView();
-      view.setCenter(fromLonLat(centerCoordinates));
+      view.setCenter(fromLonLat(mapCenter));
       view.setZoom(10);
     }
-  }, [centerCoordinates]);
+  }, [mapCenter]);
 
   // Mise à jour des marqueurs
   useEffect(() => {
@@ -86,10 +96,10 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
     // Ajouter les marqueurs d'événements
     if (selectedCategory === 'all' || selectedCategory === 'parties') {
-      events.forEach((event) => {
-        if (event.latitude && event.longitude) {
+      eventsToShow.forEach((event) => {
+        if (event.lat && event.lng) {
           const feature = new Feature({
-            geometry: new Point(fromLonLat([event.longitude, event.latitude])),
+            geometry: new Point(fromLonLat([event.lng, event.lat])),
             data: { type: 'event', ...event },
           });
 
@@ -111,9 +121,9 @@ const MapComponent: React.FC<MapComponentProps> = ({
     // Ajouter les marqueurs de magasins
     if (selectedCategory === 'all' || selectedCategory === 'stores') {
       stores.forEach((store) => {
-        if (store.latitude && store.longitude) {
+        if (store.lat && store.lng) {
           const feature = new Feature({
-            geometry: new Point(fromLonLat([store.longitude, store.latitude])),
+            geometry: new Point(fromLonLat([store.lng, store.lat])),
             data: { type: 'store', ...store },
           });
 
@@ -138,9 +148,9 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
       mapInstanceRef.current.forEachFeatureAtPixel(evt.pixel, (feature) => {
         const data = feature.get('data');
-        if (data?.type === 'event') {
+        if (data?.type === 'event' && onEventClick) {
           onEventClick(data);
-        } else if (data?.type === 'store') {
+        } else if (data?.type === 'store' && onStoreClick) {
           onStoreClick(data);
         }
       });
@@ -155,7 +165,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
         }
       };
     }
-  }, [events, stores, selectedCategory, onEventClick, onStoreClick]);
+  }, [eventsToShow, stores, selectedCategory, onEventClick, onStoreClick]);
 
   return <div ref={mapRef} className="w-full h-full" />;
 };
