@@ -43,6 +43,14 @@ const MapComponent: React.FC<MapComponentProps> = ({
   // Use searchCenter if provided, otherwise use centerCoordinates
   const mapCenter = searchCenter || centerCoordinates || [2.3522, 48.8566];
 
+  // Default Paris coordinates
+  const defaultParis = [2.3522, 48.8566];
+  
+  // Helper function to check if coordinates are the default Paris coordinates
+  const isDefaultParis = (coords: [number, number]) => {
+    return coords[0] === defaultParis[0] && coords[1] === defaultParis[1];
+  };
+
   // Initialisation de la carte
   useEffect(() => {
     if (!mapRef.current) return;
@@ -63,7 +71,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
       ],
       view: new View({
         center: fromLonLat(mapCenter), // Paris par défaut
-        zoom: mapCenter !== [2.3522, 48.8566] ? 10 : 6,
+        zoom: !isDefaultParis(mapCenter) ? 10 : 6,
       }),
     });
 
