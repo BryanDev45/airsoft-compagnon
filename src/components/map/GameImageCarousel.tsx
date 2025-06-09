@@ -14,7 +14,7 @@ const GameImageCarousel: React.FC<GameImageCarouselProps> = ({ images, title }) 
 
   if (displayImages.length === 1) {
     return (
-      <AspectRatio ratio={16/9} className="w-full">
+      <AspectRatio ratio={16/9} className="w-full overflow-hidden">
         <img 
           src={displayImages[0]} 
           alt={title}
@@ -25,12 +25,12 @@ const GameImageCarousel: React.FC<GameImageCarouselProps> = ({ images, title }) 
   }
 
   return (
-    <div className="relative w-full h-full group">
+    <div className="relative w-full h-full group overflow-hidden">
       <Carousel className="w-full h-full">
         <CarouselContent className="h-full">
           {displayImages.map((image, index) => (
             <CarouselItem key={index} className="h-full">
-              <AspectRatio ratio={16/9} className="w-full h-full">
+              <AspectRatio ratio={16/9} className="w-full h-full overflow-hidden">
                 <img 
                   src={image} 
                   alt={`${title} - Image ${index + 1}`}
@@ -41,13 +41,13 @@ const GameImageCarousel: React.FC<GameImageCarouselProps> = ({ images, title }) 
           ))}
         </CarouselContent>
         
-        {/* Boutons de navigation avec z-index réduit pour ne pas masquer le contenu des cartes */}
-        <CarouselPrevious className="absolute left-2 top-1/2 transform -translate-y-1/2 h-8 w-8 bg-white/90 hover:bg-white border-none text-gray-800 opacity-0 group-hover:opacity-100 transition-opacity z-1" />
-        <CarouselNext className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 bg-white/90 hover:bg-white border-none text-gray-800 opacity-0 group-hover:opacity-100 transition-opacity z-1" />
+        {/* Boutons de navigation avec z-index approprié */}
+        <CarouselPrevious className="absolute left-2 top-1/2 transform -translate-y-1/2 h-8 w-8 bg-white/90 hover:bg-white border-none text-gray-800 opacity-0 group-hover:opacity-100 transition-opacity z-10" />
+        <CarouselNext className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 bg-white/90 hover:bg-white border-none text-gray-800 opacity-0 group-hover:opacity-100 transition-opacity z-10" />
       </Carousel>
       
-      {/* Indicateur du nombre de photos avec z-index réduit */}
-      <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded z-1">
+      {/* Indicateur du nombre de photos avec z-index approprié */}
+      <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded z-10">
         {displayImages.length} photos
       </div>
     </div>
