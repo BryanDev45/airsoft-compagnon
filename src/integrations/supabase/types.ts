@@ -926,6 +926,12 @@ export type Database = {
           conversation_id: string
         }[]
       }
+      get_user_conversations_secure: {
+        Args: { user_uuid: string }
+        Returns: {
+          conversation_id: string
+        }[]
+      }
       get_user_rating: {
         Args: { p_rater_id: string; p_rated_id: string }
         Returns: number
@@ -935,6 +941,10 @@ export type Database = {
         Returns: undefined
       }
       is_conversation_participant: {
+        Args: { conversation_uuid: string; user_uuid: string }
+        Returns: boolean
+      }
+      is_conversation_participant_secure: {
         Args: { conversation_uuid: string; user_uuid: string }
         Returns: boolean
       }
