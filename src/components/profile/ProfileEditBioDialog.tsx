@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -105,16 +106,16 @@ const ProfileEditBioDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[85vh] flex flex-col">
-        <DialogHeader className="flex-shrink-0">
+      <DialogContent className="sm:max-w-[500px] h-[85vh] flex flex-col p-0">
+        <DialogHeader className="flex-shrink-0 p-6 pb-0">
           <DialogTitle>Modifier votre profil</DialogTitle>
           <DialogDescription>
             Modifiez votre profil pour qu'il reflète au mieux votre personnalité
           </DialogDescription>
         </DialogHeader>
         
-        <div className="flex-1 min-h-0 overflow-hidden">
-          <ScrollArea className="h-full w-full pr-4">
+        <ScrollArea className="flex-1 px-6">
+          <div className="py-4">
             <ProfileEditTabs
               currentTab={currentTab}
               onTabChange={setCurrentTab}
@@ -127,10 +128,10 @@ const ProfileEditBioDialog = ({
               onAvatarChange={setAvatarPreview}
               onBannerChange={setBannerPreview}
             />
-          </ScrollArea>
-        </div>
+          </div>
+        </ScrollArea>
 
-        <DialogFooter className="flex-shrink-0 mt-4">
+        <DialogFooter className="flex-shrink-0 p-6 pt-0">
           <Button 
             variant="outline" 
             onClick={() => onOpenChange(false)}
