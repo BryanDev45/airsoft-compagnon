@@ -1,11 +1,14 @@
 
 import React from 'react';
-import { Bell } from 'lucide-react';
+import { Bell, CheckCheck, Trash2 } from 'lucide-react';
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { useNotificationActions } from '@/hooks/notifications/useNotificationActions';
 import { useFriendRequestActions } from '@/hooks/notifications/useFriendRequestActions';
 import { useTeamInvitationActions } from '@/hooks/notifications/useTeamInvitationActions';
 import { useTeamRequestActions } from '@/hooks/notifications/useTeamRequestActions';
+import { toast } from "@/components/ui/use-toast";
 import NotificationItem from './NotificationItem';
 import AdminNotificationButton from './AdminNotificationButton';
 
@@ -25,10 +28,22 @@ interface NotificationListProps {
 }
 
 const NotificationList: React.FC<NotificationListProps> = ({ notifications }) => {
-  const { handleDeleteNotification, handleMarkAsRead, handleNavigateToNotification } = useNotificationActions();
+  const { handleDeleteNotification, handleMarkAsRead, handleNavigateToNotification, handleMarkAllAsRead, handleDeleteAllRead } = useNotificationActions();
   const { processingInvitation: processingFriend, handleAcceptFriendRequest, handleRejectFriendRequest } = useFriendRequestActions(handleMarkAsRead);
   const { processingInvitation, handleAcceptTeamInvitation, handleRejectTeamInvitation } = useTeamInvitationActions(handleMarkAsRead);
   const { processingRequest, handleAcceptTeamRequest, handleRejectTeamRequest } = useTeamRequestActions(handleMarkAsRead);
+
+  const handleMarkAllAsReadClick = async () => {
+    await handleMarkAllAsRead();
+    toast({
+      title: "Notifications marquées",
+      description: "Toutes les notifications ont été marquées comme lues"
+    });
+  };
+
+  const handleDeleteAllReadClick = async () => {
+    await handleDeleteAllRead();
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -36,6 +51,31 @@ const NotificationList: React.FC<NotificationListProps> = ({ notifications }) =>
       <div className="mb-4">
         <AdminNotificationButton />
       </div>
+
+      {/* Boutons de gestion des notifications */}
+      <div className="mb-4 space-y-2">
+        <Button
+          variant="outline"
+          onClick={handleMarkAllAsReadClick}
+          className="w-full justify-start h-10 text-left"
+          size="sm"
+        >
+          <CheckCheck className="mr-2 h-4 w-4 text-green-600" />
+          <span className="text-sm">Tout marquer comme lu</span>
+        </Button>
+        
+        <Button
+          variant="outline"
+          onClick={handleDeleteAllReadClick}
+          className="w-full justify-start h-10 text-left hover:bg-red-50 hover:border-red-200"
+          size="sm"
+        >
+          <Trash2 className="mr-2 h-4 w-4 text-red-600" />
+          <span className="text-sm text-red-600">Supprimer les notifications lues</span>
+        </Button>
+      </div>
+
+      <Separator className="mb-4" />
 
       {/* Liste des notifications */}
       <div className="flex-1">
@@ -45,7 +85,7 @@ const NotificationList: React.FC<NotificationListProps> = ({ notifications }) =>
             <p className="text-sm">Aucune notification</p>
           </div>
         ) : (
-          <ScrollArea className="h-[400px]">
+          <ScrollArea className="h-[300px]">
             <div className="space-y-3 pr-4">
               {notifications.map((notification) => (
                 <NotificationItem
