@@ -127,26 +127,38 @@ export const useChatMessages = (conversationId: string) => {
       .update({ updated_at: new Date().toISOString() })
       .eq('id', conversationId);
 
-    // Invalider et rafraîchir les messages
+    // Invalider et rafraîchir les messages et conversations
     queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
     queryClient.invalidateQueries({ queryKey: ['conversations'] });
   };
 
-  // Marquer les messages comme lus
+  // Marquer les messages comme lus - version améliorée
   const markAsRead = async () => {
     if (!user?.id || !conversationId) return;
 
-    const { error } = await supabase
-      .from('conversation_participants')
-      .update({ last_read_at: new Date().toISOString() })
-      .eq('conversation_id', conversationId)
-      .eq('user_id', user.id);
+    console.log('Marking messages as read for conversation:', conversationId);
 
-    if (error) {
-      console.error('Error marking messages as read:', error);
-    } else {
-      // Invalider les conversations pour mettre à jour les compteurs
-      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+    try {
+      const { error } = await supabase
+        .from('conversation_participants')
+        .update({ last_read_at: new Date().toISOString() })
+        .eq('conversation_id', conversationId)
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Error marking messages as read:', error);
+      } else {
+        console.log('Successfully marked messages as read');
+        
+        // Invalider immédiatement les requêtes pour forcer la mise à jour
+        await queryClient.invalidateQueries({ queryKey: ['conversations'] });
+        await queryClient.invalidateQueries({ queryKey: ['unreadNotifications', user.id] });
+        
+        // Refetch les conversations pour mettre à jour les compteurs
+        await queryClient.refetchQueries({ queryKey: ['conversations', user.id] });
+      }
+    } catch (error) {
+      console.error('Error in markAsRead:', error);
     }
   };
 

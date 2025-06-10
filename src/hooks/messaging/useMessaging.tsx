@@ -35,6 +35,8 @@ export const useMessaging = () => {
       if (!user?.id) return [];
 
       try {
+        console.log('Fetching conversations for user:', user.id);
+
         // Récupérer les informations de l'équipe de l'utilisateur
         const { data: userProfile, error: profileError } = await supabase
           .from('profiles')
@@ -61,10 +63,12 @@ export const useMessaging = () => {
         }
 
         if (!userParticipations || userParticipations.length === 0) {
+          console.log('No conversations found for user');
           return [];
         }
 
         const conversationIds = userParticipations.map(p => p.conversation_id);
+        console.log('Found conversation IDs:', conversationIds);
 
         // Récupérer les données des conversations
         const { data: conversationsData, error: conversationsError } = await supabase
@@ -85,8 +89,11 @@ export const useMessaging = () => {
         }
 
         if (!conversationsData || conversationsData.length === 0) {
+          console.log('No conversation data found');
           return [];
         }
+
+        console.log('Fetched conversations data:', conversationsData);
 
         // Pour chaque conversation, récupérer les détails complets
         const conversationsWithDetails = await Promise.all(
@@ -113,6 +120,12 @@ export const useMessaging = () => {
             return 0;
           });
 
+        console.log('Final conversations with unread counts:', validConversations.map(c => ({ 
+          id: c.id, 
+          name: c.name, 
+          unread_count: c.unread_count 
+        })));
+
         return validConversations;
       } catch (error) {
         console.error('Error in conversations query:', error);
@@ -120,13 +133,14 @@ export const useMessaging = () => {
       }
     },
     enabled: !!user?.id,
-    refetchInterval: 30000,
-    staleTime: 10000,
+    refetchInterval: 15000, // Réduire l'intervalle pour une mise à jour plus rapide
+    staleTime: 5000, // Considérer les données comme fraîches pendant 5 secondes seulement
   });
 
   // Calculer le nombre total de messages non lus
   useEffect(() => {
     const totalUnread = conversations.reduce((sum, conv) => sum + conv.unread_count, 0);
+    console.log('Total unread messages:', totalUnread);
     setUnreadCount(totalUnread);
   }, [conversations]);
 

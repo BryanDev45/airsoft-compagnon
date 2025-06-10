@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,9 +26,11 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, onBack }) => {
     }
   }, [messages]);
 
+  // Marquer comme lu quand on ouvre la conversation ET quand de nouveaux messages arrivent
   useEffect(() => {
+    console.log('ChatView: Marking messages as read for conversation:', conversationId);
     markAsRead();
-  }, [markAsRead]);
+  }, [conversationId, messages.length, markAsRead]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
