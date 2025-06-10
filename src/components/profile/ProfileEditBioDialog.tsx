@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -105,28 +105,32 @@ const ProfileEditBioDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[500px] max-h-[85vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Modifier votre profil</DialogTitle>
           <DialogDescription>
             Modifiez votre profil pour qu'il reflète au mieux votre personnalité
           </DialogDescription>
         </DialogHeader>
         
-        <ProfileEditTabs
-          currentTab={currentTab}
-          onTabChange={setCurrentTab}
-          username={username}
-          bio={bio}
-          avatarPreview={avatarPreview}
-          bannerPreview={bannerPreview}
-          onUsernameChange={setUsername}
-          onBioChange={setBio}
-          onAvatarChange={setAvatarPreview}
-          onBannerChange={setBannerPreview}
-        />
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <ScrollArea className="h-full w-full pr-4">
+            <ProfileEditTabs
+              currentTab={currentTab}
+              onTabChange={setCurrentTab}
+              username={username}
+              bio={bio}
+              avatarPreview={avatarPreview}
+              bannerPreview={bannerPreview}
+              onUsernameChange={setUsername}
+              onBioChange={setBio}
+              onAvatarChange={setAvatarPreview}
+              onBannerChange={setBannerPreview}
+            />
+          </ScrollArea>
+        </div>
 
-        <DialogFooter className="mt-6">
+        <DialogFooter className="flex-shrink-0 mt-4">
           <Button 
             variant="outline" 
             onClick={() => onOpenChange(false)}
