@@ -4,10 +4,11 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
-import { Bell, CheckCheck, Trash2 } from 'lucide-react';
+import { Bell, CheckCheck, Trash2, Settings } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from "@tanstack/react-query";
 import { useNotificationActions } from '@/hooks/notifications/useNotificationActions';
+import { Separator } from "@/components/ui/separator";
 
 interface NotificationTabProps {
   user: any;
@@ -98,19 +99,18 @@ const NotificationTab = ({ user, isActive }: NotificationTabProps) => {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      {/* Section Newsletter */}
+      <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <Bell size={20} />
-          <h4 className="font-medium">Préférences de communication</h4>
+          <Bell className="h-5 w-5 text-airsoft-red" />
+          <h4 className="font-semibold text-lg">Préférences de communication</h4>
         </div>
-      </div>
-      
-      <div className="mt-4 space-y-4">
-        <div className="flex flex-row items-center justify-between rounded-lg border p-3">
-          <div>
-            <Label className="text-base">Newsletter</Label>
-            <p className="text-xs text-muted-foreground">
+        
+        <div className="flex flex-row items-center justify-between rounded-lg border p-4 bg-gray-50/50">
+          <div className="space-y-1">
+            <Label className="text-base font-medium">Newsletter</Label>
+            <p className="text-sm text-muted-foreground">
               Recevez nos actualités et événements par email
             </p>
           </div>
@@ -120,32 +120,47 @@ const NotificationTab = ({ user, isActive }: NotificationTabProps) => {
             disabled={isUpdating}
           />
         </div>
+      </div>
 
-        <div className="space-y-2">
-          <h5 className="font-medium text-sm">Gestion des notifications</h5>
-          <div className="flex flex-col gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleMarkAllAsReadClick}
-              className="justify-start"
-            >
-              <CheckCheck className="mr-2 h-4 w-4" />
-              Tout marquer comme lu
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDeleteAllReadClick}
-              className="justify-start text-red-600 hover:text-red-700"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Supprimer les notifications lues
-            </Button>
+      <Separator />
+
+      {/* Section Gestion des notifications */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Settings className="h-5 w-5 text-airsoft-red" />
+          <h4 className="font-semibold text-lg">Gestion des notifications</h4>
+        </div>
+        
+        <div className="space-y-3">
+          <Button
+            variant="outline"
+            onClick={handleMarkAllAsReadClick}
+            className="w-full justify-start h-12 text-left"
+          >
+            <CheckCheck className="mr-3 h-5 w-5 text-green-600" />
+            <div>
+              <div className="font-medium">Tout marquer comme lu</div>
+              <div className="text-sm text-muted-foreground">Marquer toutes les notifications comme lues</div>
+            </div>
+          </Button>
+          
+          <Button
+            variant="outline"
+            onClick={handleDeleteAllReadClick}
+            className="w-full justify-start h-12 text-left hover:bg-red-50 hover:border-red-200"
+          >
+            <Trash2 className="mr-3 h-5 w-5 text-red-600" />
+            <div>
+              <div className="font-medium text-red-600">Supprimer les notifications lues</div>
+              <div className="text-sm text-muted-foreground">Effacer définitivement les notifications déjà lues</div>
+            </div>
+          </Button>
+          
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p className="text-sm text-blue-800">
+              <strong>Note :</strong> Les demandes d'amis et d'équipe en attente ne seront pas supprimées
+            </p>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Les demandes d'amis et d'équipe en attente ne seront pas supprimées
-          </p>
         </div>
       </div>
     </div>
