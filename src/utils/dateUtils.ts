@@ -31,8 +31,8 @@ export const formatGameDateRange = (startDate: string, startTime?: string, endTi
     // Partie sur un seul jour
     return format(start, 'dd MMMM yyyy', { locale: fr });
   } else {
-    // Partie sur plusieurs jours
-    const formattedStart = format(start, 'dd MMMM', { locale: fr });
+    // Partie sur plusieurs jours - afficher les deux dates complètes séparées par un tiret
+    const formattedStart = format(start, 'dd MMMM yyyy', { locale: fr });
     const formattedEnd = format(endDate, 'dd MMMM yyyy', { locale: fr });
     return `${formattedStart} - ${formattedEnd}`;
   }
