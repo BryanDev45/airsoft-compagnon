@@ -13,9 +13,8 @@ const gameFormSchema = z.object({
   title: z.string().min(5, "Le titre doit comporter au moins 5 caractères"),
   description: z.string().min(20, "La description doit comporter au moins 20 caractères"),
   rules: z.string().min(10, "Les règles doivent comporter au moins 10 caractères"),
-  date: z.string().min(1, "La date est requise"),
-  startTime: z.string().min(1, "L'heure de début est requise"),
-  endTime: z.string().min(1, "L'heure de fin est requise"),
+  startDateTime: z.date({ required_error: "La date et heure de début sont requises" }),
+  endDateTime: z.date({ required_error: "La date et heure de fin sont requises" }),
   address: z.string().min(5, "L'adresse doit comporter au moins 5 caractères"),
   city: z.string().min(2, "La ville est requise"),
   zipCode: z.string().min(5, "Le code postal est requis"),
@@ -63,9 +62,8 @@ export const useGameEdit = (gameId: string | undefined) => {
       title: "",
       description: "",
       rules: "",
-      date: "",
-      startTime: "",
-      endTime: "",
+      startDateTime: new Date(),
+      endDateTime: new Date(),
       address: "",
       city: "",
       zipCode: "",
@@ -174,14 +172,22 @@ export const useGameEdit = (gameId: string | undefined) => {
         setCanEdit(true);
         setGameData(game);
 
+        // Créer les objets Date à partir des données séparées
+        const startDateTime = new Date(`${game.date}T${game.start_time}`);
+        const endDateTime = new Date(`${game.date}T${game.end_time}`);
+        
+        // Si l'heure de fin est antérieure à l'heure de début, la partie se termine le jour suivant
+        if (endDateTime < startDateTime) {
+          endDateTime.setDate(endDateTime.getDate() + 1);
+        }
+
         // Initialize form values
         form.reset({
           title: game.title,
           description: game.description,
           rules: game.rules,
-          date: game.date,
-          startTime: game.start_time,
-          endTime: game.end_time,
+          startDateTime: startDateTime,
+          endDateTime: endDateTime,
           address: game.address,
           city: game.city,
           zipCode: game.zip_code,
@@ -288,14 +294,19 @@ export const useGameEdit = (gameId: string | undefined) => {
 
     setSaving(true);
     try {
+      // Extraire les données de date et heure des objets Date
+      const startDate = data.startDateTime.toISOString().split('T')[0]; // Format YYYY-MM-DD
+      const startTime = data.startDateTime.toTimeString().split(' ')[0]; // Format HH:MM:SS
+      const endTime = data.endDateTime.toTimeString().split(' ')[0]; // Format HH:MM:SS
+
       // Prepare game data for update
       const updateData: any = {
         title: data.title,
         description: data.description,
         rules: data.rules,
-        date: data.date,
-        start_time: data.startTime,
-        end_time: data.endTime,
+        date: startDate,
+        start_time: startTime,
+        end_time: endTime,
         address: data.address,
         city: data.city,
         zip_code: data.zipCode,
