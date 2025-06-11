@@ -51,3 +51,23 @@ export const formatGameTimeRange = (startTime: string, endTime: string): string 
   
   return `${formatTime(startTime)} - ${formatTime(endTime)}`;
 };
+
+/**
+ * Formate une date simple avec affichage conditionnel de la date de fin
+ * Utilisé pour les tuiles de recherche et profils
+ */
+export const formatGameDate = (startDate: string, endDate?: string): string => {
+  const start = new Date(startDate);
+  const end = endDate ? new Date(endDate) : null;
+  
+  const startFormatted = format(start, 'dd/MM/yyyy', { locale: fr });
+  
+  // Si pas de date de fin ou même date, afficher seulement la date de début
+  if (!end || format(start, 'yyyy-MM-dd') === format(end, 'yyyy-MM-dd')) {
+    return startFormatted;
+  }
+  
+  // Si dates différentes, afficher la plage
+  const endFormatted = format(end, 'dd/MM/yyyy', { locale: fr });
+  return `${startFormatted} - ${endFormatted}`;
+};

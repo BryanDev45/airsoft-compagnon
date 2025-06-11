@@ -35,6 +35,7 @@ export const useGamesData = (userId?: string) => {
         title: game.title,
         // Stocker la date brute pour les calculs
         date: game.date, // Format ISO YYYY-MM-DD
+        endDate: game.end_date, // Ajouter la date de fin
         location: `${game.city}`,
         department: game.zip_code ? game.zip_code.substring(0, 2) : '',
         type: game.game_type,

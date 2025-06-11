@@ -1,16 +1,15 @@
 
 import React, { useState } from 'react';
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Share2, Calendar, Clock, MapPin, Users, Check, Edit, Trash2 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { formatGameDateRange, formatGameTimeRange } from '@/utils/dateUtils';
+import GameHeaderBadges from './GameHeaderBadges';
+import GameHeaderInfo from './GameHeaderInfo';
+import GameHeaderActions from './GameHeaderActions';
 
 interface GameHeaderProps {
   title: string;
   gameType: string;
   date: string;
-  endDate?: string; // Nouvelle prop pour la date de fin
+  endDate?: string;
   startTime: string;
   endTime: string;
   address: string;
@@ -55,119 +54,51 @@ const GameHeader: React.FC<GameHeaderProps> = ({
 }) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  // Format date range and time range using utility functions with the new endDate parameter
-  const formattedDateRange = formatGameDateRange(date, startTime, endTime, endDate);
-  const formattedTimeRange = formatGameTimeRange(startTime, endTime);
-
-  // Show edit/delete buttons if user is creator OR admin (but not for past games)
   const canEditOrDelete = (isCreator || isAdmin) && !isPastGame;
+
+  const handleDelete = () => {
+    if (onDelete) onDelete();
+    setShowDeleteDialog(false);
+  };
 
   return (
     <div className="bg-gradient-to-r from-airsoft-dark to-[#1A1F2C] text-white py-8 shadow-md">
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2 text-sm">
-              <Badge variant="outline" className="border-white text-white bg-black/20 backdrop-blur-sm">
-                {gameType === "dominicale" ? "Partie Dominicale" : gameType}
-              </Badge>
-              <Badge className={`${!isPastGame ? 'bg-airsoft-red' : 'bg-gray-600'}`}>
-                {!isPastGame ? "À venir" : "Terminé"}
-              </Badge>
-              {isAdmin && !isCreator && (
-                <Badge variant="outline" className="border-yellow-400 text-yellow-400 bg-yellow-400/10">
-                  Admin
-                </Badge>
-              )}
-            </div>
+            <GameHeaderBadges 
+              gameType={gameType}
+              isPastGame={isPastGame}
+              isAdmin={isAdmin}
+              isCreator={isCreator}
+            />
             <h1 className="text-3xl font-bold">{title}</h1>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm text-gray-200 mt-2">
-              <div className="flex items-center gap-2">
-                <Calendar size={16} className="text-airsoft-red" />
-                <span>{formattedDateRange}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock size={16} className="text-airsoft-red" />
-                <span>{formattedTimeRange}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin size={16} className="text-airsoft-red" />
-                <span className="truncate">{address}, {zipCode} {city}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Users size={16} className="text-airsoft-red" />
-                <span>
-                  <span className="font-medium">{participantsCount}</span>
-                  <span className="text-gray-300">/{maxPlayers}</span> participants
-                </span>
-              </div>
-            </div>
+            <GameHeaderInfo 
+              date={date}
+              endDate={endDate}
+              startTime={startTime}
+              endTime={endTime}
+              address={address}
+              zipCode={zipCode}
+              city={city}
+              participantsCount={participantsCount}
+              maxPlayers={maxPlayers}
+            />
           </div>
 
-          <div className="flex flex-wrap gap-2 mt-4 md:mt-0 md:flex-col lg:flex-row">
-            <div className="flex gap-2">
-              {canEditOrDelete && (
-                <>
-                  {onDelete && (
-                    <Button
-                      variant="outline"
-                      className="bg-red-600 text-white border-red-500 hover:bg-red-700 hover:text-white"
-                      onClick={() => setShowDeleteDialog(true)}
-                    >
-                      <Trash2 size={16} className="mr-2" />
-                      Supprimer
-                    </Button>
-                  )}
-                  {onEdit && (
-                    <Button
-                      variant="outline"
-                      className="bg-blue-600 text-white border-white hover:bg-white hover:text-blue-600"
-                      onClick={onEdit}
-                    >
-                      <Edit size={16} className="mr-2" />
-                      Modifier
-                    </Button>
-                  )}
-                </>
-              )}
-            </div>
-            <div className="flex gap-2 w-full sm:w-auto">
-              <Button
-                variant="outline"
-                className="bg-airsoft-red text-white border-white hover:bg-white hover:text-airsoft-dark"
-                onClick={onShare}
-              >
-                <Share2 size={16} className="mr-2" />
-                Partager
-              </Button>
-              <Button
-                className={`${
-                  isRegistered
-                    ? 'bg-green-600 hover:bg-green-700'
-                    : 'bg-airsoft-red hover:bg-red-700'
-                } flex-grow sm:flex-grow-0`}
-                onClick={onRegister}
-                disabled={
-                  loadingRegistration ||
-                  (maxPlayers <= participantsCount && !isRegistered) ||
-                  isPastGame
-                }
-              >
-                {loadingRegistration ? (
-                  <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite] mr-2"></div>
-                ) : isRegistered ? (
-                  <>
-                    <Check size={16} className="mr-2" />
-                    Inscrit
-                  </>
-                ) : isPastGame ? (
-                  <>Partie terminée</>
-                ) : (
-                  <>S'inscrire {price ? `- ${price}€` : ''}</>
-                )}
-              </Button>
-            </div>
-          </div>
+          <GameHeaderActions 
+            canEditOrDelete={canEditOrDelete}
+            isRegistered={isRegistered}
+            loadingRegistration={loadingRegistration}
+            isPastGame={isPastGame}
+            maxPlayers={maxPlayers}
+            participantsCount={participantsCount}
+            price={price}
+            onEdit={onEdit}
+            onDelete={() => setShowDeleteDialog(true)}
+            onShare={onShare}
+            onRegister={onRegister}
+          />
         </div>
       </div>
 
@@ -187,10 +118,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
-                if (onDelete) onDelete();
-                setShowDeleteDialog(false);
-              }}
+              onClick={handleDelete}
               className="bg-red-600 hover:bg-red-700 text-white"
             >
               Supprimer

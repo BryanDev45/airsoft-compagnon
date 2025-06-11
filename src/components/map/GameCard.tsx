@@ -8,7 +8,7 @@ import { MapEvent } from '@/hooks/useMapData';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import GameImageCarousel from './GameImageCarousel';
-import { formatGameDateRange } from '@/utils/dateUtils';
+import { formatGameDate } from '@/utils/dateUtils';
 
 interface GameCardProps {
   event: MapEvent;
@@ -29,8 +29,8 @@ const GameCard: React.FC<GameCardProps> = ({ event, participantCount }) => {
 
   const maxPlayers = event.maxPlayers || 0;
   
-  // Formater la date en utilisant les nouvelles données
-  const formattedDate = formatGameDateRange(event.date, event.startTime, event.endTime);
+  // Utiliser la nouvelle fonction pour afficher la date avec date de fin conditionnelle
+  const formattedDate = formatGameDate(event.date, event.endDate);
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">

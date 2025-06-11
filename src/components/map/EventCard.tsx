@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import GameImageCarousel from './GameImageCarousel';
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from '@/integrations/supabase/client';
-import { formatGameDateRange } from '@/utils/dateUtils';
+import { formatGameDate } from '@/utils/dateUtils';
 
 interface EventCardProps {
   event: MapEvent;
@@ -43,8 +43,8 @@ const EventCard = ({ event }: EventCardProps) => {
     navigate(`/game/${event.id}`);
   };
 
-  // Formater la date en utilisant les nouvelles données
-  const formattedDate = formatGameDateRange(event.date, event.startTime, event.endTime);
+  // Utiliser la nouvelle fonction pour afficher la date avec date de fin conditionnelle
+  const formattedDate = formatGameDate(event.date, event.endDate);
 
   return (
     <div 
