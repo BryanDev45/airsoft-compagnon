@@ -10,6 +10,7 @@ interface GameHeaderProps {
   title: string;
   gameType: string;
   date: string;
+  endDate?: string; // Nouvelle prop pour la date de fin
   startTime: string;
   endTime: string;
   address: string;
@@ -33,6 +34,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
   title,
   gameType,
   date,
+  endDate,
   startTime,
   endTime,
   address,
@@ -53,8 +55,8 @@ const GameHeader: React.FC<GameHeaderProps> = ({
 }) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  // Format date range and time range using utility functions
-  const formattedDateRange = formatGameDateRange(date, endTime);
+  // Format date range and time range using utility functions with the new endDate parameter
+  const formattedDateRange = formatGameDateRange(date, startTime, endTime, endDate);
   const formattedTimeRange = formatGameTimeRange(startTime, endTime);
 
   // Show edit/delete buttons if user is creator OR admin (but not for past games)

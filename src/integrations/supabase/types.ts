@@ -20,6 +20,7 @@ export type Database = {
           date: string
           description: string
           dmr_fps_max: number | null
+          end_date: string | null
           end_time: string
           eye_protection_required: boolean | null
           full_face_protection_required: boolean | null
@@ -60,6 +61,7 @@ export type Database = {
           date: string
           description: string
           dmr_fps_max?: number | null
+          end_date?: string | null
           end_time: string
           eye_protection_required?: boolean | null
           full_face_protection_required?: boolean | null
@@ -100,6 +102,7 @@ export type Database = {
           date?: string
           description?: string
           dmr_fps_max?: number | null
+          end_date?: string | null
           end_time?: string
           eye_protection_required?: boolean | null
           full_face_protection_required?: boolean | null

@@ -7,6 +7,7 @@ export interface GameData {
   description: string;
   rules: string;
   date: string;
+  end_date?: string; // Nouvelle colonne pour la date de fin
   start_time: string;
   end_time: string;
   address: string;

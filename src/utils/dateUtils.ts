@@ -7,25 +7,26 @@ import { fr } from 'date-fns/locale';
  * Si la partie dure plusieurs jours, affiche "date début - date fin"
  * Sinon, affiche seulement la date de début
  */
-export const formatGameDateRange = (startDate: string, startTime?: string, endTime?: string): string => {
+export const formatGameDateRange = (startDate: string, startTime?: string, endTime?: string, endDate?: string): string => {
   const start = new Date(startDate);
   
   // Calculer la date de fin
-  let endDate = new Date(startDate);
+  let finalEndDate = new Date(endDate || startDate);
   
-  if (startTime && endTime) {
+  // Si on n'a pas de end_date spécifique mais qu'on a les heures
+  if (!endDate && startTime && endTime) {
     const startDateTime = new Date(`${startDate}T${startTime}:00`);
     const endDateTime = new Date(`${startDate}T${endTime}:00`);
     
     // Si l'heure de fin est antérieure à l'heure de début, la partie se termine le jour suivant
     if (endDateTime < startDateTime) {
-      endDate.setDate(endDate.getDate() + 1);
+      finalEndDate.setDate(finalEndDate.getDate() + 1);
     }
   }
   
   // Vérifier si la partie dure plusieurs jours
   const startDateOnly = format(start, 'yyyy-MM-dd');
-  const endDateOnly = format(endDate, 'yyyy-MM-dd');
+  const endDateOnly = format(finalEndDate, 'yyyy-MM-dd');
   
   if (startDateOnly === endDateOnly) {
     // Partie sur un seul jour
@@ -33,7 +34,7 @@ export const formatGameDateRange = (startDate: string, startTime?: string, endTi
   } else {
     // Partie sur plusieurs jours - afficher les deux dates complètes séparées par un tiret
     const formattedStart = format(start, 'dd MMMM yyyy', { locale: fr });
-    const formattedEnd = format(endDate, 'dd MMMM yyyy', { locale: fr });
+    const formattedEnd = format(finalEndDate, 'dd MMMM yyyy', { locale: fr });
     return `${formattedStart} - ${formattedEnd}`;
   }
 };

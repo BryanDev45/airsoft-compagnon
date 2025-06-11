@@ -107,6 +107,7 @@ const GameDetails = () => {
                 title={gameData.title}
                 gameType={gameData.game_type}
                 date={gameData.date}
+                endDate={gameData.end_date} // Passer la nouvelle date de fin
                 startTime={gameData.start_time}
                 endTime={gameData.end_time}
                 address={gameData.address}

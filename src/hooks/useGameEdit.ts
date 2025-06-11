@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "@/components/ui/use-toast";
@@ -174,10 +175,14 @@ export const useGameEdit = (gameId: string | undefined) => {
 
         // Créer les objets Date à partir des données séparées
         const startDateTime = new Date(`${game.date}T${game.start_time}`);
-        const endDateTime = new Date(`${game.date}T${game.end_time}`);
         
-        // Si l'heure de fin est antérieure à l'heure de début, la partie se termine le jour suivant
-        if (endDateTime < startDateTime) {
+        // Utiliser end_date si elle existe, sinon utiliser date + end_time
+        const endDateToUse = game.end_date || game.date;
+        const endDateTime = new Date(`${endDateToUse}T${game.end_time}`);
+        
+        // Si l'heure de fin est antérieure à l'heure de début et qu'on n'a pas de end_date spécifique, 
+        // la partie se termine le jour suivant
+        if (endDateTime < startDateTime && !game.end_date) {
           endDateTime.setDate(endDateTime.getDate() + 1);
         }
 
@@ -296,6 +301,7 @@ export const useGameEdit = (gameId: string | undefined) => {
     try {
       // Extraire les données de date et heure des objets Date
       const startDate = data.startDateTime.toISOString().split('T')[0]; // Format YYYY-MM-DD
+      const endDate = data.endDateTime.toISOString().split('T')[0]; // Format YYYY-MM-DD
       const startTime = data.startDateTime.toTimeString().split(' ')[0]; // Format HH:MM:SS
       const endTime = data.endDateTime.toTimeString().split(' ')[0]; // Format HH:MM:SS
 
@@ -305,6 +311,7 @@ export const useGameEdit = (gameId: string | undefined) => {
         description: data.description,
         rules: data.rules,
         date: startDate,
+        end_date: endDate, // Mise à jour de la date de fin
         start_time: startTime,
         end_time: endTime,
         address: data.address,
