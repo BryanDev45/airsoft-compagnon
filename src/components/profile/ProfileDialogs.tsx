@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -18,10 +19,18 @@ const ProfileDialogs = ({
 }) => {
   // Formatage de la date pour l'affichage en utilisant la fonction formatGameDate
   const formatGameDateDisplay = (game) => {
-    if (!game) return '';
+    if (!game || !game.date) {
+      console.warn('Game object or date is missing:', game);
+      return 'Date non disponible';
+    }
     
-    // Utiliser formatGameDate qui gère automatiquement les plages de dates
-    return formatGameDate(game.date, game.end_date);
+    try {
+      // Utiliser formatGameDate qui gère automatiquement les plages de dates
+      return formatGameDate(game.date, game.end_date);
+    } catch (error) {
+      console.error('Error formatting game date:', error, game);
+      return 'Date invalide';
+    }
   };
   
   // Debug pour voir le contenu de selectedGame
