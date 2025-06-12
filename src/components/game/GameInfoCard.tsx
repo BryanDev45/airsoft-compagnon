@@ -29,7 +29,7 @@ const GameInfoCard: React.FC<GameInfoCardProps> = ({
   onRegister
 }) => {
   // Format date range and time range using utility functions
-  const formattedDateRange = formatGameDateRange(date, endTime);
+  const formattedDateRange = formatGameDateRange(date, startTime, endTime);
   const formattedTimeRange = formatGameTimeRange(startTime, endTime);
   
   // Vérifie si la partie est déjà passée
