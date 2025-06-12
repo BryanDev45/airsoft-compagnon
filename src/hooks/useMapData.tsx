@@ -1,119 +1,78 @@
-import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import { useToast } from '@/components/ui/use-toast';
-import { useAuth } from '@/hooks/useAuth';
-import { useGamesData } from './useGamesData';
-import { useStoresData } from './useStoresData';
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface MapEvent {
   id: string;
   title: string;
-  date: string; // Format ISO YYYY-MM-DD
+  date: string;
+  endDate?: string; // Add this property
   location: string;
   department: string;
   type: string;
   country: string;
   lat: number;
   lng: number;
-  maxPlayers?: number;
+  maxPlayers: number;
   price?: number;
-  image?: string;
+  startTime: string;
+  endTime: string;
   images?: string[];
-  startTime?: string; // Format HH:MM
-  endTime?: string; // Format HH:MM
 }
 
-export interface MapStore {
-  id: string;
-  name: string;
-  address: string;
-  city: string;
-  zip_code: string;
-  phone?: string;
-  email?: string;
-  website?: string;
-  lat: number;
-  lng: number;
-  store_type: string;
-  image?: string;
-  picture2?: string;
-  picture3?: string;
-  picture4?: string;
-  picture5?: string;
-}
-
-export function useMapData() {
-  const { toast } = useToast();
-  const { user } = useAuth();
-  const location = useLocation();
-
-  // Toujours charger les données, même sans authentification
-  // Si l'utilisateur est connecté, passer son ID pour voir aussi ses parties privées
-  // Sinon, passer undefined pour voir seulement les parties publiques
-  const userId = user?.id;
-  
-  console.log('useMapData - Current user:', user ? 'authenticated' : 'anonymous');
-  console.log('useMapData - User ID being passed:', userId);
-  
-  const { 
-    data: events = [], 
-    isLoading: eventsLoading, 
-    error: eventsError, 
-    refetch: refetchEvents 
-  } = useGamesData(userId);
-
-  const { 
-    data: stores = [], 
-    isLoading: storesLoading, 
-    error: storesError, 
-    refetch: refetchStores 
-  } = useStoresData();
-
-  // Handle errors (mais pas les erreurs de réseau temporaires)
-  useEffect(() => {
-    if (eventsError && eventsError.message !== "Failed to fetch" && !eventsError.message?.includes('network')) {
-      console.error('Events error:', eventsError);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les parties",
-        variant: "destructive" 
-      });
-    }
-    
-    if (storesError && storesError.message !== "Failed to fetch" && !storesError.message?.includes('network')) {
-      console.error('Stores error:', storesError);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les magasins",
-        variant: "destructive" 
-      });
-    }
-  }, [eventsError, storesError, toast]);
-
-  // Refetch data when navigating to /parties page
-  useEffect(() => {
-    if (location.pathname === '/parties') {
-      console.log('Refetching data for /parties page');
-      refetchEvents();
-      refetchStores();
-    }
-  }, [location.pathname, refetchEvents, refetchStores]);
-
-  const loading = eventsLoading || storesLoading;
-  const error = eventsError || storesError;
-
-  console.log('useMapData - Events loaded:', events.length);
-  console.log('useMapData - Loading state:', loading);
-  console.log('useMapData - Error state:', error);
-
-  return { 
-    loading, 
-    events, 
-    stores,
-    error, 
-    refetch: () => {
-      refetchEvents();
-      refetchStores();
-    }
-  };
-}
+export const useMapData = (userId?: string) => {
+  return useQuery({
+    queryKey: ['games', userId],
+    queryFn: async (): Promise<MapEvent[]> => {
+      console.log('Fetching games data for user:', userId || 'anonymous');
+      
+      let query = supabase
+        .from('airsoft_games')
+        .select('*');
+      
+      if (userId) {
+        // Si l'utilisateur est connecté, récupérer toutes les parties publiques + ses parties privées
+        query = query.or(`is_private.eq.false,and(is_private.eq.true,created_by.eq.${userId})`);
+      } else {
+        // Si pas connecté, récupérer seulement les parties publiques
+        query = query.eq('is_private', false);
+      }
+      
+      const { data: games, error } = await query.order('date', { ascending: true });
+      
+      if (error) {
+        console.error('Error fetching games:', error);
+        throw error;
+      }
+      
+      console.log(`Fetched ${games?.length || 0} games`);
+      
+      return (games || []).map(game => ({
+        id: game.id,
+        title: game.title,
+        // Stocker la date brute pour les calculs
+        date: game.date, // Format ISO YYYY-MM-DD
+        endDate: game.end_date, // Ajouter la date de fin
+        location: `${game.city}`,
+        department: game.zip_code ? game.zip_code.substring(0, 2) : '',
+        type: game.game_type,
+        country: 'France',
+        lat: game.latitude || 0,
+        lng: game.longitude || 0,
+        maxPlayers: game.max_players,
+        price: game.price,
+        // Ajouter les heures de début et fin pour les calculs
+        startTime: game.start_time,
+        endTime: game.end_time,
+        images: [
+          game.Picture1,
+          game.Picture2,
+          game.Picture3,
+          game.Picture4,
+          game.Picture5
+        ].filter(Boolean)
+      }));
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
+  });
+};

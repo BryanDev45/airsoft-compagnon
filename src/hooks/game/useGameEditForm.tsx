@@ -2,6 +2,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useEffect } from "react";
 import { GameData } from '@/types/game';
 
 // Form schema definition
@@ -75,46 +76,48 @@ export const useGameEditForm = (gameData: GameData | null) => {
     }
   });
 
-  // Initialize form when gameData is loaded
-  if (gameData) {
-    const startDateTime = new Date(`${gameData.date}T${gameData.start_time}`);
-    const endDateToUse = gameData.end_date || gameData.date;
-    const endDateTime = new Date(`${endDateToUse}T${gameData.end_time}`);
-    
-    if (endDateTime < startDateTime && !gameData.end_date) {
-      endDateTime.setDate(endDateTime.getDate() + 1);
-    }
+  // Initialize form when gameData is loaded - use useEffect to prevent infinite re-renders
+  useEffect(() => {
+    if (gameData) {
+      const startDateTime = new Date(`${gameData.date}T${gameData.start_time}`);
+      const endDateToUse = gameData.end_date || gameData.date;
+      const endDateTime = new Date(`${endDateToUse}T${gameData.end_time}`);
+      
+      if (endDateTime < startDateTime && !gameData.end_date) {
+        endDateTime.setDate(endDateTime.getDate() + 1);
+      }
 
-    form.reset({
-      title: gameData.title,
-      description: gameData.description,
-      rules: gameData.rules,
-      startDateTime: startDateTime,
-      endDateTime: endDateTime,
-      address: gameData.address,
-      city: gameData.city,
-      zipCode: gameData.zip_code,
-      maxPlayers: gameData.max_players.toString(),
-      price: gameData.price ? gameData.price.toString() : "5",
-      gameType: gameData.game_type,
-      manualValidation: gameData.manual_validation,
-      hasToilets: gameData.has_toilets,
-      hasParking: gameData.has_parking,
-      hasEquipmentRental: gameData.has_equipment_rental,
-      aeg_fps_min: gameData.aeg_fps_min ? gameData.aeg_fps_min.toString() : "280",
-      aeg_fps_max: gameData.aeg_fps_max ? gameData.aeg_fps_max.toString() : "350",
-      dmr_fps_max: gameData.dmr_fps_max ? gameData.dmr_fps_max.toString() : "450",
-      eyeProtectionRequired: gameData.eye_protection_required,
-      fullFaceProtectionRequired: gameData.full_face_protection_required,
-      hpaAllowed: gameData.hpa_allowed,
-      polarStarAllowed: gameData.polarstar_allowed,
-      tracersAllowed: gameData.tracers_allowed,
-      grenadesAllowed: gameData.grenades_allowed,
-      smokesAllowed: gameData.smokes_allowed,
-      pyroAllowed: gameData.pyro_allowed,
-      isPrivate: gameData.is_private
-    });
-  }
+      form.reset({
+        title: gameData.title,
+        description: gameData.description,
+        rules: gameData.rules,
+        startDateTime: startDateTime,
+        endDateTime: endDateTime,
+        address: gameData.address,
+        city: gameData.city,
+        zipCode: gameData.zip_code,
+        maxPlayers: gameData.max_players.toString(),
+        price: gameData.price ? gameData.price.toString() : "5",
+        gameType: gameData.game_type,
+        manualValidation: gameData.manual_validation,
+        hasToilets: gameData.has_toilets,
+        hasParking: gameData.has_parking,
+        hasEquipmentRental: gameData.has_equipment_rental,
+        aeg_fps_min: gameData.aeg_fps_min ? gameData.aeg_fps_min.toString() : "280",
+        aeg_fps_max: gameData.aeg_fps_max ? gameData.aeg_fps_max.toString() : "350",
+        dmr_fps_max: gameData.dmr_fps_max ? gameData.dmr_fps_max.toString() : "450",
+        eyeProtectionRequired: gameData.eye_protection_required,
+        fullFaceProtectionRequired: gameData.full_face_protection_required,
+        hpaAllowed: gameData.hpa_allowed,
+        polarStarAllowed: gameData.polarstar_allowed,
+        tracersAllowed: gameData.tracers_allowed,
+        grenadesAllowed: gameData.grenades_allowed,
+        smokesAllowed: gameData.smokes_allowed,
+        pyroAllowed: gameData.pyro_allowed,
+        isPrivate: gameData.is_private
+      });
+    }
+  }, [gameData, form]);
 
   return { form };
 };

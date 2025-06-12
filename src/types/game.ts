@@ -7,54 +7,49 @@ export interface GameData {
   description: string;
   rules: string;
   date: string;
-  end_date?: string; // Nouvelle colonne pour la date de fin
+  end_date?: string;
   start_time: string;
   end_time: string;
   address: string;
   city: string;
   zip_code: string;
   max_players: number;
-  price: number | null;
+  price?: number;
   game_type: string;
-  created_by: string;
+  manual_validation: boolean;
+  has_toilets: boolean;
+  has_parking: boolean;
+  has_equipment_rental: boolean;
+  aeg_fps_min?: number;
+  aeg_fps_max?: number;
+  dmr_fps_max?: number;
+  eye_protection_required: boolean;
+  full_face_protection_required: boolean;
+  hpa_allowed: boolean;
+  polarstar_allowed: boolean;
+  tracers_allowed: boolean;
+  grenades_allowed: boolean;
+  smokes_allowed: boolean;
+  pyro_allowed: boolean;
+  is_private: boolean;
   latitude?: number;
   longitude?: number;
+  created_at: string;
+  created_by: string;
   Picture1?: string;
   Picture2?: string;
   Picture3?: string;
   Picture4?: string;
   Picture5?: string;
-  aeg_fps_min?: number;
-  aeg_fps_max?: number;
-  dmr_fps_max?: number;
-  eye_protection_required?: boolean;
-  full_face_protection_required?: boolean;
-  has_toilets?: boolean;
-  has_parking?: boolean;
-  has_equipment_rental?: boolean;
-  manual_validation?: boolean;
-  is_private?: boolean;
-  creator?: Profile | null;
+  creator?: Profile;
 }
 
 export interface GameParticipant {
   id: string;
   game_id: string;
   user_id: string;
-  role?: string;
-  status?: string;
-  profile: Profile | null;
-}
-
-export interface GameComment {
-  id: string;
-  content: string;
+  status: string;
+  role: string;
   created_at: string;
-  game_id: string;
-  user_id: string;
-  profile?: Profile | null;
-  user?: {
-    username: string;
-    avatar: string;
-  };
+  profile: Profile | null;
 }
