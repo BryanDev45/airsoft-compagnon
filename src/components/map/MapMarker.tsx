@@ -7,7 +7,7 @@ import { MapEvent } from '@/hooks/useMapData';
 import GameImageCarousel from './GameImageCarousel';
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from '@/integrations/supabase/client';
-import { formatGameDateRange } from '@/utils/dateUtils';
+import { formatGameDate } from '@/utils/dateUtils';
 
 interface MapMarkerProps {
   event: MapEvent;
@@ -41,8 +41,8 @@ const MapMarker: React.FC<MapMarkerProps> = ({ event, onClose }) => {
     navigate(`/game/${event.id}`);
   };
 
-  // Formater la date en utilisant les nouvelles données
-  const formattedDate = formatGameDateRange(event.date, event.startTime, event.endTime);
+  // Formater la date en utilisant formatGameDate qui gère déjà les dates de fin
+  const formattedDate = formatGameDate(event.date, event.endDate);
 
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden max-w-md w-[400px] border border-gray-200">
