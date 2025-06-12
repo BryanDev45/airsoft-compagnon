@@ -107,7 +107,7 @@ const GameDetails = () => {
                 title={gameData.title}
                 gameType={gameData.game_type}
                 date={gameData.date}
-                endDate={gameData.end_date} // Passer la nouvelle date de fin
+                endDate={gameData.end_date}
                 startTime={gameData.start_time}
                 endTime={gameData.end_time}
                 address={gameData.address}
@@ -115,7 +115,7 @@ const GameDetails = () => {
                 city={gameData.city}
                 participantsCount={participants.length}
                 maxPlayers={gameData.max_players}
-                price={gameData.price}
+                price={gameData.price || null}
                 isRegistered={isRegistered}
                 loadingRegistration={loadingRegistration}
                 onRegister={() => handleRegistration(isRegistered)}

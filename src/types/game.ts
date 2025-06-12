@@ -53,3 +53,12 @@ export interface GameParticipant {
   created_at: string;
   profile: Profile | null;
 }
+
+export interface GameComment {
+  id: string;
+  user_id: string;
+  game_id: string;
+  content: string;
+  created_at: string;
+  profile: Profile | null;
+}

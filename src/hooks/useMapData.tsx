@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -5,7 +6,7 @@ export interface MapEvent {
   id: string;
   title: string;
   date: string;
-  endDate?: string; // Add this property
+  endDate?: string;
   location: string;
   department: string;
   type: string;
@@ -17,6 +18,25 @@ export interface MapEvent {
   startTime: string;
   endTime: string;
   images?: string[];
+}
+
+export interface MapStore {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  zip_code: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+  lat: number;
+  lng: number;
+  store_type: string;
+  image?: string;
+  picture2?: string;
+  picture3?: string;
+  picture4?: string;
+  picture5?: string;
 }
 
 export const useMapData = (userId?: string) => {

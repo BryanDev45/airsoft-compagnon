@@ -13,7 +13,7 @@ import { Button } from './ui/button';
 
 const MapSection: React.FC = () => {
   const { user } = useAuth();
-  const { loading: eventsLoading, events, error: eventsError } = useMapData();
+  const { data: events = [], isLoading: eventsLoading, error: eventsError } = useMapData(user?.id);
   
   console.log('MapSection - User:', user ? 'authenticated' : 'anonymous');
   console.log('MapSection - Events loaded:', events.length);
