@@ -1,10 +1,8 @@
-
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { formatGameDate } from '@/utils/dateUtils';
 import { Calendar, Clock, MapPin, Users, Euro } from 'lucide-react';
 
 const ProfileDialogs = ({ 
@@ -18,19 +16,12 @@ const ProfileDialogs = ({
   handleNavigateToGame,
   user
 }) => {
-  // Formatage de la date pour l'affichage
-  const formatGameDate = (dateString) => {
-    if (!dateString) return '';
+  // Formatage de la date pour l'affichage en utilisant la fonction formatGameDate
+  const formatGameDateDisplay = (game) => {
+    if (!game) return '';
     
-    // Si dateString est déjà formaté comme "dd/mm/yyyy", on le laisse tel quel
-    if (dateString.includes('/')) return dateString;
-    
-    try {
-      return format(new Date(dateString), 'dd/MM/yyyy', { locale: fr });
-    } catch (e) {
-      console.error("Erreur de formatage de date:", e);
-      return dateString;
-    }
+    // Utiliser formatGameDate qui gère automatiquement les plages de dates
+    return formatGameDate(game.date, game.end_date);
   };
   
   // Debug pour voir le contenu de selectedGame
@@ -52,7 +43,7 @@ const ProfileDialogs = ({
               <div className="grid grid-cols-1 gap-4 bg-white rounded-lg p-4 shadow-sm border border-gray-100">
                 <div className="flex items-center gap-2 text-gray-700">
                   <Calendar className="text-airsoft-red flex-shrink-0" size={18} />
-                  <span className="font-medium">{formatGameDate(selectedGame.date)}</span>
+                  <span className="font-medium">{formatGameDateDisplay(selectedGame)}</span>
                 </div>
                 
                 {selectedGame.time && (
