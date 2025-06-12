@@ -19,17 +19,34 @@ const ProfileDialogs = ({
 }) => {
   // Formatage de la date pour l'affichage en utilisant la fonction formatGameDate
   const formatGameDateDisplay = (game) => {
-    if (!game || !game.date) {
-      console.warn('Game object or date is missing:', game);
+    if (!game) {
+      console.warn('Game object is missing:', game);
+      return 'Date non disponible';
+    }
+    
+    // Debug pour voir les propriétés disponibles
+    console.log('Game object properties:', Object.keys(game));
+    console.log('Game date values:', {
+      date: game.date,
+      end_date: game.end_date,
+      endDate: game.endDate
+    });
+    
+    // Essayer différentes propriétés de date qui peuvent exister
+    const startDate = game.date || game.startDate || game.game_date;
+    const endDate = game.end_date || game.endDate;
+    
+    if (!startDate) {
+      console.warn('No valid start date found in game object:', game);
       return 'Date non disponible';
     }
     
     try {
       // Utiliser formatGameDate qui gère automatiquement les plages de dates
-      return formatGameDate(game.date, game.end_date);
+      return formatGameDate(startDate, endDate);
     } catch (error) {
-      console.error('Error formatting game date:', error, game);
-      return 'Date invalide';
+      console.error('Error formatting game date:', error, { startDate, endDate, game });
+      return 'Date non disponible';
     }
   };
   
