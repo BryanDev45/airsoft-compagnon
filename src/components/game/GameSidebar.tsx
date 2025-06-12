@@ -5,7 +5,7 @@ import GameLocationCard from './GameLocationCard';
 
 interface GameSidebarProps {
   gameData: {
-    price: number;
+    price?: number;
     date: string;
     start_time: string;
     end_time: string;
@@ -32,7 +32,7 @@ const GameSidebar: React.FC<GameSidebarProps> = ({
   return (
     <div className="space-y-6">
       <GameInfoCard
-        price={gameData.price}
+        price={gameData.price || null}
         date={gameData.date}
         startTime={gameData.start_time}
         endTime={gameData.end_time}
