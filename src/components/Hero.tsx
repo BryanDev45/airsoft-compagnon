@@ -16,6 +16,13 @@ const Hero = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-black to-transparent opacity-50"></div>
       </div>
       
+      {/* Bordure rouge en forme de pointe */}
+      <div className="absolute bottom-0 left-0 w-full h-4 z-20 pointer-events-none">
+        <div className="w-full h-full bg-airsoft-red" style={{
+          clipPath: 'polygon(0 0, 100% 0, 100% 0%, 50% 100%, 0 0%)'
+        }}></div>
+      </div>
+      
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-6 lg:py-12 md:py-[60px]">
         <div className="max-w-3xl mx-auto text-center">
           <div className="mb-8">
