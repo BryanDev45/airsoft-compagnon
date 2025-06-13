@@ -117,10 +117,10 @@ const DepartmentFilter: React.FC<DepartmentFilterProps> = ({
         <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
           <SelectValue placeholder="Tous les départements" />
         </SelectTrigger>
-        <SelectContent className="bg-gray-700 border-gray-600">
-          <SelectItem value="all">Tous les départements</SelectItem>
+        <SelectContent className="bg-gray-700 border-gray-600 text-white">
+          <SelectItem value="all" className="text-white hover:bg-gray-600">Tous les départements</SelectItem>
           {departments.map((dept) => (
-            <SelectItem key={dept.value} value={dept.value}>
+            <SelectItem key={dept.value} value={dept.value} className="text-white hover:bg-gray-600">
               {dept.label}
             </SelectItem>
           ))}

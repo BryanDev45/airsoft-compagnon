@@ -20,10 +20,10 @@ const EventTypeFilter: React.FC<EventTypeFilterProps> = ({
         <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
           <SelectValue placeholder="Tous les types" />
         </SelectTrigger>
-        <SelectContent className="bg-gray-700 border-gray-600">
-          <SelectItem value="all">Tous les types</SelectItem>
-          <SelectItem value="dominicale">Parties dominicales</SelectItem>
-          <SelectItem value="operation">Opérations</SelectItem>
+        <SelectContent className="bg-gray-700 border-gray-600 text-white">
+          <SelectItem value="all" className="text-white hover:bg-gray-600">Tous les types</SelectItem>
+          <SelectItem value="dominicale" className="text-white hover:bg-gray-600">Parties dominicales</SelectItem>
+          <SelectItem value="operation" className="text-white hover:bg-gray-600">Opérations</SelectItem>
         </SelectContent>
       </Select>
     </div>
