@@ -8,6 +8,7 @@ import { formatGameDate, formatGameTimeRange } from '@/utils/dateUtils';
 interface GameInfoCardProps {
   price: number | null;
   date: string;
+  endDate?: string;
   startTime: string;
   endTime: string;
   participantsCount: number;
@@ -20,6 +21,7 @@ interface GameInfoCardProps {
 const GameInfoCard: React.FC<GameInfoCardProps> = ({
   price,
   date,
+  endDate,
   startTime,
   endTime,
   participantsCount,
@@ -28,11 +30,8 @@ const GameInfoCard: React.FC<GameInfoCardProps> = ({
   loadingRegistration,
   onRegister
 }) => {
-  // Récupérer les props du parent qui peuvent inclure end_date
-  const gameData = React.useContext(React.createContext(null));
-  
   // Utiliser formatGameDate qui gère l'affichage conditionnel des plages de dates
-  const formattedDate = formatGameDate(date, gameData?.end_date);
+  const formattedDate = formatGameDate(date, endDate);
   const formattedTimeRange = formatGameTimeRange(startTime, endTime);
   
   // Vérifie si la partie est déjà passée
