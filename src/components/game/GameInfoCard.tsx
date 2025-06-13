@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check } from 'lucide-react';
-import { formatGameDateRange, formatGameTimeRange } from '@/utils/dateUtils';
+import { formatGameDate, formatGameTimeRange } from '@/utils/dateUtils';
 
 interface GameInfoCardProps {
   price: number | null;
@@ -28,8 +28,11 @@ const GameInfoCard: React.FC<GameInfoCardProps> = ({
   loadingRegistration,
   onRegister
 }) => {
-  // Format date range and time range using utility functions
-  const formattedDateRange = formatGameDateRange(date, startTime, endTime);
+  // Récupérer les props du parent qui peuvent inclure end_date
+  const gameData = React.useContext(React.createContext(null));
+  
+  // Utiliser formatGameDate qui gère l'affichage conditionnel des plages de dates
+  const formattedDate = formatGameDate(date, gameData?.end_date);
   const formattedTimeRange = formatGameTimeRange(startTime, endTime);
   
   // Vérifie si la partie est déjà passée
@@ -47,7 +50,7 @@ const GameInfoCard: React.FC<GameInfoCardProps> = ({
           </div>
           <div className="flex justify-between py-2 border-b">
             <span className="text-gray-600">Date</span>
-            <span>{formattedDateRange}</span>
+            <span>{formattedDate}</span>
           </div>
           <div className="flex justify-between py-2 border-b">
             <span className="text-gray-600">Horaires</span>
