@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface FormattedGame {
@@ -14,6 +13,7 @@ export interface FormattedGame {
   role?: string;
   rawDate: string;
   isCreator?: boolean;
+  end_date?: string;
 }
 
 /**
@@ -61,7 +61,7 @@ export const formatParticipatedGame = (gameData: any, participant: any, particip
   return {
     id: gameData.id,
     title: gameData.title,
-    date: gameDate.toLocaleDateString('fr-FR'),
+    date: gameData.date, // Garder la date au format ISO
     time: `${gameData.start_time.slice(0, 5)} - ${gameData.end_time.slice(0, 5)}`,
     location: `${gameData.city}, ${gameData.zip_code}`,
     participants: participantCount,
@@ -70,7 +70,8 @@ export const formatParticipatedGame = (gameData: any, participant: any, particip
     type: gameData.game_type,
     role: participant.role || 'Participant',
     rawDate: gameData.date,
-    isCreator: false
+    isCreator: false,
+    end_date: gameData.end_date
   };
 };
 
@@ -91,7 +92,7 @@ export const formatCreatedGame = (gameData: any, participantCount: number): Form
   return {
     id: gameData.id,
     title: gameData.title,
-    date: gameDate.toLocaleDateString('fr-FR'),
+    date: gameData.date, // Garder la date au format ISO
     time: `${gameData.start_time.slice(0, 5)} - ${gameData.end_time.slice(0, 5)}`,
     location: `${gameData.city}, ${gameData.zip_code}`,
     participants: participantCount,
@@ -100,7 +101,8 @@ export const formatCreatedGame = (gameData: any, participantCount: number): Form
     type: gameData.game_type,
     role: 'Organisateur',
     rawDate: gameData.date,
-    isCreator: true
+    isCreator: true,
+    end_date: gameData.end_date
   };
 };
 

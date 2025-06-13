@@ -24,17 +24,11 @@ const ProfileDialogs = ({
       return 'Date non disponible';
     }
     
-    // Debug pour voir les propriétés disponibles
-    console.log('Game object properties:', Object.keys(game));
-    console.log('Game date values:', {
-      date: game.date,
-      end_date: game.end_date,
-      endDate: game.endDate
-    });
+    console.log('Game object for date formatting:', game);
     
-    // Essayer différentes propriétés de date qui peuvent exister
-    const startDate = game.date || game.startDate || game.game_date;
-    const endDate = game.end_date || game.endDate;
+    // Utiliser la date au format ISO stockée dans game.date et game.end_date
+    const startDate = game.date || game.rawDate;
+    const endDate = game.end_date;
     
     if (!startDate) {
       console.warn('No valid start date found in game object:', game);
