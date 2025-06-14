@@ -150,59 +150,104 @@ const VerificationRequestsTab = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
-                <strong>Document d'identité (recto):</strong>
-                <div className="mt-2">
-                  <a 
-                    href={request.front_id_document} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-blue-600 hover:underline"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    Voir le document recto
-                  </a>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="space-y-2">
+                <strong className="block">Document d'identité (recto):</strong>
+                <div className="border rounded-lg overflow-hidden">
+                  <img 
+                    src={request.front_id_document} 
+                    alt="Document d'identité recto"
+                    className="w-full h-48 object-contain bg-gray-50"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent) {
+                        parent.innerHTML = `
+                          <div class="h-48 flex items-center justify-center bg-gray-100 text-gray-500">
+                            <div class="text-center">
+                              <div class="mb-2">⚠️</div>
+                              <div class="text-sm">Image non disponible</div>
+                              <a href="${request.front_id_document}" target="_blank" class="text-blue-600 hover:underline text-xs">Ouvrir le lien</a>
+                            </div>
+                          </div>
+                        `;
+                      }
+                    }}
+                  />
                 </div>
               </div>
-              <div>
-                <strong>Document d'identité (verso):</strong>
-                <div className="mt-2">
-                  <a 
-                    href={request.back_id_document} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-blue-600 hover:underline"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    Voir le document verso
-                  </a>
+              
+              <div className="space-y-2">
+                <strong className="block">Document d'identité (verso):</strong>
+                <div className="border rounded-lg overflow-hidden">
+                  <img 
+                    src={request.back_id_document} 
+                    alt="Document d'identité verso"
+                    className="w-full h-48 object-contain bg-gray-50"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent) {
+                        parent.innerHTML = `
+                          <div class="h-48 flex items-center justify-center bg-gray-100 text-gray-500">
+                            <div class="text-center">
+                              <div class="mb-2">⚠️</div>
+                              <div class="text-sm">Image non disponible</div>
+                              <a href="${request.back_id_document}" target="_blank" class="text-blue-600 hover:underline text-xs">Ouvrir le lien</a>
+                            </div>
+                          </div>
+                        `;
+                      }
+                    }}
+                  />
                 </div>
               </div>
-              <div>
-                <strong>Photo du visage:</strong>
-                <div className="mt-2">
+
+              <div className="space-y-2">
+                <strong className="block">Photo du visage:</strong>
+                <div className="border rounded-lg overflow-hidden">
                   {request.face_photo ? (
-                    <a 
-                      href={request.face_photo} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-blue-600 hover:underline"
-                    >
-                      <Camera className="h-4 w-4" />
-                      Voir la photo du visage
-                    </a>
+                    <img 
+                      src={request.face_photo} 
+                      alt="Photo du visage"
+                      className="w-full h-48 object-contain bg-gray-50"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        const parent = target.parentElement;
+                        if (parent) {
+                          parent.innerHTML = `
+                            <div class="h-48 flex items-center justify-center bg-gray-100 text-gray-500">
+                              <div class="text-center">
+                                <div class="mb-2">⚠️</div>
+                                <div class="text-sm">Image non disponible</div>
+                                <a href="${request.face_photo}" target="_blank" class="text-blue-600 hover:underline text-xs">Ouvrir le lien</a>
+                              </div>
+                            </div>
+                          `;
+                        }
+                      }}
+                    />
                   ) : (
-                    <span className="text-gray-500 text-sm">Aucune photo du visage</span>
+                    <div className="h-48 flex items-center justify-center bg-gray-100 text-gray-500">
+                      <div className="text-center">
+                        <Camera className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                        <div className="text-sm">Aucune photo du visage</div>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
             </div>
+            
             {request.admin_notes && (
               <div>
                 <strong>Notes admin:</strong> {request.admin_notes}
               </div>
             )}
+            
             {request.status === 'pending' && (
               <div className="flex gap-2">
                 <Button
