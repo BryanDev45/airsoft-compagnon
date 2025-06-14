@@ -55,7 +55,7 @@ const MapSection: React.FC = () => {
         <MapSectionHeader />
         
         <div className="bg-white rounded-lg overflow-hidden shadow-xl mb-8 border border-gray-200">
-          <div className="flex flex-col md:flex-row h-full">
+          <div className="flex flex-col md:flex-row min-h-[600px]">
             <SearchFiltersSidebar
               loading={loading}
               filteredEventsCount={filteredEvents.length}
@@ -78,16 +78,16 @@ const MapSection: React.FC = () => {
               getCurrentPosition={getCurrentPosition}
             />
             
-            <div className="w-full md:w-3/4 h-[600px] relative">
+            <div className="w-full md:w-3/4 flex-1 relative">
               {loading ? (
-                <div className="flex items-center justify-center h-full">
+                <div className="flex items-center justify-center h-full min-h-[600px]">
                   <div className="text-center">
                     <div className="h-12 w-12 border-4 border-airsoft-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                     <p className="text-gray-500">Chargement de la carte...</p>
                   </div>
                 </div>
               ) : error && !events.length ? (
-                <div className="flex items-center justify-center h-full flex-col">
+                <div className="flex items-center justify-center h-full min-h-[600px] flex-col">
                   <div className="text-center">
                     <AlertCircle className="h-12 w-12 text-airsoft-red mx-auto mb-4" />
                     <p className="text-gray-700 mb-3 font-semibold">Impossible de charger les parties</p>
@@ -101,14 +101,16 @@ const MapSection: React.FC = () => {
                   </div>
                 </div>
               ) : filteredEvents.length > 0 ? (
-                <MapComponent 
-                  searchCenter={searchCenter} 
-                  searchRadius={searchRadius[0]} 
-                  filteredEvents={filteredEvents}
-                  stores={[]}
-                />
+                <div className="h-full min-h-[600px]">
+                  <MapComponent 
+                    searchCenter={searchCenter} 
+                    searchRadius={searchRadius[0]} 
+                    filteredEvents={filteredEvents}
+                    stores={[]}
+                  />
+                </div>
               ) : (
-                <div className="flex items-center justify-center h-full">
+                <div className="flex items-center justify-center h-full min-h-[600px]">
                   <div className="text-center">
                     <p className="text-gray-500 text-lg mb-2">
                       {events.length === 0 
