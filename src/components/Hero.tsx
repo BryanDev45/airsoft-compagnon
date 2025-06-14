@@ -16,7 +16,7 @@ const Hero = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-black to-transparent opacity-50"></div>
       </div>
       
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-6 lg:py-12 md:py-[60px]">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 lg:py-16 md:py-[80px]">
         <div className="max-w-3xl mx-auto text-center">
           <div className="mb-8">
             <img src="/lovable-uploads/24d6452d-2439-4baf-b334-41863a1077c5.png" alt="Airsoft Compagnon Logo" className="h-30 md:h-38 mb-6 mx-auto" />
