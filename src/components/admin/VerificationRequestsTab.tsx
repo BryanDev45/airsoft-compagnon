@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -151,7 +150,7 @@ const VerificationRequestsTab = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
                 <strong>Document d'identité (recto):</strong>
                 <div className="mt-2">
@@ -180,10 +179,10 @@ const VerificationRequestsTab = () => {
                   </a>
                 </div>
               </div>
-              {request.face_photo && (
-                <div>
-                  <strong>Photo du visage:</strong>
-                  <div className="mt-2">
+              <div>
+                <strong>Photo du visage:</strong>
+                <div className="mt-2">
+                  {request.face_photo ? (
                     <a 
                       href={request.face_photo} 
                       target="_blank" 
@@ -193,9 +192,11 @@ const VerificationRequestsTab = () => {
                       <Camera className="h-4 w-4" />
                       Voir la photo du visage
                     </a>
-                  </div>
+                  ) : (
+                    <span className="text-gray-500 text-sm">Aucune photo du visage</span>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
             {request.admin_notes && (
               <div>
