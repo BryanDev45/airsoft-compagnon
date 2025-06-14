@@ -24,11 +24,18 @@ export const useNotificationActions = () => {
 
       if (error) throw error;
       
-      // Invalider toutes les queries liées aux notifications
+      // Mise à jour immédiate du cache avec une stratégie optimiste
+      if (user?.id) {
+        const currentCount = queryClient.getQueryData(['unreadNotifications', user.id]) as number || 0;
+        const newCount = Math.max(0, currentCount - 1);
+        queryClient.setQueryData(['unreadNotifications', user.id], newCount);
+      }
+      
+      // Invalider et refetch pour la cohérence
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['unreadNotifications'] });
       
-      // Forcer un refetch immédiat du compteur
+      // Forcer un refetch immédiat du compteur pour vérification
       if (user?.id) {
         queryClient.refetchQueries({ queryKey: ['unreadNotifications', user.id] });
       }
@@ -48,6 +55,9 @@ export const useNotificationActions = () => {
     try {
       if (!user?.id) return;
       
+      // Mise à jour optimiste immédiate du compteur à 0
+      queryClient.setQueryData(['unreadNotifications', user.id], 0);
+      
       const { error } = await supabase
         .from('notifications')
         .update({ read: true })
@@ -56,20 +66,24 @@ export const useNotificationActions = () => {
 
       if (error) throw error;
       
-      // Invalider toutes les queries liées aux notifications
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      queryClient.invalidateQueries({ queryKey: ['unreadNotifications'] });
-      
-      // Forcer un refetch immédiat du compteur
-      queryClient.refetchQueries({ queryKey: ['unreadNotifications', user.id] });
-      
-      // Supprimer le cache local pour forcer le rechargement
+      // Supprimer le cache local immédiatement
       const cacheKey = `notifications_count_${user.id}`;
       localStorage.removeItem(cacheKey);
       
-      console.log("All notifications marked as read, queries invalidated");
+      // Invalider toutes les queries liées aux notifications
+      await queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      await queryClient.invalidateQueries({ queryKey: ['unreadNotifications'] });
+      
+      // Forcer un refetch en arrière-plan pour vérifier la cohérence
+      queryClient.refetchQueries({ queryKey: ['unreadNotifications', user.id] });
+      
+      console.log("All notifications marked as read, immediate cache update applied");
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
+      // En cas d'erreur, restaurer le cache en refetchant
+      if (user?.id) {
+        queryClient.refetchQueries({ queryKey: ['unreadNotifications', user.id] });
+      }
     }
   };
 
@@ -85,6 +99,13 @@ export const useNotificationActions = () => {
       if (error) {
         console.error('Error deleting notification:', error);
         throw error;
+      }
+      
+      // Mise à jour optimiste du compteur
+      if (user?.id) {
+        const currentCount = queryClient.getQueryData(['unreadNotifications', user.id]) as number || 0;
+        const newCount = Math.max(0, currentCount - 1);
+        queryClient.setQueryData(['unreadNotifications', user.id], newCount);
       }
       
       // Invalider toutes les queries liées aux notifications

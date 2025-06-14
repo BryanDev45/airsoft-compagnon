@@ -41,13 +41,13 @@ export function useNotifications() {
     queryKey: ['unreadNotifications', user?.id],
     queryFn: () => fetchNotificationCount(user!.id),
     enabled: !!user?.id,
-    staleTime: 15000, // 15 secondes au lieu de 30
-    gcTime: 1 * 60 * 1000, // 1 minute au lieu de 2
-    refetchInterval: 30000, // Rafraîchir toutes les 30 secondes au lieu de 60
-    refetchOnWindowFocus: true, // Activer le refetch au focus
+    staleTime: 10000, // 10 secondes pour une réactivité maximale
+    gcTime: 30000, // 30 secondes seulement
+    refetchInterval: 20000, // Rafraîchir toutes les 20 secondes
+    refetchOnWindowFocus: true,
   });
 
-  const handleSheetOpenChange = (open: boolean) => {
+  const handleSheetOpenChange = async (open: boolean) => {
     if (!user?.id) return;
 
     if (open) {
@@ -60,15 +60,21 @@ export function useNotifications() {
       const cacheKey = `${NOTIFICATIONS_CACHE_KEY}_${user.id}`;
       localStorage.removeItem(cacheKey);
     } else {
-      // Rafraîchir le compteur à la fermeture du volet
-      console.log("Closing notifications sheet, refreshing count");
-      queryClient.invalidateQueries({ queryKey: ['unreadNotifications', user.id] });
+      // Lors de la fermeture, forcer une mise à jour immédiate du compteur
+      console.log("Closing notifications sheet, forcing immediate count update");
       
-      // Supprimer le cache local aussi
+      // Supprimer le cache local immédiatement
       const cacheKey = `${NOTIFICATIONS_CACHE_KEY}_${user.id}`;
       localStorage.removeItem(cacheKey);
       
-      // Forcer un refetch immédiat
+      // Mise à jour optimiste du cache : définir le compteur à 0
+      queryClient.setQueryData(['unreadNotifications', user.id], 0);
+      
+      // Ensuite, invalider et refetch pour confirmer la valeur réelle
+      await queryClient.invalidateQueries({ queryKey: ['notifications', user.id] });
+      await queryClient.invalidateQueries({ queryKey: ['unreadNotifications', user.id] });
+      
+      // Forcer un refetch immédiat en arrière-plan pour vérifier la cohérence
       queryClient.refetchQueries({ queryKey: ['unreadNotifications', user.id] });
     }
   };
