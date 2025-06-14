@@ -5,8 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, User } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface UserReport {
   id: string;
@@ -25,6 +26,7 @@ interface UserReport {
 
 const UserReportsTab = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ['user-reports'],
@@ -114,6 +116,12 @@ const UserReportsTab = () => {
     return variants[status as keyof typeof variants] || variants.pending;
   };
 
+  const handleViewProfile = (username: string) => {
+    if (username) {
+      navigate(`/user/${username}`);
+    }
+  };
+
   if (isLoading) {
     return <div className="flex justify-center p-8">Chargement des rapports...</div>;
   }
@@ -153,6 +161,22 @@ const UserReportsTab = () => {
                 <strong>Notes admin:</strong> {report.admin_notes}
               </div>
             )}
+            
+            {/* Profile access button */}
+            {report.reported_profile?.username && (
+              <div className="flex items-center gap-2 pt-2 border-t">
+                <Button
+                  onClick={() => handleViewProfile(report.reported_profile?.username || '')}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <User className="h-4 w-4" />
+                  Voir le profil de {report.reported_profile.username}
+                </Button>
+              </div>
+            )}
+            
             {report.status === 'pending' && (
               <div className="flex gap-2">
                 <Button

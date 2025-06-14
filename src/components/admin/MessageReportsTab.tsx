@@ -5,8 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, User } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface MessageReport {
   id: string;
@@ -28,6 +29,7 @@ interface MessageReport {
 
 const MessageReportsTab = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ['message-reports'],
@@ -130,6 +132,12 @@ const MessageReportsTab = () => {
     return variants[status as keyof typeof variants] || variants.pending;
   };
 
+  const handleViewProfile = (username: string) => {
+    if (username) {
+      navigate(`/user/${username}`);
+    }
+  };
+
   if (isLoading) {
     return <div className="flex justify-center p-8">Chargement des rapports...</div>;
   }
@@ -176,6 +184,33 @@ const MessageReportsTab = () => {
                 <strong>Notes admin:</strong> {report.admin_notes}
               </div>
             )}
+            
+            {/* Profile access buttons */}
+            <div className="flex items-center gap-2 pt-2 border-t">
+              {report.reporter_profile?.username && (
+                <Button
+                  onClick={() => handleViewProfile(report.reporter_profile?.username || '')}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <User className="h-4 w-4" />
+                  Profil du rapporteur
+                </Button>
+              )}
+              {report.message?.sender_profile?.username && (
+                <Button
+                  onClick={() => handleViewProfile(report.message.sender_profile?.username || '')}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <User className="h-4 w-4" />
+                  Profil de l'auteur du message
+                </Button>
+              )}
+            </div>
+            
             {report.status === 'pending' && (
               <div className="flex gap-2">
                 <Button
