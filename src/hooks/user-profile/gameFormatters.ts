@@ -14,6 +14,7 @@ export interface FormattedGame {
   rawDate: string;
   isCreator?: boolean;
   end_date?: string;
+  price?: number; // Ajouter le prix
 }
 
 /**
@@ -71,7 +72,8 @@ export const formatParticipatedGame = (gameData: any, participant: any, particip
     role: participant.role || 'Participant',
     rawDate: gameData.date,
     isCreator: false,
-    end_date: gameData.end_date
+    end_date: gameData.end_date,
+    price: gameData.price // Inclure le prix
   };
 };
 
@@ -102,7 +104,8 @@ export const formatCreatedGame = (gameData: any, participantCount: number): Form
     role: 'Organisateur',
     rawDate: gameData.date,
     isCreator: true,
-    end_date: gameData.end_date
+    end_date: gameData.end_date,
+    price: gameData.price // Inclure le prix
   };
 };
 
