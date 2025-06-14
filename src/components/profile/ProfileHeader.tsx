@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -33,8 +34,8 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       </div>
       
       <div className="px-6 pb-4 pt-16 relative">
-        {/* Moved buttons to the top */}
-        {isOwnProfile && <div className="absolute top-4 right-0 flex space-x-2">
+        {/* Moved buttons to the top with adjusted positioning */}
+        {isOwnProfile && <div className="absolute top-4 right-4 flex space-x-2">
             {onEditBio && <Button variant="outline" size="sm" onClick={onEditBio}>
                 <Pencil className="h-4 w-4 mr-2" />
                 Modifier le profil
