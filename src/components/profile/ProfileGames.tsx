@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { formatGameDate } from '@/utils/dateUtils';
 
 interface Game {
   id: string;
@@ -23,6 +24,7 @@ interface Game {
   address?: string;
   city?: string;
   zip_code?: string;
+  end_date?: string;
 }
 
 interface ProfileGamesProps {
@@ -99,7 +101,7 @@ const ProfileGames = ({
                   <h3 className="font-semibold text-left">{game.title}</h3>
                   <div className="flex items-center gap-4 mt-1 text-sm text-gray-600">
                     <span className="flex items-center gap-1">
-                      <Calendar size={14} /> {game.date}
+                      <Calendar size={14} /> {formatGameDate(game.date, game.end_date)}
                     </span>
                     <span className="flex items-center gap-1">
                       <User size={14} /> {game.role || 'Participant'}
