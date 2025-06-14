@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -73,11 +74,11 @@ const MessageReportsTab = () => {
           'content' in report.message
           ? {
               ...report.message,
-              sender_profile: report.message.sender_profile && 
-                typeof report.message.sender_profile === 'object' && 
-                report.message.sender_profile !== null && 
-                'username' in report.message.sender_profile
-                ? report.message.sender_profile as { username: string }
+              sender_profile: (report.message as any).sender_profile && 
+                typeof (report.message as any).sender_profile === 'object' && 
+                (report.message as any).sender_profile !== null && 
+                'username' in (report.message as any).sender_profile
+                ? (report.message as any).sender_profile as { username: string }
                 : null
             }
           : null
