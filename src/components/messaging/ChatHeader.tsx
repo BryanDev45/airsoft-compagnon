@@ -24,19 +24,22 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ conversation, onBack }) => {
 
   const getConversationAvatar = () => {
     if (conversation?.type === 'team') {
-      return null;
+      return null; // Pas d'image pour les équipes
     }
     const otherParticipant = conversation?.participants?.find(p => p.id !== user?.id);
     return otherParticipant?.avatar;
   };
 
-  const getConversationInitials = () => {
+  const renderAvatarContent = () => {
     if (conversation?.type === 'team') {
-      return null; // Nous utiliserons l'icône Users
+      // Pour les conversations d'équipe, afficher l'icône Users
+      return <Users className="h-6 w-6 md:h-7 md:w-7" />;
+    } else {
+      // Pour les conversations directes, afficher les initiales de l'interlocuteur
+      const otherParticipant = conversation?.participants?.find(p => p.id !== user?.id);
+      const displayName = otherParticipant?.username || 'U';
+      return displayName.charAt(0).toUpperCase();
     }
-    const otherParticipant = conversation?.participants?.find(p => p.id !== user?.id);
-    const displayName = otherParticipant?.username || 'U';
-    return displayName.charAt(0).toUpperCase();
   };
 
   return (
@@ -58,11 +61,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ conversation, onBack }) => {
               ? 'bg-gradient-to-br from-blue-500 to-blue-600' 
               : 'bg-gradient-to-br from-airsoft-red to-red-600'
           }`}>
-            {conversation?.type === 'team' ? (
-              <Users className="h-6 w-6 md:h-7 md:w-7" />
-            ) : (
-              getConversationInitials()
-            )}
+            {renderAvatarContent()}
           </AvatarFallback>
         </Avatar>
         
