@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { LogOut, Users, UserIcon } from 'lucide-react';
+import { LogOut, Users, UserIcon, Shield } from 'lucide-react';
 import { toast } from "@/components/ui/use-toast";
 import NotificationSheet from './NotificationSheet';
 
@@ -42,6 +42,10 @@ export const DesktopAuthSection: React.FC<DesktopAuthSectionProps> = ({
     }
   };
 
+  const handleNavigateToAdmin = () => {
+    navigate('/admin');
+  };
+
   return (
     <div className="flex items-center gap-4">
       <NotificationSheet
@@ -49,6 +53,18 @@ export const DesktopAuthSection: React.FC<DesktopAuthSectionProps> = ({
         notificationCount={notificationCount}
         handleSheetOpenChange={handleSheetOpenChange}
       />
+
+      {user?.Admin && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleNavigateToAdmin}
+          className="flex items-center gap-2 border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white"
+        >
+          <Shield className="h-4 w-4" />
+          Admin
+        </Button>
+      )}
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
