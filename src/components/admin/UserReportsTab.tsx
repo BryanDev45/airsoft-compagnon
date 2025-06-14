@@ -2,14 +2,11 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { AlertCircle, CheckCircle, Clock, User } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import ResolveReportDialog from './ResolveReportDialog';
+import UserReportCard from './reports/UserReportCard';
+import UserReportsEmpty from './reports/UserReportsEmpty';
 
 interface UserReport {
   id: string;
@@ -105,23 +102,6 @@ const UserReportsTab = () => {
     }
   });
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'resolved': return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'dismissed': return <CheckCircle className="h-4 w-4 text-gray-500" />;
-      default: return <Clock className="h-4 w-4 text-yellow-500" />;
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    const variants = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      resolved: 'bg-green-100 text-green-800',
-      dismissed: 'bg-gray-100 text-gray-800'
-    };
-    return variants[status as keyof typeof variants] || variants.pending;
-  };
-
   const handleViewProfile = (username: string) => {
     if (username) {
       navigate(`/user/${username}`);
@@ -158,98 +138,17 @@ const UserReportsTab = () => {
   return (
     <div className="space-y-4">
       {reports.map((report) => (
-        <Card key={report.id}>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                {getStatusIcon(report.status)}
-                Rapport d'utilisateur
-              </CardTitle>
-              <Badge className={getStatusBadge(report.status)}>
-                {report.status === 'pending' ? 'En attente' : 
-                 report.status === 'resolved' ? 'Résolu' : 'Rejeté'}
-              </Badge>
-            </div>
-            <CardDescription>
-              Signalé par: {report.reporter_profile?.username || 'Utilisateur supprimé'} • 
-              Utilisateur signalé: {report.reported_profile?.username || 'Utilisateur supprimé'} • 
-              {new Date(report.created_at).toLocaleDateString()}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <strong>Raison:</strong> {report.reason}
-            </div>
-            {report.details && (
-              <div>
-                <strong>Détails:</strong> {report.details}
-              </div>
-            )}
-            {report.admin_notes && (
-              <div>
-                <strong>Notes admin:</strong> {report.admin_notes}
-              </div>
-            )}
-            
-            {/* Profile access buttons */}
-            <div className="flex items-center gap-2 pt-2 border-t">
-              {report.reporter_profile?.username && (
-                <Button
-                  onClick={() => handleViewProfile(report.reporter_profile?.username || '')}
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
-                  <User className="h-4 w-4" />
-                  Profil du rapporteur
-                </Button>
-              )}
-              {report.reported_profile?.username && (
-                <Button
-                  onClick={() => handleViewProfile(report.reported_profile?.username || '')}
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
-                  <User className="h-4 w-4" />
-                  Profil de l'utilisateur signalé
-                </Button>
-              )}
-            </div>
-            
-            {report.status === 'pending' && (
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => handleResolveClick(report.id)}
-                  size="sm"
-                  className="bg-green-600 hover:bg-green-700"
-                  disabled={updateReportMutation.isPending}
-                >
-                  Résoudre
-                </Button>
-                <Button
-                  onClick={() => handleDismiss(report.id)}
-                  variant="outline"
-                  size="sm"
-                  disabled={updateReportMutation.isPending}
-                >
-                  Rejeter
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <UserReportCard
+          key={report.id}
+          report={report}
+          onResolveClick={handleResolveClick}
+          onDismiss={handleDismiss}
+          onViewProfile={handleViewProfile}
+          isLoading={updateReportMutation.isPending}
+        />
       ))}
-      {reports.length === 0 && (
-        <Card>
-          <CardContent className="flex items-center justify-center p-8">
-            <div className="text-center">
-              <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">Aucun rapport d'utilisateur trouvé</p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      
+      {reports.length === 0 && <UserReportsEmpty />}
 
       <ResolveReportDialog
         open={resolveDialogOpen}
