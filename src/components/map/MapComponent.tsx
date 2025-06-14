@@ -16,6 +16,7 @@ import Overlay from 'ol/Overlay';
 import MapMarker from './MapMarker';
 import StoreImageCarousel from '../stores/StoreImageCarousel';
 import { MapEvent, MapStore } from '@/hooks/useMapData';
+import { areCoordinatesValid } from '@/utils/geocodingUtils';
 
 interface MapComponentProps {
   searchCenter: [number, number];
@@ -54,10 +55,18 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
     const features = [];
 
-    // Create event markers
+    // Create event markers - Vérifier et filtrer les coordonnées valides
     filteredEvents.forEach(event => {
       const lat = parseFloat(String(event.lat)) || 0;
       const lng = parseFloat(String(event.lng)) || 0;
+      
+      // Vérifier que les coordonnées sont valides avant de créer le marqueur
+      if (!areCoordinatesValid(lat, lng)) {
+        console.warn(`Skipping event "${event.title}" with invalid coordinates: (${lat}, ${lng})`);
+        return;
+      }
+
+      console.log(`Adding event marker for "${event.title}" at (${lat}, ${lng})`);
       
       const feature = new Feature({
         geometry: new Point(fromLonLat([lng, lat])),
@@ -81,10 +90,18 @@ const MapComponent: React.FC<MapComponentProps> = ({
       features.push(feature);
     });
 
-    // Create store markers
+    // Create store markers - Vérifier et filtrer les coordonnées valides
     stores.forEach(store => {
       const lat = parseFloat(String(store.lat)) || 0;
       const lng = parseFloat(String(store.lng)) || 0;
+      
+      // Vérifier que les coordonnées sont valides avant de créer le marqueur
+      if (!areCoordinatesValid(lat, lng)) {
+        console.warn(`Skipping store "${store.name}" with invalid coordinates: (${lat}, ${lng})`);
+        return;
+      }
+
+      console.log(`Adding store marker for "${store.name}" at (${lat}, ${lng})`);
       
       const feature = new Feature({
         geometry: new Point(fromLonLat([lng, lat])),

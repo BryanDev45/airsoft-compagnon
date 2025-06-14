@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { MapPin } from 'lucide-react';
 import LocationMap from '@/components/map/LocationMap';
+import { getValidCoordinates, areCoordinatesValid } from '@/utils/geocodingUtils';
 
 interface GameLocationCardProps {
   address: string;
@@ -19,67 +20,34 @@ const GameLocationCard: React.FC<GameLocationCardProps> = ({
 }) => {
   const [validCoordinates, setValidCoordinates] = useState<[number, number]>([0, 0]);
   
-  // Function to check if coordinates are valid
-  const areCoordinatesValid = (coords: [number, number]): boolean => {
-    const [lng, lat] = coords;
-    
-    // Check if coordinates exist and are not null
-    if (!lng || !lat || isNaN(lng) || isNaN(lat)) return false;
-    
-    // Check if coordinates are close to 0,0 (null island)
-    const isCloseToZero = Math.abs(lng) < 0.1 && Math.abs(lat) < 0.1;
-    
-    // Check if coordinates are in a reasonable range for France/Europe
-    const isInReasonableRange = lat >= 40 && lat <= 55 && lng >= -5 && lng <= 10;
-    
-    return !isCloseToZero && isInReasonableRange;
-  };
-
-  // Function to geocode address
-  const geocodeAddress = async (): Promise<[number, number]> => {
-    try {
-      const fullAddress = `${address}, ${zipCode} ${city}, France`;
-      console.log('GameLocationCard: Geocoding address:', fullAddress);
-      
-      // Use OpenStreetMap Nominatim API to geocode the address
-      const geocodingUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}&limit=1`;
-      
-      const response = await fetch(geocodingUrl, {
-        headers: {
-          'User-Agent': 'AirsoftCommunityApp/1.0'
-        }
-      });
-      const data = await response.json();
-      
-      if (data && data.length > 0) {
-        const { lon, lat } = data[0];
-        const geocodedCoords: [number, number] = [parseFloat(lon), parseFloat(lat)];
-        console.log('GameLocationCard: Geocoding successful:', geocodedCoords);
-        return geocodedCoords;
-      } else {
-        console.log('GameLocationCard: No geocoding results found');
-        // Fallback to France coordinates if geocoding fails
-        return [2.3522, 48.8566];
-      }
-    } catch (error) {
-      console.error("GameLocationCard: Error geocoding address:", error);
-      // Fallback to France coordinates
-      return [2.3522, 48.8566];
-    }
-  };
-  
   // Verify and set coordinates on component mount and when coordinates change
   useEffect(() => {
     const setCoordinates = async () => {
-      if (areCoordinatesValid(coordinates)) {
+      // Extraire la latitude et longitude depuis les coordonnées [lng, lat]
+      const [lng, lat] = coordinates;
+      
+      console.log('GameLocationCard: Input coordinates:', coordinates, 'Address:', `${address}, ${zipCode} ${city}`);
+      
+      if (areCoordinatesValid(lat, lng)) {
         // Use provided coordinates if they are valid
-        console.log('GameLocationCard: Using provided coordinates:', coordinates);
-        setValidCoordinates(coordinates);
+        console.log('GameLocationCard: Using provided coordinates:', [lng, lat]);
+        setValidCoordinates([lng, lat]);
       } else {
-        // If coordinates are invalid, try to geocode the address
-        console.log('GameLocationCard: Invalid coordinates, geocoding address...');
-        const geocodedCoords = await geocodeAddress();
-        setValidCoordinates(geocodedCoords);
+        // If coordinates are invalid, use geocoding utility
+        console.log('GameLocationCard: Invalid coordinates, using geocoding utility...');
+        const geocodedCoords = await getValidCoordinates(
+          lat,
+          lng,
+          address,
+          zipCode,
+          city,
+          'France'
+        );
+        
+        // Convertir en format [lng, lat] pour le composant de carte
+        const formattedCoords: [number, number] = [geocodedCoords.longitude, geocodedCoords.latitude];
+        console.log('GameLocationCard: Geocoded coordinates:', formattedCoords);
+        setValidCoordinates(formattedCoords);
       }
     };
 
