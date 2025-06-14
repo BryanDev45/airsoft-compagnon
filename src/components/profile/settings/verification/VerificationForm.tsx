@@ -17,10 +17,23 @@ const VerificationForm = ({ user, onVerificationRequested }: VerificationFormPro
 
   const uploadFile = async (file: File, fileName: string): Promise<string | null> => {
     try {
-      console.log(`Uploading file: ${fileName}`);
+      console.log(`Uploading file: ${fileName}, size: ${file.size} bytes`);
+      
+      // Vérifier la taille du fichier (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        throw new Error(`Le fichier ${fileName} est trop volumineux (max 10MB)`);
+      }
+
+      // Vérifier le type de fichier
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        throw new Error(`Type de fichier non autorisé: ${file.type}. Utilisez JPG, PNG ou WebP.`);
+      }
       
       const filePath = `${user.id}/${fileName}`;
+      console.log(`File path: ${filePath}`);
       
+      // Tenter l'upload avec une gestion d'erreur détaillée
       const { data, error } = await supabase.storage
         .from('verification-photos')
         .upload(filePath, file, {
@@ -29,11 +42,25 @@ const VerificationForm = ({ user, onVerificationRequested }: VerificationFormPro
         });
 
       if (error) {
-        console.error('Upload error:', error);
-        throw error;
+        console.error('Detailed upload error:', {
+          message: error.message,
+          statusCode: error.statusCode,
+          error: error
+        });
+        
+        // Messages d'erreur plus spécifiques
+        if (error.message.includes('Bucket not found')) {
+          throw new Error('Erreur de configuration du stockage. Veuillez contacter l\'administrateur.');
+        } else if (error.message.includes('not allowed')) {
+          throw new Error('Type de fichier non autorisé. Utilisez JPG, PNG ou WebP.');
+        } else if (error.message.includes('too large')) {
+          throw new Error('Fichier trop volumineux. Taille maximum: 10MB.');
+        } else {
+          throw new Error(`Erreur d'upload: ${error.message}`);
+        }
       }
 
-      console.log(`File uploaded successfully: ${filePath}`);
+      console.log(`File uploaded successfully:`, data);
       return filePath;
     } catch (error) {
       console.error('Error uploading file:', error);
@@ -65,20 +92,44 @@ const VerificationForm = ({ user, onVerificationRequested }: VerificationFormPro
     try {
       console.log('Starting verification request process...');
       
-      // Upload all three files and store paths instead of URLs
+      // Vérifier la connexion à Supabase
+      const { data: authUser, error: authError } = await supabase.auth.getUser();
+      if (authError || !authUser.user) {
+        throw new Error('Session expirée. Veuillez vous reconnecter.');
+      }
+
+      // Upload des fichiers avec gestion d'erreur individuelle
       const timestamp = Date.now();
-      const frontIdPath = await uploadFile(
-        frontIdFile, 
-        `front_id_${timestamp}.${frontIdFile.name.split('.').pop()}`
-      );
-      const backIdPath = await uploadFile(
-        backIdFile, 
-        `back_id_${timestamp}.${backIdFile.name.split('.').pop()}`
-      );
-      const facePhotoPath = await uploadFile(
-        facePhotoFile, 
-        `face_photo_${timestamp}.${facePhotoFile.name.split('.').pop()}`
-      );
+      let frontIdPath: string | null = null;
+      let backIdPath: string | null = null;
+      let facePhotoPath: string | null = null;
+
+      try {
+        frontIdPath = await uploadFile(
+          frontIdFile, 
+          `front_id_${timestamp}.${frontIdFile.name.split('.').pop()}`
+        );
+      } catch (error) {
+        throw new Error(`Erreur lors de l'upload du recto: ${error.message}`);
+      }
+
+      try {
+        backIdPath = await uploadFile(
+          backIdFile, 
+          `back_id_${timestamp}.${backIdFile.name.split('.').pop()}`
+        );
+      } catch (error) {
+        throw new Error(`Erreur lors de l'upload du verso: ${error.message}`);
+      }
+
+      try {
+        facePhotoPath = await uploadFile(
+          facePhotoFile, 
+          `face_photo_${timestamp}.${facePhotoFile.name.split('.').pop()}`
+        );
+      } catch (error) {
+        throw new Error(`Erreur lors de l'upload de la photo: ${error.message}`);
+      }
 
       if (!frontIdPath || !backIdPath || !facePhotoPath) {
         throw new Error('Erreur lors du téléchargement des fichiers');
@@ -86,7 +137,7 @@ const VerificationForm = ({ user, onVerificationRequested }: VerificationFormPro
 
       console.log('All files uploaded successfully, creating verification request...');
 
-      // Create verification request with file paths
+      // Créer la demande de vérification
       const { data, error } = await supabase
         .from('verification_requests')
         .insert({
@@ -101,7 +152,7 @@ const VerificationForm = ({ user, onVerificationRequested }: VerificationFormPro
 
       if (error) {
         console.error('Database error:', error);
-        throw error;
+        throw new Error(`Erreur base de données: ${error.message}`);
       }
 
       console.log('Verification request created successfully:', data);
