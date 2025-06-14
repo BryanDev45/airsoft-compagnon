@@ -80,7 +80,8 @@ export const useVerificationRequests = () => {
 
   const updateRequestMutation = useMutation({
     mutationFn: async ({ requestId, status, adminNotes }: { requestId: string; status: string; adminNotes?: string }) => {
-      const { error } = await supabase
+      // First, update the request status to trigger notifications
+      const { error: updateError } = await supabase
         .from('verification_requests')
         .update({ 
           status, 
@@ -90,7 +91,7 @@ export const useVerificationRequests = () => {
         })
         .eq('id', requestId);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
       // If approved, update the user's verified status
       if (status === 'approved') {
@@ -108,6 +109,19 @@ export const useVerificationRequests = () => {
               .update({ is_verified: true })
               .eq('id', data.user_id);
           }
+        }
+      }
+
+      // After processing (approval or rejection), delete the request
+      if (status === 'approved' || status === 'rejected') {
+        const { error: deleteError } = await supabase
+          .from('verification_requests')
+          .delete()
+          .eq('id', requestId);
+
+        if (deleteError) {
+          console.error('Error deleting verification request:', deleteError);
+          // Don't throw here as the main operation succeeded
         }
       }
     },
