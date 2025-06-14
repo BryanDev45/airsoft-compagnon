@@ -1,10 +1,10 @@
-
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
 import Circle from 'ol/geom/Circle';
 import { fromLonLat } from 'ol/proj';
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
-import { MapEvent, MapStore } from '@/hooks/useGamesData';
+import { MapEvent } from '@/hooks/useGamesData';
+import { MapStore } from '@/hooks/stores/types';
 import { areCoordinatesValid } from '@/utils/geocodingUtils';
 
 export const createEventFeatures = (filteredEvents: MapEvent[]): Feature[] => {

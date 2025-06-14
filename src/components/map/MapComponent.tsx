@@ -2,7 +2,8 @@
 import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import { MapPin } from 'lucide-react';
 import { fromLonLat } from 'ol/proj';
-import { MapEvent, MapStore } from '@/hooks/useGamesData';
+import { MapEvent } from '@/hooks/useGamesData';
+import { MapStore } from '@/hooks/stores/types';
 import { areCoordinatesValid } from '@/utils/geocodingUtils';
 import { useMapRenderer } from './MapRenderer';
 import { useMapClickHandler } from './MapEventHandlers';

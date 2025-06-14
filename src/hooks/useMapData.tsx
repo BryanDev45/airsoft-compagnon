@@ -1,5 +1,5 @@
 
-// Type definitions for map data
+// Type definitions for map data - updated to use new store types
 export interface MapEvent {
   id: string;
   title: string;
@@ -18,21 +18,5 @@ export interface MapEvent {
   images: string[];
 }
 
-export interface MapStore {
-  id: string;
-  name: string;
-  address: string;
-  city: string;
-  zip_code: string;
-  phone?: string;
-  email?: string;
-  website?: string;
-  lat: number;
-  lng: number;
-  store_type: string;
-  image: string;
-  picture2?: string;
-  picture3?: string;
-  picture4?: string;
-  picture5?: string;
-}
+// Re-export MapStore from the new location
+export { MapStore } from './stores/types';

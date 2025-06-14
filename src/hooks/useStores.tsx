@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { MapStore } from './useMapData';
+import { MapStore } from './stores/types';
 import { getStorageWithExpiry, setStorageWithExpiry, CACHE_DURATIONS } from '@/utils/cacheUtils';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';

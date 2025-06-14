@@ -3,7 +3,7 @@ import React from 'react';
 import { MapPin, Phone, Mail, Globe } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapStore } from '@/hooks/useMapData';
+import { MapStore } from '@/hooks/stores/types';
 import GameImageCarousel from './GameImageCarousel';
 
 interface StoreCardProps {
