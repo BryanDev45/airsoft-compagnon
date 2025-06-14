@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,12 +20,12 @@ interface MessageReport {
   reviewed_by: string;
   reviewed_at: string;
   created_at: string;
-  reporter_profile: { username: string };
+  reporter_profile: { username: string } | null;
   message: {
     content: string;
     sender_id: string;
-    sender_profile: { username: string };
-  };
+    sender_profile: { username: string } | null;
+  } | null;
 }
 
 const MessageReportsTab = () => {

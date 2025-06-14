@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,8 +20,8 @@ interface UserReport {
   reviewed_by: string;
   reviewed_at: string;
   created_at: string;
-  reporter_profile: { username: string };
-  reported_profile: { username: string };
+  reporter_profile: { username: string } | null;
+  reported_profile: { username: string } | null;
 }
 
 const UserReportsTab = () => {

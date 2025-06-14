@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,7 +19,7 @@ interface VerificationRequest {
   reviewed_by: string;
   reviewed_at: string;
   created_at: string;
-  user_profile: { username: string; email: string };
+  user_profile: { username: string; email: string } | null;
 }
 
 const VerificationRequestsTab = () => {
@@ -153,7 +152,7 @@ const VerificationRequestsTab = () => {
                   {getStatusBadge(request.status)}
                 </div>
                 <div className="text-sm text-gray-600">
-                  {request.user_profile?.email} • Demandé le {new Date(request.created_at).toLocaleDateString('fr-FR')}
+                  {request.user_profile?.email || 'Email indisponible'} • Demandé le {new Date(request.created_at).toLocaleDateString('fr-FR')}
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
