@@ -1,26 +1,27 @@
 
-import React from 'react';
-import { Star, UserPlus, MessageCircle, UserCheck, UserX } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React, { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { UserPlus, UserMinus, Check, ShieldX } from "lucide-react";
 import RatingStars from './RatingStars';
 import ReportUserButton from './ReportUserButton';
+import ProfileHeader from './ProfileHeader';
 import BanUserDialog from './BanUserDialog';
-import { Profile } from '@/types/profile';
+import TeamInviteButton from '../search/TeamInviteButton';
 
 interface UserProfileHeaderProps {
-  profileData: Profile | null;
+  profileData: any;
   userData: any;
   isFollowing: boolean;
   friendRequestSent: boolean;
   currentUserId: string | null;
   userRating: number;
-  userReputation: number;
+  userReputation?: number | null;
   handleFollowUser: () => void;
   handleRatingChange: (rating: number) => void;
-  isCurrentUserAdmin: boolean;
+  isCurrentUserAdmin?: boolean;
 }
 
-const UserProfileHeader = ({
+const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
   profileData,
   userData,
   isFollowing,
@@ -30,102 +31,109 @@ const UserProfileHeader = ({
   userReputation,
   handleFollowUser,
   handleRatingChange,
-  isCurrentUserAdmin
-}: UserProfileHeaderProps) => {
+  isCurrentUserAdmin = false
+}) => {
+  const [banDialogOpen, setBanDialogOpen] = useState(false);
+  
+  // Mock functions that are called from ProfileHeader
+  const toggleProfileSettings = () => {
+    // This is just a placeholder for the ProfileHeader component
+  };
+
+  const onEditBio = () => {
+    // This is just a placeholder for the ProfileHeader component
+  };
+
+  // Vérifier si l'utilisateur consulte son propre profil
   const isOwnProfile = currentUserId === userData?.id;
-  const [showBanDialog, setShowBanDialog] = React.useState(false);
+
+  // Utiliser la réputation mise à jour si disponible, sinon utiliser celle du profil
+  // Ne pas afficher la réputation si elle est 0 ou null
+  const displayedReputation = userReputation !== null && userReputation > 0 ? userReputation : 
+                              (profileData?.reputation && profileData.reputation > 0 ? profileData.reputation : null);
 
   return (
-    <div className="p-6 border-b border-gray-200">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div className="flex items-center space-x-4">
-          <img
-            src={profileData?.avatar || "/placeholder.svg"}
-            alt={`Avatar de ${profileData?.username}`}
-            className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg"
-          />
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-              {profileData?.username}
-              {profileData?.is_verified && (
-                <span className="text-blue-500 text-sm">✓ Vérifié</span>
-              )}
-            </h1>
-            <p className="text-gray-600">
-              {profileData?.firstname} {profileData?.lastname}
-            </p>
-            <div className="flex items-center space-x-2 mt-2">
-              <RatingStars
-                rating={userReputation}
-                onRatingChange={!isOwnProfile ? handleRatingChange : undefined}
-                userId={userData?.id}
-                readonly={isOwnProfile}
-              />
-              <span className="text-sm text-gray-500">
-                ({userReputation?.toFixed(1) || '0.0'})
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {!isOwnProfile && currentUserId && (
-          <div className="flex items-center space-x-2">
-            <Button
+    <div className="relative">
+      <ProfileHeader 
+        user={{
+          ...profileData, 
+          reputation: displayedReputation,
+          team_logo: profileData?.team_logo,
+          team_name: profileData?.team
+        }}
+        isOwnProfile={isOwnProfile}
+        toggleProfileSettings={toggleProfileSettings}
+        onEditBio={onEditBio}
+      />
+      
+      {!isOwnProfile && (
+        <div className="absolute top-4 right-4 flex space-x-2">
+          {currentUserId && currentUserId !== userData?.id && (
+            <Button 
               onClick={handleFollowUser}
-              variant={isFollowing ? "secondary" : "default"}
-              className="flex items-center space-x-2"
-              disabled={friendRequestSent}
+              variant={isFollowing || friendRequestSent ? "outline" : "default"}
+              className={isFollowing || friendRequestSent ? "bg-white text-black border-gray-300" : "bg-airsoft-red text-white"}
             >
               {isFollowing ? (
                 <>
-                  <UserCheck className="w-4 h-4" />
-                  <span>Ami</span>
+                  <UserMinus className="mr-2 h-4 w-4" />
+                  Retirer des amis
                 </>
               ) : friendRequestSent ? (
                 <>
-                  <UserX className="w-4 h-4" />
-                  <span>Demande envoyée</span>
+                  <Check className="mr-2 h-4 w-4" />
+                  Demande envoyée
                 </>
               ) : (
                 <>
-                  <UserPlus className="w-4 h-4" />
-                  <span>Ajouter en ami</span>
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Ajouter en ami
                 </>
               )}
             </Button>
+          )}
 
-            <Button variant="outline" className="flex items-center space-x-2">
-              <MessageCircle className="w-4 h-4" />
-              <span>Message</span>
-            </Button>
-
-            <ReportUserButton 
-              username={profileData?.username || 'Utilisateur'} 
-              reportedUserId={userData?.id}
+          {/* Team invitation button - only show if player has no team */}
+          {currentUserId && !userData?.team_id && (
+            <TeamInviteButton
+              targetUserId={userData?.id}
+              targetUsername={userData?.username}
             />
-
-            {isCurrentUserAdmin && (
-              <>
-                <Button 
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => setShowBanDialog(true)}
-                >
-                  {profileData?.Ban ? 'Débannir' : 'Bannir'}
-                </Button>
-                
-                <BanUserDialog
-                  open={showBanDialog}
-                  onOpenChange={setShowBanDialog}
-                  userData={userData}
-                  currentUserId={currentUserId}
-                  isCurrentUserAdmin={isCurrentUserAdmin}
-                />
-              </>
-            )}
+          )}
+          
+          <div className="flex items-center gap-2">
+            <RatingStars
+              rating={userRating}
+              onRatingChange={handleRatingChange}
+              readonly={!currentUserId || currentUserId === userData?.id}
+              userId={userData?.id}
+            />
           </div>
-        )}
-      </div>
+          
+          {/* Ban/Unban button for admins */}
+          {isCurrentUserAdmin && userData?.id !== currentUserId && (
+            <Button
+              onClick={() => setBanDialogOpen(true)}
+              variant="destructive"
+              className={userData?.Ban ? "bg-gray-600" : ""}
+            >
+              <ShieldX className="mr-2 h-4 w-4" />
+              {userData?.Ban ? "Débannir" : "Bannir"}
+            </Button>
+          )}
+          
+          <ReportUserButton username={profileData?.username} />
+        </div>
+      )}
+
+      {/* Ban confirmation dialog */}
+      <BanUserDialog
+        open={banDialogOpen}
+        onOpenChange={setBanDialogOpen}
+        userData={userData}
+        currentUserId={currentUserId}
+        isCurrentUserAdmin={isCurrentUserAdmin}
+      />
     </div>
   );
 };
