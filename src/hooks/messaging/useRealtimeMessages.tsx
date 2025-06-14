@@ -4,18 +4,42 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
-export const useRealtimeMessages = () => {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
+// Singleton to prevent multiple subscriptions
+class RealtimeManager {
+  private static instance: RealtimeManager;
+  private channels: any[] = [];
+  private currentUserId: string | null = null;
+  private subscribers = 0;
 
-  useEffect(() => {
-    if (!user?.id) return;
+  static getInstance(): RealtimeManager {
+    if (!RealtimeManager.instance) {
+      RealtimeManager.instance = new RealtimeManager();
+    }
+    return RealtimeManager.instance;
+  }
 
-    console.log('Setting up real-time messages subscription');
+  subscribe(userId: string, queryClient: any) {
+    this.subscribers++;
+    
+    // If already subscribed for this user, don't create new channels
+    if (this.currentUserId === userId && this.channels.length > 0) {
+      console.log('Real-time already active for user:', userId);
+      return () => this.unsubscribe();
+    }
+
+    // Clean up existing channels if switching users
+    this.cleanup();
+    this.currentUserId = userId;
+
+    console.log('Setting up real-time messages subscription for user:', userId);
+
+    // Create unique channel names
+    const messageChannelName = `messages-${userId}-${Date.now()}`;
+    const conversationChannelName = `conversations-${userId}-${Date.now()}`;
 
     // Subscribe to message changes
     const messageChannel = supabase
-      .channel('messages-changes')
+      .channel(messageChannelName)
       .on(
         'postgres_changes',
         {
@@ -26,7 +50,6 @@ export const useRealtimeMessages = () => {
         (payload) => {
           console.log('Real-time message update:', payload);
           
-          // Type-safe access to payload data
           const newRecord = payload.new as any;
           const oldRecord = payload.old as any;
           
@@ -44,7 +67,7 @@ export const useRealtimeMessages = () => {
           
           // Invalidate conversations list to update last message/unread count
           queryClient.invalidateQueries({ 
-            queryKey: ['conversations', user.id] 
+            queryKey: ['conversations', userId] 
           });
         }
       )
@@ -52,7 +75,7 @@ export const useRealtimeMessages = () => {
 
     // Subscribe to conversation changes
     const conversationChannel = supabase
-      .channel('conversations-changes')
+      .channel(conversationChannelName)
       .on(
         'postgres_changes',
         {
@@ -65,16 +88,47 @@ export const useRealtimeMessages = () => {
           
           // Invalidate conversations queries
           queryClient.invalidateQueries({ 
-            queryKey: ['conversations', user.id] 
+            queryKey: ['conversations', userId] 
           });
         }
       )
       .subscribe();
 
-    return () => {
-      console.log('Cleaning up real-time subscriptions');
-      supabase.removeChannel(messageChannel);
-      supabase.removeChannel(conversationChannel);
-    };
+    this.channels = [messageChannel, conversationChannel];
+
+    return () => this.unsubscribe();
+  }
+
+  unsubscribe() {
+    this.subscribers--;
+    
+    // Only cleanup when no more subscribers
+    if (this.subscribers <= 0) {
+      this.cleanup();
+    }
+  }
+
+  private cleanup() {
+    console.log('Cleaning up real-time subscriptions');
+    this.channels.forEach(channel => {
+      supabase.removeChannel(channel);
+    });
+    this.channels = [];
+    this.currentUserId = null;
+    this.subscribers = 0;
+  }
+}
+
+export const useRealtimeMessages = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const manager = RealtimeManager.getInstance();
+    const cleanup = manager.subscribe(user.id, queryClient);
+
+    return cleanup;
   }, [user?.id, queryClient]);
 };
