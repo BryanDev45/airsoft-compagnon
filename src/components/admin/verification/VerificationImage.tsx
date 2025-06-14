@@ -14,7 +14,6 @@ export const VerificationImage = ({ src, alt, title }: VerificationImageProps) =
   const handleError = (event: React.SyntheticEvent<HTMLImageElement, Event>) => {
     console.error(`Image load error for ${title}:`, {
       src,
-      error: event.currentTarget.error,
       naturalHeight: event.currentTarget.naturalHeight,
       naturalWidth: event.currentTarget.naturalWidth
     });
