@@ -5,7 +5,7 @@ import { MapStore, RawStoreData } from "./types";
 import { processStore } from "./storeProcessor";
 import { isValidStore } from "./storeValidator";
 
-export { MapStore } from "./types";
+export type { MapStore } from "./types";
 
 export const useStoresData = () => {
   return useQuery({

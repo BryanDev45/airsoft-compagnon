@@ -19,4 +19,4 @@ export interface MapEvent {
 }
 
 // Re-export MapStore from the new location
-export { MapStore } from './stores/types';
+export type { MapStore } from './stores/types';
