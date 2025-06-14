@@ -881,6 +881,33 @@ export type Database = {
           },
         ]
       }
+      user_presence: {
+        Row: {
+          created_at: string
+          id: string
+          is_online: boolean
+          last_seen: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_online?: boolean
+          last_seen?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_online?: boolean
+          last_seen?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_ratings: {
         Row: {
           created_at: string
@@ -997,6 +1024,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      is_user_online: {
+        Args: { p_user_id: string }
+        Returns: boolean
+      }
       mark_conversation_messages_as_read: {
         Args: { p_conversation_id: string; p_user_id: string }
         Returns: undefined
@@ -1007,6 +1038,10 @@ export type Database = {
       }
       update_user_location: {
         Args: { p_user_id: string; p_location: string }
+        Returns: undefined
+      }
+      update_user_presence: {
+        Args: { p_user_id: string; p_is_online: boolean }
         Returns: undefined
       }
       update_user_rating: {

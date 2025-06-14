@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Users, Clock, Dot } from 'lucide-react';
 import { Conversation } from '@/types/messaging';
 import { formatTime, truncateMessage, getConversationName, getConversationAvatar } from '@/utils/messaging';
+import { useAuth } from '@/hooks/useAuth';
+import { useIsUserOnline } from '@/hooks/messaging/useUserPresence';
 
 interface ConversationItemProps {
   conversation: Conversation;
@@ -16,6 +18,15 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
   conversation,
   onSelect
 }) => {
+  const { user } = useAuth();
+
+  // Get the other participant for direct conversations to check their online status
+  const otherParticipant = conversation.type === 'direct' 
+    ? conversation.participants?.find(p => p.id !== user?.id)
+    : null;
+
+  const { data: isOtherUserOnline = false } = useIsUserOnline(otherParticipant?.id);
+
   return (
     <Button
       variant="ghost"
@@ -51,8 +62,16 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
             </div>
           )}
           
-          {/* Online status indicator */}
-          <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-sm"></div>
+          {/* Online status indicator - different logic for team vs direct conversations */}
+          {conversation.type === 'team' ? (
+            // For team conversations, always show online (green)
+            <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-sm"></div>
+          ) : (
+            // For direct conversations, show real online status
+            <div className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white shadow-sm ${
+              isOtherUserOnline ? 'bg-green-500' : 'bg-gray-400'
+            }`}></div>
+          )}
         </div>
         
         <div className="flex-1 min-w-0 text-left">

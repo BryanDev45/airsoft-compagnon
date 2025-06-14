@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ArrowLeft, MoreVertical, Users } from 'lucide-react';
 import { ConversationDetails } from '@/types/messaging';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsUserOnline } from '@/hooks/messaging/useUserPresence';
 
 interface ChatHeaderProps {
   conversation?: ConversationDetails;
@@ -43,6 +44,13 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ conversation, onBack }) => {
     return otherParticipant?.avatar;
   };
 
+  // Get the other participant for direct conversations to check their online status
+  const otherParticipant = conversation?.type === 'direct' 
+    ? conversation.participants?.find(p => p.id !== user?.id)
+    : null;
+
+  const { data: isOtherUserOnline = false } = useIsUserOnline(otherParticipant?.id);
+
   const renderAvatarContent = () => {
     if (!conversation) return 'C';
     
@@ -57,11 +65,38 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ conversation, onBack }) => {
     }
   };
 
+  const renderOnlineStatus = () => {
+    if (conversation?.type === 'team') {
+      // Pour les équipes, toujours afficher "En ligne" en vert
+      return (
+        <p className="text-xs md:text-sm text-green-600 font-medium flex items-center gap-2">
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          En ligne
+        </p>
+      );
+    } else {
+      // Pour les conversations directes, afficher le vrai statut
+      return (
+        <p className={`text-xs md:text-sm font-medium flex items-center gap-2 ${
+          isOtherUserOnline ? 'text-green-600' : 'text-gray-400'
+        }`}>
+          <div className={`w-2 h-2 rounded-full ${
+            isOtherUserOnline 
+              ? 'bg-green-500 animate-pulse' 
+              : 'bg-gray-400'
+          }`}></div>
+          {isOtherUserOnline ? 'En ligne' : 'Hors ligne'}
+        </p>
+      );
+    }
+  };
+
   const title = getConversationTitle();
   const avatarSrc = getConversationAvatar();
 
   console.log('Computed title:', title);
   console.log('Computed avatar src:', avatarSrc);
+  console.log('Other user online status:', isOtherUserOnline);
 
   return (
     <div className="flex items-center justify-between p-4 md:p-6 bg-gradient-to-r from-white via-gray-50/50 to-white backdrop-blur-sm">
@@ -75,23 +110,29 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ conversation, onBack }) => {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         
-        <Avatar className="h-10 w-10 md:h-12 md:w-12 ring-2 ring-white shadow-lg flex-shrink-0">
-          {conversation?.type !== 'team' && avatarSrc && <AvatarImage src={avatarSrc} />}
-          <AvatarFallback className={`text-white font-semibold text-sm md:text-lg ${
-            conversation?.type === 'team' 
-              ? 'bg-gradient-to-br from-blue-500 to-blue-600' 
-              : 'bg-gradient-to-br from-airsoft-red to-red-600'
-          }`}>
-            {renderAvatarContent()}
-          </AvatarFallback>
-        </Avatar>
+        <div className="relative flex-shrink-0">
+          <Avatar className="h-10 w-10 md:h-12 md:w-12 ring-2 ring-white shadow-lg flex-shrink-0">
+            {conversation?.type !== 'team' && avatarSrc && <AvatarImage src={avatarSrc} />}
+            <AvatarFallback className={`text-white font-semibold text-sm md:text-lg ${
+              conversation?.type === 'team' 
+                ? 'bg-gradient-to-br from-blue-500 to-blue-600' 
+                : 'bg-gradient-to-br from-airsoft-red to-red-600'
+            }`}>
+              {renderAvatarContent()}
+            </AvatarFallback>
+          </Avatar>
+          
+          {/* Online status indicator sur l'avatar pour les conversations directes */}
+          {conversation?.type === 'direct' && (
+            <div className={`absolute bottom-0 right-0 w-3 h-3 md:w-4 md:h-4 rounded-full border-2 border-white shadow-sm ${
+              isOtherUserOnline ? 'bg-green-500' : 'bg-gray-400'
+            }`}></div>
+          )}
+        </div>
         
         <div className="min-w-0 flex-1">
           <h2 className="font-bold text-gray-900 text-lg md:text-xl truncate">{title}</h2>
-          <p className="text-xs md:text-sm text-green-600 font-medium flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            En ligne
-          </p>
+          {renderOnlineStatus()}
         </div>
       </div>
       
