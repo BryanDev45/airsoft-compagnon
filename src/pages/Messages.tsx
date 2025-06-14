@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -16,7 +17,7 @@ const Messages: React.FC = () => {
       <Header />
       
       <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto h-full">
           {/* Enhanced Page Header */}
           <div className="mb-8">
             <div className="flex items-center justify-center gap-4 mb-3">
@@ -74,12 +75,12 @@ const Messages: React.FC = () => {
             </div>
           </div>
           
-          {/* Enhanced Main Content Card */}
-          <Card className="overflow-hidden shadow-2xl border-0 bg-white/90 backdrop-blur-sm ring-1 ring-white/20">
-            <div className="flex h-[calc(100vh-360px)] min-h-[600px]">
+          {/* Enhanced Main Content Card avec hauteur fixe */}
+          <Card className="shadow-2xl border-0 bg-white/90 backdrop-blur-sm ring-1 ring-white/20 h-[calc(100vh-360px)] min-h-[600px] flex flex-col">
+            <div className="flex h-full">
               {/* Enhanced Sidebar - Conversation List */}
-              <div className={`${selectedConversationId ? 'hidden lg:block' : ''} w-full lg:w-96 border-r border-gray-100/80 bg-gradient-to-b from-white/95 to-gray-50/50 backdrop-blur-sm`}>
-                <div className="p-6 border-b border-gray-100/80 bg-gradient-to-r from-gray-50/80 via-white/90 to-gray-50/80 backdrop-blur-sm">
+              <div className={`${selectedConversationId ? 'hidden lg:block' : ''} w-full lg:w-96 border-r border-gray-100/80 bg-gradient-to-b from-white/95 to-gray-50/50 backdrop-blur-sm flex flex-col`}>
+                <div className="p-6 border-b border-gray-100/80 bg-gradient-to-r from-gray-50/80 via-white/90 to-gray-50/80 backdrop-blur-sm flex-shrink-0">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-sm">
@@ -95,31 +96,35 @@ const Messages: React.FC = () => {
                   </div>
                 </div>
                 
-                {isLoading ? (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="text-center">
-                      <div className="relative">
-                        <div className="animate-spin rounded-full h-10 w-10 border-3 border-transparent border-t-airsoft-red mx-auto mb-4"></div>
-                        <div className="absolute inset-0 rounded-full border-3 border-gray-200"></div>
+                <div className="flex-1 overflow-hidden">
+                  {isLoading ? (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-center">
+                        <div className="relative">
+                          <div className="animate-spin rounded-full h-10 w-10 border-3 border-transparent border-t-airsoft-red mx-auto mb-4"></div>
+                          <div className="absolute inset-0 rounded-full border-3 border-gray-200"></div>
+                        </div>
+                        <p className="text-gray-500 font-medium">Chargement des conversations...</p>
                       </div>
-                      <p className="text-gray-500 font-medium">Chargement des conversations...</p>
                     </div>
-                  </div>
-                ) : (
-                  <ConversationList 
-                    conversations={conversations}
-                    onSelectConversation={setSelectedConversationId}
-                  />
-                )}
+                  ) : (
+                    <ConversationList 
+                      conversations={conversations}
+                      onSelectConversation={setSelectedConversationId}
+                    />
+                  )}
+                </div>
               </div>
 
               {/* Enhanced Main Chat Area */}
               <div className={`${selectedConversationId ? '' : 'hidden lg:flex'} flex-1 flex items-center justify-center bg-gradient-to-br from-white via-slate-50/30 to-blue-50/20`}>
                 {selectedConversationId ? (
-                  <ChatView 
-                    conversationId={selectedConversationId} 
-                    onBack={() => setSelectedConversationId(null)}
-                  />
+                  <div className="h-full w-full">
+                    <ChatView 
+                      conversationId={selectedConversationId} 
+                      onBack={() => setSelectedConversationId(null)}
+                    />
+                  </div>
                 ) : (
                   <div className="text-center p-12 max-w-md">
                     <div className="mb-8">
