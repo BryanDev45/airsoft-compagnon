@@ -52,7 +52,7 @@ export const useUserProfileFetch = (username: string | undefined) => {
       try {
         const { data: userProfile, error: profileError } = await supabase
           .from('profiles')
-          .select('*')
+          .select('*, spoken_language')
           .eq('username', username)
           .maybeSingle();
 
@@ -98,7 +98,8 @@ export const useUserProfileFetch = (username: string | undefined) => {
           ban_reason: userProfile.ban_reason,
           banned_by: userProfile.banned_by,
           reputation: userProfile.reputation,
-          friends_list_public: userProfile.friends_list_public
+          friends_list_public: userProfile.friends_list_public,
+          spoken_language: userProfile.spoken_language
         };
 
         // If user has a team, fetch team logo

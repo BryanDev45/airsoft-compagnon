@@ -26,6 +26,7 @@ export interface Profile {
   banned_by: string | null;
   reputation: number | null;
   friends_list_public: boolean | null;
+  spoken_language: string | null;
 }
 
 export interface UserStats {

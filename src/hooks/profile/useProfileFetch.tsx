@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
@@ -48,7 +49,7 @@ export const useProfileFetch = (userId: string | undefined) => {
         // Always fetch fresh data from database
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('*')
+          .select('*, spoken_language')
           .eq('id', userId)
           .maybeSingle();
 
@@ -88,7 +89,8 @@ export const useProfileFetch = (userId: string | undefined) => {
               ban_reason: null,
               banned_by: null,
               reputation: null,
-              friends_list_public: null
+              friends_list_public: null,
+              spoken_language: null
             };
             
             // Try to insert the new profile
@@ -129,7 +131,8 @@ export const useProfileFetch = (userId: string | undefined) => {
             ban_reason: profile.ban_reason,
             banned_by: profile.banned_by,
             reputation: profile.reputation,
-            friends_list_public: profile.friends_list_public
+            friends_list_public: profile.friends_list_public,
+            spoken_language: profile.spoken_language
           };
           
           // If user has a team, fetch team logo
