@@ -68,7 +68,7 @@ export const CitySearchResults = ({
         <CommandItem
           key={`${city.fullName}-${index}`}
           value={city.fullName}
-          className="cursor-pointer hover:bg-accent text-black"
+          className="!cursor-pointer hover:!bg-accent !text-foreground !opacity-100 data-[disabled]:!opacity-100 data-[disabled]:!pointer-events-auto aria-selected:!bg-accent"
           onSelect={() => handleCitySelect(city)}
           onMouseDown={(e) => handleCityClick(city, e)}
           onClick={(e) => handleCityClick(city, e)}
@@ -79,7 +79,7 @@ export const CitySearchResults = ({
               selectedValue === city.fullName ? "opacity-100" : "opacity-0"
             )}
           />
-          <span className="truncate text-black">{city.fullName}</span>
+          <span className="truncate">{city.fullName}</span>
         </CommandItem>
       ))}
     </CommandGroup>

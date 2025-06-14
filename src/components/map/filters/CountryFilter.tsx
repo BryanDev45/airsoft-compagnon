@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -173,7 +172,7 @@ const CountryFilter: React.FC<CountryFilterProps> = ({
                       setSelectedCountry(country.value);
                       setOpen(false);
                     }}
-                    className="!text-white hover:!bg-gray-600 aria-selected:!bg-gray-600 cursor-pointer !bg-gray-700 !border-0 data-[disabled]:!opacity-100 data-[disabled]:!pointer-events-auto"
+                    className="!text-white hover:!bg-gray-600 aria-selected:!bg-gray-600 !cursor-pointer !bg-gray-700 !border-0 !opacity-100 data-[disabled]:!opacity-100 data-[disabled]:!pointer-events-auto"
                   >
                     <Check
                       className={cn(

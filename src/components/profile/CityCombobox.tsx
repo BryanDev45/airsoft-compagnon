@@ -44,15 +44,15 @@ export function ComboboxDemo({ defaultValue = "", onSelect }: CityComboboxProps)
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="p-0 w-[300px]" align="start">
-        <Command shouldFilter={false} className="overflow-hidden rounded-md">
+      <PopoverContent className="p-0 w-[300px] z-50 bg-white border" align="start">
+        <Command shouldFilter={false} className="overflow-hidden rounded-md bg-white">
           <CommandInput 
             placeholder="Rechercher une ville..." 
             value={searchTerm}
             onValueChange={(value) => setSearchTerm(value || "")}
             className="h-9"
           />
-          <CommandList className="max-h-[200px] overflow-y-auto">
+          <CommandList className="max-h-[200px] overflow-y-auto bg-white">
             <CitySearchResults
               cities={cities}
               isLoading={isLoading}
