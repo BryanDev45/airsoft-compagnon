@@ -97,14 +97,37 @@ export const useMapRenderer = ({
 
   // Update features without recreating the map
   useEffect(() => {
-    if (!vectorLayer.current || !isMapInitialized.current) return;
+    if (!vectorLayer.current || !isMapInitialized.current) {
+      console.log(`MapRenderer: Cannot update features - vectorLayer or map not ready`);
+      return;
+    }
 
     console.log(`MapRenderer: Updating features - ${features.length} total`);
+    console.log(`MapRenderer: Features details:`, features.map(f => ({
+      type: f.get('type'),
+      geometry: f.getGeometry()?.getType(),
+      coordinates: f.getGeometry()?.getExtent()
+    })));
     
     const vectorSource = vectorLayer.current.getSource();
     if (vectorSource) {
       vectorSource.clear();
-      vectorSource.addFeatures(features);
+      if (features.length > 0) {
+        vectorSource.addFeatures(features);
+        console.log(`MapRenderer: Added ${features.length} features to map`);
+        
+        // Force a refresh of the map after adding features
+        setTimeout(() => {
+          if (map.current) {
+            map.current.render();
+            console.log(`MapRenderer: Forced map refresh`);
+          }
+        }, 100);
+      } else {
+        console.log(`MapRenderer: No features to add`);
+      }
+    } else {
+      console.error(`MapRenderer: Vector source is null`);
     }
   }, [features]);
 

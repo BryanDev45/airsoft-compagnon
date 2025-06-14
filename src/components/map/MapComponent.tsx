@@ -32,9 +32,13 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const viewInstance = useRef<any>(null);
 
   console.log(`MapComponent: Rendering map with ${filteredEvents.length} events and ${stores.length} stores`);
+  console.log(`MapComponent: Events:`, filteredEvents.map(e => ({ title: e.title, lat: e.lat, lng: e.lng })));
+  console.log(`MapComponent: Stores:`, stores.map(s => ({ name: s.name, lat: s.lat, lng: s.lng })));
 
   // Memoize features to prevent unnecessary recalculations
   const allFeatures = useMemo(() => {
+    console.log(`MapComponent: Calculating features...`);
+    
     const eventFeatures = createEventFeatures(filteredEvents);
     const storeFeatures = createStoreFeatures(stores);
     const radiusFeature = createSearchRadiusFeature(searchCenter, searchRadius);
@@ -45,7 +49,9 @@ const MapComponent: React.FC<MapComponentProps> = ({
       ...(radiusFeature ? [radiusFeature] : [])
     ];
 
-    console.log(`MapComponent: Created ${features.length} features total (${eventFeatures.length} event markers)`);
+    console.log(`MapComponent: Created ${features.length} features total (${eventFeatures.length} event features, ${storeFeatures.length} store features, ${radiusFeature ? 1 : 0} radius feature)`);
+    console.log(`MapComponent: Feature types:`, features.map(f => f.get('type')));
+    
     return features;
   }, [filteredEvents, stores, searchCenter, searchRadius]);
 
@@ -58,13 +64,17 @@ const MapComponent: React.FC<MapComponentProps> = ({
   });
 
   const handleMapReady = useMemo(() => (mapObj: any, overlay: any, viewObj: any) => {
+    console.log(`MapComponent: Map is ready`);
     mapInstance.current = mapObj;
     overlayInstance.current = overlay;
     viewInstance.current = viewObj;
     setupClickHandler();
   }, [setupClickHandler]);
 
-  const handleMapLoaded = useMemo(() => () => setMapLoaded(true), []);
+  const handleMapLoaded = useMemo(() => () => {
+    console.log(`MapComponent: Map has loaded`);
+    setMapLoaded(true);
+  }, []);
 
   // Initialize map renderer
   const { map, overlayRef } = useMapRenderer({

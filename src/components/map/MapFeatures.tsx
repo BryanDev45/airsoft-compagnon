@@ -8,6 +8,7 @@ import { MapEvent, MapStore } from '@/hooks/useGamesData';
 import { areCoordinatesValid } from '@/utils/geocodingUtils';
 
 export const createEventFeatures = (filteredEvents: MapEvent[]): Feature[] => {
+  console.log(`MapFeatures: Creating event features for ${filteredEvents.length} events`);
   const features: Feature[] = [];
 
   filteredEvents.forEach(event => {
@@ -24,8 +25,11 @@ export const createEventFeatures = (filteredEvents: MapEvent[]): Feature[] => {
     console.log(`MapFeatures: Adding marker for event "${event.title}" at coordinates (${lat}, ${lng})`);
     
     try {
+      const coords = fromLonLat([lng, lat]);
+      console.log(`MapFeatures: Transformed coordinates for "${event.title}": ${coords}`);
+      
       const feature = new Feature({
-        geometry: new Point(fromLonLat([lng, lat])),
+        geometry: new Point(coords),
         event: event,
         type: 'event'
       });
@@ -50,45 +54,58 @@ export const createEventFeatures = (filteredEvents: MapEvent[]): Feature[] => {
     }
   });
 
+  console.log(`MapFeatures: Created ${features.length} event features`);
   return features;
 };
 
 export const createStoreFeatures = (stores: MapStore[]): Feature[] => {
+  console.log(`MapFeatures: Creating store features for ${stores.length} stores`);
   const features: Feature[] = [];
 
   stores.forEach(store => {
     const lat = parseFloat(String(store.lat)) || 0;
     const lng = parseFloat(String(store.lng)) || 0;
     
+    console.log(`MapFeatures: Processing store "${store.name}" with coordinates (${lat}, ${lng})`);
+    
     if (!areCoordinatesValid(lat, lng)) {
-      console.warn(`Skipping store "${store.name}" with invalid coordinates: (${lat}, ${lng})`);
+      console.warn(`MapFeatures: Skipping store "${store.name}" with invalid coordinates: (${lat}, ${lng})`);
       return;
     }
 
-    console.log(`Adding store marker for "${store.name}" at (${lat}, ${lng})`);
+    console.log(`MapFeatures: Adding store marker for "${store.name}" at (${lat}, ${lng})`);
     
-    const feature = new Feature({
-      geometry: new Point(fromLonLat([lng, lat])),
-      store: store,
-      type: 'store'
-    });
+    try {
+      const coords = fromLonLat([lng, lat]);
+      console.log(`MapFeatures: Transformed coordinates for "${store.name}": ${coords}`);
+      
+      const feature = new Feature({
+        geometry: new Point(coords),
+        store: store,
+        type: 'store'
+      });
 
-    feature.setStyle(new Style({
-      image: new CircleStyle({
-        radius: 8,
-        fill: new Fill({
-          color: '#10b981'
-        }),
-        stroke: new Stroke({
-          color: '#ffffff',
-          width: 3
+      feature.setStyle(new Style({
+        image: new CircleStyle({
+          radius: 8,
+          fill: new Fill({
+            color: '#10b981'
+          }),
+          stroke: new Stroke({
+            color: '#ffffff',
+            width: 3
+          })
         })
-      })
-    }));
+      }));
 
-    features.push(feature);
+      features.push(feature);
+      console.log(`MapFeatures: Successfully added store marker for "${store.name}"`);
+    } catch (error) {
+      console.error(`MapFeatures: Error creating store marker for "${store.name}":`, error);
+    }
   });
 
+  console.log(`MapFeatures: Created ${features.length} store features`);
   return features;
 };
 
@@ -96,7 +113,12 @@ export const createSearchRadiusFeature = (
   searchCenter: [number, number], 
   searchRadius: number
 ): Feature | null => {
-  if (searchRadius <= 0) return null;
+  if (searchRadius <= 0) {
+    console.log(`MapFeatures: No radius feature - radius is ${searchRadius}`);
+    return null;
+  }
+
+  console.log(`MapFeatures: Creating radius feature with center ${searchCenter} and radius ${searchRadius}km`);
 
   const radiusFeature = new Feature({
     geometry: new Circle(fromLonLat(searchCenter), searchRadius * 1000)
@@ -114,5 +136,6 @@ export const createSearchRadiusFeature = (
     })
   );
 
+  console.log(`MapFeatures: Created radius feature`);
   return radiusFeature;
 };
