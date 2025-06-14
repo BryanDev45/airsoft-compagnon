@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -190,9 +191,20 @@ const UserReportsTab = () => {
               </div>
             )}
             
-            {/* Profile access button */}
-            {report.reported_profile?.username && (
-              <div className="flex items-center gap-2 pt-2 border-t">
+            {/* Profile access buttons */}
+            <div className="flex items-center gap-2 pt-2 border-t">
+              {report.reporter_profile?.username && (
+                <Button
+                  onClick={() => handleViewProfile(report.reporter_profile?.username || '')}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <User className="h-4 w-4" />
+                  Profil du rapporteur
+                </Button>
+              )}
+              {report.reported_profile?.username && (
                 <Button
                   onClick={() => handleViewProfile(report.reported_profile?.username || '')}
                   variant="outline"
@@ -200,10 +212,10 @@ const UserReportsTab = () => {
                   className="flex items-center gap-2"
                 >
                   <User className="h-4 w-4" />
-                  Voir le profil de {report.reported_profile.username}
+                  Profil de l'utilisateur signalé
                 </Button>
-              </div>
-            )}
+              )}
+            </div>
             
             {report.status === 'pending' && (
               <div className="flex gap-2">
@@ -244,6 +256,8 @@ const UserReportsTab = () => {
         onOpenChange={setResolveDialogOpen}
         onConfirm={handleResolveConfirm}
         isLoading={updateReportMutation.isPending}
+        title="Résoudre le signalement d'utilisateur"
+        description="Ajoutez un commentaire sur les actions prises concernant ce signalement d'utilisateur."
       />
     </div>
   );
