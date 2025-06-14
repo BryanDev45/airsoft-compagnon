@@ -33,6 +33,7 @@ const UserProfileHeader = ({
   isCurrentUserAdmin
 }: UserProfileHeaderProps) => {
   const isOwnProfile = currentUserId === userData?.id;
+  const [showBanDialog, setShowBanDialog] = React.useState(false);
 
   return (
     <div className="p-6 border-b border-gray-200">
@@ -57,8 +58,8 @@ const UserProfileHeader = ({
               <RatingStars
                 rating={userReputation}
                 onRatingChange={!isOwnProfile ? handleRatingChange : undefined}
-                currentUserRating={userRating}
-                readOnly={isOwnProfile}
+                userId={userData?.id}
+                readonly={isOwnProfile}
               />
               <span className="text-sm text-gray-500">
                 ({userReputation?.toFixed(1) || '0.0'})
@@ -104,11 +105,23 @@ const UserProfileHeader = ({
             />
 
             {isCurrentUserAdmin && (
-              <BanUserDialog
-                userId={userData?.id}
-                username={profileData?.username || 'Utilisateur'}
-                isCurrentlyBanned={profileData?.Ban || false}
-              />
+              <>
+                <Button 
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setShowBanDialog(true)}
+                >
+                  {profileData?.Ban ? 'Débannir' : 'Bannir'}
+                </Button>
+                
+                <BanUserDialog
+                  open={showBanDialog}
+                  onOpenChange={setShowBanDialog}
+                  userData={userData}
+                  currentUserId={currentUserId}
+                  isCurrentUserAdmin={isCurrentUserAdmin}
+                />
+              </>
             )}
           </div>
         )}
