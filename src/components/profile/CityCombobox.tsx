@@ -9,6 +9,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList,
 } from "@/components/ui/command";
 import {
   Popover,
@@ -124,23 +125,26 @@ export function ComboboxDemo({
             onValueChange={(value) => setSearchTerm(value || "")}
             className="h-9"
           />
-          <div className="max-h-[200px] overflow-y-auto">
-            {error && (
+          <CommandList className="max-h-[200px] overflow-y-auto">
+            {error ? (
               <div className="px-4 py-2 text-sm text-red-500">
                 {error}
               </div>
-            )}
-            <CommandEmpty>
-              {isLoading ? "Chargement..." : "Aucune ville trouvée."}
-            </CommandEmpty>
-            <CommandGroup>
-              {isLoading ? (
-                <div className="flex items-center justify-center p-4">
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  <span>Recherche en cours...</span>
-                </div>
-              ) : (
-                cities.map((city) => (
+            ) : isLoading ? (
+              <div className="flex items-center justify-center p-4">
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                <span>Recherche en cours...</span>
+              </div>
+            ) : cities.length === 0 ? (
+              <CommandEmpty>
+                {searchTerm.length < 2 
+                  ? "Tapez au moins 2 caractères pour rechercher" 
+                  : "Aucune ville trouvée."
+                }
+              </CommandEmpty>
+            ) : (
+              <CommandGroup>
+                {cities.map((city) => (
                   <CommandItem
                     key={city.fullName}
                     value={city.fullName}
@@ -159,10 +163,10 @@ export function ComboboxDemo({
                     />
                     {city.fullName}
                   </CommandItem>
-                ))
-              )}
-            </CommandGroup>
-          </div>
+                ))}
+              </CommandGroup>
+            )}
+          </CommandList>
         </Command>
       </PopoverContent>
     </Popover>
