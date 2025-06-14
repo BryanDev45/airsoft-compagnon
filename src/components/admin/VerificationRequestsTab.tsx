@@ -11,13 +11,17 @@ const VerificationRequestsTab = () => {
     return <div className="flex justify-center p-8">Chargement des demandes...</div>;
   }
 
+  const handleUpdateRequest = (requestId: string, status: string, adminNotes: string) => {
+    updateRequest({ requestId, status, adminNotes });
+  };
+
   return (
     <div className="space-y-4">
       {requests.map((request) => (
         <VerificationRequestCard
           key={request.id}
           request={request}
-          onUpdateRequest={updateRequest}
+          onUpdateRequest={handleUpdateRequest}
         />
       ))}
       {requests.length === 0 && <VerificationRequestsEmpty />}
