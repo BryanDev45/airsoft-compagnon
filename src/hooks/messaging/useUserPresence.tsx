@@ -3,10 +3,12 @@ import { useEffect, useCallback, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useOptimizedQueries } from './useOptimizedQueries';
 
 export const useUserPresence = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { optimizedQueryConfig } = useOptimizedQueries();
   const lastUpdateRef = useRef<number>(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -16,7 +18,7 @@ export const useUserPresence = () => {
 
     // Throttle updates to prevent excessive requests
     const now = Date.now();
-    if (now - lastUpdateRef.current < 10000) { // 10 seconds throttle
+    if (now - lastUpdateRef.current < 30000) { // Increased to 30 seconds throttle
       return;
     }
     lastUpdateRef.current = now;
@@ -61,12 +63,12 @@ export const useUserPresence = () => {
       clearInterval(intervalRef.current);
     }
 
-    // Update presence every 5 minutes instead of 2 minutes
+    // Update presence every 10 minutes instead of 5 minutes
     intervalRef.current = setInterval(() => {
       if (!document.hidden && user?.id) {
         updatePresence(true);
       }
-    }, 5 * 60 * 1000);
+    }, 10 * 60 * 1000);
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('beforeunload', handleBeforeUnload);
@@ -111,6 +113,8 @@ export const useUserPresence = () => {
 
 // Hook to check if a specific user is online with optimized polling
 export const useIsUserOnline = (userId: string | undefined) => {
+  const { optimizedQueryConfig } = useOptimizedQueries();
+
   return useQuery({
     queryKey: ['user-presence', userId],
     queryFn: async () => {
@@ -128,9 +132,10 @@ export const useIsUserOnline = (userId: string | undefined) => {
       return data || false;
     },
     enabled: !!userId,
-    refetchInterval: 60000, // Reduced from 30s to 60s
-    staleTime: 45000, // Consider data stale after 45 seconds
-    gcTime: 120000, // 2 minutes cache
-    retry: 1,
+    ...optimizedQueryConfig('user-presence', {
+      refetchInterval: 120000, // Reduced from 60s to 2 minutes
+      staleTime: 90000, // Consider data stale after 90 seconds
+      gcTime: 300000, // 5 minutes cache
+    })
   });
 };

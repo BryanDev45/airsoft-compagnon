@@ -26,15 +26,19 @@ export const useRealtimeMessages = () => {
         (payload) => {
           console.log('Real-time message update:', payload);
           
+          // Type-safe access to payload data
+          const newRecord = payload.new as any;
+          const oldRecord = payload.old as any;
+          
           // Invalidate messages queries for the affected conversation
-          if (payload.new?.conversation_id) {
+          if (newRecord?.conversation_id) {
             queryClient.invalidateQueries({ 
-              queryKey: ['messages', payload.new.conversation_id] 
+              queryKey: ['messages', newRecord.conversation_id] 
             });
           }
-          if (payload.old?.conversation_id) {
+          if (oldRecord?.conversation_id) {
             queryClient.invalidateQueries({ 
-              queryKey: ['messages', payload.old.conversation_id] 
+              queryKey: ['messages', oldRecord.conversation_id] 
             });
           }
           

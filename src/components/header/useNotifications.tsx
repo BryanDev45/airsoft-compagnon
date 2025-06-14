@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getStorageWithExpiry, setStorageWithExpiry } from '@/utils/cacheUtils';
 import { useAuth } from '@/hooks/useAuth';
+import { useOptimizedQueries } from '@/hooks/messaging/useOptimizedQueries';
 
 const NOTIFICATIONS_CACHE_KEY = 'notifications_count';
 
@@ -26,8 +27,8 @@ const fetchNotificationCount = async (userId: string): Promise<number> => {
   
   const countValue = count || 0;
   
-  // Cache for 30 seconds
-  setStorageWithExpiry(cacheKey, countValue, 30000);
+  // Cache for 60 seconds instead of 30
+  setStorageWithExpiry(cacheKey, countValue, 60000);
   
   return countValue;
 };
@@ -35,17 +36,19 @@ const fetchNotificationCount = async (userId: string): Promise<number> => {
 export function useNotifications() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { optimizedQueryConfig } = useOptimizedQueries();
   
   // Requête optimisée avec React Query
   const { data: notificationCount = 0 } = useQuery({
     queryKey: ['unreadNotifications', user?.id],
     queryFn: () => fetchNotificationCount(user!.id),
     enabled: !!user?.id,
-    staleTime: 30000, // 30 seconds
-    gcTime: 120000, // 2 minutes
-    refetchInterval: 60000, // Reduced from 20s to 60s
-    refetchOnWindowFocus: true,
-    retry: 2,
+    ...optimizedQueryConfig('unreadNotifications', {
+      staleTime: 60000, // 60 seconds
+      gcTime: 180000, // 3 minutes
+      refetchInterval: 120000, // Reduced from 60s to 2 minutes
+      refetchOnWindowFocus: true,
+    })
   });
 
   const handleSheetOpenChange = async (open: boolean) => {

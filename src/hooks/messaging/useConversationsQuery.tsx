@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useTeamConversationManager } from './useTeamConversationManager';
 import { useConversationData } from './useConversationData';
+import { useOptimizedQueries } from './useOptimizedQueries';
 import { Conversation } from '@/types/messaging';
 import { sortConversations } from '@/utils/messaging';
 import { useCallback, useRef } from 'react';
@@ -12,6 +13,7 @@ export const useConversationsQuery = () => {
   const { user } = useAuth();
   const { createTeamConversationIfNeeded } = useTeamConversationManager();
   const { fetchConversationDetails } = useConversationData();
+  const { optimizedQueryConfig } = useOptimizedQueries();
   const errorCountRef = useRef(0);
 
   const queryFn = useCallback(async (): Promise<Conversation[]> => {
@@ -105,16 +107,10 @@ export const useConversationsQuery = () => {
     queryKey: ['conversations', user?.id],
     queryFn,
     enabled: !!user?.id,
-    refetchInterval: 60000, // Reduced from 30s to 60s
-    staleTime: 30000, // Increased from 10s to 30s
-    gcTime: 300000, // 5 minutes cache time
-    retry: (failureCount, error) => {
-      // Don't retry RLS errors
-      if (error?.message?.includes('row-level security')) {
-        return false;
-      }
-      return failureCount < 2;
-    },
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    ...optimizedQueryConfig('conversations', {
+      refetchInterval: 120000, // Reduced from 60s to 2 minutes
+      staleTime: 60000, // Increased from 30s to 60s
+      gcTime: 600000, // 10 minutes cache time
+    })
   });
 };
