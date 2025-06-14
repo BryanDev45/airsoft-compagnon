@@ -1,106 +1,121 @@
 
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { getValidCoordinates } from '@/utils/geocodingUtils';
-import { setStorageWithExpiry, CACHE_DURATIONS } from '@/utils/cacheUtils';
-import { MapStore } from './useMapData';
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { getValidCoordinates } from "@/utils/geocodingUtils";
 
-const STORES_CACHE_KEY = 'map_stores_data';
-
-export const fetchStoresData = async (): Promise<MapStore[]> => {
-  const { data, error } = await supabase
-    .from('stores')
-    .select('*')
-    .order('name');
-
-  if (error) throw error;
-
-  console.log(`Fetching ${data?.length || 0} stores for geocoding`);
-
-  const formattedStores = await Promise.all(data?.map(async (store: any) => {
-    const storeImage = store.picture1 || store.picture2 || store.picture3 || store.picture4 || store.picture5 || "/lovable-uploads/b4788da2-5e76-429d-bfca-8587c5ca68aa.png";
-    
-    console.log(`Processing store "${store.name}": Address="${store.address}", City="${store.city}", Country detection from full data`);
-    
-    // Enhanced coordinates validation with store data for better country detection
-    const coordinates = await getValidCoordinates(
-      store.latitude,
-      store.longitude,
-      store.address || '',
-      store.zip_code || '',
-      store.city || '',
-      'France', // Default country, will be auto-detected
-      store // Pass the full store data for better country detection
-    );
-    
-    console.log(`Store "${store.name}": Final coordinates (${coordinates.latitude}, ${coordinates.longitude})`);
-    
-    // Mettre à jour les coordonnées en arrière-plan si nécessaire
-    if (coordinates.latitude !== store.latitude || coordinates.longitude !== store.longitude) {
-      (async () => {
-        try {
-          await supabase
-            .from('stores')
-            .update({
-              latitude: coordinates.latitude,
-              longitude: coordinates.longitude
-            })
-            .eq('id', store.id);
-          console.log(`Updated coordinates for store ${store.name} (${store.id})`);
-        } catch (error) {
-          console.error('Failed to update store coordinates:', error);
-        }
-      })();
-    }
-    
-    return {
-      id: store.id,
-      name: store.name,
-      address: store.address,
-      city: store.city,
-      zip_code: store.zip_code,
-      phone: store.phone,
-      email: store.email,
-      website: store.website,
-      lat: coordinates.latitude,
-      lng: coordinates.longitude,
-      store_type: store.store_type || 'physical',
-      image: storeImage,
-      picture2: store.picture2,
-      picture3: store.picture3,
-      picture4: store.picture4,
-      picture5: store.picture5
-    };
-  }) || []);
-  
-  // Filter stores with valid coordinates
-  const validStores = formattedStores.filter(store => {
-    const isValid = store.lat !== 0 && store.lng !== 0 && 
-                   !isNaN(store.lat) && !isNaN(store.lng) &&
-                   Math.abs(store.lat) > 0.1 && Math.abs(store.lng) > 0.1;
-    
-    if (!isValid) {
-      console.warn(`Filtering out store "${store.name}" with invalid coordinates: (${store.lat}, ${store.lng})`);
-    }
-    
-    return isValid;
-  });
-  
-  console.log(`Returning ${validStores.length} stores with valid coordinates out of ${formattedStores.length} total stores`);
-  
-  // Mettre en cache pour 30 minutes
-  setStorageWithExpiry(STORES_CACHE_KEY, validStores, CACHE_DURATIONS.MEDIUM);
-  
-  return validStores;
-};
-
-export function useStoresData() {
-  return useQuery({
-    queryKey: ['mapStores'],
-    queryFn: fetchStoresData,
-    refetchOnWindowFocus: false,
-    staleTime: CACHE_DURATIONS.MEDIUM, // 30 minutes
-    gcTime: CACHE_DURATIONS.LONG, // 24 heures
-    retry: 1
-  });
+export interface MapStore {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  zip_code: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+  lat: number;
+  lng: number;
+  store_type: string;
+  image: string;
+  picture2?: string;
+  picture3?: string;
+  picture4?: string;
+  picture5?: string;
 }
+
+export const useStoresData = () => {
+  return useQuery({
+    queryKey: ['stores'],
+    queryFn: async (): Promise<MapStore[]> => {
+      console.log('Fetching stores data...');
+      
+      const { data: stores, error } = await supabase
+        .from('stores')
+        .select('*')
+        .order('name', { ascending: true });
+      
+      if (error) {
+        console.error('Error fetching stores:', error);
+        throw error;
+      }
+      
+      console.log(`Fetched ${stores?.length || 0} stores from database`);
+      
+      // Process each store to ensure valid coordinates
+      const processedStores = await Promise.all(
+        (stores || []).map(async (store) => {
+          console.log(`Processing store "${store.name}": Address="${store.address}", City="${store.city}", ZIP="${store.zip_code}", Stored coords=(${store.latitude}, ${store.longitude})`);
+          
+          // Special handling for Polish addresses - force geocoding if coordinates seem to be default Paris coordinates
+          const isPolishAddress = (store.address && (store.address.includes('ł') || store.address.includes('ą') || store.address.includes('ę') || store.address.includes('ć') || store.address.includes('ń') || store.address.includes('ó') || store.address.includes('ś') || store.address.includes('ź') || store.address.includes('ż'))) ||
+                                 (store.city && (store.city.toLowerCase().includes('krakow') || store.city.toLowerCase().includes('kraków') || store.city.toLowerCase().includes('warszawa') || store.city.toLowerCase().includes('gdansk') || store.city.toLowerCase().includes('gdańsk'))) ||
+                                 (store.zip_code && /^\d{2}-\d{3}$/.test(store.zip_code));
+          
+          const isProbablyDefaultCoords = (store.latitude === 48.8566 && store.longitude === 2.3522) || // Paris default
+                                         (Math.abs(store.latitude - 48.8566) < 0.001 && Math.abs(store.longitude - 2.3522) < 0.001);
+          
+          let shouldForceGeocode = false;
+          
+          if (isPolishAddress && isProbablyDefaultCoords) {
+            console.log(`Store "${store.name}" appears to have Polish address but Paris coordinates - forcing geocoding`);
+            shouldForceGeocode = true;
+          }
+          
+          // Use stored coordinates if they seem valid, otherwise geocode
+          const validCoordinates = await getValidCoordinates(
+            shouldForceGeocode ? null : store.latitude, // Force geocoding if needed
+            shouldForceGeocode ? null : store.longitude,
+            store.address || '',
+            store.zip_code || '',
+            store.city || '',
+            'France', // Default country
+            {
+              name: store.name,
+              address: store.address,
+              city: store.city,
+              zip_code: store.zip_code
+            }
+          );
+
+          console.log(`Store "${store.name}": Final coordinates (${validCoordinates.latitude}, ${validCoordinates.longitude})`);
+
+          return {
+            id: store.id,
+            name: store.name,
+            address: store.address || '',
+            city: store.city || '',
+            zip_code: store.zip_code || '',
+            phone: store.phone,
+            email: store.email,
+            website: store.website,
+            lat: validCoordinates.latitude,
+            lng: validCoordinates.longitude,
+            store_type: store.store_type || '',
+            image: store.picture1 || '/placeholder.svg',
+            picture2: store.picture2,
+            picture3: store.picture3,
+            picture4: store.picture4,
+            picture5: store.picture5
+          };
+        })
+      );
+
+      // Filter stores with valid coordinates
+      const validStores = processedStores.filter(store => {
+        const isValid = store.lat !== 0 && store.lng !== 0 && 
+                       !isNaN(store.lat) && !isNaN(store.lng) &&
+                       Math.abs(store.lat) > 0.1 && Math.abs(store.lng) > 0.1;
+        
+        if (!isValid) {
+          console.warn(`Filtering out store "${store.name}" with invalid coordinates: (${store.lat}, ${store.lng})`);
+        }
+        
+        return isValid;
+      });
+
+      console.log(`Returning ${validStores.length} stores with valid coordinates out of ${processedStores.length} total stores`);
+      return validStores;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
+  });
+};

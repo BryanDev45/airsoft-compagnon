@@ -66,25 +66,38 @@ export const geocodeAddress = async (
     // Enhanced search strategies for better international coverage with different alphabets
     const searchQueries = [];
 
-    // For Polish addresses, try both original and normalized versions
+    // For Polish addresses, try both original and normalized versions with more specific strategies
     if (mappedCountry.toLowerCase() === 'poland') {
+      console.log(`Using Polish-specific geocoding for: "${cleanAddress}, ${cleanCity}"`);
+      
       searchQueries.push(
-        // Original Polish characters first
-        `${cleanAddress}, ${cleanZipCode} ${cleanCity}, ${mappedCountry}`,
-        `${cleanAddress}, ${cleanCity}, ${mappedCountry}`,
-        // Normalized versions
-        `${normalizedAddress}, ${cleanZipCode} ${normalizedCity}, ${mappedCountry}`,
-        `${normalizedAddress}, ${normalizedCity}, ${mappedCountry}`,
-        // City variations
-        `${cleanZipCode} ${cleanCity}, ${mappedCountry}`,
-        `${cleanZipCode} ${normalizedCity}, ${mappedCountry}`,
-        `${cleanCity}, ${mappedCountry}`,
-        `${normalizedCity}, ${mappedCountry}`,
-        // Just city with common Polish names
+        // Most specific with Polish postal codes first
+        `${cleanAddress}, ${cleanZipCode} ${cleanCity}, Poland`,
+        `${normalizedAddress}, ${cleanZipCode} ${normalizedCity}, Poland`,
+        
+        // Try with Kraków variations specifically
         ...(cleanCity.toLowerCase().includes('krakow') || normalizedCity.toLowerCase().includes('krakow') 
-          ? ['Kraków, Poland', 'Krakow, Poland'] : []),
-        // ZIP code only
-        ...(cleanZipCode ? [`${cleanZipCode}, ${mappedCountry}`] : [])
+          ? [
+              `${cleanAddress}, Kraków, Poland`,
+              `${normalizedAddress}, Krakow, Poland`,
+              `${cleanAddress}, 30-740 Kraków, Poland`,
+              `${normalizedAddress}, 30-740 Krakow, Poland`
+            ] : []),
+        
+        // City with postal code variations
+        `${cleanZipCode} ${cleanCity}, Poland`,
+        `${cleanZipCode} ${normalizedCity}, Poland`,
+        
+        // Just address and city
+        `${cleanAddress}, ${cleanCity}, Poland`,
+        `${normalizedAddress}, ${normalizedCity}, Poland`,
+        
+        // City only as last resort
+        `${cleanCity}, Poland`,
+        `${normalizedCity}, Poland`,
+        
+        // Special case for specific known cities
+        ...(cleanCity.toLowerCase().includes('krakow') ? ['Kraków, Poland', 'Krakow, Poland'] : [])
       );
     } else {
       // Standard search queries for other countries
@@ -118,14 +131,9 @@ export const geocodeAddress = async (
       geocodingUrl.searchParams.set('namedetails', '1');
       geocodingUrl.searchParams.set('accept-language', 'en,local');
       
-      // Add country code filter if available
-      if (countryCode) {
+      // Add country code filter if available for more precise results
+      if (countryCode && mappedCountry.toLowerCase() === 'poland') {
         geocodingUrl.searchParams.set('countrycodes', countryCode);
-      }
-
-      // For Polish addresses, also try without country code restriction
-      if (mappedCountry.toLowerCase() === 'poland' && i < 4) {
-        geocodingUrl.searchParams.delete('countrycodes');
       }
       
       try {
@@ -143,6 +151,8 @@ export const geocodeAddress = async (
         const data = await response.json();
         
         if (data && data.length > 0) {
+          console.log(`Geocoding API returned ${data.length} results for query: "${query}"`);
+          
           // Enhanced result evaluation with better scoring for international addresses
           for (const result of data) {
             const { lat, lon, address: resultAddress, importance = 0 } = result;
@@ -150,6 +160,8 @@ export const geocodeAddress = async (
               longitude: parseFloat(lon),
               latitude: parseFloat(lat)
             };
+            
+            console.log(`Evaluating result: lat=${lat}, lon=${lon}, country="${resultAddress?.country}", city="${resultAddress?.city || resultAddress?.town || resultAddress?.village}"`);
             
             // Validate that the result is reasonable
             if (areCoordinatesValid(coordinates.latitude, coordinates.longitude)) {
@@ -191,13 +203,18 @@ export const geocodeAddress = async (
               
               console.log(`Geocoding result: Query="${query}", Score=${score.toFixed(2)}, Country="${resultAddress?.country}", City="${resultCity}", Coords=(${coordinates.latitude}, ${coordinates.longitude})`);
               
+              // For Polish addresses, be more strict about country matching initially
+              const minScore = mappedCountry.toLowerCase() === 'poland' && i < 3 ? 0.5 : 0.3;
+              
               // Accept result if it meets minimum criteria
-              if ((isCountryMatch && isCityMatch) || score > 0.3 || i >= 2) {
+              if ((isCountryMatch && isCityMatch) || score > minScore || i >= 3) {
                 console.log(`✓ Geocoding successful with query: "${query}"`);
                 return coordinates;
               }
             }
           }
+        } else {
+          console.log(`No results returned for query: "${query}"`);
         }
       } catch (fetchError) {
         console.warn(`Network error for geocoding query "${query}":`, fetchError);
@@ -205,7 +222,7 @@ export const geocodeAddress = async (
       
       // Add delay between requests to respect rate limits
       if (i < searchQueries.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise(resolve => setTimeout(resolve, 300));
       }
     }
     
