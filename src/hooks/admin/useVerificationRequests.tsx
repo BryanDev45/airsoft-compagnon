@@ -111,11 +111,20 @@ export const useVerificationRequests = () => {
         }
       }
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['verification-requests'] });
+      
+      const actionText = variables.status === 'approved' ? 'approuvée' : 'rejetée';
       toast({
         title: "Demande mise à jour",
-        description: "Le statut de la demande a été mis à jour avec succès."
+        description: `La demande de vérification a été ${actionText} avec succès.`
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la mise à jour de la demande.",
+        variant: "destructive"
       });
     }
   });
@@ -123,6 +132,6 @@ export const useVerificationRequests = () => {
   return {
     requests,
     isLoading,
-    updateRequest: updateRequestMutation.mutate
+    updateRequest: updateRequestMutation.mutateAsync
   };
 };
