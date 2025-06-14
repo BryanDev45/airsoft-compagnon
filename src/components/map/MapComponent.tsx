@@ -1,5 +1,5 @@
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { MapPin } from 'lucide-react';
 import { fromLonLat } from 'ol/proj';
 import { MapEvent, MapStore } from '@/hooks/useGamesData';
@@ -33,20 +33,23 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
   console.log(`MapComponent: Rendering map with ${filteredEvents.length} events and ${stores.length} stores`);
 
-  // Create all features
-  const eventFeatures = createEventFeatures(filteredEvents);
-  const storeFeatures = createStoreFeatures(stores);
-  const radiusFeature = createSearchRadiusFeature(searchCenter, searchRadius);
-  
-  const allFeatures = [
-    ...eventFeatures,
-    ...storeFeatures,
-    ...(radiusFeature ? [radiusFeature] : [])
-  ];
+  // Memoize features to prevent unnecessary recalculations
+  const allFeatures = useMemo(() => {
+    const eventFeatures = createEventFeatures(filteredEvents);
+    const storeFeatures = createStoreFeatures(stores);
+    const radiusFeature = createSearchRadiusFeature(searchCenter, searchRadius);
+    
+    const features = [
+      ...eventFeatures,
+      ...storeFeatures,
+      ...(radiusFeature ? [radiusFeature] : [])
+    ];
 
-  console.log(`MapComponent: Created ${allFeatures.length} features total (${eventFeatures.length} event markers)`);
+    console.log(`MapComponent: Created ${features.length} features total (${eventFeatures.length} event markers)`);
+    return features;
+  }, [filteredEvents, stores, searchCenter, searchRadius]);
 
-  // Initialize click handlers
+  // Initialize click handlers - use useCallback to prevent recreation
   const { setupClickHandler } = useMapClickHandler({
     map: mapInstance,
     overlayRef: overlayInstance,
@@ -54,31 +57,24 @@ const MapComponent: React.FC<MapComponentProps> = ({
     setSelectedStore
   });
 
+  const handleMapReady = useMemo(() => (mapObj: any, overlay: any, viewObj: any) => {
+    mapInstance.current = mapObj;
+    overlayInstance.current = overlay;
+    viewInstance.current = viewObj;
+    setupClickHandler();
+  }, [setupClickHandler]);
+
+  const handleMapLoaded = useMemo(() => () => setMapLoaded(true), []);
+
   // Initialize map renderer
-  const { map, overlayRef, view } = useMapRenderer({
+  const { map, overlayRef } = useMapRenderer({
     mapRef,
     popupRef,
     searchCenter,
     features: allFeatures,
-    onMapReady: (mapObj, overlay, viewObj) => {
-      mapInstance.current = mapObj;
-      overlayInstance.current = overlay;
-      viewInstance.current = viewObj;
-      setupClickHandler();
-    },
-    onMapLoaded: () => setMapLoaded(true)
+    onMapReady: handleMapReady,
+    onMapLoaded: handleMapLoaded
   });
-
-  // Update view when center changes
-  useEffect(() => {
-    if (viewInstance.current && mapInstance.current) {
-      viewInstance.current.animate({
-        center: fromLonLat(searchCenter),
-        duration: 1000,
-        zoom: searchRadius > 0 ? 12 : 6
-      });
-    }
-  }, [searchCenter, searchRadius]);
 
   const handleClosePopup = () => {
     setSelectedEvent(null);

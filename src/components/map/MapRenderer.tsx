@@ -1,5 +1,5 @@
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 import Map from 'ol/Map';
 import View from 'ol/View';
 import TileLayer from 'ol/layer/Tile';
@@ -30,11 +30,14 @@ export const useMapRenderer = ({
   const map = useRef<Map | null>(null);
   const overlayRef = useRef<Overlay | null>(null);
   const view = useRef<View | null>(null);
+  const vectorLayer = useRef<VectorLayer<VectorSource> | null>(null);
+  const isMapInitialized = useRef(false);
 
+  // Initialize map only once
   useEffect(() => {
-    if (!mapRef.current || !popupRef.current) return;
+    if (!mapRef.current || !popupRef.current || isMapInitialized.current) return;
 
-    console.log(`MapRenderer: Rendering map with ${features.length} features`);
+    console.log(`MapRenderer: Initializing map for the first time`);
 
     // Create popup overlay
     overlayRef.current = new Overlay({
@@ -46,11 +49,9 @@ export const useMapRenderer = ({
       }
     });
 
-    const vectorSource = new VectorSource({
-      features: features
-    });
-
-    const vectorLayer = new VectorLayer({
+    // Create vector source and layer
+    const vectorSource = new VectorSource();
+    vectorLayer.current = new VectorLayer({
       source: vectorSource
     });
 
@@ -68,7 +69,7 @@ export const useMapRenderer = ({
         new TileLayer({
           source: new OSM()
         }),
-        vectorLayer
+        vectorLayer.current
       ],
       view: newView
     });
@@ -83,11 +84,40 @@ export const useMapRenderer = ({
       onMapLoaded();
     });
 
+    isMapInitialized.current = true;
+
     return () => {
-      map.current?.setTarget(undefined);
-      map.current = null;
+      if (map.current) {
+        map.current.setTarget(undefined);
+        map.current = null;
+        isMapInitialized.current = false;
+      }
     };
-  }, [features, searchCenter]);
+  }, [mapRef, popupRef, onMapReady, onMapLoaded]);
+
+  // Update features without recreating the map
+  useEffect(() => {
+    if (!vectorLayer.current || !isMapInitialized.current) return;
+
+    console.log(`MapRenderer: Updating features - ${features.length} total`);
+    
+    const vectorSource = vectorLayer.current.getSource();
+    if (vectorSource) {
+      vectorSource.clear();
+      vectorSource.addFeatures(features);
+    }
+  }, [features]);
+
+  // Update view center when search center changes
+  useEffect(() => {
+    if (!view.current || !isMapInitialized.current) return;
+
+    console.log(`MapRenderer: Updating view center to ${searchCenter}`);
+    view.current.animate({
+      center: fromLonLat(searchCenter),
+      duration: 1000
+    });
+  }, [searchCenter]);
 
   return {
     map,
