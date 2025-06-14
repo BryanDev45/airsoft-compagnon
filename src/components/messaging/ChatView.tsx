@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,7 +67,9 @@ const ChatView: React.FC<ChatViewProps> = ({
     if (conversation?.type === 'team' && conversation.name) {
       return conversation.name;
     }
-    return 'Conversation';
+    // Pour les conversations directes, trouver l'autre participant
+    const otherParticipant = conversation?.participants?.find(p => p.id !== user?.id);
+    return otherParticipant?.username || 'Conversation';
   };
 
   const getConversationAvatar = () => {
