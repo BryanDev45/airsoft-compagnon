@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { AlertCircle, CheckCircle, Clock, User } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import ResolveReportDialog from './ResolveReportDialog';
 
 interface UserReport {
   id: string;
@@ -27,6 +28,8 @@ interface UserReport {
 const UserReportsTab = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const [resolveDialogOpen, setResolveDialogOpen] = useState(false);
+  const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ['user-reports'],
@@ -96,6 +99,8 @@ const UserReportsTab = () => {
         title: "Rapport mis à jour",
         description: "Le statut du rapport a été mis à jour avec succès."
       });
+      setResolveDialogOpen(false);
+      setSelectedReportId(null);
     }
   });
 
@@ -120,6 +125,29 @@ const UserReportsTab = () => {
     if (username) {
       navigate(`/user/${username}`);
     }
+  };
+
+  const handleResolveClick = (reportId: string) => {
+    setSelectedReportId(reportId);
+    setResolveDialogOpen(true);
+  };
+
+  const handleResolveConfirm = (adminNotes: string) => {
+    if (selectedReportId) {
+      updateReportMutation.mutate({ 
+        reportId: selectedReportId, 
+        status: 'resolved',
+        adminNotes
+      });
+    }
+  };
+
+  const handleDismiss = (reportId: string) => {
+    updateReportMutation.mutate({ 
+      reportId, 
+      status: 'dismissed',
+      adminNotes: 'Rapport rejeté après vérification' 
+    });
   };
 
   if (isLoading) {
@@ -180,24 +208,18 @@ const UserReportsTab = () => {
             {report.status === 'pending' && (
               <div className="flex gap-2">
                 <Button
-                  onClick={() => updateReportMutation.mutate({ 
-                    reportId: report.id, 
-                    status: 'resolved',
-                    adminNotes: 'Action prise contre l\'utilisateur' 
-                  })}
+                  onClick={() => handleResolveClick(report.id)}
                   size="sm"
                   className="bg-green-600 hover:bg-green-700"
+                  disabled={updateReportMutation.isPending}
                 >
                   Résoudre
                 </Button>
                 <Button
-                  onClick={() => updateReportMutation.mutate({ 
-                    reportId: report.id, 
-                    status: 'dismissed',
-                    adminNotes: 'Rapport rejeté après vérification' 
-                  })}
+                  onClick={() => handleDismiss(report.id)}
                   variant="outline"
                   size="sm"
+                  disabled={updateReportMutation.isPending}
                 >
                   Rejeter
                 </Button>
@@ -216,6 +238,13 @@ const UserReportsTab = () => {
           </CardContent>
         </Card>
       )}
+
+      <ResolveReportDialog
+        open={resolveDialogOpen}
+        onOpenChange={setResolveDialogOpen}
+        onConfirm={handleResolveConfirm}
+        isLoading={updateReportMutation.isPending}
+      />
     </div>
   );
 };
