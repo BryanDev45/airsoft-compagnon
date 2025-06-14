@@ -84,7 +84,7 @@ export const useConversationsQuery = () => {
 
         // Filtrer les conversations nulles et trier
         const validConversations = conversationsWithDetails
-          .filter((conv) => conv !== null);
+          .filter((conv): conv is Conversation => conv !== null);
 
         return sortConversations(validConversations);
       } catch (error) {

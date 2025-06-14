@@ -1,9 +1,9 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { ConversationData, ConversationDetails, Participant, LastMessage } from '@/types/messaging';
+import { ConversationData, Conversation, Participant, LastMessage } from '@/types/messaging';
 
 export const useConversationData = () => {
-  const fetchConversationDetails = async (conv: ConversationData, userId: string): Promise<ConversationDetails | null> => {
+  const fetchConversationDetails = async (conv: ConversationData, userId: string): Promise<Conversation | null> => {
     try {
       // Récupérer les participants (excluant l'utilisateur actuel pour les conversations directes)
       const { data: participantsData, error: participantsError } = await supabase
