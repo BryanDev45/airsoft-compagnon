@@ -487,9 +487,7 @@ export type Database = {
           lastname: string | null
           location: string | null
           newsletter_subscribed: boolean | null
-          phone_number: string | null
           reputation: number | null
-          spoken_language: string | null
           team: string | null
           team_id: string | null
           username: string | null
@@ -516,9 +514,7 @@ export type Database = {
           lastname?: string | null
           location?: string | null
           newsletter_subscribed?: boolean | null
-          phone_number?: string | null
           reputation?: number | null
-          spoken_language?: string | null
           team?: string | null
           team_id?: string | null
           username?: string | null
@@ -545,9 +541,7 @@ export type Database = {
           lastname?: string | null
           location?: string | null
           newsletter_subscribed?: boolean | null
-          phone_number?: string | null
           reputation?: number | null
-          spoken_language?: string | null
           team?: string | null
           team_id?: string | null
           username?: string | null
