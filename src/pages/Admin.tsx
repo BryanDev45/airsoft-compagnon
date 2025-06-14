@@ -31,8 +31,8 @@ const Admin = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
+        <div className="mb-8 text-center">
+          <div className="flex items-center justify-center gap-3 mb-4">
             <Shield className="h-8 w-8 text-airsoft-red" />
             <h1 className="text-3xl font-bold text-gray-900">Administration</h1>
           </div>

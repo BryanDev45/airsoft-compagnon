@@ -42,7 +42,7 @@ const UserReportsTab = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as UserReport[];
+      return data as unknown as UserReport[];
     }
   });
 

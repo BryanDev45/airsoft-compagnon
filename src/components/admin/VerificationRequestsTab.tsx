@@ -39,7 +39,7 @@ const VerificationRequestsTab = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as VerificationRequest[];
+      return data as unknown as VerificationRequest[];
     }
   });
 
