@@ -1110,6 +1110,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_and_ban_low_reputation_user: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
       check_friendship_status: {
         Args: { p_user_id: string; p_friend_id: string }
         Returns: string
