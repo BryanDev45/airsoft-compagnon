@@ -15,7 +15,7 @@ import Circle from 'ol/geom/Circle';
 import Overlay from 'ol/Overlay';
 import MapMarker from './MapMarker';
 import StoreImageCarousel from '../stores/StoreImageCarousel';
-import { MapEvent, MapStore } from '@/hooks/useMapData';
+import { MapEvent, MapStore } from '@/hooks/useGamesData';
 import { areCoordinatesValid } from '@/utils/geocodingUtils';
 
 interface MapComponentProps {

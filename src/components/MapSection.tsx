@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useMapData } from '@/hooks/useMapData';
+import { useGamesData } from '@/hooks/useGamesData';
 import { useMapFiltering } from '@/hooks/useMapFiltering';
 import { useMapLocation } from '@/hooks/useMapLocation';
 import MapComponent from './map/MapComponent';
@@ -13,7 +13,7 @@ import { Button } from './ui/button';
 
 const MapSection: React.FC = () => {
   const { user } = useAuth();
-  const { data: events = [], isLoading: eventsLoading, error: eventsError } = useMapData(user?.id);
+  const { data: events = [], isLoading: eventsLoading, error: eventsError } = useGamesData(user?.id);
   
   console.log('MapSection - User:', user ? 'authenticated' : 'anonymous');
   console.log('MapSection - Events loaded:', events.length);

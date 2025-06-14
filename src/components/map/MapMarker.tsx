@@ -3,7 +3,7 @@ import React from 'react';
 import { Calendar, MapPin, Users, Euro, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { MapEvent } from '@/hooks/useMapData';
+import { MapEvent } from '@/hooks/useGamesData';
 import GameImageCarousel from './GameImageCarousel';
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from '@/integrations/supabase/client';
