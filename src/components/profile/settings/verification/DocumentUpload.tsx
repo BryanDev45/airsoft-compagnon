@@ -12,7 +12,7 @@ interface DocumentUploadProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   placeholder: string;
   accept?: string;
-  capture?: string;
+  capture?: boolean | "user" | "environment";
 }
 
 const DocumentUpload = ({ 
