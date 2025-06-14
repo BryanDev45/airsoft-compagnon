@@ -132,9 +132,12 @@ export const useChatMessages = (conversationId: string) => {
     queryClient.invalidateQueries({ queryKey: ['conversations'] });
   };
 
-  // Marquer les messages comme lus - version améliorée
+  // Marquer les messages comme lus avec callback pour retour
   const markAsRead = async () => {
-    if (!user?.id || !conversationId) return;
+    if (!user?.id || !conversationId) {
+      console.log('Missing user ID or conversation ID for markAsRead');
+      return;
+    }
 
     console.log('Marking messages as read for conversation:', conversationId);
 
@@ -156,6 +159,11 @@ export const useChatMessages = (conversationId: string) => {
         
         // Refetch les conversations pour mettre à jour les compteurs
         await queryClient.refetchQueries({ queryKey: ['conversations', user.id] });
+        
+        // Callback pour notifier le hook parent que le marquage a été effectué
+        if (markAsReadCallback) {
+          markAsReadCallback();
+        }
       }
     } catch (error) {
       console.error('Error in markAsRead:', error);

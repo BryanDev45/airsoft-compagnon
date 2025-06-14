@@ -133,7 +133,7 @@ export const useMessaging = () => {
       }
     },
     enabled: !!user?.id,
-    refetchInterval: 15000, // Réduire l'intervalle pour une mise à jour plus rapide
+    refetchInterval: 10000, // Réduire l'intervalle pour une mise à jour plus rapide après marquage comme lu
     staleTime: 5000, // Considérer les données comme fraîches pendant 5 secondes seulement
   });
 
