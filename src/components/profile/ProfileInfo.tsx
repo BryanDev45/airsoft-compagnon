@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
@@ -235,8 +236,8 @@ const ProfileInfo = ({
               </div>
             )}
             
-            <div className="flex items-center">
-              <MapPin className="h-5 w-5 text-gray-500 mr-3" />
+            <div className="flex items-start">
+              <MapPin className="h-5 w-5 text-gray-500 mr-3 mt-1" />
               <div className="flex-1">
                 <span className="text-sm text-gray-500">Localisation</span>
                 {isOwnProfile && isEditingLocation ? (
