@@ -59,34 +59,14 @@ export const useConversationData = () => {
         };
       }
 
-      // Calculer les messages non lus
-      const { data: userParticipantData } = await supabase
-        .from('conversation_participants')
-        .select('last_read_at')
-        .eq('conversation_id', conv.id)
-        .eq('user_id', userId)
-        .single();
+      // Utiliser la nouvelle fonction pour compter les messages non lus
+      const { data: unreadCount, error: unreadError } = await supabase.rpc('count_unread_messages', {
+        p_conversation_id: conv.id,
+        p_user_id: userId
+      });
 
-      let unread_count = 0;
-      if (userParticipantData?.last_read_at) {
-        const { count } = await supabase
-          .from('messages')
-          .select('*', { count: 'exact', head: true })
-          .eq('conversation_id', conv.id)
-          .neq('sender_id', userId)
-          .eq('is_deleted', false)
-          .gt('created_at', userParticipantData.last_read_at);
-
-        unread_count = count || 0;
-      } else {
-        const { count } = await supabase
-          .from('messages')
-          .select('*', { count: 'exact', head: true })
-          .eq('conversation_id', conv.id)
-          .neq('sender_id', userId)
-          .eq('is_deleted', false);
-
-        unread_count = count || 0;
+      if (unreadError) {
+        console.error('Error counting unread messages:', unreadError);
       }
 
       return {
@@ -95,7 +75,7 @@ export const useConversationData = () => {
         name: conv.name || undefined,
         participants,
         lastMessage,
-        unread_count
+        unread_count: unreadCount || 0
       };
     } catch (error) {
       console.error('Error processing conversation:', error);

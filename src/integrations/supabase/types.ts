@@ -354,6 +354,38 @@ export type Database = {
         }
         Relationships: []
       }
+      message_read_status: {
+        Row: {
+          created_at: string
+          id: string
+          message_id: string
+          read_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message_id: string
+          read_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message_id?: string
+          read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_read_status_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -921,6 +953,10 @@ export type Database = {
         Args: { p_user_id: string; p_friend_id: string }
         Returns: string
       }
+      count_unread_messages: {
+        Args: { p_conversation_id: string; p_user_id: string }
+        Returns: number
+      }
       create_direct_conversation: {
         Args: { other_user_id: string }
         Returns: string
@@ -960,6 +996,14 @@ export type Database = {
       is_current_user_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      mark_conversation_messages_as_read: {
+        Args: { p_conversation_id: string; p_user_id: string }
+        Returns: undefined
+      }
+      mark_message_as_read: {
+        Args: { p_message_id: string; p_user_id: string }
+        Returns: undefined
       }
       update_user_location: {
         Args: { p_user_id: string; p_location: string }

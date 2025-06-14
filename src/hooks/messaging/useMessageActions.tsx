@@ -51,11 +51,11 @@ export const useMessageActions = (conversationId: string) => {
     console.log('Marking messages as read for conversation:', conversationId);
 
     try {
-      const { error } = await supabase
-        .from('conversation_participants')
-        .update({ last_read_at: new Date().toISOString() })
-        .eq('conversation_id', conversationId)
-        .eq('user_id', user.id);
+      // Utiliser la nouvelle fonction pour marquer tous les messages de la conversation comme lus
+      const { error } = await supabase.rpc('mark_conversation_messages_as_read', {
+        p_conversation_id: conversationId,
+        p_user_id: user.id
+      });
 
       if (error) {
         console.error('Error marking messages as read:', error);

@@ -30,6 +30,17 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, onBack }) => {
     }
   }, [conversationId, markAsRead]);
 
+  // Marquer les messages comme lus quand de nouveaux messages arrivent
+  useEffect(() => {
+    if (messages.length > 0) {
+      const timeoutId = setTimeout(() => {
+        markAsRead();
+      }, 1000); // Attendre 1 seconde avant de marquer comme lu
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [messages.length, markAsRead]);
+
   return (
     <div className="h-full w-full bg-white flex flex-col">
       {/* Header - reste en haut */}
