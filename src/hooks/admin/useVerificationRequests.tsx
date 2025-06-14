@@ -92,35 +92,43 @@ export const useVerificationRequests = () => {
 
       if (error) throw error;
 
-      // If approved, update the user's verified status and create notification
+      // Get user_id for this request
+      const { data: requestData } = await supabase
+        .from('verification_requests')
+        .select('user_id')
+        .eq('id', requestId)
+        .single();
+
+      if (!requestData) return;
+
       if (status === 'approved') {
-        const request = requests.find(r => r.id === requestId);
-        if (request) {
-          const { data } = await supabase
-            .from('verification_requests')
-            .select('user_id')
-            .eq('id', requestId)
-            .single();
+        // Update user's verified status
+        await supabase
+          .from('profiles')
+          .update({ is_verified: true })
+          .eq('id', requestData.user_id);
 
-          if (data) {
-            // Update user's verified status
-            await supabase
-              .from('profiles')
-              .update({ is_verified: true })
-              .eq('id', data.user_id);
-
-            // Create notification for the user
-            await supabase
-              .from('notifications')
-              .insert({
-                user_id: data.user_id,
-                type: 'verification_approved',
-                title: 'Compte vérifié',
-                message: 'Félicitations ! Votre demande de vérification a été approuvée. Votre compte est maintenant vérifié et vous avez reçu le badge de profil vérifié.',
-                link: '/profile'
-              });
-          }
-        }
+        // Create approval notification
+        await supabase
+          .from('notifications')
+          .insert({
+            user_id: requestData.user_id,
+            type: 'verification_approved',
+            title: 'Compte vérifié',
+            message: 'Félicitations ! Votre demande de vérification a été approuvée. Votre compte est maintenant vérifié et vous avez reçu le badge de profil vérifié.',
+            link: '/profile'
+          });
+      } else if (status === 'rejected') {
+        // Create rejection notification with reason
+        await supabase
+          .from('notifications')
+          .insert({
+            user_id: requestData.user_id,
+            type: 'verification_rejected',
+            title: 'Demande de vérification refusée',
+            message: `Votre demande de vérification a été refusée. Raison : ${adminNotes || 'Aucune raison spécifiée'}. Vous pouvez soumettre une nouvelle demande en corrigeant les problèmes mentionnés.`,
+            link: '/profile?tab=verification'
+          });
       }
     },
     onSuccess: () => {
