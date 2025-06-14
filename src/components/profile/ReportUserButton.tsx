@@ -20,18 +20,21 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ReportUserButtonProps {
   username: string;
+  reportedUserId: string;
 }
 
-const ReportUserButton = ({ username }: ReportUserButtonProps) => {
+const ReportUserButton = ({ username, reportedUserId }: ReportUserButtonProps) => {
   const [reason, setReason] = useState("");
   const [details, setDetails] = useState("");
   const [open, setOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleReport = () => {
+  const handleReport = async () => {
     if (!reason) {
       toast({
         title: "Erreur",
@@ -41,14 +44,60 @@ const ReportUserButton = ({ username }: ReportUserButtonProps) => {
       return;
     }
 
-    // Simulate report submission
-    toast({
-      title: "Signalement envoyé",
-      description: "Merci pour votre signalement. Notre équipe va l'examiner."
-    });
-    setReason("");
-    setDetails("");
-    setOpen(false);
+    setIsSubmitting(true);
+
+    try {
+      // Get current user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !user) {
+        toast({
+          title: "Erreur",
+          description: "Vous devez être connecté pour signaler un utilisateur",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Insert the report into the database
+      const { error: insertError } = await supabase
+        .from('user_reports')
+        .insert({
+          reporter_id: user.id,
+          reported_user_id: reportedUserId,
+          reason: reason,
+          details: details || null,
+          status: 'pending'
+        });
+
+      if (insertError) {
+        console.error('Error inserting report:', insertError);
+        toast({
+          title: "Erreur",
+          description: "Une erreur est survenue lors de l'envoi du signalement",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Signalement envoyé",
+        description: "Merci pour votre signalement. Notre équipe va l'examiner."
+      });
+      
+      setReason("");
+      setDetails("");
+      setOpen(false);
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'envoi du signalement",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -108,8 +157,16 @@ const ReportUserButton = ({ username }: ReportUserButtonProps) => {
         </div>
         
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>Annuler</Button>
-          <Button variant="destructive" onClick={handleReport}>Envoyer</Button>
+          <Button variant="outline" onClick={() => setOpen(false)} disabled={isSubmitting}>
+            Annuler
+          </Button>
+          <Button 
+            variant="destructive" 
+            onClick={handleReport} 
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Envoi..." : "Envoyer"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

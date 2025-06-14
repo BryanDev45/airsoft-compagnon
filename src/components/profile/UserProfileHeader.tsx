@@ -122,7 +122,10 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
             </Button>
           )}
           
-          <ReportUserButton username={profileData?.username} />
+          <ReportUserButton 
+            username={profileData?.username} 
+            reportedUserId={userData?.id}
+          />
         </div>
       )}
 
