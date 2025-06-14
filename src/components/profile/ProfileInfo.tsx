@@ -10,7 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { MapPin, Calendar, User, Users, Building2, Award, Edit, Save, X, Search, Phone } from 'lucide-react';
+import { MapPin, Calendar, User, Users, Building2, Award, Edit, Save, X, Search, Phone, Globe } from 'lucide-react';
 
 const ProfileInfo = ({
   user,
@@ -21,8 +21,10 @@ const ProfileInfo = ({
 }) => {
   const [isEditingLocation, setIsEditingLocation] = useState(false);
   const [isEditingPhone, setIsEditingPhone] = useState(false);
+  const [isEditingLanguage, setIsEditingLanguage] = useState(false);
   const [locationValue, setLocationValue] = useState(profileData?.location || '');
   const [phoneValue, setPhoneValue] = useState(profileData?.phone_number || '');
+  const [languageValue, setLanguageValue] = useState(profileData?.spoken_language || '');
   const navigate = useNavigate();
 
   const formatDate = dateString => {
@@ -54,6 +56,13 @@ const ProfileInfo = ({
     }
   };
 
+  const handleLanguageUpdate = async () => {
+    const success = await updateSpokenLanguage(languageValue);
+    if (success) {
+      setIsEditingLanguage(false);
+    }
+  };
+
   const updatePhoneNumber = async (phoneNumber: string) => {
     try {
       const { error } = await supabase
@@ -74,6 +83,32 @@ const ProfileInfo = ({
       toast({
         title: "Erreur",
         description: "Impossible de mettre à jour le numéro de téléphone",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
+  const updateSpokenLanguage = async (language: string) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ spoken_language: language })
+        .eq('id', user?.id);
+
+      if (error) throw error;
+      
+      toast({
+        title: "Succès",
+        description: "Langue parlée mise à jour",
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error updating spoken language:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour la langue parlée",
         variant: "destructive",
       });
       return false;
@@ -122,6 +157,45 @@ const ProfileInfo = ({
                 </div>
               </div>
             )}
+
+            <div className="flex items-start">
+              <Globe className="h-5 w-5 text-gray-500 mr-3 mt-1" />
+              <div className="flex-1">
+                <span className="text-sm text-gray-500">Langue parlée</span>
+                {isOwnProfile && isEditingLanguage ? (
+                  <div className="mt-1 space-y-2">
+                    <Input
+                      type="text"
+                      value={languageValue}
+                      onChange={(e) => setLanguageValue(e.target.value)}
+                      placeholder="Votre langue parlée"
+                      className="w-full"
+                    />
+                    <div className="flex space-x-2">
+                      <Button variant="outline" size="sm" onClick={handleLanguageUpdate}>
+                        <Save className="h-4 w-4 mr-2" />
+                        Sauvegarder
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => setIsEditingLanguage(false)}>
+                        <X className="h-4 w-4 mr-2" />
+                        Annuler
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium">
+                      {profileData?.spoken_language || 'Non spécifié'}
+                    </p>
+                    {isOwnProfile && (
+                      <Button variant="ghost" size="sm" onClick={() => setIsEditingLanguage(true)} className="h-8 px-2">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
 
             {isOwnProfile && (
               <div className="flex items-start">
