@@ -9,28 +9,17 @@ interface VerificationImageProps {
 }
 
 export const VerificationImage = ({ src, alt, title }: VerificationImageProps) => {
-  const handleError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const target = e.target as HTMLImageElement;
-    target.style.display = 'none';
-    const parent = target.parentElement;
-    if (parent && src) {
-      parent.innerHTML = `
-        <div class="h-48 flex items-center justify-center bg-gray-100 text-gray-500">
-          <div class="text-center">
-            <div class="mb-2">⚠️</div>
-            <div class="text-sm">Image non disponible</div>
-            <a href="${src}" target="_blank" class="text-blue-600 hover:underline text-xs">Ouvrir le lien</a>
-          </div>
-        </div>
-      `;
-    }
+  const [imageError, setImageError] = React.useState(false);
+
+  const handleError = () => {
+    setImageError(true);
   };
 
   return (
     <div className="space-y-2">
       <strong className="block">{title}:</strong>
       <div className="border rounded-lg overflow-hidden">
-        {src ? (
+        {src && !imageError ? (
           <img 
             src={src} 
             alt={alt}
@@ -41,7 +30,19 @@ export const VerificationImage = ({ src, alt, title }: VerificationImageProps) =
           <div className="h-48 flex items-center justify-center bg-gray-100 text-gray-500">
             <div className="text-center">
               <Camera className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-              <div className="text-sm">Aucune photo du visage</div>
+              <div className="text-sm">
+                {src ? "Image non disponible" : "Aucune image"}
+              </div>
+              {src && imageError && (
+                <a 
+                  href={src} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline text-xs mt-1 block"
+                >
+                  Ouvrir le lien
+                </a>
+              )}
             </div>
           </div>
         )}
