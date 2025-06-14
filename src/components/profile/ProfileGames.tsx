@@ -51,6 +51,9 @@ const ProfileGames = ({
     });
   }, [games]);
 
+  // Limiter à 10 parties pour l'affichage principal
+  const displayedGames = sortedGames.slice(0, 10);
+
   const handleGameClick = (game: Game) => {
     // Enrichir les données du jeu avec toutes les informations nécessaires pour le dialog
     const enrichedGame = {
@@ -72,7 +75,7 @@ const ProfileGames = ({
           <div>
             <CardTitle>Mes parties</CardTitle>
             <CardDescription>
-              Historique et parties à venir
+              {games.length > 10 ? `${displayedGames.length} dernières parties sur ${games.length} au total` : 'Historique et parties à venir'}
             </CardDescription>
           </div>
           <Link to="/parties/create">
@@ -85,12 +88,12 @@ const ProfileGames = ({
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {sortedGames && sortedGames.length === 0 ? (
+          {displayedGames && displayedGames.length === 0 ? (
             <p className="text-center text-gray-500 py-6">
               Vous n'avez pas encore participé à des parties.
             </p>
           ) : (
-            sortedGames && sortedGames.map(game => (
+            displayedGames && displayedGames.map(game => (
               <div key={game.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow flex justify-between items-center">
                 <div>
                   <h3 className="font-semibold text-left">{game.title}</h3>
@@ -122,8 +125,12 @@ const ProfileGames = ({
         </div>
       </CardContent>
       <CardFooter>
-        <Button className="bg-airsoft-red hover:bg-red-700" onClick={handleViewAllGames}>
-          Voir toutes mes parties
+        <Button 
+          className="bg-airsoft-red hover:bg-red-700" 
+          onClick={handleViewAllGames}
+          disabled={games.length === 0}
+        >
+          Voir toutes mes parties {games.length > 0 && `(${games.length})`}
         </Button>
       </CardFooter>
     </Card>
