@@ -57,11 +57,12 @@ export function ComboboxDemo({
       
       try {
         const response = await fetch(
-          `https://secure.geonames.org/searchJSON?name_startsWith=${encodeURIComponent(debouncedSearchTerm)}&featureClass=P&maxRows=10&username=airsoftcompagnon&lang=fr`,
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(debouncedSearchTerm)}&addressdetails=1&limit=10&featureType=city`,
           { 
             signal: abortController.signal,
             headers: {
-              'Accept': 'application/json'
+              'Accept': 'application/json',
+              'User-Agent': 'AirsoftCommunityApp/1.0'
             }
           }
         );
@@ -72,25 +73,32 @@ export function ComboboxDemo({
         
         const data = await response.json();
         
-        if (data && data.geonames && Array.isArray(data.geonames)) {
-          const formattedCities = data.geonames.map((city: any) => ({
-            name: city.name || '',
-            country: city.countryName || '',
-            fullName: `${city.name || ''}, ${city.countryName || ''}`
-          }));
+        if (data && Array.isArray(data)) {
+          const formattedCities = data
+            .filter((item: any) => 
+              item.type === 'city' || 
+              item.type === 'town' || 
+              item.type === 'village' ||
+              item.class === 'place'
+            )
+            .map((item: any) => ({
+              name: item.display_name.split(',')[0] || '',
+              country: item.address?.country || '',
+              fullName: `${item.display_name.split(',')[0]}, ${item.address?.country || item.display_name.split(',').pop()}`
+            }))
+            .slice(0, 10);
+          
           setCities(formattedCities);
         } else {
           setCities([]);
-          if (data.status?.message) {
-            setError(`API Error: ${data.status.message}`);
-          } else {
-            setError("Format de réponse invalide");
-          }
+          setError("Format de réponse invalide");
         }
       } catch (error: any) {
         console.error("Error fetching cities:", error);
         setCities([]);
-        setError(error.message || "Impossible de récupérer les villes. Veuillez réessayer plus tard.");
+        if (error.name !== 'AbortError') {
+          setError("Impossible de récupérer les villes. Veuillez réessayer plus tard.");
+        }
       } finally {
         setIsLoading(false);
       }
