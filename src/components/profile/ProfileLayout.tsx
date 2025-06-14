@@ -1,30 +1,12 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../Header';
 import Footer from '../Footer';
-import ProfileHeader from './ProfileHeader';
 import ProfileContainer from './ProfileContainer';
 import ProfileDialogs from './ProfileDialogs';
-import ProfileSettingsDialog from './ProfileSettingsDialog';
-import ProfileEditBioDialog from './ProfileEditBioDialog';
-import ProfileAddEquipmentDialog from './ProfileAddEquipmentDialog';
-import { useNavigate } from 'react-router-dom';
 
-interface ProfileLayoutProps {
-  user: any;
-  profileData: any;
-  userStats: any;
-  equipment: any[];
-  userGames: any[];
-  dialogStates: any;
-  equipmentTypes: string[];
-  fetchEquipment: () => Promise<void>;
-  fetchUserGames: () => Promise<void>;
-  fetchProfileData: () => Promise<void>;
-  handleAddEquipment: (equipment: any) => Promise<boolean>;
-}
-
-const ProfileLayout: React.FC<ProfileLayoutProps> = ({
+const ProfileLayout = ({
   user,
   profileData,
   userStats,
@@ -38,34 +20,18 @@ const ProfileLayout: React.FC<ProfileLayoutProps> = ({
   handleAddEquipment
 }) => {
   const navigate = useNavigate();
-  
-  const {
-    showSettingsDialog,
-    setShowSettingsDialog,
-    showEditBioDialog,
-    setShowEditBioDialog,
-    showAddEquipmentDialog,
-    setShowAddEquipmentDialog,
-    selectedGame,
-    setSelectedGame,
-    showGameDialog,
-    setShowGameDialog,
-    showAllGamesDialog,
-    setShowAllGamesDialog,
-    showBadgesDialog,
-    setShowBadgesDialog
-  } = dialogStates;
-
-  const handleNavigateToTeam = () => {
-    if (profileData?.team_id) {
-      navigate(`/team/${profileData.team_id}`);
-    } else {
-      navigate('/team/create');
-    }
-  };
 
   const handleNavigateToGame = (gameId) => {
-    navigate(`/game/${gameId}`);
+    navigate(`/games/${gameId}`);
+  };
+
+  const handleViewGameDetails = (game) => {
+    dialogStates.setSelectedGame(game);
+    dialogStates.setShowGameDialog(true);
+  };
+
+  const handleViewAllGames = () => {
+    dialogStates.setShowAllGamesDialog(true);
   };
 
   return (
@@ -73,76 +39,37 @@ const ProfileLayout: React.FC<ProfileLayoutProps> = ({
       <Header />
       <main className="flex-grow bg-gray-50 py-12">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <ProfileHeader 
-              user={profileData}
-              isOwnProfile={true}
-              toggleProfileSettings={() => setShowSettingsDialog(true)}
-              onEditBio={() => setShowEditBioDialog(true)}
-            />
-            
-            <ProfileContainer
-              user={user}
-              profileData={profileData}
-              userStats={userStats}
-              equipment={equipment}
-              games={userGames} 
-              updateLocation={(location) => {
-                // This is handled by useProfileData hook and passed to Profile.tsx
-                return Promise.resolve(false);
-              }}
-              updateUserStats={(gameType, role, level) => {
-                // This is handled by useProfileData hook and passed to Profile.tsx
-                return Promise.resolve(false);
-              }}
-              fetchProfileData={fetchProfileData}
-              fetchEquipment={fetchEquipment}
-              fetchUserGames={fetchUserGames}
-              handleNavigateToTeam={handleNavigateToTeam}
-              setSelectedGame={setSelectedGame}
-              setShowGameDialog={setShowGameDialog}
-              setShowAllGamesDialog={setShowAllGamesDialog}
-              setShowBadgesDialog={setShowBadgesDialog}
-              setShowAddEquipmentDialog={setShowAddEquipmentDialog}
-              isOwnProfile={true}
-              equipmentTypes={equipmentTypes}
-            />
-          </div>
+          <ProfileContainer
+            user={user}
+            profileData={profileData}
+            userStats={userStats}
+            equipment={equipment}
+            userGames={userGames}
+            dialogStates={dialogStates}
+            equipmentTypes={equipmentTypes}
+            fetchEquipment={fetchEquipment}
+            fetchUserGames={fetchUserGames}
+            fetchProfileData={fetchProfileData}
+            handleAddEquipment={handleAddEquipment}
+            handleViewGameDetails={handleViewGameDetails}
+            handleViewAllGames={handleViewAllGames}
+          />
+          
+          <ProfileDialogs
+            selectedGame={dialogStates.selectedGame}
+            showGameDialog={dialogStates.showGameDialog}
+            setShowGameDialog={dialogStates.setShowGameDialog}
+            showAllGamesDialog={dialogStates.showAllGamesDialog}
+            setShowAllGamesDialog={dialogStates.setShowAllGamesDialog}
+            showBadgesDialog={dialogStates.showBadgesDialog}
+            setShowBadgesDialog={dialogStates.setShowBadgesDialog}
+            handleNavigateToGame={handleNavigateToGame}
+            user={user}
+            userGames={userGames}
+          />
         </div>
       </main>
       <Footer />
-
-      <ProfileDialogs 
-        selectedGame={selectedGame}
-        showGameDialog={showGameDialog}
-        setShowGameDialog={setShowGameDialog}
-        showAllGamesDialog={showAllGamesDialog}
-        setShowAllGamesDialog={setShowAllGamesDialog}
-        showBadgesDialog={showBadgesDialog}
-        setShowBadgesDialog={setShowBadgesDialog}
-        user={profileData}
-        handleNavigateToGame={handleNavigateToGame}
-      />
-
-      <ProfileSettingsDialog
-        open={showSettingsDialog}
-        onOpenChange={setShowSettingsDialog}
-        user={profileData}
-      />
-
-      <ProfileEditBioDialog
-        open={showEditBioDialog}
-        onOpenChange={setShowEditBioDialog}
-        currentBio={profileData?.bio || ''}
-        currentUsername={profileData?.username || ''}
-      />
-      
-      <ProfileAddEquipmentDialog
-        open={showAddEquipmentDialog}
-        onOpenChange={setShowAddEquipmentDialog}
-        onAddEquipment={handleAddEquipment}
-        equipmentTypes={equipmentTypes}
-      />
     </div>
   );
 };
