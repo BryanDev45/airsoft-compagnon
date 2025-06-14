@@ -92,7 +92,7 @@ export const useVerificationRequests = () => {
 
       if (error) throw error;
 
-      // If approved, update the user's verified status
+      // If approved, update the user's verified status and create notification
       if (status === 'approved') {
         const request = requests.find(r => r.id === requestId);
         if (request) {
@@ -103,10 +103,22 @@ export const useVerificationRequests = () => {
             .single();
 
           if (data) {
+            // Update user's verified status
             await supabase
               .from('profiles')
               .update({ is_verified: true })
               .eq('id', data.user_id);
+
+            // Create notification for the user
+            await supabase
+              .from('notifications')
+              .insert({
+                user_id: data.user_id,
+                type: 'verification_approved',
+                title: 'Compte vérifié',
+                message: 'Félicitations ! Votre demande de vérification a été approuvée. Votre compte est maintenant vérifié et vous avez reçu le badge de profil vérifié.',
+                link: '/profile'
+              });
           }
         }
       }

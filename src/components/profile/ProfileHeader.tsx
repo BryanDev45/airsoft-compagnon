@@ -1,90 +1,155 @@
 
 import React from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Settings, Shield } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Settings, Pencil, Star, ShieldCheck } from 'lucide-react';
-import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
-interface ProfileHeaderProps {
-  user: {
-    username?: string | null;
-    avatar?: string | null;
-    banner?: string | null;
-    bio?: string | null;
-    reputation?: number | null;
-    team_logo?: string | null;
-    team_name?: string | null;
-    team?: string | null;
-    Admin?: boolean | null;
-    is_verified?: boolean | null;
-  };
-  isOwnProfile?: boolean;
-  toggleProfileSettings?: () => void;
-  onEditBio?: () => void;
-}
-const ProfileHeader: React.FC<ProfileHeaderProps> = ({
-  user,
-  isOwnProfile = false,
-  toggleProfileSettings,
-  onEditBio
-}) => {
-  return <div className="relative">
-      <div className="w-full h-64 md:h-72 bg-gray-200 overflow-hidden">
-        {user?.banner ? <img src={user.banner} alt="Profile banner" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gradient-to-r from-gray-400 to-gray-300" />}
-      </div>
-      
-      <div className="px-6 pb-4 pt-16 relative">
-        {/* Moved buttons to the top with adjusted positioning */}
-        {isOwnProfile && <div className="absolute top-4 right-4 flex space-x-2">
-            {onEditBio && <Button variant="outline" size="sm" onClick={onEditBio}>
-                <Pencil className="h-4 w-4 mr-2" />
-                Modifier le profil
-              </Button>}
-            
-            {toggleProfileSettings && <Button variant="outline" size="sm" onClick={toggleProfileSettings}>
-                <Settings className="h-4 w-4 mr-2" />
-                Paramètres
-              </Button>}
-          </div>}
 
-        <div className="absolute -top-12 left-6">
-          <div className="relative">
-            <Avatar className="h-24 w-24 border-4 border-white shadow-md ring-2 ring-airsoft-red">
-              <AvatarImage src={user?.avatar || undefined} alt={user?.username || 'Utilisateur'} />
-              <AvatarFallback>{user?.username?.charAt(0) || 'U'}</AvatarFallback>
-            </Avatar>
-            
-            {/* Team logo overlay - positioned at bottom right */}
-            {user?.team_logo && <div className="absolute bottom-0 right-0 w-8 h-8 bg-white rounded-full border-2 border-white overflow-hidden shadow-sm">
-                <img src={user.team_logo} alt={user.team_name || user.team || 'Team'} className="w-full h-full object-cover" />
-              </div>}
-          </div>
+interface User {
+  id?: string;
+  username?: string;
+  firstname?: string;
+  lastname?: string;
+  bio?: string;
+  location?: string;
+  team?: string;
+  team_name?: string;
+  team_logo?: string;
+  avatar?: string;
+  banner?: string;
+  reputation?: number | null;
+  is_verified?: boolean;
+}
+
+interface ProfileHeaderProps {
+  user: User;
+  isOwnProfile: boolean;
+  toggleProfileSettings: () => void;
+  onEditBio: () => void;
+}
+
+const ProfileHeader: React.FC<ProfileHeaderProps> = ({ 
+  user, 
+  isOwnProfile, 
+  toggleProfileSettings,
+  onEditBio 
+}) => {
+  const getDisplayName = () => {
+    if (user.firstname && user.lastname) {
+      return `${user.firstname} ${user.lastname}`;
+    }
+    return user.username || 'Utilisateur';
+  };
+
+  return (
+    <div className="relative">
+      {/* Banner */}
+      <div 
+        className="h-48 bg-gradient-to-r from-airsoft-red to-red-600 rounded-t-lg bg-cover bg-center"
+        style={user.banner ? { backgroundImage: `url(${user.banner})` } : undefined}
+      />
+      
+      {/* Profile Content */}
+      <div className="relative px-6 pb-6">
+        {/* Avatar */}
+        <div className="absolute -top-16 left-6">
+          <img 
+            src={user.avatar || '/placeholder.svg'} 
+            alt={user.username}
+            className="w-32 h-32 rounded-full border-4 border-white bg-white object-cover"
+          />
         </div>
         
-        <div className="flex flex-col">
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold">{user?.username || 'Utilisateur'}</h1>
-              {user?.is_verified && <VerifiedBadge size={24} />}
-              {user?.reputation && user.reputation > 0 ? <div className="flex items-center bg-amber-50 px-2 py-1 rounded-full">
-                  <Star className="h-4 w-4 text-amber-500 fill-amber-500 mr-1" />
-                  <span className="text-sm font-medium text-amber-700">{user.reputation.toFixed(1)}</span>
-                </div> : <div className="flex items-center bg-gray-50 px-2 py-1 rounded-full">
-                  <span className="text-sm text-gray-500 italic">non noté</span>
-                </div>}
+        {/* Settings button (only for own profile) */}
+        {isOwnProfile && (
+          <div className="absolute top-4 right-4">
+            <Button 
+              onClick={toggleProfileSettings}
+              variant="outline" 
+              size="sm"
+              className="bg-white hover:bg-gray-50"
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Modifier le profil
+            </Button>
+          </div>
+        )}
+        
+        {/* Profile Info */}
+        <div className="pt-20">
+          <div className="flex items-center gap-2 mb-2">
+            <h1 className="text-2xl font-bold text-gray-900">
+              {getDisplayName()}
+            </h1>
+            {user.is_verified && (
+              <VerifiedBadge size={24} className="flex-shrink-0" />
+            )}
+          </div>
+          
+          <p className="text-gray-600 mb-1">@{user.username}</p>
+          
+          {user.reputation !== null && user.reputation > 0 && (
+            <div className="flex items-center gap-1 mb-4">
+              <Shield className="h-4 w-4 text-yellow-500" />
+              <span className="text-sm text-gray-600">Réputation: {user.reputation}</span>
             </div>
-            
-            {user?.Admin && <div className="flex items-center mt-1">
-                <Badge className="bg-blue-600 hover:bg-blue-700 flex items-center gap-1 text-white">
-                  <ShieldCheck className="h-3 w-3" />
-                  Administrateur
-                </Badge>
-              </div>}
-            
-            <p className="text-gray-600 mt-1 text-left">{user?.bio || 'Aucune bio pour le moment'}</p>
+          )}
+          
+          {/* Team Info */}
+          {user.team && (
+            <div className="flex items-center gap-2 mb-4">
+              {user.team_logo && (
+                <img 
+                  src={user.team_logo} 
+                  alt={user.team}
+                  className="w-6 h-6 rounded object-cover"
+                />
+              )}
+              <span className="text-sm text-gray-600">
+                Équipe: <span className="font-medium">{user.team}</span>
+              </span>
+            </div>
+          )}
+          
+          {/* Location */}
+          {user.location && (
+            <p className="text-sm text-gray-600 mb-4">📍 {user.location}</p>
+          )}
+          
+          {/* Bio */}
+          <div className="space-y-2">
+            {user.bio ? (
+              <Card className="p-4 bg-gray-50">
+                <p className="text-gray-700 whitespace-pre-wrap">{user.bio}</p>
+                {isOwnProfile && (
+                  <Button 
+                    onClick={onEditBio}
+                    variant="ghost" 
+                    size="sm" 
+                    className="mt-2 text-xs"
+                  >
+                    Modifier la bio
+                  </Button>
+                )}
+              </Card>
+            ) : isOwnProfile ? (
+              <Card className="p-4 bg-gray-50 border-dashed border-2">
+                <p className="text-gray-500 text-sm mb-2">Aucune biographie ajoutée</p>
+                <Button 
+                  onClick={onEditBio}
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-xs"
+                >
+                  Ajouter une bio
+                </Button>
+              </Card>
+            ) : null}
           </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default ProfileHeader;
