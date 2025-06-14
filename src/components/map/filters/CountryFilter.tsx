@@ -172,15 +172,15 @@ const CountryFilter: React.FC<CountryFilterProps> = ({
                       setSelectedCountry(currentValue === selectedCountry ? "all" : currentValue);
                       setOpen(false);
                     }}
-                    className="text-white hover:bg-gray-600"
+                    className="text-white hover:bg-gray-600 data-[selected=true]:bg-gray-600"
                   >
                     <Check
                       className={cn(
-                        "mr-2 h-4 w-4",
+                        "mr-2 h-4 w-4 text-white",
                         selectedCountry === country.value ? "opacity-100" : "opacity-0"
                       )}
                     />
-                    {country.label}
+                    <span className="text-white">{country.label}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>
