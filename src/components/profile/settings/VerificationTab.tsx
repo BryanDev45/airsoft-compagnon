@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { Shield, CheckCircle2, Upload, Camera } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -19,9 +20,41 @@ const VerificationTab = ({ user }: VerificationTabProps) => {
   const [backIdFile, setBackIdFile] = useState<File | null>(null);
   const [facePhotoFile, setFacePhotoFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [existingRequest, setExistingRequest] = useState<any>(null);
+
+  // Vérifier s'il existe déjà une demande de vérification
+  useEffect(() => {
+    const checkExistingRequest = async () => {
+      if (!user?.id) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('verification_requests')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error checking existing request:', error);
+          return;
+        }
+
+        if (data) {
+          setExistingRequest(data);
+          setVerificationRequested(data.status === 'pending');
+        }
+      } catch (error) {
+        console.error('Error checking existing verification request:', error);
+      }
+    };
+
+    checkExistingRequest();
+  }, [user?.id]);
 
   const uploadFile = async (file: File, fileName: string): Promise<string | null> => {
     try {
+      console.log(`Uploading file: ${fileName}`);
+      
       const { data, error } = await supabase.storage
         .from('verification-photos')
         .upload(`${user.id}/${fileName}`, file, {
@@ -31,17 +64,18 @@ const VerificationTab = ({ user }: VerificationTabProps) => {
 
       if (error) {
         console.error('Upload error:', error);
-        return null;
+        throw error;
       }
 
       const { data: publicUrlData } = supabase.storage
         .from('verification-photos')
         .getPublicUrl(`${user.id}/${fileName}`);
 
+      console.log(`File uploaded successfully: ${publicUrlData.publicUrl}`);
       return publicUrlData.publicUrl;
     } catch (error) {
       console.error('Error uploading file:', error);
-      return null;
+      throw error;
     }
   };
 
@@ -55,20 +89,43 @@ const VerificationTab = ({ user }: VerificationTabProps) => {
       return;
     }
 
+    if (!user?.id) {
+      toast({
+        title: "Erreur",
+        description: "Utilisateur non identifié",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setUploading(true);
 
     try {
+      console.log('Starting verification request process...');
+      
       // Upload all three files
-      const frontIdUrl = await uploadFile(frontIdFile, `front_id_${Date.now()}.${frontIdFile.name.split('.').pop()}`);
-      const backIdUrl = await uploadFile(backIdFile, `back_id_${Date.now()}.${backIdFile.name.split('.').pop()}`);
-      const facePhotoUrl = await uploadFile(facePhotoFile, `face_photo_${Date.now()}.${facePhotoFile.name.split('.').pop()}`);
+      const timestamp = Date.now();
+      const frontIdUrl = await uploadFile(
+        frontIdFile, 
+        `front_id_${timestamp}.${frontIdFile.name.split('.').pop()}`
+      );
+      const backIdUrl = await uploadFile(
+        backIdFile, 
+        `back_id_${timestamp}.${backIdFile.name.split('.').pop()}`
+      );
+      const facePhotoUrl = await uploadFile(
+        facePhotoFile, 
+        `face_photo_${timestamp}.${facePhotoFile.name.split('.').pop()}`
+      );
 
       if (!frontIdUrl || !backIdUrl || !facePhotoUrl) {
         throw new Error('Erreur lors du téléchargement des fichiers');
       }
 
+      console.log('All files uploaded successfully, creating verification request...');
+
       // Create verification request
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('verification_requests')
         .insert({
           user_id: user.id,
@@ -76,22 +133,34 @@ const VerificationTab = ({ user }: VerificationTabProps) => {
           back_id_document: backIdUrl,
           face_photo: facePhotoUrl,
           status: 'pending'
-        });
+        })
+        .select()
+        .single();
 
       if (error) {
+        console.error('Database error:', error);
         throw error;
       }
 
+      console.log('Verification request created successfully:', data);
+
       setVerificationRequested(true);
+      setExistingRequest(data);
+      
+      // Clear file inputs
+      setFrontIdFile(null);
+      setBackIdFile(null);
+      setFacePhotoFile(null);
+      
       toast({
         title: "Demande envoyée",
-        description: "Votre demande de vérification a été envoyée avec succès. Vous recevrez un email prochainement."
+        description: "Votre demande de vérification a été envoyée avec succès. Vous recevrez une réponse prochainement."
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting verification request:', error);
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de l'envoi de votre demande",
+        description: error.message || "Une erreur est survenue lors de l'envoi de votre demande",
         variant: "destructive"
       });
     } finally {
@@ -129,24 +198,27 @@ const VerificationTab = ({ user }: VerificationTabProps) => {
             <Shield size={20} />
             <h4 className="font-medium">Vérification du compte</h4>
           </div>
-          {user.verified ? (
+          {user?.is_verified ? (
             <Badge className="bg-blue-500">Vérifié</Badge>
           ) : (
             <Badge variant="outline" className="bg-gray-100 text-gray-700">Non vérifié</Badge>
           )}
         </div>
         
-        {user.verified ? (
+        {user?.is_verified ? (
           <Alert className="bg-blue-50 border-blue-200">
             <CheckCircle2 className="h-4 w-4 text-blue-500" />
             <AlertDescription>
               Votre compte est vérifié. Votre badge de vérification est visible sur votre profil.
             </AlertDescription>
           </Alert>
-        ) : verificationRequested ? (
+        ) : verificationRequested || existingRequest ? (
           <Alert className="bg-yellow-50 border-yellow-200">
             <AlertDescription>
-              Votre demande de vérification est en cours de traitement. Vous recevrez un email lorsque votre compte sera vérifié.
+              {existingRequest?.status === 'rejected' 
+                ? 'Votre demande de vérification a été rejetée. Vous pouvez soumettre une nouvelle demande.'
+                : 'Votre demande de vérification est en cours de traitement. Vous recevrez une réponse lorsque votre compte sera vérifié.'
+              }
             </AlertDescription>
           </Alert>
         ) : (
