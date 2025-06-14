@@ -23,8 +23,15 @@ export const useNotificationActions = () => {
         .eq('id', notificationId);
 
       if (error) throw error;
+      
+      // Invalider toutes les queries liées aux notifications
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['unreadNotifications'] });
+      
+      // Forcer un refetch immédiat du compteur
+      if (user?.id) {
+        queryClient.refetchQueries({ queryKey: ['unreadNotifications', user.id] });
+      }
     } catch (error) {
       console.error('Error marking notification as read:', error);
     }
@@ -48,8 +55,19 @@ export const useNotificationActions = () => {
         .eq('read', false);
 
       if (error) throw error;
+      
+      // Invalider toutes les queries liées aux notifications
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['unreadNotifications'] });
+      
+      // Forcer un refetch immédiat du compteur
+      queryClient.refetchQueries({ queryKey: ['unreadNotifications', user.id] });
+      
+      // Supprimer le cache local pour forcer le rechargement
+      const cacheKey = `notifications_count_${user.id}`;
+      localStorage.removeItem(cacheKey);
+      
+      console.log("All notifications marked as read, queries invalidated");
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
     }
@@ -69,8 +87,14 @@ export const useNotificationActions = () => {
         throw error;
       }
       
+      // Invalider toutes les queries liées aux notifications
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['unreadNotifications'] });
+      
+      // Forcer un refetch immédiat du compteur
+      if (user?.id) {
+        queryClient.refetchQueries({ queryKey: ['unreadNotifications', user.id] });
+      }
       
       toast({
         title: "Notification supprimée",
@@ -100,8 +124,12 @@ export const useNotificationActions = () => {
 
       if (error) throw error;
       
+      // Invalider toutes les queries liées aux notifications
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       queryClient.invalidateQueries({ queryKey: ['unreadNotifications'] });
+      
+      // Forcer un refetch immédiat du compteur
+      queryClient.refetchQueries({ queryKey: ['unreadNotifications', user.id] });
       
       toast({
         title: "Notifications supprimées",

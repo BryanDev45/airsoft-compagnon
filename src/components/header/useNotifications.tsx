@@ -10,7 +10,7 @@ const NOTIFICATIONS_CACHE_KEY = 'notifications_count';
 const fetchNotificationCount = async (userId: string): Promise<number> => {
   const cacheKey = `${NOTIFICATIONS_CACHE_KEY}_${userId}`;
   
-  // Vérifier le cache d'abord (cache très court pour les notifications)
+  // Vérifier le cache d'abord (cache réduit pour une meilleure réactivité)
   const cachedCount = getStorageWithExpiry(cacheKey);
   if (cachedCount !== null) {
     return cachedCount;
@@ -26,8 +26,8 @@ const fetchNotificationCount = async (userId: string): Promise<number> => {
   
   const countValue = count || 0;
   
-  // Cache très court (30 secondes) pour les notifications
-  setStorageWithExpiry(cacheKey, countValue, 30000);
+  // Cache réduit (15 secondes) pour une meilleure réactivité
+  setStorageWithExpiry(cacheKey, countValue, 15000);
   
   return countValue;
 };
@@ -36,15 +36,15 @@ export function useNotifications() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   
-  // Requête optimisée avec React Query
+  // Requête optimisée avec React Query - cache réduit pour plus de réactivité
   const { data: notificationCount = 0 } = useQuery({
     queryKey: ['unreadNotifications', user?.id],
     queryFn: () => fetchNotificationCount(user!.id),
     enabled: !!user?.id,
-    staleTime: 30000, // 30 secondes
-    gcTime: 2 * 60 * 1000, // 2 minutes
-    refetchInterval: 60000, // Rafraîchir toutes les minutes
-    refetchOnWindowFocus: false,
+    staleTime: 15000, // 15 secondes au lieu de 30
+    gcTime: 1 * 60 * 1000, // 1 minute au lieu de 2
+    refetchInterval: 30000, // Rafraîchir toutes les 30 secondes au lieu de 60
+    refetchOnWindowFocus: true, // Activer le refetch au focus
   });
 
   const handleSheetOpenChange = (open: boolean) => {
@@ -67,6 +67,9 @@ export function useNotifications() {
       // Supprimer le cache local aussi
       const cacheKey = `${NOTIFICATIONS_CACHE_KEY}_${user.id}`;
       localStorage.removeItem(cacheKey);
+      
+      // Forcer un refetch immédiat
+      queryClient.refetchQueries({ queryKey: ['unreadNotifications', user.id] });
     }
   };
   
