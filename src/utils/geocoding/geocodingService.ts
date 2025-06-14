@@ -11,6 +11,29 @@ const normalizeForGeocoding = (text: string): string => {
     .replace(/\s+/g, ' '); // Normalize whitespace
 };
 
+// Enhanced Polish character normalization for geocoding
+const normalizePolishCharacters = (text: string): string => {
+  return text
+    .replace(/ł/g, 'l')
+    .replace(/Ł/g, 'L')
+    .replace(/ą/g, 'a')
+    .replace(/Ą/g, 'A')
+    .replace(/ć/g, 'c')
+    .replace(/Ć/g, 'C')
+    .replace(/ę/g, 'e')
+    .replace(/Ę/g, 'E')
+    .replace(/ń/g, 'n')
+    .replace(/Ń/g, 'N')
+    .replace(/ó/g, 'o')
+    .replace(/Ó/g, 'O')
+    .replace(/ś/g, 's')
+    .replace(/Ś/g, 'S')
+    .replace(/ź/g, 'z')
+    .replace(/Ź/g, 'Z')
+    .replace(/ż/g, 'z')
+    .replace(/Ż/g, 'Z');
+};
+
 // Enhanced function to geocode an address using OpenStreetMap Nominatim API with improved international support
 export const geocodeAddress = async (
   address: string, 
@@ -36,21 +59,50 @@ export const geocodeAddress = async (
 
     console.log(`Geocoding address: "${cleanAddress}", City: "${cleanCity}", ZIP: "${cleanZipCode}", Country: "${mappedCountry}", Code: "${countryCode}"`);
 
+    // Create normalized versions for Polish addresses
+    const normalizedAddress = normalizePolishCharacters(cleanAddress);
+    const normalizedCity = normalizePolishCharacters(cleanCity);
+
     // Enhanced search strategies for better international coverage with different alphabets
-    const searchQueries = [
-      // Most specific first with all components
-      `${cleanAddress}, ${cleanZipCode} ${cleanCity}, ${mappedCountry}`,
-      // Without zip code for international addresses
-      `${cleanAddress}, ${cleanCity}, ${mappedCountry}`,
-      // Just city and country as fallback
-      `${cleanCity}, ${mappedCountry}`,
-      // Store name + city + country for better recognition
-      ...(storeData?.name ? [`${storeData.name}, ${cleanCity}, ${mappedCountry}`] : []),
-      // City with zip code
-      ...(cleanZipCode ? [`${cleanZipCode} ${cleanCity}, ${mappedCountry}`] : []),
-      // Just zip code and country for very specific locations
-      ...(cleanZipCode ? [`${cleanZipCode}, ${mappedCountry}`] : [])
-    ];
+    const searchQueries = [];
+
+    // For Polish addresses, try both original and normalized versions
+    if (mappedCountry.toLowerCase() === 'poland') {
+      searchQueries.push(
+        // Original Polish characters first
+        `${cleanAddress}, ${cleanZipCode} ${cleanCity}, ${mappedCountry}`,
+        `${cleanAddress}, ${cleanCity}, ${mappedCountry}`,
+        // Normalized versions
+        `${normalizedAddress}, ${cleanZipCode} ${normalizedCity}, ${mappedCountry}`,
+        `${normalizedAddress}, ${normalizedCity}, ${mappedCountry}`,
+        // City variations
+        `${cleanZipCode} ${cleanCity}, ${mappedCountry}`,
+        `${cleanZipCode} ${normalizedCity}, ${mappedCountry}`,
+        `${cleanCity}, ${mappedCountry}`,
+        `${normalizedCity}, ${mappedCountry}`,
+        // Just city with common Polish names
+        ...(cleanCity.toLowerCase().includes('krakow') || normalizedCity.toLowerCase().includes('krakow') 
+          ? ['Kraków, Poland', 'Krakow, Poland'] : []),
+        // ZIP code only
+        ...(cleanZipCode ? [`${cleanZipCode}, ${mappedCountry}`] : [])
+      );
+    } else {
+      // Standard search queries for other countries
+      searchQueries.push(
+        // Most specific first with all components
+        `${cleanAddress}, ${cleanZipCode} ${cleanCity}, ${mappedCountry}`,
+        // Without zip code for international addresses
+        `${cleanAddress}, ${cleanCity}, ${mappedCountry}`,
+        // Just city and country as fallback
+        `${cleanCity}, ${mappedCountry}`,
+        // Store name + city + country for better recognition
+        ...(storeData?.name ? [`${storeData.name}, ${cleanCity}, ${mappedCountry}`] : []),
+        // City with zip code
+        ...(cleanZipCode ? [`${cleanZipCode} ${cleanCity}, ${mappedCountry}`] : []),
+        // Just zip code and country for very specific locations
+        ...(cleanZipCode ? [`${cleanZipCode}, ${mappedCountry}`] : [])
+      );
+    }
 
     for (let i = 0; i < searchQueries.length; i++) {
       const query = searchQueries[i];
@@ -69,6 +121,11 @@ export const geocodeAddress = async (
       // Add country code filter if available
       if (countryCode) {
         geocodingUrl.searchParams.set('countrycodes', countryCode);
+      }
+
+      // For Polish addresses, also try without country code restriction
+      if (mappedCountry.toLowerCase() === 'poland' && i < 4) {
+        geocodingUrl.searchParams.delete('countrycodes');
       }
       
       try {
@@ -99,14 +156,15 @@ export const geocodeAddress = async (
               const resultCountry = (resultAddress?.country || '').toLowerCase();
               const expectedCountry = mappedCountry.toLowerCase();
               
-              // Enhanced country validation
+              // Enhanced country validation for Poland
               const isCountryMatch = 
                 resultCountry.includes(expectedCountry) || 
-                expectedCountry.includes(resultCountry) || 
+                expectedCountry.includes(resultCountry) ||
+                (expectedCountry === 'poland' && (resultCountry.includes('polska') || resultCountry.includes('poland'))) ||
                 !countryCode || // If no country code, be more lenient
-                i >= searchQueries.length - 2; // For last resort queries, be more lenient
+                i >= searchQueries.length - 3; // For last resort queries, be more lenient
               
-              // Enhanced city validation
+              // Enhanced city validation with Polish variations
               const resultCity = (
                 resultAddress?.city || 
                 resultAddress?.town || 
@@ -118,7 +176,10 @@ export const geocodeAddress = async (
               const isCityMatch = 
                 resultCity.includes(cleanCity.toLowerCase()) || 
                 cleanCity.toLowerCase().includes(resultCity) ||
-                i === searchQueries.length - 1 || // Last query is just city
+                resultCity.includes(normalizedCity.toLowerCase()) ||
+                normalizedCity.toLowerCase().includes(resultCity) ||
+                // Special case for Kraków/Krakow
+                (cleanCity.toLowerCase().includes('krakow') && resultCity.includes('krak')) ||
                 i >= searchQueries.length - 2; // Be more lenient for fallback queries
               
               // Enhanced scoring system
@@ -126,12 +187,12 @@ export const geocodeAddress = async (
               if (isCountryMatch) score += 0.3;
               if (isCityMatch) score += 0.3;
               if (resultAddress?.postcode === cleanZipCode) score += 0.2;
-              if (i === 0) score += 0.1; // Bonus for most specific query
+              if (i < 2) score += 0.1; // Bonus for most specific queries
               
               console.log(`Geocoding result: Query="${query}", Score=${score.toFixed(2)}, Country="${resultAddress?.country}", City="${resultCity}", Coords=(${coordinates.latitude}, ${coordinates.longitude})`);
               
               // Accept result if it meets minimum criteria
-              if ((isCountryMatch && isCityMatch) || score > 0.4 || i >= 2) {
+              if ((isCountryMatch && isCityMatch) || score > 0.3 || i >= 2) {
                 console.log(`✓ Geocoding successful with query: "${query}"`);
                 return coordinates;
               }
@@ -144,7 +205,7 @@ export const geocodeAddress = async (
       
       // Add delay between requests to respect rate limits
       if (i < searchQueries.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 150));
+        await new Promise(resolve => setTimeout(resolve, 200));
       }
     }
     

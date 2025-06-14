@@ -39,7 +39,9 @@ const COUNTRY_PATTERNS: CountryPattern[] = [
       'opole', 'zielona', 'tarnow', 'tarnów', 'chorzow', 'chorzów',
       'koszalin', 'legnica', 'grudziadz', 'grudziądz', 'slupsk', 'słupsk',
       'jaworzno', 'jastrzebie', 'jastrzębie', 'nowy', 'jelenia', 'konin',
-      'piotrkow', 'piotrków', 'inowroclaw', 'inowrocław', 'lubin', 'ostrow', 'ostrów'
+      'piotrkow', 'piotrków', 'inowroclaw', 'inowrocław', 'lubin', 'ostrow', 'ostrów',
+      // Polish postal codes pattern (XX-XXX)
+      '30-740', '31-', '32-', '33-', '34-', '80-', '81-', '82-', '00-', '01-', '02-'
     ], 
     country: 'poland' 
   },
@@ -102,7 +104,7 @@ export const detectCountryFromStore = (store: any): string => {
   }
   
   // Try to detect from address patterns with normalization
-  const fullAddress = `${store?.address || ''} ${store?.city || ''}`;
+  const fullAddress = `${store?.address || ''} ${store?.city || ''} ${store?.zip_code || ''}`;
   const storeName = (store?.name || '');
   
   // Normalize both original and search text
@@ -110,6 +112,13 @@ export const detectCountryFromStore = (store: any): string => {
   const normalizedStoreName = normalizeString(storeName);
   
   console.log(`Detecting country for store: "${store?.name}", Address: "${fullAddress}", Normalized: "${normalizedAddress}"`);
+  
+  // Special check for Polish postal codes (XX-XXX format)
+  const polishPostalCodeRegex = /\b\d{2}-\d{3}\b/;
+  if (polishPostalCodeRegex.test(fullAddress)) {
+    console.log('Polish postal code detected, setting country to Poland');
+    return 'poland';
+  }
   
   for (const pattern of COUNTRY_PATTERNS) {
     for (const keyword of pattern.keywords) {
