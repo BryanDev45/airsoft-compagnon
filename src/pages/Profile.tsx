@@ -1,25 +1,17 @@
 
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../hooks/useAuth';
+import React, { useEffect } from 'react';
 import { useProfileData } from '../hooks/profile/useProfileData';
 import { useEquipmentActions } from '../hooks/profile/useEquipmentActions';
 import { useUserGames } from '../hooks/profile/useUserGames';
 import { useProfileDialogs } from '../hooks/profile/useProfileDialogs';
+import { useProfileInitialization } from '../hooks/profile/useProfileInitialization';
 import ProfileLoading from '../components/profile/ProfileLoading';
 import ProfileLayout from '../components/profile/ProfileLayout';
 import { toast } from '@/components/ui/use-toast';
 
 const Profile = () => {
-  const { user, initialLoading } = useAuth();
-  const [canFetchData, setCanFetchData] = useState(false);
-  const [hasError, setHasError] = useState(false);
+  const { user, canFetchData, hasError, setHasError, initialLoading } = useProfileInitialization();
   const equipmentTypes = ["Réplique principale", "Réplique secondaire", "Protection", "Accessoire"];
-
-  useEffect(() => {
-    if (!initialLoading && user?.id) {
-      setCanFetchData(true);
-    }
-  }, [initialLoading, user]);
 
   const {
     loading,
@@ -44,7 +36,6 @@ const Profile = () => {
 
   const dialogStates = useProfileDialogs();
 
-  // Charger l'équipement et les parties après que les données utilisateur soient prêtes
   useEffect(() => {
     if (canFetchData && user?.id) {
       fetchEquipment();
@@ -52,9 +43,7 @@ const Profile = () => {
     }
   }, [canFetchData, user?.id, fetchEquipment, fetchUserGames]);
 
-  // Gestion d'erreur centralisée - Utilisons une fonction d'effet sans référence aux propriétés error
   useEffect(() => {
-    // Utiliser toast pour afficher les erreurs globales si nécessaire
     if (hasError) {
       toast({
         variant: "destructive",
@@ -72,7 +61,6 @@ const Profile = () => {
     return <div>Une erreur est survenue lors du chargement de votre profil. Veuillez réessayer plus tard.</div>;
   }
 
-  // Fusion sécurisée des objets
   const userWithUpdates = {
     id: user?.id,
     email: user?.email,
