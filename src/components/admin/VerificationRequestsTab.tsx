@@ -32,7 +32,7 @@ const VerificationRequestsTab = () => {
         .from('verification_requests')
         .select(`
           *,
-          user_profile:profiles(username, email)
+          user_profile:profiles!user_id(username, email)
         `)
         .order('created_at', { ascending: false });
 

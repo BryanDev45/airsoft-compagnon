@@ -37,10 +37,10 @@ const MessageReportsTab = () => {
         .from('message_reports')
         .select(`
           *,
-          reporter_profile:profiles!message_reports_reporter_id_fkey(username),
+          reporter_profile:profiles!reporter_id(username),
           message:messages(
             content,
-            sender_profile:profiles!messages_sender_id_fkey(username)
+            sender_profile:profiles!sender_id(username)
           )
         `)
         .order('created_at', { ascending: false });

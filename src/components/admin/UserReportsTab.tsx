@@ -34,8 +34,8 @@ const UserReportsTab = () => {
         .from('user_reports')
         .select(`
           *,
-          reporter_profile:profiles!user_reports_reporter_id_fkey(username),
-          reported_profile:profiles!user_reports_reported_user_id_fkey(username)
+          reporter_profile:profiles!reporter_id(username),
+          reported_profile:profiles!reported_user_id(username)
         `)
         .order('created_at', { ascending: false });
 
