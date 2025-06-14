@@ -102,44 +102,6 @@ export function ComboboxDemo({
     };
   }, [debouncedSearchTerm]);
 
-  // Safely create command items - ensure we're not iterating over undefined
-  const renderCommandItems = () => {
-    if (isLoading) {
-      return (
-        <div className="flex items-center justify-center p-4">
-          <Loader2 className="h-4 w-4 animate-spin mr-2" />
-          <span>Recherche en cours...</span>
-        </div>
-      );
-    }
-    
-    // Extra safeguard: ensure cities is defined and is an array before mapping
-    if (!Array.isArray(cities) || cities.length === 0) {
-      return null;
-    }
-    
-    return cities.map((city) => (
-      <CommandItem
-        key={city.fullName}
-        value={city.fullName}
-        onSelect={(currentValue: string) => {
-          const safeValue = currentValue || "";
-          setValue(safeValue);
-          onSelect(safeValue);
-          setOpen(false);
-        }}
-      >
-        <Check
-          className={cn(
-            "mr-2 h-4 w-4",
-            value === city.fullName ? "opacity-100" : "opacity-0"
-          )}
-        />
-        {city.fullName}
-      </CommandItem>
-    ));
-  };
-
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -148,7 +110,7 @@ export function ComboboxDemo({
           role="combobox"
           aria-expanded={open}
           className="w-full justify-between"
-          type="button" // Prevent form submission
+          type="button"
         >
           {value || "Sélectionner une ville..."}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -162,7 +124,7 @@ export function ComboboxDemo({
             onValueChange={(value) => setSearchTerm(value || "")}
             className="h-9"
           />
-          <CommandList>
+          <div className="max-h-[200px] overflow-y-auto">
             {error && (
               <div className="px-4 py-2 text-sm text-red-500">
                 {error}
@@ -172,23 +134,37 @@ export function ComboboxDemo({
               {isLoading ? "Chargement..." : "Aucune ville trouvée."}
             </CommandEmpty>
             <CommandGroup>
-              {renderCommandItems()}
+              {isLoading ? (
+                <div className="flex items-center justify-center p-4">
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  <span>Recherche en cours...</span>
+                </div>
+              ) : (
+                cities.map((city) => (
+                  <CommandItem
+                    key={city.fullName}
+                    value={city.fullName}
+                    onSelect={(currentValue: string) => {
+                      const safeValue = currentValue || "";
+                      setValue(safeValue);
+                      onSelect(safeValue);
+                      setOpen(false);
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === city.fullName ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {city.fullName}
+                  </CommandItem>
+                ))
+              )}
             </CommandGroup>
-          </CommandList>
+          </div>
         </Command>
       </PopoverContent>
     </Popover>
-  );
-}
-
-/**
- * This component is needed to fix the "undefined is not iterable" error
- * by properly handling empty or undefined children
- */
-function CommandList({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="max-h-[200px] overflow-y-auto">
-      {children}
-    </div>
   );
 }
