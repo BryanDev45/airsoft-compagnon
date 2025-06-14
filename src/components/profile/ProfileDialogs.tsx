@@ -196,7 +196,10 @@ const ProfileDialogs = ({
               </p>
             ) : (
               sortedAllGames.map(game => (
-                <div key={game.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div
+                  key={game.id}
+                  className="border border-green-600 rounded-lg p-4 hover:shadow-md hover:border-green-700 transition-shadow"
+                >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <h3 className="font-semibold text-lg mb-2">{game.title}</h3>
