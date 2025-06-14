@@ -20,18 +20,21 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ReportUserButtonProps {
   username: string;
+  reportedUserId: string;
 }
 
-const ReportUserButton = ({ username }: ReportUserButtonProps) => {
+const ReportUserButton = ({ username, reportedUserId }: ReportUserButtonProps) => {
   const [reason, setReason] = useState("");
   const [details, setDetails] = useState("");
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleReport = () => {
+  const handleReport = async () => {
     if (!reason) {
       toast({
         title: "Erreur",
@@ -41,14 +44,59 @@ const ReportUserButton = ({ username }: ReportUserButtonProps) => {
       return;
     }
 
-    // Simulate report submission
-    toast({
-      title: "Signalement envoyé",
-      description: "Merci pour votre signalement. Notre équipe va l'examiner."
-    });
-    setReason("");
-    setDetails("");
-    setOpen(false);
+    setLoading(true);
+
+    try {
+      // Récupérer l'utilisateur actuel
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        toast({
+          title: "Erreur",
+          description: "Vous devez être connecté pour signaler un utilisateur",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Insérer le signalement dans la base de données
+      const { error } = await supabase
+        .from('user_reports')
+        .insert({
+          reporter_id: user.id,
+          reported_user_id: reportedUserId,
+          reason: reason,
+          details: details.trim() || null
+        });
+
+      if (error) {
+        console.error('Erreur lors de l\'enregistrement du signalement:', error);
+        toast({
+          title: "Erreur",
+          description: "Impossible d'enregistrer le signalement. Veuillez réessayer.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Signalement envoyé",
+        description: "Merci pour votre signalement. Notre équipe va l'examiner."
+      });
+      
+      setReason("");
+      setDetails("");
+      setOpen(false);
+    } catch (error) {
+      console.error('Erreur inattendue:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur inattendue s'est produite. Veuillez réessayer.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -77,6 +125,7 @@ const ReportUserButton = ({ username }: ReportUserButtonProps) => {
             <Select 
               value={reason}
               onValueChange={setReason}
+              disabled={loading}
             >
               <SelectTrigger id="reason">
                 <SelectValue placeholder="Sélectionner une raison" />
@@ -99,6 +148,7 @@ const ReportUserButton = ({ username }: ReportUserButtonProps) => {
               value={details}
               onChange={(e) => setDetails(e.target.value)}
               rows={4}
+              disabled={loading}
             />
           </div>
           
@@ -108,8 +158,20 @@ const ReportUserButton = ({ username }: ReportUserButtonProps) => {
         </div>
         
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>Annuler</Button>
-          <Button variant="destructive" onClick={handleReport}>Envoyer</Button>
+          <Button 
+            variant="outline" 
+            onClick={() => setOpen(false)}
+            disabled={loading}
+          >
+            Annuler
+          </Button>
+          <Button 
+            variant="destructive" 
+            onClick={handleReport}
+            disabled={loading}
+          >
+            {loading ? "Envoi en cours..." : "Envoyer"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
