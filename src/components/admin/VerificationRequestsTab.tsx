@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -30,27 +31,37 @@ const VerificationRequestsTab = () => {
   const { data: requests = [], isLoading, error } = useQuery({
     queryKey: ['admin-verification-requests'],
     queryFn: async () => {
+      console.log('Fetching verification requests...');
+      
       const { data, error } = await supabase
         .from('verification_requests')
         .select(`
           *,
-          user_profile:profiles!verification_requests_user_id_fkey(username, email)
+          user_profile:profiles!user_id(username, email)
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data as unknown as VerificationRequest[];
+      console.log('Verification requests query result:', { data, error });
+
+      if (error) {
+        console.error('Error fetching verification requests:', error);
+        throw error;
+      }
+      
+      return data as VerificationRequest[];
     }
   });
 
   const updateRequestMutation = useMutation({
     mutationFn: async ({ requestId, status, notes }: { requestId: string; status: string; notes?: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
       const { error } = await supabase
         .from('verification_requests')
         .update({
           status,
           admin_notes: notes,
-          reviewed_by: (await supabase.auth.getUser()).data.user?.id,
+          reviewed_by: user?.id,
           reviewed_at: new Date().toISOString()
         })
         .eq('id', requestId);
@@ -78,6 +89,7 @@ const VerificationRequestsTab = () => {
       });
     },
     onError: (error) => {
+      console.error('Error updating verification request:', error);
       toast({
         title: "Erreur",
         description: "Impossible de mettre à jour la demande.",
@@ -116,10 +128,12 @@ const VerificationRequestsTab = () => {
   }
 
   if (error) {
+    console.error('Verification requests tab error:', error);
     return (
       <div className="text-center py-12">
         <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
         <p className="text-gray-600">Erreur lors du chargement des demandes</p>
+        <p className="text-sm text-gray-500 mt-2">{error.message}</p>
       </div>
     );
   }

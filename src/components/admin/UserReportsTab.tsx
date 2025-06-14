@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -32,28 +33,38 @@ const UserReportsTab = () => {
   const { data: reports = [], isLoading, error } = useQuery({
     queryKey: ['admin-user-reports'],
     queryFn: async () => {
+      console.log('Fetching user reports...');
+      
       const { data, error } = await supabase
         .from('user_reports')
         .select(`
           *,
-          reporter_profile:profiles!user_reports_reporter_id_fkey(username),
-          reported_profile:profiles!user_reports_reported_user_id_fkey(username)
+          reporter_profile:profiles!reporter_id(username),
+          reported_profile:profiles!reported_user_id(username)
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data as unknown as UserReport[];
+      console.log('User reports query result:', { data, error });
+
+      if (error) {
+        console.error('Error fetching user reports:', error);
+        throw error;
+      }
+      
+      return data as UserReport[];
     }
   });
 
   const updateReportMutation = useMutation({
     mutationFn: async ({ reportId, status, notes }: { reportId: string; status: string; notes?: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
       const { error } = await supabase
         .from('user_reports')
         .update({
           status,
           admin_notes: notes,
-          reviewed_by: (await supabase.auth.getUser()).data.user?.id,
+          reviewed_by: user?.id,
           reviewed_at: new Date().toISOString()
         })
         .eq('id', reportId);
@@ -68,6 +79,7 @@ const UserReportsTab = () => {
       });
     },
     onError: (error) => {
+      console.error('Error updating user report:', error);
       toast({
         title: "Erreur",
         description: "Impossible de mettre à jour le signalement.",
@@ -106,10 +118,12 @@ const UserReportsTab = () => {
   }
 
   if (error) {
+    console.error('User reports tab error:', error);
     return (
       <div className="text-center py-12">
         <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
         <p className="text-gray-600">Erreur lors du chargement des signalements</p>
+        <p className="text-sm text-gray-500 mt-2">{error.message}</p>
       </div>
     );
   }

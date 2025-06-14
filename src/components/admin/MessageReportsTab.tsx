@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -36,11 +37,13 @@ const MessageReportsTab = () => {
   const { data: reports = [], isLoading, error } = useQuery({
     queryKey: ['admin-message-reports'],
     queryFn: async () => {
+      console.log('Fetching message reports...');
+      
       const { data, error } = await supabase
         .from('message_reports')
         .select(`
           *,
-          reporter_profile:profiles!message_reports_reporter_id_fkey(username),
+          reporter_profile:profiles!reporter_id(username),
           message:messages(
             content,
             sender_id,
@@ -49,19 +52,27 @@ const MessageReportsTab = () => {
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data as unknown as MessageReport[];
+      console.log('Message reports query result:', { data, error });
+
+      if (error) {
+        console.error('Error fetching message reports:', error);
+        throw error;
+      }
+      
+      return data as MessageReport[];
     }
   });
 
   const updateReportMutation = useMutation({
     mutationFn: async ({ reportId, status, notes }: { reportId: string; status: string; notes?: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
       const { error } = await supabase
         .from('message_reports')
         .update({
           status,
           admin_notes: notes,
-          reviewed_by: (await supabase.auth.getUser()).data.user?.id,
+          reviewed_by: user?.id,
           reviewed_at: new Date().toISOString()
         })
         .eq('id', reportId);
@@ -76,6 +87,7 @@ const MessageReportsTab = () => {
       });
     },
     onError: (error) => {
+      console.error('Error updating message report:', error);
       toast({
         title: "Erreur",
         description: "Impossible de mettre à jour le signalement.",
@@ -114,10 +126,12 @@ const MessageReportsTab = () => {
   }
 
   if (error) {
+    console.error('Message reports tab error:', error);
     return (
       <div className="text-center py-12">
         <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
         <p className="text-gray-600">Erreur lors du chargement des signalements</p>
+        <p className="text-sm text-gray-500 mt-2">{error.message}</p>
       </div>
     );
   }
