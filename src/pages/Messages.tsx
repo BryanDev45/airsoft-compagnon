@@ -2,44 +2,94 @@
 import React, { useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { useMessaging } from '@/hooks/useMessaging';
+import { useMessaging } from '@/hooks/messaging/useMessaging';
 import ConversationList from '@/components/messaging/ConversationList';
 import ChatView from '@/components/messaging/ChatView';
 import { Card } from '@/components/ui/card';
-import { MessageSquare, Users } from 'lucide-react';
+import { MessageSquare, Users, Sparkles } from 'lucide-react';
 
 const Messages: React.FC = () => {
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const { conversations, isLoading } = useMessaging();
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40">
       <Header />
       
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
-          {/* Page Header */}
+          {/* Enhanced Page Header */}
           <div className="mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-airsoft-red rounded-lg">
-                <MessageSquare className="h-6 w-6 text-white" />
+            <div className="flex items-center gap-4 mb-3">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-airsoft-red to-red-600 rounded-xl blur-sm opacity-20"></div>
+                <div className="relative p-3 bg-gradient-to-br from-airsoft-red to-red-600 rounded-xl shadow-lg">
+                  <MessageSquare className="h-7 w-7 text-white" />
+                </div>
               </div>
-              <h1 className="text-3xl font-bold text-gray-900">Messages</h1>
+              <div>
+                <h1 className="text-4xl font-bold text-gray-900 mb-1">Messages</h1>
+                <p className="text-gray-600 text-lg">Communiquez avec votre équipe et les autres joueurs</p>
+              </div>
             </div>
-            <p className="text-gray-600">Communiquez avec votre équipe et les autres joueurs</p>
+            
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+              <div className="bg-white/70 backdrop-blur-sm rounded-xl p-4 border border-white/20 shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Users className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Conversations</p>
+                    <p className="text-xl font-semibold text-gray-900">{conversations.length}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white/70 backdrop-blur-sm rounded-xl p-4 border border-white/20 shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <MessageSquare className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Messages non lus</p>
+                    <p className="text-xl font-semibold text-gray-900">
+                      {conversations.reduce((sum, conv) => sum + conv.unread_count, 0)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white/70 backdrop-blur-sm rounded-xl p-4 border border-white/20 shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <Sparkles className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Statut</p>
+                    <p className="text-xl font-semibold text-green-600">En ligne</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           
-          {/* Main Content Card */}
-          <Card className="overflow-hidden shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-            <div className="flex h-[calc(100vh-280px)] min-h-[600px]">
-              {/* Sidebar - Conversation List */}
-              <div className={`${selectedConversationId ? 'hidden lg:block' : ''} w-full lg:w-96 border-r border-gray-200 bg-white/50`}>
-                <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
-                  <div className="flex items-center gap-2">
-                    <Users className="h-5 w-5 text-airsoft-red" />
-                    <h2 className="font-semibold text-gray-900">Conversations</h2>
+          {/* Enhanced Main Content Card */}
+          <Card className="overflow-hidden shadow-2xl border-0 bg-white/90 backdrop-blur-sm ring-1 ring-white/20">
+            <div className="flex h-[calc(100vh-360px)] min-h-[600px]">
+              {/* Enhanced Sidebar - Conversation List */}
+              <div className={`${selectedConversationId ? 'hidden lg:block' : ''} w-full lg:w-96 border-r border-gray-100/80 bg-gradient-to-b from-white/95 to-gray-50/50 backdrop-blur-sm`}>
+                <div className="p-6 border-b border-gray-100/80 bg-gradient-to-r from-gray-50/80 via-white/90 to-gray-50/80 backdrop-blur-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-sm">
+                        <Users className="h-5 w-5 text-white" />
+                      </div>
+                      <h2 className="font-semibold text-gray-900 text-lg">Conversations</h2>
+                    </div>
                     {conversations.length > 0 && (
-                      <span className="ml-auto bg-airsoft-red text-white text-xs px-2 py-1 rounded-full">
+                      <span className="bg-gradient-to-r from-airsoft-red to-red-600 text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-sm">
                         {conversations.length}
                       </span>
                     )}
@@ -49,8 +99,11 @@ const Messages: React.FC = () => {
                 {isLoading ? (
                   <div className="flex items-center justify-center h-full">
                     <div className="text-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-airsoft-red mx-auto mb-4"></div>
-                      <p className="text-gray-500">Chargement des conversations...</p>
+                      <div className="relative">
+                        <div className="animate-spin rounded-full h-10 w-10 border-3 border-transparent border-t-airsoft-red mx-auto mb-4"></div>
+                        <div className="absolute inset-0 rounded-full border-3 border-gray-200"></div>
+                      </div>
+                      <p className="text-gray-500 font-medium">Chargement des conversations...</p>
                     </div>
                   </div>
                 ) : (
@@ -61,34 +114,39 @@ const Messages: React.FC = () => {
                 )}
               </div>
 
-              {/* Main Chat Area */}
-              <div className={`${selectedConversationId ? '' : 'hidden lg:flex'} flex-1 flex items-center justify-center bg-gradient-to-br from-white to-gray-50`}>
+              {/* Enhanced Main Chat Area */}
+              <div className={`${selectedConversationId ? '' : 'hidden lg:flex'} flex-1 flex items-center justify-center bg-gradient-to-br from-white via-slate-50/30 to-blue-50/20`}>
                 {selectedConversationId ? (
                   <ChatView 
                     conversationId={selectedConversationId} 
                     onBack={() => setSelectedConversationId(null)}
                   />
                 ) : (
-                  <div className="text-center p-8">
-                    <div className="mb-6">
-                      <div className="w-24 h-24 bg-gradient-to-br from-airsoft-red/10 to-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <MessageSquare className="h-12 w-12 text-airsoft-red" />
+                  <div className="text-center p-12 max-w-md">
+                    <div className="mb-8">
+                      <div className="relative mx-auto mb-6">
+                        <div className="absolute inset-0 bg-gradient-to-br from-airsoft-red/20 to-red-200/40 rounded-full blur-xl"></div>
+                        <div className="relative w-32 h-32 bg-gradient-to-br from-airsoft-red/10 via-red-50 to-red-100/80 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/40 shadow-lg">
+                          <MessageSquare className="h-16 w-16 text-airsoft-red" />
+                        </div>
                       </div>
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      <h3 className="text-2xl font-bold text-gray-900 mb-3">
                         Sélectionnez une conversation
                       </h3>
-                      <p className="text-gray-500 max-w-md">
+                      <p className="text-gray-600 leading-relaxed">
                         Choisissez une conversation dans la liste pour commencer à échanger avec votre équipe ou d'autres joueurs.
                       </p>
                     </div>
                     
                     {conversations.length === 0 && !isLoading && (
-                      <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
-                        <div className="flex items-center gap-2 text-blue-700 mb-2">
-                          <Users className="h-5 w-5" />
-                          <span className="font-medium">Astuce</span>
+                      <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100/60 shadow-sm">
+                        <div className="flex items-center justify-center gap-2 text-blue-700 mb-3">
+                          <div className="p-1.5 bg-blue-100 rounded-lg">
+                            <Users className="h-4 w-4" />
+                          </div>
+                          <span className="font-semibold">Astuce</span>
                         </div>
-                        <p className="text-blue-600 text-sm">
+                        <p className="text-blue-600 text-sm leading-relaxed">
                           Rejoignez une équipe pour commencer à discuter avec vos coéquipiers !
                         </p>
                       </div>
