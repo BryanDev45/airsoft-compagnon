@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, X } from 'lucide-react';
 import UserReportActions from './UserReportActions';
 import UserReportProfileButtons from './UserReportProfileButtons';
 
@@ -39,7 +39,7 @@ const UserReportCard: React.FC<UserReportCardProps> = ({
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'resolved': return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'dismissed': return <CheckCircle className="h-4 w-4 text-gray-500" />;
+      case 'dismissed': return <X className="h-4 w-4 text-red-500" />;
       default: return <Clock className="h-4 w-4 text-yellow-500" />;
     }
   };
