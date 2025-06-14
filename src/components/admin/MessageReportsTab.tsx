@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { AlertCircle, CheckCircle, Clock } from 'lucide-react';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 interface MessageReport {
   id: string;
@@ -24,7 +23,7 @@ interface MessageReport {
     sender_profile: {
       username: string;
     } | null;
-  };
+  } | null;
 }
 
 const MessageReportsTab = () => {
@@ -36,17 +35,58 @@ const MessageReportsTab = () => {
       const { data, error } = await supabase
         .from('message_reports')
         .select(`
-          *,
-          reporter_profile:profiles!reporter_id(username),
-          message:messages(
-            content,
-            sender_profile:profiles!sender_id(username)
-          )
+          id,
+          reason,
+          details,
+          status,
+          created_at,
+          admin_notes,
+          reporter_id,
+          message_id
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+
+      // Fetch profiles and messages separately to avoid join issues
+      const reportsWithProfiles = await Promise.all(
+        (data || []).map(async (report) => {
+          // Fetch reporter profile
+          const { data: reporterProfile } = await supabase
+            .from('profiles')
+            .select('username')
+            .eq('id', report.reporter_id)
+            .single();
+
+          // Fetch message and sender profile
+          const { data: message } = await supabase
+            .from('messages')
+            .select('content, sender_id')
+            .eq('id', report.message_id)
+            .single();
+
+          let senderProfile = null;
+          if (message?.sender_id) {
+            const { data: sender } = await supabase
+              .from('profiles')
+              .select('username')
+              .eq('id', message.sender_id)
+              .single();
+            senderProfile = sender;
+          }
+
+          return {
+            ...report,
+            reporter_profile: reporterProfile,
+            message: message ? {
+              content: message.content,
+              sender_profile: senderProfile
+            } : null
+          };
+        })
+      );
+
+      return reportsWithProfiles;
     }
   });
 
@@ -122,13 +162,15 @@ const MessageReportsTab = () => {
                 <strong>Détails:</strong> {report.details}
               </div>
             )}
-            <div className="bg-gray-50 p-3 rounded">
-              <strong>Message signalé:</strong>
-              <p className="mt-1">"{report.message.content}"</p>
-              <p className="text-sm text-gray-600 mt-1">
-                Par: {report.message.sender_profile?.username || 'Utilisateur supprimé'}
-              </p>
-            </div>
+            {report.message && (
+              <div className="bg-gray-50 p-3 rounded">
+                <strong>Message signalé:</strong>
+                <p className="mt-1">"{report.message.content}"</p>
+                <p className="text-sm text-gray-600 mt-1">
+                  Par: {report.message.sender_profile?.username || 'Utilisateur supprimé'}
+                </p>
+              </div>
+            )}
             {report.admin_notes && (
               <div>
                 <strong>Notes admin:</strong> {report.admin_notes}

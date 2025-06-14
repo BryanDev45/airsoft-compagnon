@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { AlertCircle, CheckCircle, Clock } from 'lucide-react';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 interface UserReport {
   id: string;
@@ -33,14 +32,45 @@ const UserReportsTab = () => {
       const { data, error } = await supabase
         .from('user_reports')
         .select(`
-          *,
-          reporter_profile:profiles!reporter_id(username),
-          reported_profile:profiles!reported_user_id(username)
+          id,
+          reason,
+          details,
+          status,
+          created_at,
+          admin_notes,
+          reporter_id,
+          reported_user_id
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+
+      // Fetch profiles separately to avoid join issues
+      const reportsWithProfiles = await Promise.all(
+        (data || []).map(async (report) => {
+          // Fetch reporter profile
+          const { data: reporterProfile } = await supabase
+            .from('profiles')
+            .select('username')
+            .eq('id', report.reporter_id)
+            .single();
+
+          // Fetch reported user profile
+          const { data: reportedProfile } = await supabase
+            .from('profiles')
+            .select('username')
+            .eq('id', report.reported_user_id)
+            .single();
+
+          return {
+            ...report,
+            reporter_profile: reporterProfile,
+            reported_profile: reportedProfile
+          };
+        })
+      );
+
+      return reportsWithProfiles;
     }
   });
 

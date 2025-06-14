@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { AlertCircle, CheckCircle, Clock, ExternalLink } from 'lucide-react';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 interface VerificationRequest {
   id: string;
@@ -31,13 +30,36 @@ const VerificationRequestsTab = () => {
       const { data, error } = await supabase
         .from('verification_requests')
         .select(`
-          *,
-          user_profile:profiles!user_id(username, email)
+          id,
+          status,
+          created_at,
+          front_id_document,
+          back_id_document,
+          admin_notes,
+          user_id
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+
+      // Fetch user profiles separately to avoid join issues
+      const requestsWithProfiles = await Promise.all(
+        (data || []).map(async (request) => {
+          // Fetch user profile
+          const { data: userProfile } = await supabase
+            .from('profiles')
+            .select('username, email')
+            .eq('id', request.user_id)
+            .single();
+
+          return {
+            ...request,
+            user_profile: userProfile
+          };
+        })
+      );
+
+      return requestsWithProfiles;
     }
   });
 
