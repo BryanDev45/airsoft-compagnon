@@ -46,23 +46,24 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ isDesktop = 
       </DropdownMenu>
     );
   } else {
-    // Mobile layout
+    // Mobile layout - Improved version
     return (
-      <div className="py-2 text-white">
-        <span className="flex items-center gap-2 mb-2">
+      <div className="text-white">
+        <div className="flex items-center gap-2 mb-3 text-gray-300">
           <Globe size={18} />
-          <span>Langue</span>
-        </span>
-        <div className="grid grid-cols-2 gap-2 ml-6">
+          <span className="font-medium">Langue</span>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
           {languages.map(language => (
             <Button 
               key={language.code} 
               variant="ghost" 
-              className="justify-start text-white hover:text-airsoft-red"
+              size="sm"
+              className="justify-start text-white hover:text-airsoft-red hover:bg-gray-800 p-2 h-auto"
               onClick={() => handleLanguageChange(language.code)}
             >
-              <span className="mr-2 text-lg">{language.flag}</span>
-              <span>{language.name}</span>
+              <span className="mr-2 text-base">{language.flag}</span>
+              <span className="text-sm">{language.name}</span>
             </Button>
           ))}
         </div>

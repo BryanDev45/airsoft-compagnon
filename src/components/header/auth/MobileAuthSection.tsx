@@ -42,8 +42,9 @@ export const MobileAuthSection: React.FC<MobileAuthSectionProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="py-2 text-white">
+    <div className="space-y-4">
+      {/* Notifications */}
+      <div className="text-white">
         <NotificationSheet
           notifications={notifications}
           notificationCount={notificationCount}
@@ -52,18 +53,21 @@ export const MobileAuthSection: React.FC<MobileAuthSectionProps> = ({
         />
       </div>
 
-      <div className="flex items-center gap-3 py-2">
-        <Avatar>
+      {/* User Info */}
+      <div className="flex items-center gap-3 py-2 px-2 bg-gray-800 rounded-md">
+        <Avatar className="h-8 w-8">
           <AvatarImage src={user.avatar} alt={user.username} />
-          <AvatarFallback>{user?.username?.charAt(0) || 'U'}</AvatarFallback>
+          <AvatarFallback className="text-sm">{user?.username?.charAt(0) || 'U'}</AvatarFallback>
         </Avatar>
-        <span>{user.username}</span>
+        <span className="text-white text-sm font-medium">{user.username}</span>
       </div>
       
-      <div className="flex flex-col gap-2">
+      {/* Action Buttons */}
+      <div className="space-y-2">
         <Button 
           variant="ghost" 
-          className="justify-start text-white hover:text-airsoft-red"
+          size="sm"
+          className="w-full justify-start text-white hover:text-airsoft-red hover:bg-gray-800"
           onClick={() => navigate('/profile')}
         >
           <UserIcon size={16} className="mr-2" /> Mon profil
@@ -71,13 +75,19 @@ export const MobileAuthSection: React.FC<MobileAuthSectionProps> = ({
         
         <Button 
           variant="ghost" 
-          className="justify-start text-white hover:text-airsoft-red"
+          size="sm"
+          className="w-full justify-start text-white hover:text-airsoft-red hover:bg-gray-800"
           onClick={handleNavigateToTeam}
         >
           <Users size={16} className="mr-2" /> Mon équipe
         </Button>
         
-        <Button variant="destructive" className="mt-2 bg-airsoft-red hover:bg-red-700" onClick={handleLogout}>
+        <Button 
+          variant="destructive" 
+          size="sm"
+          className="w-full bg-airsoft-red hover:bg-red-700 mt-3"
+          onClick={handleLogout}
+        >
           <LogOut className="mr-2 h-4 w-4" /> Déconnexion
         </Button>
       </div>
