@@ -2,14 +2,16 @@
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, AlertTriangle, UserCheck, MessageSquare } from 'lucide-react';
-import { Navigate } from 'react-router-dom';
+import { Button } from "@/components/ui/button";
+import { Shield, AlertTriangle, UserCheck, MessageSquare, ArrowLeft } from 'lucide-react';
+import { Navigate, useNavigate } from 'react-router-dom';
 import UserReportsTab from '@/components/admin/UserReportsTab';
 import MessageReportsTab from '@/components/admin/MessageReportsTab';
 import VerificationRequestsTab from '@/components/admin/VerificationRequestsTab';
 
 const Admin = () => {
   const { user, initialLoading } = useAuth();
+  const navigate = useNavigate();
 
   // Show loading while checking auth
   if (initialLoading) {
@@ -28,13 +30,28 @@ const Admin = () => {
     return <Navigate to="/" replace />;
   }
 
+  const handleReturnToSite = () => {
+    navigate('/');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8 text-center">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Shield className="h-8 w-8 text-airsoft-red" />
-            <h1 className="text-3xl font-bold text-gray-900">Administration</h1>
+          <div className="flex items-center justify-between mb-4">
+            <Button
+              variant="outline"
+              onClick={handleReturnToSite}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Retourner au site
+            </Button>
+            <div className="flex items-center gap-3">
+              <Shield className="h-8 w-8 text-airsoft-red" />
+              <h1 className="text-3xl font-bold text-gray-900">Administration</h1>
+            </div>
+            <div className="w-32"></div> {/* Spacer pour centrer le titre */}
           </div>
           <p className="text-gray-600">
             Gestion des signalements, modération et vérifications des comptes
