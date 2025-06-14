@@ -22,6 +22,12 @@ export interface MapStore {
   picture5?: string;
 }
 
+// Coordonnées hardcodées pour Taiwangun (Kraków, Pologne)
+const TAIWANGUN_COORDINATES = {
+  latitude: 50.0647,
+  longitude: 19.9450
+};
+
 export const useStoresData = () => {
   return useQuery({
     queryKey: ['stores'],
@@ -72,6 +78,31 @@ export const useStoresData = () => {
               zip_code: store.zip_code,
               stored_coords: { lat: store.latitude, lng: store.longitude }
             });
+            
+            // Pour Taiwangun, utiliser TOUJOURS les coordonnées hardcodées
+            console.log(`🔍 TAIWANGUN DEBUG - Using hardcoded Kraków coordinates:`, TAIWANGUN_COORDINATES);
+            
+            const processedStore = {
+              id: store.id,
+              name: store.name,
+              address: store.address || '',
+              city: store.city || '',
+              zip_code: store.zip_code || '',
+              phone: store.phone,
+              email: store.email,
+              website: store.website,
+              lat: TAIWANGUN_COORDINATES.latitude,
+              lng: TAIWANGUN_COORDINATES.longitude,
+              store_type: store.store_type || '',
+              image: store.picture1 || '/placeholder.svg',
+              picture2: store.picture2,
+              picture3: store.picture3,
+              picture4: store.picture4,
+              picture5: store.picture5
+            };
+
+            console.log(`🔍 TAIWANGUN DEBUG - Final processed store:`, processedStore);
+            return processedStore;
           }
           
           console.log(`🔍 STORES DEBUG: Processing store "${store.name}": Address="${store.address}", City="${store.city}", ZIP="${store.zip_code}", Stored coords=(${store.latitude}, ${store.longitude})`);
@@ -91,29 +122,6 @@ export const useStoresData = () => {
             shouldForceGeocode = true;
           }
           
-          // For Taiwangun specifically, always force geocoding to ensure we get correct coordinates
-          if (isTaiwangun) {
-            console.log(`🔍 TAIWANGUN DEBUG - Forcing geocoding for Taiwangun store`);
-            shouldForceGeocode = true;
-          }
-          
-          if (isTaiwangun) {
-            console.log(`🔍 TAIWANGUN DEBUG - About to call getValidCoordinates with:`, {
-              shouldForceGeocode,
-              storedLat: shouldForceGeocode ? null : store.latitude,
-              storedLng: shouldForceGeocode ? null : store.longitude,
-              address: store.address,
-              zipCode: store.zip_code,
-              city: store.city,
-              storeData: {
-                name: store.name,
-                address: store.address,
-                city: store.city,
-                zip_code: store.zip_code
-              }
-            });
-          }
-          
           // Use stored coordinates if they seem valid, otherwise geocode
           const validCoordinates = await getValidCoordinates(
             shouldForceGeocode ? null : store.latitude, // Force geocoding if needed
@@ -130,13 +138,9 @@ export const useStoresData = () => {
             }
           );
 
-          if (isTaiwangun) {
-            console.log(`🔍 TAIWANGUN DEBUG - Final coordinates after getValidCoordinates:`, validCoordinates);
-          }
-
           console.log(`🔍 STORES DEBUG: Store "${store.name}": Final coordinates (${validCoordinates.latitude}, ${validCoordinates.longitude})`);
 
-          const processedStore = {
+          return {
             id: store.id,
             name: store.name,
             address: store.address || '',
@@ -154,12 +158,6 @@ export const useStoresData = () => {
             picture4: store.picture4,
             picture5: store.picture5
           };
-
-          if (isTaiwangun) {
-            console.log(`🔍 TAIWANGUN DEBUG - Processed store object:`, processedStore);
-          }
-
-          return processedStore;
         })
       );
 
