@@ -254,8 +254,11 @@ export function ComboboxDemo({
                   <CommandItem
                     key={`${city.fullName}-${index}`}
                     value={city.fullName}
-                    onSelect={() => handleCitySelect(city)}
-                    className="cursor-pointer"
+                    onSelect={() => {
+                      console.log('CommandItem onSelect triggered for:', city.fullName);
+                      handleCitySelect(city);
+                    }}
+                    className="cursor-pointer hover:bg-accent"
                   >
                     <Check
                       className={cn(
@@ -263,7 +266,7 @@ export function ComboboxDemo({
                         value === city.fullName ? "opacity-100" : "opacity-0"
                       )}
                     />
-                    {city.fullName}
+                    <span className="truncate">{city.fullName}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>
