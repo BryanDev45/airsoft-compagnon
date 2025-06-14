@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -168,8 +167,8 @@ const CountryFilter: React.FC<CountryFilterProps> = ({
                   <CommandItem
                     key={country.value}
                     value={country.value}
-                    onSelect={(currentValue) => {
-                      setSelectedCountry(currentValue === selectedCountry ? "all" : currentValue);
+                    onSelect={() => {
+                      setSelectedCountry(country.value);
                       setOpen(false);
                     }}
                     className="text-white hover:bg-gray-600 data-[selected=true]:bg-gray-600 bg-gray-700"
