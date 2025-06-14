@@ -89,7 +89,12 @@ export const useConversationsQuery = () => {
         // Pour chaque conversation, récupérer les détails complets
         const conversationsWithDetails = await Promise.all(
           conversationsData.map(async (conv) => {
-            return await fetchConversationDetails(conv, user.id);
+            // Cast the type to ensure it matches our interface
+            const typedConv = {
+              ...conv,
+              type: conv.type as 'direct' | 'team'
+            };
+            return await fetchConversationDetails(typedConv, user.id);
           })
         );
 
