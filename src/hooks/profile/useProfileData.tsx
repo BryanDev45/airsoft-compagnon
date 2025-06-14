@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useProfileFetch } from './useProfileFetch';
 import { useProfileUpdates } from './useProfileUpdates';
@@ -58,6 +57,7 @@ export const useProfileData = (userId: string | undefined) => {
             banner: null,
             bio: null,
             location: null,
+            phone_number: null,
             team: null,
             team_id: null,
             team_logo: null,

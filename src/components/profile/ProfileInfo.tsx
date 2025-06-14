@@ -3,10 +3,14 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ComboboxDemo as CityCombobox } from './CityCombobox';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from "@/components/ui/use-toast";
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { MapPin, Calendar, User, Users, Building2, Award, Edit, Save, X, Search, Minus } from 'lucide-react';
+import { MapPin, Calendar, User, Users, Building2, Award, Edit, Save, X, Search, Phone } from 'lucide-react';
 
 const ProfileInfo = ({
   user,
@@ -16,7 +20,9 @@ const ProfileInfo = ({
   isOwnProfile = false
 }) => {
   const [isEditingLocation, setIsEditingLocation] = useState(false);
+  const [isEditingPhone, setIsEditingPhone] = useState(false);
   const [locationValue, setLocationValue] = useState(profileData?.location || '');
+  const [phoneValue, setPhoneValue] = useState(profileData?.phone_number || '');
   const navigate = useNavigate();
 
   const formatDate = dateString => {
@@ -38,6 +44,39 @@ const ProfileInfo = ({
       if (success) {
         setIsEditingLocation(false);
       }
+    }
+  };
+
+  const handlePhoneUpdate = async () => {
+    const success = await updatePhoneNumber(phoneValue);
+    if (success) {
+      setIsEditingPhone(false);
+    }
+  };
+
+  const updatePhoneNumber = async (phoneNumber: string) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ phone_number: phoneNumber })
+        .eq('id', user?.id);
+
+      if (error) throw error;
+      
+      toast({
+        title: "Succès",
+        description: "Numéro de téléphone mis à jour",
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error updating phone number:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour le numéro de téléphone",
+        variant: "destructive",
+      });
+      return false;
     }
   };
 
@@ -80,6 +119,45 @@ const ProfileInfo = ({
                 <div>
                   <span className="text-sm text-gray-500">Âge</span>
                   <p className="font-medium">{profileData.age} ans</p>
+                </div>
+              </div>
+            )}
+
+            {isOwnProfile && (
+              <div className="flex items-start">
+                <Phone className="h-5 w-5 text-gray-500 mr-3 mt-1" />
+                <div className="flex-1">
+                  <span className="text-sm text-gray-500">Numéro de téléphone</span>
+                  {isEditingPhone ? (
+                    <div className="mt-1 space-y-2">
+                      <Input
+                        type="tel"
+                        value={phoneValue}
+                        onChange={(e) => setPhoneValue(e.target.value)}
+                        placeholder="Votre numéro de téléphone"
+                        className="w-full"
+                      />
+                      <div className="flex space-x-2">
+                        <Button variant="outline" size="sm" onClick={handlePhoneUpdate}>
+                          <Save className="h-4 w-4 mr-2" />
+                          Sauvegarder
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => setIsEditingPhone(false)}>
+                          <X className="h-4 w-4 mr-2" />
+                          Annuler
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between">
+                      <p className="font-medium">
+                        {profileData?.phone_number || 'Non spécifié'}
+                      </p>
+                      <Button variant="ghost" size="sm" onClick={() => setIsEditingPhone(true)} className="h-8 px-2">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

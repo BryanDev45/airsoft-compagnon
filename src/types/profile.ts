@@ -12,6 +12,7 @@ export interface Profile {
   banner: string | null;
   bio: string | null;
   location: string | null;
+  phone_number: string | null;
   team: string | null;
   team_id: string | null;
   team_logo: string | null;
