@@ -50,7 +50,11 @@ const VerificationRequestsTab = () => {
       // Transform the data to handle SelectQueryError types
       const transformedData = (data || []).map(request => ({
         ...request,
-        user_profile: request.user_profile && typeof request.user_profile === 'object' && 'username' in request.user_profile && 'email' in request.user_profile
+        user_profile: request.user_profile && 
+          typeof request.user_profile === 'object' && 
+          request.user_profile !== null && 
+          'username' in request.user_profile && 
+          'email' in request.user_profile
           ? request.user_profile as { username: string; email: string }
           : null
       }));
