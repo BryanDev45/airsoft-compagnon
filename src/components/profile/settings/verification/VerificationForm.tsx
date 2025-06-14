@@ -44,7 +44,6 @@ const VerificationForm = ({ user, onVerificationRequested }: VerificationFormPro
       if (error) {
         console.error('Detailed upload error:', {
           message: error.message,
-          statusCode: error.statusCode,
           error: error
         });
         
