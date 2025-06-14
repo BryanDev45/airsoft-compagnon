@@ -1,6 +1,21 @@
 
-import React from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import React, { useState } from 'react';
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface CountryFilterProps {
   selectedCountry: string;
@@ -11,135 +26,168 @@ const CountryFilter: React.FC<CountryFilterProps> = ({
   selectedCountry,
   setSelectedCountry
 }) => {
-  // Liste organisée des pays par continent
+  const [open, setOpen] = useState(false);
+
+  // Liste organisée des pays par continent, puis triée alphabétiquement
   const countries = [
     { value: "all", label: "Tous les pays" },
     
     // Europe
-    { value: "France", label: "France" },
-    { value: "Allemagne", label: "Allemagne" },
-    { value: "Belgique", label: "Belgique" },
-    { value: "Suisse", label: "Suisse" },
-    { value: "Luxembourg", label: "Luxembourg" },
-    { value: "Pays-Bas", label: "Pays-Bas" },
-    { value: "Espagne", label: "Espagne" },
-    { value: "Italie", label: "Italie" },
-    { value: "Portugal", label: "Portugal" },
-    { value: "Autriche", label: "Autriche" },
-    { value: "République tchèque", label: "République tchèque" },
-    { value: "Pologne", label: "Pologne" },
-    { value: "Hongrie", label: "Hongrie" },
-    { value: "Slovaquie", label: "Slovaquie" },
-    { value: "Slovénie", label: "Slovénie" },
-    { value: "Croatie", label: "Croatie" },
-    { value: "Bosnie-Herzégovine", label: "Bosnie-Herzégovine" },
-    { value: "Serbie", label: "Serbie" },
-    { value: "Monténégro", label: "Monténégro" },
-    { value: "Macédoine du Nord", label: "Macédoine du Nord" },
     { value: "Albanie", label: "Albanie" },
-    { value: "Grèce", label: "Grèce" },
-    { value: "Bulgarie", label: "Bulgarie" },
-    { value: "Roumanie", label: "Roumanie" },
-    { value: "Ukraine", label: "Ukraine" },
-    { value: "Moldavie", label: "Moldavie" },
+    { value: "Allemagne", label: "Allemagne" },
+    { value: "Autriche", label: "Autriche" },
+    { value: "Belgique", label: "Belgique" },
     { value: "Biélorussie", label: "Biélorussie" },
-    { value: "Lituanie", label: "Lituanie" },
-    { value: "Lettonie", label: "Lettonie" },
+    { value: "Bosnie-Herzégovine", label: "Bosnie-Herzégovine" },
+    { value: "Bulgarie", label: "Bulgarie" },
+    { value: "Croatie", label: "Croatie" },
+    { value: "Danemark", label: "Danemark" },
+    { value: "Espagne", label: "Espagne" },
     { value: "Estonie", label: "Estonie" },
     { value: "Finlande", label: "Finlande" },
-    { value: "Suède", label: "Suède" },
-    { value: "Norvège", label: "Norvège" },
-    { value: "Danemark", label: "Danemark" },
-    { value: "Islande", label: "Islande" },
+    { value: "France", label: "France" },
+    { value: "Grèce", label: "Grèce" },
+    { value: "Hongrie", label: "Hongrie" },
     { value: "Irlande", label: "Irlande" },
+    { value: "Islande", label: "Islande" },
+    { value: "Italie", label: "Italie" },
+    { value: "Lettonie", label: "Lettonie" },
+    { value: "Lituanie", label: "Lituanie" },
+    { value: "Luxembourg", label: "Luxembourg" },
+    { value: "Macédoine du Nord", label: "Macédoine du Nord" },
+    { value: "Moldavie", label: "Moldavie" },
+    { value: "Monténégro", label: "Monténégro" },
+    { value: "Norvège", label: "Norvège" },
+    { value: "Pays-Bas", label: "Pays-Bas" },
+    { value: "Pologne", label: "Pologne" },
+    { value: "Portugal", label: "Portugal" },
+    { value: "République tchèque", label: "République tchèque" },
+    { value: "Roumanie", label: "Roumanie" },
     { value: "Royaume-Uni", label: "Royaume-Uni" },
     { value: "Russie", label: "Russie" },
+    { value: "Serbie", label: "Serbie" },
+    { value: "Slovaquie", label: "Slovaquie" },
+    { value: "Slovénie", label: "Slovénie" },
+    { value: "Suède", label: "Suède" },
+    { value: "Suisse", label: "Suisse" },
+    { value: "Ukraine", label: "Ukraine" },
     
     // Amérique du Nord
-    { value: "États-Unis", label: "États-Unis" },
     { value: "Canada", label: "Canada" },
+    { value: "États-Unis", label: "États-Unis" },
     { value: "Mexique", label: "Mexique" },
     
     // Amérique du Sud
-    { value: "Brésil", label: "Brésil" },
     { value: "Argentine", label: "Argentine" },
-    { value: "Chili", label: "Chili" },
-    { value: "Pérou", label: "Pérou" },
-    { value: "Colombie", label: "Colombie" },
-    { value: "Venezuela", label: "Venezuela" },
-    { value: "Équateur", label: "Équateur" },
     { value: "Bolivie", label: "Bolivie" },
-    { value: "Paraguay", label: "Paraguay" },
-    { value: "Uruguay", label: "Uruguay" },
+    { value: "Brésil", label: "Brésil" },
+    { value: "Chili", label: "Chili" },
+    { value: "Colombie", label: "Colombie" },
+    { value: "Équateur", label: "Équateur" },
     { value: "Guyane", label: "Guyane" },
-    { value: "Suriname", label: "Suriname" },
     { value: "Guyane française", label: "Guyane française" },
+    { value: "Paraguay", label: "Paraguay" },
+    { value: "Pérou", label: "Pérou" },
+    { value: "Suriname", label: "Suriname" },
+    { value: "Uruguay", label: "Uruguay" },
+    { value: "Venezuela", label: "Venezuela" },
     
     // Asie
+    { value: "Arabie saoudite", label: "Arabie saoudite" },
     { value: "Chine", label: "Chine" },
-    { value: "Japon", label: "Japon" },
-    { value: "Corée du Sud", label: "Corée du Sud" },
     { value: "Corée du Nord", label: "Corée du Nord" },
+    { value: "Corée du Sud", label: "Corée du Sud" },
     { value: "Inde", label: "Inde" },
     { value: "Indonésie", label: "Indonésie" },
-    { value: "Thaïlande", label: "Thaïlande" },
-    { value: "Vietnam", label: "Vietnam" },
-    { value: "Philippines", label: "Philippines" },
-    { value: "Malaisie", label: "Malaisie" },
-    { value: "Singapour", label: "Singapour" },
-    { value: "Arabie saoudite", label: "Arabie saoudite" },
-    { value: "Iran", label: "Iran" },
     { value: "Irak", label: "Irak" },
-    { value: "Turquie", label: "Turquie" },
+    { value: "Iran", label: "Iran" },
     { value: "Israël", label: "Israël" },
+    { value: "Japon", label: "Japon" },
     { value: "Jordanie", label: "Jordanie" },
     { value: "Liban", label: "Liban" },
+    { value: "Malaisie", label: "Malaisie" },
+    { value: "Philippines", label: "Philippines" },
+    { value: "Singapour", label: "Singapour" },
     { value: "Syrie", label: "Syrie" },
+    { value: "Thaïlande", label: "Thaïlande" },
+    { value: "Turquie", label: "Turquie" },
+    { value: "Vietnam", label: "Vietnam" },
     
     // Afrique
     { value: "Afrique du Sud", label: "Afrique du Sud" },
+    { value: "Algérie", label: "Algérie" },
+    { value: "Côte d'Ivoire", label: "Côte d'Ivoire" },
     { value: "Égypte", label: "Égypte" },
-    { value: "Nigeria", label: "Nigeria" },
-    { value: "Kenya", label: "Kenya" },
     { value: "Éthiopie", label: "Éthiopie" },
     { value: "Ghana", label: "Ghana" },
-    { value: "Côte d'Ivoire", label: "Côte d'Ivoire" },
-    { value: "Maroc", label: "Maroc" },
-    { value: "Algérie", label: "Algérie" },
-    { value: "Tunisie", label: "Tunisie" },
+    { value: "Kenya", label: "Kenya" },
     { value: "Libye", label: "Libye" },
+    { value: "Maroc", label: "Maroc" },
+    { value: "Nigeria", label: "Nigeria" },
     { value: "Soudan", label: "Soudan" },
     { value: "Tanzanie", label: "Tanzanie" },
+    { value: "Tunisie", label: "Tunisie" },
     { value: "Ouganda", label: "Ouganda" },
     
     // Océanie
     { value: "Australie", label: "Australie" },
+    { value: "Fidji", label: "Fidji" },
     { value: "Nouvelle-Zélande", label: "Nouvelle-Zélande" },
-    { value: "Papouasie-Nouvelle-Guinée", label: "Papouasie-Nouvelle-Guinée" },
-    { value: "Fidji", label: "Fidji" }
+    { value: "Papouasie-Nouvelle-Guinée", label: "Papouasie-Nouvelle-Guinée" }
   ];
+
+  const selectedCountryLabel = countries.find(country => country.value === selectedCountry)?.label || "Tous les pays";
 
   return (
     <div>
       <label className="block text-sm font-medium text-gray-300 mb-2">
         Pays
       </label>
-      <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-        <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-          <SelectValue placeholder="Tous les pays" />
-        </SelectTrigger>
-        <SelectContent className="bg-gray-700 border-gray-600 text-white max-h-60">
-          {countries.map((country) => (
-            <SelectItem 
-              key={country.value} 
-              value={country.value} 
-              className="text-white hover:bg-gray-600"
-            >
-              {country.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-full justify-between bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
+          >
+            {selectedCountryLabel}
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-full p-0 bg-gray-700 border-gray-600">
+          <Command className="bg-gray-700">
+            <CommandInput 
+              placeholder="Rechercher un pays..." 
+              className="text-white placeholder:text-gray-400"
+            />
+            <CommandList>
+              <CommandEmpty className="text-gray-300">Aucun pays trouvé.</CommandEmpty>
+              <CommandGroup>
+                {countries.map((country) => (
+                  <CommandItem
+                    key={country.value}
+                    value={country.value}
+                    onSelect={(currentValue) => {
+                      setSelectedCountry(currentValue === selectedCountry ? "all" : currentValue);
+                      setOpen(false);
+                    }}
+                    className="text-white hover:bg-gray-600"
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        selectedCountry === country.value ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {country.label}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 };
