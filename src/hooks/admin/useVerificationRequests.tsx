@@ -80,26 +80,15 @@ export const useVerificationRequests = () => {
 
   const updateRequestMutation = useMutation({
     mutationFn: async ({ requestId, status, adminNotes }: { requestId: string; status: string; adminNotes?: string }) => {
-      const { error } = await supabase
-        .from('verification_requests')
-        .update({ 
-          status, 
-          admin_notes: adminNotes,
-          reviewed_at: new Date().toISOString(),
-          reviewed_by: (await supabase.auth.getUser()).data.user?.id
-        })
-        .eq('id', requestId);
-
-      if (error) throw error;
-
-      // Get user_id for this request
-      const { data: requestData } = await supabase
+      // Get user_id for this request before processing
+      const { data: requestData, error: fetchError } = await supabase
         .from('verification_requests')
         .select('user_id')
         .eq('id', requestId)
         .single();
 
-      if (!requestData) return;
+      if (fetchError) throw fetchError;
+      if (!requestData) throw new Error('Request not found');
 
       if (status === 'approved') {
         // Update user's verified status
@@ -130,12 +119,20 @@ export const useVerificationRequests = () => {
             link: '/profile?tab=verification'
           });
       }
+
+      // Delete the verification request from the database
+      const { error: deleteError } = await supabase
+        .from('verification_requests')
+        .delete()
+        .eq('id', requestId);
+
+      if (deleteError) throw deleteError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['verification-requests'] });
       toast({
-        title: "Demande mise à jour",
-        description: "Le statut de la demande a été mis à jour avec succès."
+        title: "Demande traitée",
+        description: "La demande de vérification a été traitée et supprimée avec succès."
       });
     }
   });
