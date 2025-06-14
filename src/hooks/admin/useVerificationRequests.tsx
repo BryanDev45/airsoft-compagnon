@@ -15,6 +15,9 @@ export interface VerificationRequest {
   user_profile: {
     username: string;
     email: string;
+    firstname: string | null;
+    lastname: string | null;
+    birth_date: string | null;
   } | null;
   // Signed URLs for display
   frontIdUrl?: string | null;
@@ -47,10 +50,10 @@ export const useVerificationRequests = () => {
       // Fetch user profiles and generate signed URLs
       const requestsWithProfilesAndUrls = await Promise.all(
         (data || []).map(async (request) => {
-          // Fetch user profile
+          // Fetch user profile with additional fields
           const { data: userProfile } = await supabase
             .from('profiles')
-            .select('username, email')
+            .select('username, email, firstname, lastname, birth_date')
             .eq('id', request.user_id)
             .single();
 

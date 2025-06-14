@@ -23,6 +23,21 @@ export const VerificationRequestCard = ({
     onUpdateRequest(requestId, status, adminNotes);
   };
 
+  const formatBirthDate = (birthDate: string | null) => {
+    if (!birthDate) return 'Non renseignée';
+    return new Date(birthDate).toLocaleDateString('fr-FR');
+  };
+
+  const getFullName = () => {
+    const { firstname, lastname } = request.user_profile || {};
+    if (firstname && lastname) {
+      return `${firstname} ${lastname}`;
+    }
+    if (firstname) return firstname;
+    if (lastname) return lastname;
+    return 'Non renseigné';
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -33,9 +48,21 @@ export const VerificationRequestCard = ({
           <VerificationStatusBadge status={request.status} />
         </div>
         <CardDescription>
-          Utilisateur: {request.user_profile?.username || 'Utilisateur supprimé'} • 
-          Email: {request.user_profile?.email || 'N/A'} • 
-          {new Date(request.created_at).toLocaleDateString()}
+          <div className="space-y-1">
+            <div>
+              <strong>Utilisateur:</strong> {request.user_profile?.username || 'Utilisateur supprimé'} • 
+              <strong> Email:</strong> {request.user_profile?.email || 'N/A'}
+            </div>
+            <div>
+              <strong>Nom complet:</strong> {getFullName()}
+            </div>
+            <div>
+              <strong>Date de naissance:</strong> {formatBirthDate(request.user_profile?.birth_date)}
+            </div>
+            <div>
+              <strong>Date de demande:</strong> {new Date(request.created_at).toLocaleDateString('fr-FR')}
+            </div>
+          </div>
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
