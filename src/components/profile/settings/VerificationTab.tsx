@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "@/components/ui/use-toast";
 import { Shield, CheckCircle2, Upload, Camera } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -122,142 +122,144 @@ const VerificationTab = ({ user }: VerificationTabProps) => {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Shield size={20} />
-          <h4 className="font-medium">Vérification du compte</h4>
+    <ScrollArea className="h-[400px] w-full">
+      <div className="space-y-4 p-1">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Shield size={20} />
+            <h4 className="font-medium">Vérification du compte</h4>
+          </div>
+          {user.verified ? (
+            <Badge className="bg-blue-500">Vérifié</Badge>
+          ) : (
+            <Badge variant="outline" className="bg-gray-100 text-gray-700">Non vérifié</Badge>
+          )}
         </div>
+        
         {user.verified ? (
-          <Badge className="bg-blue-500">Vérifié</Badge>
+          <Alert className="bg-blue-50 border-blue-200">
+            <CheckCircle2 className="h-4 w-4 text-blue-500" />
+            <AlertDescription>
+              Votre compte est vérifié. Votre badge de vérification est visible sur votre profil.
+            </AlertDescription>
+          </Alert>
+        ) : verificationRequested ? (
+          <Alert className="bg-yellow-50 border-yellow-200">
+            <AlertDescription>
+              Votre demande de vérification est en cours de traitement. Vous recevrez un email lorsque votre compte sera vérifié.
+            </AlertDescription>
+          </Alert>
         ) : (
-          <Badge variant="outline" className="bg-gray-100 text-gray-700">Non vérifié</Badge>
+          <>
+            <p className="text-sm text-gray-500">
+              La vérification de compte permet de garantir votre identité et d'obtenir un badge de vérification sur votre profil. Pour être vérifié, nous avons besoin de votre carte d'identité et d'une photo de votre visage.
+            </p>
+            
+            <div className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label htmlFor="front-id" className="flex items-center gap-1">
+                  <Upload size={16} /> Recto de votre carte d'identité
+                </Label>
+                <div className="border border-dashed border-gray-300 rounded-md p-4">
+                  <Input 
+                    id="front-id" 
+                    type="file" 
+                    accept="image/*"
+                    onChange={handleFrontIdChange}
+                    className="hidden"
+                  />
+                  <div 
+                    onClick={() => triggerFileInput('front-id')}
+                    className="cursor-pointer text-center py-4"
+                  >
+                    <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                    <p className="text-sm text-gray-600">
+                      {frontIdFile ? frontIdFile.name : "Cliquez pour télécharger le recto"}
+                    </p>
+                  </div>
+                  {frontIdFile && (
+                    <p className="text-xs text-gray-500 mt-2">
+                      {frontIdFile.name} ({Math.round(frontIdFile.size / 1024)} Ko)
+                    </p>
+                  )}
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="back-id" className="flex items-center gap-1">
+                  <Upload size={16} /> Verso de votre carte d'identité
+                </Label>
+                <div className="border border-dashed border-gray-300 rounded-md p-4">
+                  <Input 
+                    id="back-id" 
+                    type="file" 
+                    accept="image/*"
+                    onChange={handleBackIdChange}
+                    className="hidden"
+                  />
+                  <div 
+                    onClick={() => triggerFileInput('back-id')}
+                    className="cursor-pointer text-center py-4"
+                  >
+                    <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                    <p className="text-sm text-gray-600">
+                      {backIdFile ? backIdFile.name : "Cliquez pour télécharger le verso"}
+                    </p>
+                  </div>
+                  {backIdFile && (
+                    <p className="text-xs text-gray-500 mt-2">
+                      {backIdFile.name} ({Math.round(backIdFile.size / 1024)} Ko)
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="face-photo" className="flex items-center gap-1">
+                  <Camera size={16} /> Photo de votre visage
+                </Label>
+                <div className="border border-dashed border-gray-300 rounded-md p-4">
+                  <Input 
+                    id="face-photo" 
+                    type="file" 
+                    accept="image/*"
+                    capture="user"
+                    onChange={handleFacePhotoChange}
+                    className="hidden"
+                  />
+                  <div 
+                    onClick={() => triggerFileInput('face-photo')}
+                    className="cursor-pointer text-center py-4"
+                  >
+                    <Camera className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                    <p className="text-sm text-gray-600">
+                      {facePhotoFile ? facePhotoFile.name : "Cliquez pour prendre une photo ou sélectionner depuis la galerie"}
+                    </p>
+                  </div>
+                  {facePhotoFile && (
+                    <p className="text-xs text-gray-500 mt-2">
+                      {facePhotoFile.name} ({Math.round(facePhotoFile.size / 1024)} Ko)
+                    </p>
+                  )}
+                </div>
+              </div>
+              
+              <p className="text-xs text-gray-500">
+                Vos documents d'identité et votre photo seront traités et supprimés de nos serveurs après vérification. Ils ne seront jamais partagés avec des tiers.
+              </p>
+            </div>
+            
+            <Button 
+              onClick={handleRequestVerification} 
+              className="w-full bg-airsoft-red hover:bg-red-700 mt-4"
+              disabled={!frontIdFile || !backIdFile || !facePhotoFile || uploading}
+            >
+              {uploading ? "Envoi en cours..." : "Demander une vérification"}
+            </Button>
+          </>
         )}
       </div>
-      
-      {user.verified ? (
-        <Alert className="bg-blue-50 border-blue-200">
-          <CheckCircle2 className="h-4 w-4 text-blue-500" />
-          <AlertDescription>
-            Votre compte est vérifié. Votre badge de vérification est visible sur votre profil.
-          </AlertDescription>
-        </Alert>
-      ) : verificationRequested ? (
-        <Alert className="bg-yellow-50 border-yellow-200">
-          <AlertDescription>
-            Votre demande de vérification est en cours de traitement. Vous recevrez un email lorsque votre compte sera vérifié.
-          </AlertDescription>
-        </Alert>
-      ) : (
-        <>
-          <p className="text-sm text-gray-500">
-            La vérification de compte permet de garantir votre identité et d'obtenir un badge de vérification sur votre profil. Pour être vérifié, nous avons besoin de votre carte d'identité et d'une photo de votre visage.
-          </p>
-          
-          <div className="space-y-4 mt-4">
-            <div className="space-y-2">
-              <Label htmlFor="front-id" className="flex items-center gap-1">
-                <Upload size={16} /> Recto de votre carte d'identité
-              </Label>
-              <div className="border border-dashed border-gray-300 rounded-md p-4">
-                <Input 
-                  id="front-id" 
-                  type="file" 
-                  accept="image/*"
-                  onChange={handleFrontIdChange}
-                  className="hidden"
-                />
-                <div 
-                  onClick={() => triggerFileInput('front-id')}
-                  className="cursor-pointer text-center py-4"
-                >
-                  <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                  <p className="text-sm text-gray-600">
-                    {frontIdFile ? frontIdFile.name : "Cliquez pour télécharger le recto"}
-                  </p>
-                </div>
-                {frontIdFile && (
-                  <p className="text-xs text-gray-500 mt-2">
-                    {frontIdFile.name} ({Math.round(frontIdFile.size / 1024)} Ko)
-                  </p>
-                )}
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="back-id" className="flex items-center gap-1">
-                <Upload size={16} /> Verso de votre carte d'identité
-              </Label>
-              <div className="border border-dashed border-gray-300 rounded-md p-4">
-                <Input 
-                  id="back-id" 
-                  type="file" 
-                  accept="image/*"
-                  onChange={handleBackIdChange}
-                  className="hidden"
-                />
-                <div 
-                  onClick={() => triggerFileInput('back-id')}
-                  className="cursor-pointer text-center py-4"
-                >
-                  <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                  <p className="text-sm text-gray-600">
-                    {backIdFile ? backIdFile.name : "Cliquez pour télécharger le verso"}
-                  </p>
-                </div>
-                {backIdFile && (
-                  <p className="text-xs text-gray-500 mt-2">
-                    {backIdFile.name} ({Math.round(backIdFile.size / 1024)} Ko)
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="face-photo" className="flex items-center gap-1">
-                <Camera size={16} /> Photo de votre visage
-              </Label>
-              <div className="border border-dashed border-gray-300 rounded-md p-4">
-                <Input 
-                  id="face-photo" 
-                  type="file" 
-                  accept="image/*"
-                  capture="user"
-                  onChange={handleFacePhotoChange}
-                  className="hidden"
-                />
-                <div 
-                  onClick={() => triggerFileInput('face-photo')}
-                  className="cursor-pointer text-center py-4"
-                >
-                  <Camera className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                  <p className="text-sm text-gray-600">
-                    {facePhotoFile ? facePhotoFile.name : "Cliquez pour prendre une photo ou sélectionner depuis la galerie"}
-                  </p>
-                </div>
-                {facePhotoFile && (
-                  <p className="text-xs text-gray-500 mt-2">
-                    {facePhotoFile.name} ({Math.round(facePhotoFile.size / 1024)} Ko)
-                  </p>
-                )}
-              </div>
-            </div>
-            
-            <p className="text-xs text-gray-500">
-              Vos documents d'identité et votre photo seront traités et supprimés de nos serveurs après vérification. Ils ne seront jamais partagés avec des tiers.
-            </p>
-          </div>
-          
-          <Button 
-            onClick={handleRequestVerification} 
-            className="w-full bg-airsoft-red hover:bg-red-700 mt-4"
-            disabled={!frontIdFile || !backIdFile || !facePhotoFile || uploading}
-          >
-            {uploading ? "Envoi en cours..." : "Demander une vérification"}
-          </Button>
-        </>
-      )}
-    </div>
+    </ScrollArea>
   );
 };
 
