@@ -97,6 +97,23 @@ export const useStoresData = () => {
             shouldForceGeocode = true;
           }
           
+          if (isTaiwangun) {
+            console.log(`🔍 TAIWANGUN DEBUG - About to call getValidCoordinates with:`, {
+              shouldForceGeocode,
+              storedLat: shouldForceGeocode ? null : store.latitude,
+              storedLng: shouldForceGeocode ? null : store.longitude,
+              address: store.address,
+              zipCode: store.zip_code,
+              city: store.city,
+              storeData: {
+                name: store.name,
+                address: store.address,
+                city: store.city,
+                zip_code: store.zip_code
+              }
+            });
+          }
+          
           // Use stored coordinates if they seem valid, otherwise geocode
           const validCoordinates = await getValidCoordinates(
             shouldForceGeocode ? null : store.latitude, // Force geocoding if needed

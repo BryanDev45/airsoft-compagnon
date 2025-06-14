@@ -34,6 +34,33 @@ const normalizePolishCharacters = (text: string): string => {
     .replace(/Ż/g, 'Z');
 };
 
+// Hardcoded coordinates for known stores that have geocoding issues
+const KNOWN_STORE_COORDINATES: { [key: string]: Coordinates } = {
+  'taiwangun': {
+    latitude: 50.0647,  // Kraków coordinates
+    longitude: 19.9450
+  },
+  'airsoft entrepot': {
+    latitude: 48.187758,
+    longitude: -1.628809
+  }
+};
+
+// Function to get hardcoded coordinates for known problematic stores
+const getKnownStoreCoordinates = (storeName: string): Coordinates | null => {
+  const normalizedName = storeName.toLowerCase().trim();
+  console.log(`🔍 Checking known coordinates for store: "${normalizedName}"`);
+  
+  for (const [knownStore, coords] of Object.entries(KNOWN_STORE_COORDINATES)) {
+    if (normalizedName.includes(knownStore)) {
+      console.log(`✓ Found hardcoded coordinates for ${storeName}:`, coords);
+      return coords;
+    }
+  }
+  
+  return null;
+};
+
 // Enhanced function to geocode an address using OpenStreetMap Nominatim API with improved international support
 export const geocodeAddress = async (
   address: string, 
@@ -43,6 +70,17 @@ export const geocodeAddress = async (
   storeData?: any
 ): Promise<Coordinates | null> => {
   try {
+    const isTaiwangun = storeData?.name?.toLowerCase().includes('taiwangun');
+    
+    // First, check if we have hardcoded coordinates for this store
+    if (storeData?.name) {
+      const knownCoords = getKnownStoreCoordinates(storeData.name);
+      if (knownCoords) {
+        console.log(`🔍 Using hardcoded coordinates for ${storeData.name}:`, knownCoords);
+        return knownCoords;
+      }
+    }
+    
     // Detect actual country if not provided or if it's generic
     let detectedCountry = country;
     if (storeData && (country.toLowerCase() === 'france' || !country)) {
@@ -56,8 +94,6 @@ export const geocodeAddress = async (
     
     const mappedCountry = getMappedCountryName(detectedCountry);
     const countryCode = getCountryCode(mappedCountry);
-
-    const isTaiwangun = storeData?.name?.toLowerCase().includes('taiwangun');
     
     if (isTaiwangun) {
       console.log(`🔍 TAIWANGUN GEOCODING - Starting geocoding process:`, {
@@ -89,20 +125,31 @@ export const geocodeAddress = async (
       // Special handling for Taiwangun - very specific queries first
       if (isTaiwangun) {
         searchQueries.push(
-          // Most specific Taiwangun queries
+          // Most specific Taiwangun queries with various address formats
           'Półłanki 18, 30-740 Kraków, Poland',
           'Pollanki 18, 30-740 Krakow, Poland',
           'Półłanki 18, Kraków, Poland',
           'Pollanki 18, Krakow, Poland',
+          'Pollanki 18, Cracow, Poland',
+          'ul. Półłanki 18, Kraków, Poland',
+          'ul. Pollanki 18, Krakow, Poland',
           // Krakow variations
           '30-740 Kraków, Poland',
           '30-740 Krakow, Poland',
+          '30-740 Cracow, Poland',
           'Kraków, Poland',
           'Krakow, Poland',
+          'Cracow, Poland',
           // Broader searches
           'Taiwangun Kraków',
           'Taiwangun Krakow',
-          'Taiwangun Poland'
+          'Taiwangun Cracow',
+          'Taiwangun Poland',
+          // District-specific searches
+          'Półłanki, Kraków',
+          'Pollanki, Krakow',
+          // Postal code only
+          '30-740, Poland'
         );
       }
       
@@ -118,7 +165,9 @@ export const geocodeAddress = async (
               `${cleanAddress}, Kraków, Poland`,
               `${normalizedAddress}, Krakow, Poland`,
               `${cleanAddress}, 30-740 Kraków, Poland`,
-              `${normalizedAddress}, 30-740 Krakow, Poland`
+              `${normalizedAddress}, 30-740 Krakow, Poland`,
+              `${cleanAddress}, Cracow, Poland`,
+              `${normalizedAddress}, Cracow, Poland`
             ] : []),
         
         // City with postal code variations
@@ -134,7 +183,7 @@ export const geocodeAddress = async (
         `${normalizedCity}, Poland`,
         
         // Special case for specific known cities
-        ...(cleanCity.toLowerCase().includes('krakow') ? ['Kraków, Poland', 'Krakow, Poland'] : [])
+        ...(cleanCity.toLowerCase().includes('krakow') ? ['Kraków, Poland', 'Krakow, Poland', 'Cracow, Poland'] : [])
       );
     } else {
       // Standard search queries for other countries
@@ -155,7 +204,7 @@ export const geocodeAddress = async (
     }
 
     if (isTaiwangun) {
-      console.log(`🔍 TAIWANGUN GEOCODING - Search queries:`, searchQueries);
+      console.log(`🔍 TAIWANGUN GEOCODING - Search queries (${searchQueries.length} total):`, searchQueries);
     }
 
     for (let i = 0; i < searchQueries.length; i++) {
@@ -198,6 +247,15 @@ export const geocodeAddress = async (
         
         const data = await response.json();
         
+        if (isTaiwangun) {
+          console.log(`🔍 TAIWANGUN GEOCODING - Raw API response for "${query}":`, {
+            query,
+            resultsCount: data?.length || 0,
+            url: geocodingUrl.toString(),
+            response: data
+          });
+        }
+        
         if (data && data.length > 0) {
           console.log(`Geocoding API returned ${data.length} results for query: "${query}"`);
           
@@ -208,7 +266,9 @@ export const geocodeAddress = async (
               lon: r.lon,
               country: r.address?.country,
               city: r.address?.city || r.address?.town || r.address?.village,
-              importance: r.importance
+              importance: r.importance,
+              place_rank: r.place_rank,
+              osm_type: r.osm_type
             })));
           }
           
@@ -228,7 +288,13 @@ export const geocodeAddress = async (
                 country: resultAddress?.country,
                 city: resultAddress?.city || resultAddress?.town || resultAddress?.village,
                 display_name: result.display_name,
-                importance
+                importance,
+                place_rank: result.place_rank,
+                validation: {
+                  isValid: areCoordinatesValid(coordinates.latitude, coordinates.longitude),
+                  latValid: !isNaN(coordinates.latitude) && coordinates.latitude !== 0,
+                  lonValid: !isNaN(coordinates.longitude) && coordinates.longitude !== 0
+                }
               });
             }
             
@@ -282,7 +348,8 @@ export const geocodeAddress = async (
                   resultCountry,
                   expectedCountry,
                   resultCity,
-                  cleanCity: cleanCity.toLowerCase()
+                  cleanCity: cleanCity.toLowerCase(),
+                  willAccept: (isCountryMatch && isCityMatch) || score > 0.3 || i >= 3
                 });
               }
               
@@ -331,14 +398,18 @@ export const geocodeAddress = async (
       
       // Add delay between requests to respect rate limits
       if (i < searchQueries.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 500)); // Increased delay
+        await new Promise(resolve => setTimeout(resolve, 750)); // Increased delay further
       }
     }
     
     console.log(`❌ No valid geocoding results found for: Address="${cleanAddress}", City="${cleanCity}", ZIP="${cleanZipCode}", Country="${mappedCountry}"`);
     
     if (isTaiwangun) {
-      console.log(`🔍 TAIWANGUN GEOCODING - ❌ FAILED - No valid results found after all attempts`);
+      console.log(`🔍 TAIWANGUN GEOCODING - ❌ FAILED - No valid results found after all attempts. Will fall back to hardcoded coordinates.`);
+      // Return hardcoded Krakow coordinates as final fallback for Taiwangun
+      const fallbackCoords = { latitude: 50.0647, longitude: 19.9450 };
+      console.log(`🔍 TAIWANGUN GEOCODING - Using fallback Krakow coordinates:`, fallbackCoords);
+      return fallbackCoords;
     }
     
     return null;
@@ -347,6 +418,10 @@ export const geocodeAddress = async (
     
     if (storeData?.name?.toLowerCase().includes('taiwangun')) {
       console.log(`🔍 TAIWANGUN GEOCODING - ❌ ERROR:`, error);
+      // Return hardcoded Krakow coordinates as final fallback for Taiwangun
+      const fallbackCoords = { latitude: 50.0647, longitude: 19.9450 };
+      console.log(`🔍 TAIWANGUN GEOCODING - Using fallback Krakow coordinates after error:`, fallbackCoords);
+      return fallbackCoords;
     }
     
     return null;
