@@ -43,6 +43,8 @@ const MapComponent: React.FC<MapComponentProps> = ({
   useEffect(() => {
     if (!mapRef.current || !popupRef.current) return;
 
+    console.log(`MapComponent: Rendering map with ${filteredEvents.length} events and ${stores.length} stores`);
+
     // Create popup overlay
     overlayRef.current = new Overlay({
       element: popupRef.current,
@@ -57,37 +59,45 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
     // Create event markers - Vérifier et filtrer les coordonnées valides
     filteredEvents.forEach(event => {
-      const lat = parseFloat(String(event.lat)) || 0;
-      const lng = parseFloat(String(event.lng)) || 0;
+      // S'assurer que les coordonnées sont des nombres valides
+      const lat = Number(event.lat);
+      const lng = Number(event.lng);
       
-      // Vérifier que les coordonnées sont valides avant de créer le marqueur
+      console.log(`MapComponent: Processing event "${event.title}" with coordinates (${lat}, ${lng})`);
+      
+      // Vérifier que les coordonnées sont valides
       if (!areCoordinatesValid(lat, lng)) {
-        console.warn(`Skipping event "${event.title}" with invalid coordinates: (${lat}, ${lng})`);
+        console.warn(`MapComponent: Skipping event "${event.title}" with invalid coordinates: (${lat}, ${lng})`);
         return;
       }
 
-      console.log(`Adding event marker for "${event.title}" at (${lat}, ${lng})`);
+      console.log(`MapComponent: Adding marker for event "${event.title}" at coordinates (${lat}, ${lng})`);
       
-      const feature = new Feature({
-        geometry: new Point(fromLonLat([lng, lat])),
-        event: event,
-        type: 'event'
-      });
+      try {
+        const feature = new Feature({
+          geometry: new Point(fromLonLat([lng, lat])),
+          event: event,
+          type: 'event'
+        });
 
-      feature.setStyle(new Style({
-        image: new CircleStyle({
-          radius: 8,
-          fill: new Fill({
-            color: '#ea384c'
-          }),
-          stroke: new Stroke({
-            color: '#ffffff',
-            width: 3
+        feature.setStyle(new Style({
+          image: new CircleStyle({
+            radius: 10,
+            fill: new Fill({
+              color: '#ea384c'
+            }),
+            stroke: new Stroke({
+              color: '#ffffff',
+              width: 3
+            })
           })
-        })
-      }));
+        }));
 
-      features.push(feature);
+        features.push(feature);
+        console.log(`MapComponent: Successfully added marker for event "${event.title}"`);
+      } catch (error) {
+        console.error(`MapComponent: Error creating marker for event "${event.title}":`, error);
+      }
     });
 
     // Create store markers - Vérifier et filtrer les coordonnées valides
@@ -145,6 +155,8 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
       features.push(radiusFeature);
     }
+
+    console.log(`MapComponent: Created ${features.length} features total (${filteredEvents.filter(e => areCoordinatesValid(Number(e.lat), Number(e.lng))).length} event markers)`);
 
     const vectorSource = new VectorSource({
       features: features

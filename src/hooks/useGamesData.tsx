@@ -34,6 +34,8 @@ export const useGamesData = (userId?: string) => {
       // Traiter chaque partie pour s'assurer que les coordonnées sont valides
       const processedGames = await Promise.all(
         (games || []).map(async (game) => {
+          console.log(`Processing game "${game.title}": Address="${game.address}", City="${game.city}", Stored coords=(${game.latitude}, ${game.longitude})`);
+          
           // Utiliser la fonction getValidCoordinates pour obtenir des coordonnées valides
           const validCoordinates = await getValidCoordinates(
             game.latitude,
@@ -45,7 +47,7 @@ export const useGamesData = (userId?: string) => {
             game
           );
 
-          console.log(`Game "${game.title}": Original coords (${game.latitude}, ${game.longitude}) -> Valid coords (${validCoordinates.latitude}, ${validCoordinates.longitude})`);
+          console.log(`Game "${game.title}": Final coordinates (${validCoordinates.latitude}, ${validCoordinates.longitude})`);
 
           return {
             id: game.id,
@@ -75,7 +77,21 @@ export const useGamesData = (userId?: string) => {
         })
       );
 
-      return processedGames;
+      // Filtrer les parties avec des coordonnées valides avant de les retourner
+      const validGames = processedGames.filter(game => {
+        const isValid = game.lat !== 0 && game.lng !== 0 && 
+                       !isNaN(game.lat) && !isNaN(game.lng) &&
+                       Math.abs(game.lat) > 0.1 && Math.abs(game.lng) > 0.1;
+        
+        if (!isValid) {
+          console.warn(`Filtering out game "${game.title}" with invalid coordinates: (${game.lat}, ${game.lng})`);
+        }
+        
+        return isValid;
+      });
+
+      console.log(`Returning ${validGames.length} games with valid coordinates out of ${processedGames.length} total games`);
+      return validGames;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
