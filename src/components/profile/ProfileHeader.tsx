@@ -64,10 +64,14 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               {user?.is_verified && (
                 <VerifiedBadge size={24} />
               )}
-              {user?.reputation && user.reputation > 0 && (
+              {user?.reputation && user.reputation > 0 ? (
                 <div className="flex items-center bg-amber-50 px-2 py-1 rounded-full">
                   <Star className="h-4 w-4 text-amber-500 fill-amber-500 mr-1" />
                   <span className="text-sm font-medium text-amber-700">{user.reputation.toFixed(1)}</span>
+                </div>
+              ) : (
+                <div className="flex items-center bg-gray-50 px-2 py-1 rounded-full">
+                  <span className="text-sm text-gray-500 italic">non noté</span>
                 </div>
               )}
             </div>

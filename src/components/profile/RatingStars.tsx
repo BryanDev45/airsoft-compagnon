@@ -128,6 +128,15 @@ const RatingStars: React.FC<RatingStarsProps> = ({
     setHoverRating(null);
   };
 
+  // Si readonly et aucune note, afficher "non noté"
+  if (readonly && currentRating === 0) {
+    return (
+      <div className="flex items-center">
+        <span className="text-sm text-gray-500 italic">non noté</span>
+      </div>
+    );
+  }
+
   const calculateStars = () => {
     const stars = [];
     const ratingToUse = hoverRating !== null ? hoverRating : currentRating;
