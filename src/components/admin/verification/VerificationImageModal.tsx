@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Camera, X } from 'lucide-react';
+import { Camera } from 'lucide-react';
 
 interface VerificationImageModalProps {
   isOpen: boolean;
@@ -34,15 +34,8 @@ export const VerificationImageModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] p-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
+          <DialogTitle>
             {title}
-            <button
-              onClick={onClose}
-              className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-            >
-              <X className="h-4 w-4" />
-              <span className="sr-only">Fermer</span>
-            </button>
           </DialogTitle>
         </DialogHeader>
         <div className="mt-4 flex justify-center">
