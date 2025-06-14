@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { useProfileFetch } from './useProfileFetch';
 import { useProfileUpdates } from './useProfileUpdates';
@@ -70,7 +71,8 @@ export const useProfileData = (userId: string | undefined) => {
             ban_reason: null,
             banned_by: null,
             reputation: null,
-            friends_list_public: null
+            friends_list_public: null,
+            spoken_language: null
           };
           
           // Insert the new profile
