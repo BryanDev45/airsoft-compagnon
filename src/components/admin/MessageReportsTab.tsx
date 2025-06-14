@@ -5,10 +5,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertCircle, CheckCircle, Clock, User } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, User, MessageSquare } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import ResolveReportDialog from './ResolveReportDialog';
+import ViewConversationDialog from './ViewConversationDialog';
 
 interface MessageReport {
   id: string;
@@ -22,6 +23,7 @@ interface MessageReport {
   } | null;
   message: {
     content: string;
+    conversation_id: string;
     sender_profile: {
       username: string;
     } | null;
@@ -33,6 +35,8 @@ const MessageReportsTab = () => {
   const navigate = useNavigate();
   const [resolveDialogOpen, setResolveDialogOpen] = useState(false);
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
+  const [viewConversationDialogOpen, setViewConversationDialogOpen] = useState(false);
+  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ['message-reports'],
@@ -66,7 +70,7 @@ const MessageReportsTab = () => {
           // Fetch message and sender profile
           const { data: message } = await supabase
             .from('messages')
-            .select('content, sender_id')
+            .select('content, sender_id, conversation_id')
             .eq('id', report.message_id)
             .single();
 
@@ -85,6 +89,7 @@ const MessageReportsTab = () => {
             reporter_profile: reporterProfile,
             message: message ? {
               content: message.content,
+              conversation_id: message.conversation_id,
               sender_profile: senderProfile
             } : null
           };
@@ -166,6 +171,11 @@ const MessageReportsTab = () => {
     });
   };
 
+  const handleViewConversation = (conversationId: string) => {
+    setSelectedConversationId(conversationId);
+    setViewConversationDialogOpen(true);
+  };
+
   if (isLoading) {
     return <div className="flex justify-center p-8">Chargement des rapports...</div>;
   }
@@ -237,6 +247,17 @@ const MessageReportsTab = () => {
                   Profil de l'auteur du message
                 </Button>
               )}
+              {report.message?.conversation_id && report.status === 'pending' && (
+                <Button
+                  onClick={() => handleViewConversation(report.message.conversation_id)}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  Voir la conversation
+                </Button>
+              )}
             </div>
             
             {report.status === 'pending' && (
@@ -280,6 +301,12 @@ const MessageReportsTab = () => {
         isLoading={updateReportMutation.isPending}
         title="Résoudre le signalement de message"
         description="Ajoutez un commentaire sur les actions prises concernant ce message signalé."
+      />
+
+      <ViewConversationDialog
+        open={viewConversationDialogOpen}
+        onOpenChange={setViewConversationDialogOpen}
+        conversationId={selectedConversationId}
       />
     </div>
   );
