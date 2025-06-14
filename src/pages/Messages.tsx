@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -20,7 +19,7 @@ const Messages: React.FC = () => {
         <div className="max-w-7xl mx-auto">
           {/* Enhanced Page Header */}
           <div className="mb-8">
-            <div className="flex items-center gap-4 mb-3">
+            <div className="flex items-center justify-center gap-4 mb-3">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-airsoft-red to-red-600 rounded-xl blur-sm opacity-20"></div>
                 <div className="relative p-3 bg-gradient-to-br from-airsoft-red to-red-600 rounded-xl shadow-lg">
