@@ -58,7 +58,23 @@ const MessageReportsTab = () => {
         throw error;
       }
       
-      return (data || []) as MessageReport[];
+      // Transform the data to handle SelectQueryError types
+      const transformedData = (data || []).map(report => ({
+        ...report,
+        reporter_profile: report.reporter_profile && typeof report.reporter_profile === 'object' && 'username' in report.reporter_profile
+          ? report.reporter_profile as { username: string }
+          : null,
+        message: report.message && typeof report.message === 'object' && 'content' in report.message
+          ? {
+              ...report.message,
+              sender_profile: report.message.sender_profile && typeof report.message.sender_profile === 'object' && 'username' in report.message.sender_profile
+                ? report.message.sender_profile as { username: string }
+                : null
+            }
+          : null
+      }));
+
+      return transformedData as MessageReport[];
     }
   });
 

@@ -47,7 +47,15 @@ const VerificationRequestsTab = () => {
         throw error;
       }
       
-      return (data || []) as VerificationRequest[];
+      // Transform the data to handle SelectQueryError types
+      const transformedData = (data || []).map(request => ({
+        ...request,
+        user_profile: request.user_profile && typeof request.user_profile === 'object' && 'username' in request.user_profile && 'email' in request.user_profile
+          ? request.user_profile as { username: string; email: string }
+          : null
+      }));
+
+      return transformedData as VerificationRequest[];
     }
   });
 

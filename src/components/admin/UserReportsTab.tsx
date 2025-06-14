@@ -50,7 +50,18 @@ const UserReportsTab = () => {
         throw error;
       }
       
-      return (data || []) as UserReport[];
+      // Transform the data to handle SelectQueryError types
+      const transformedData = (data || []).map(report => ({
+        ...report,
+        reporter_profile: report.reporter_profile && typeof report.reporter_profile === 'object' && 'username' in report.reporter_profile
+          ? report.reporter_profile as { username: string }
+          : null,
+        reported_profile: report.reported_profile && typeof report.reported_profile === 'object' && 'username' in report.reported_profile
+          ? report.reported_profile as { username: string }
+          : null
+      }));
+
+      return transformedData as UserReport[];
     }
   });
 
