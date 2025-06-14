@@ -23,6 +23,7 @@ import CreateParty from './pages/CreateParty';
 import Team from './pages/Team';
 import Toolbox from './pages/Toolbox';
 import Messages from './pages/Messages';
+import Admin from './pages/Admin';
 import AuthGuard from './components/auth/AuthGuard';
 import CreateTeam from './pages/CreateTeam';
 import { useState, useEffect } from 'react';
@@ -134,6 +135,14 @@ function App() {
             element={
               <AuthGuard>
                 <Messages />
+              </AuthGuard>
+            } 
+          />
+          <Route 
+            path="/admin" 
+            element={
+              <AuthGuard>
+                <Admin />
               </AuthGuard>
             } 
           />
