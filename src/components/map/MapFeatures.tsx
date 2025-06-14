@@ -65,11 +65,23 @@ export const createStoreFeatures = (stores: MapStore[]): Feature[] => {
   stores.forEach(store => {
     const lat = parseFloat(String(store.lat)) || 0;
     const lng = parseFloat(String(store.lng)) || 0;
+    const isTaiwangun = store.name.toLowerCase().includes('taiwangun');
+    
+    if (isTaiwangun) {
+      console.log(`🔍 TAIWANGUN DEBUG - Creating map feature:`, {
+        name: store.name,
+        coordinates: { lat, lng },
+        originalCoords: { lat: store.lat, lng: store.lng }
+      });
+    }
     
     console.log(`MapFeatures: Processing store "${store.name}" with coordinates (${lat}, ${lng})`);
     
     if (!areCoordinatesValid(lat, lng)) {
       console.warn(`MapFeatures: Skipping store "${store.name}" with invalid coordinates: (${lat}, ${lng})`);
+      if (isTaiwangun) {
+        console.log(`🔍 TAIWANGUN DEBUG - Store coordinates are invalid!`);
+      }
       return;
     }
 
@@ -77,6 +89,11 @@ export const createStoreFeatures = (stores: MapStore[]): Feature[] => {
     
     try {
       const coords = fromLonLat([lng, lat]);
+      
+      if (isTaiwangun) {
+        console.log(`🔍 TAIWANGUN DEBUG - Transformed OpenLayers coordinates:`, coords);
+      }
+      
       console.log(`MapFeatures: Transformed coordinates for "${store.name}": ${coords}`);
       
       const feature = new Feature({
@@ -99,13 +116,30 @@ export const createStoreFeatures = (stores: MapStore[]): Feature[] => {
       }));
 
       features.push(feature);
+      
+      if (isTaiwangun) {
+        console.log(`🔍 TAIWANGUN DEBUG - Successfully created map feature`);
+      }
+      
       console.log(`MapFeatures: Successfully added store marker for "${store.name}"`);
     } catch (error) {
       console.error(`MapFeatures: Error creating store marker for "${store.name}":`, error);
+      if (isTaiwangun) {
+        console.log(`🔍 TAIWANGUN DEBUG - Error creating map feature:`, error);
+      }
     }
   });
 
   console.log(`MapFeatures: Created ${features.length} store features`);
+  
+  // Log if Taiwangun feature was created
+  const taiwangunFeature = features.find(f => f.get('store')?.name?.toLowerCase().includes('taiwangun'));
+  if (taiwangunFeature) {
+    console.log(`🔍 TAIWANGUN DEBUG - Taiwangun feature created successfully in features array`);
+  } else {
+    console.log(`🔍 TAIWANGUN DEBUG - Taiwangun feature NOT found in features array`);
+  }
+  
   return features;
 };
 

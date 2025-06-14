@@ -43,6 +43,18 @@ export const useStoresData = () => {
       // Process each store to ensure valid coordinates
       const processedStores = await Promise.all(
         (stores || []).map(async (store) => {
+          const isTaiwangun = store.name.toLowerCase().includes('taiwangun');
+          
+          if (isTaiwangun) {
+            console.log(`🔍 TAIWANGUN DEBUG - Processing store:`, {
+              name: store.name,
+              address: store.address,
+              city: store.city,
+              zip_code: store.zip_code,
+              stored_coords: { lat: store.latitude, lng: store.longitude }
+            });
+          }
+          
           console.log(`Processing store "${store.name}": Address="${store.address}", City="${store.city}", ZIP="${store.zip_code}", Stored coords=(${store.latitude}, ${store.longitude})`);
           
           // Special handling for Polish addresses - force geocoding if coordinates seem to be default Paris coordinates
@@ -57,6 +69,12 @@ export const useStoresData = () => {
           
           if (isPolishAddress && isProbablyDefaultCoords) {
             console.log(`Store "${store.name}" appears to have Polish address but Paris coordinates - forcing geocoding`);
+            shouldForceGeocode = true;
+          }
+          
+          // For Taiwangun specifically, always force geocoding to ensure we get correct coordinates
+          if (isTaiwangun) {
+            console.log(`🔍 TAIWANGUN DEBUG - Forcing geocoding for Taiwangun store`);
             shouldForceGeocode = true;
           }
           
@@ -75,6 +93,10 @@ export const useStoresData = () => {
               zip_code: store.zip_code
             }
           );
+
+          if (isTaiwangun) {
+            console.log(`🔍 TAIWANGUN DEBUG - Final coordinates:`, validCoordinates);
+          }
 
           console.log(`Store "${store.name}": Final coordinates (${validCoordinates.latitude}, ${validCoordinates.longitude})`);
 
@@ -109,10 +131,33 @@ export const useStoresData = () => {
           console.warn(`Filtering out store "${store.name}" with invalid coordinates: (${store.lat}, ${store.lng})`);
         }
         
+        const isTaiwangun = store.name.toLowerCase().includes('taiwangun');
+        if (isTaiwangun) {
+          console.log(`🔍 TAIWANGUN DEBUG - Store validation:`, {
+            name: store.name,
+            coordinates: { lat: store.lat, lng: store.lng },
+            isValid
+          });
+        }
+        
         return isValid;
       });
 
       console.log(`Returning ${validStores.length} stores with valid coordinates out of ${processedStores.length} total stores`);
+      
+      // Log Taiwangun specifically if it's in the final list
+      const taiwangunStore = validStores.find(store => store.name.toLowerCase().includes('taiwangun'));
+      if (taiwangunStore) {
+        console.log(`🔍 TAIWANGUN DEBUG - Final store in results:`, {
+          name: taiwangunStore.name,
+          address: taiwangunStore.address,
+          city: taiwangunStore.city,
+          coordinates: { lat: taiwangunStore.lat, lng: taiwangunStore.lng }
+        });
+      } else {
+        console.log(`🔍 TAIWANGUN DEBUG - Taiwangun store NOT found in final results`);
+      }
+      
       return validStores;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
