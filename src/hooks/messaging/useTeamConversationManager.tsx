@@ -1,9 +1,17 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 export const useTeamConversationManager = () => {
+  const { user } = useAuth();
+
   const createTeamConversationIfNeeded = async (teamId: string, teamName: string) => {
     try {
+      if (!user?.id) {
+        console.warn('User not authenticated, cannot create team conversation');
+        return;
+      }
+
       // Vérifier si une conversation d'équipe existe déjà
       const { data: existingConversation, error: checkError } = await supabase
         .from('conversations')
@@ -20,7 +28,7 @@ export const useTeamConversationManager = () => {
       if (!existingConversation) {
         console.log(`Creating team conversation for team: ${teamName}`);
         
-        // Créer la conversation d'équipe
+        // Créer la conversation d'équipe avec l'utilisateur authentifié
         const { data: newConversation, error: conversationError } = await supabase
           .from('conversations')
           .insert({

@@ -15,9 +15,11 @@ export const useUserGamesFetch = (userId: string | undefined) => {
     queryKey: ['userGames', userId],
     queryFn: () => fetchUserGames(userId),
     enabled: !!userId,
-    staleTime: 30000, // Réduire le cache pour forcer les mises à jour plus fréquentes
-    refetchOnWindowFocus: true, // Actualiser quand on revient sur la fenêtre
-    refetchOnMount: true // Toujours actualiser au montage
+    staleTime: 120000, // Increased from 30s to 2 minutes
+    gcTime: 300000, // 5 minutes
+    refetchOnWindowFocus: false, // Disabled to reduce requests
+    refetchOnMount: true,
+    retry: 1,
   });
 
   // Force la mise à jour des statistiques quand les parties changent

@@ -125,11 +125,11 @@ export const useGameDataQueries = (id: string | undefined) => {
     queryKey: ['gameData', id],
     queryFn: () => fetchGameData(id!),
     enabled: !!id,
-    staleTime: 1000,
-    gcTime: 30000,
+    staleTime: 30000, // Increased from 1s to 30s
+    gcTime: 300000, // 5 minutes
     retry: 1,
-    refetchOnWindowFocus: true,
-    refetchInterval: 5000,
+    refetchOnWindowFocus: false, // Disabled to reduce requests
+    refetchInterval: false, // Disabled automatic polling
     meta: {
       errorHandler: (error: any) => {
         if (error.message !== "Failed to fetch") {
@@ -147,11 +147,11 @@ export const useGameDataQueries = (id: string | undefined) => {
     queryKey: ['gameParticipants', id],
     queryFn: () => fetchParticipants(id!),
     enabled: !!id,
-    staleTime: 1000,
-    gcTime: 30000,
+    staleTime: 15000, // Increased from 1s to 15s
+    gcTime: 300000, // 5 minutes
     retry: 1,
-    refetchOnWindowFocus: true,
-    refetchInterval: 5000,
+    refetchOnWindowFocus: false, // Disabled to reduce requests
+    refetchInterval: 30000, // Reduced from 5s to 30s
     meta: {
       errorHandler: (error: any) => {
         if (error.message !== "Failed to fetch") {

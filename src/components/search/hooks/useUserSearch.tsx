@@ -136,7 +136,7 @@ async function searchUsers(query: string, isAdmin: boolean = false): Promise<Use
     );
 
     return usersWithTeams;
-  }, CACHE_DURATIONS.SHORT); // Cache de 5 minutes pour les recherches
+  }, CACHE_DURATIONS.MEDIUM); // Increased cache duration
 }
 
 export const useUserSearch = (searchQuery: string) => {
@@ -174,13 +174,7 @@ export const useUserSearch = (searchQuery: string) => {
     checkAdminStatus();
   }, [user]);
 
-  // Débouncer la requête de recherche
-  const debouncedSearchQuery = useMemo(() => {
-    const timer = setTimeout(() => searchQuery, 300);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
-
-  // Utiliser React Query avec cache optimisé
+  // Utiliser React Query avec cache optimisé et debouncing
   const {
     data: users = [],
     isLoading,
@@ -189,8 +183,8 @@ export const useUserSearch = (searchQuery: string) => {
     queryKey: ['userSearch', searchQuery, isAdmin],
     queryFn: () => searchUsers(searchQuery, isAdmin),
     enabled: searchQuery.length >= 0, // Permettre la recherche vide
-    staleTime: CACHE_DURATIONS.SHORT, // 5 minutes
-    gcTime: CACHE_DURATIONS.MEDIUM, // 30 minutes
+    staleTime: CACHE_DURATIONS.MEDIUM, // 30 minutes
+    gcTime: CACHE_DURATIONS.LONG, // 2 hours
     refetchOnWindowFocus: false,
   });
 

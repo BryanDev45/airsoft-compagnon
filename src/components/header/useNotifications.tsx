@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { getStorageWithExpiry, setStorageWithExpiry, CACHE_DURATIONS } from '@/utils/cacheUtils';
+import { getStorageWithExpiry, setStorageWithExpiry } from '@/utils/cacheUtils';
 import { useAuth } from '@/hooks/useAuth';
 
 const NOTIFICATIONS_CACHE_KEY = 'notifications_count';
@@ -10,7 +10,7 @@ const NOTIFICATIONS_CACHE_KEY = 'notifications_count';
 const fetchNotificationCount = async (userId: string): Promise<number> => {
   const cacheKey = `${NOTIFICATIONS_CACHE_KEY}_${userId}`;
   
-  // Vérifier le cache d'abord (cache réduit pour une meilleure réactivité)
+  // Vérifier le cache d'abord
   const cachedCount = getStorageWithExpiry(cacheKey);
   if (cachedCount !== null) {
     return cachedCount;
@@ -26,8 +26,8 @@ const fetchNotificationCount = async (userId: string): Promise<number> => {
   
   const countValue = count || 0;
   
-  // Cache réduit (15 secondes) pour une meilleure réactivité
-  setStorageWithExpiry(cacheKey, countValue, 15000);
+  // Cache for 30 seconds
+  setStorageWithExpiry(cacheKey, countValue, 30000);
   
   return countValue;
 };
@@ -36,15 +36,16 @@ export function useNotifications() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   
-  // Requête optimisée avec React Query - cache réduit pour plus de réactivité
+  // Requête optimisée avec React Query
   const { data: notificationCount = 0 } = useQuery({
     queryKey: ['unreadNotifications', user?.id],
     queryFn: () => fetchNotificationCount(user!.id),
     enabled: !!user?.id,
-    staleTime: 10000, // 10 secondes pour une réactivité maximale
-    gcTime: 30000, // 30 secondes seulement
-    refetchInterval: 20000, // Rafraîchir toutes les 20 secondes
+    staleTime: 30000, // 30 seconds
+    gcTime: 120000, // 2 minutes
+    refetchInterval: 60000, // Reduced from 20s to 60s
     refetchOnWindowFocus: true,
+    retry: 2,
   });
 
   const handleSheetOpenChange = async (open: boolean) => {
