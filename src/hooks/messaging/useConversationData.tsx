@@ -1,30 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-
-interface ConversationData {
-  id: string;
-  type: 'direct' | 'team';
-  name?: string;
-  created_at: string;
-  updated_at: string;
-}
-
-interface ConversationDetails {
-  id: string;
-  type: 'direct' | 'team';
-  name?: string;
-  participants: Array<{
-    id: string;
-    username: string;
-    avatar?: string;
-  }>;
-  lastMessage?: {
-    content: string;
-    created_at: string;
-    sender_name: string;
-  };
-  unread_count: number;
-}
+import { ConversationData, ConversationDetails, Participant, LastMessage } from '@/types/messaging';
 
 export const useConversationData = () => {
   const fetchConversationDetails = async (conv: ConversationData, userId: string): Promise<ConversationDetails | null> => {
@@ -41,7 +17,7 @@ export const useConversationData = () => {
         return null;
       }
 
-      let participants: Array<{ id: string; username: string; avatar?: string }> = [];
+      let participants: Participant[] = [];
       
       if (participantsData && participantsData.length > 0) {
         const { data: profilesData, error: profilesError } = await supabase
@@ -68,7 +44,7 @@ export const useConversationData = () => {
         .limit(1)
         .maybeSingle();
 
-      let lastMessage;
+      let lastMessage: LastMessage | undefined;
       if (!messageError && lastMessageData) {
         const { data: senderData } = await supabase
           .from('profiles')
@@ -103,7 +79,6 @@ export const useConversationData = () => {
 
         unread_count = count || 0;
       } else {
-        // Si pas de last_read_at, compter tous les messages non envoyés par l'utilisateur
         const { count } = await supabase
           .from('messages')
           .select('*', { count: 'exact', head: true })

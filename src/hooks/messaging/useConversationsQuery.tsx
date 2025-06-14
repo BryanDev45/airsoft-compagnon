@@ -4,23 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useTeamConversationManager } from './useTeamConversationManager';
 import { useConversationData } from './useConversationData';
-
-interface Conversation {
-  id: string;
-  type: 'direct' | 'team';
-  name?: string;
-  participants: Array<{
-    id: string;
-    username: string;
-    avatar?: string;
-  }>;
-  lastMessage?: {
-    content: string;
-    created_at: string;
-    sender_name: string;
-  };
-  unread_count: number;
-}
+import { Conversation } from '@/types/messaging';
+import { sortConversations } from '@/utils/messaging';
 
 export const useConversationsQuery = () => {
   const { user } = useAuth();
@@ -89,7 +74,6 @@ export const useConversationsQuery = () => {
         // Pour chaque conversation, récupérer les détails complets
         const conversationsWithDetails = await Promise.all(
           conversationsData.map(async (conv) => {
-            // Cast the type to ensure it matches our interface
             const typedConv = {
               ...conv,
               type: conv.type as 'direct' | 'team'
@@ -98,34 +82,18 @@ export const useConversationsQuery = () => {
           })
         );
 
-        // Filtrer les conversations nulles et trier par dernière activité
+        // Filtrer les conversations nulles et trier
         const validConversations = conversationsWithDetails
-          .filter((conv) => conv !== null)
-          .sort((a, b) => {
-            // Prioriser les conversations avec des messages non lus
-            if (a.unread_count > 0 && b.unread_count === 0) return -1;
-            if (b.unread_count > 0 && a.unread_count === 0) return 1;
-            
-            // Ensuite trier par dernière activité
-            if (a.lastMessage && b.lastMessage) {
-              return new Date(b.lastMessage.created_at).getTime() - new Date(a.lastMessage.created_at).getTime();
-            } else if (a.lastMessage) {
-              return -1;
-            } else if (b.lastMessage) {
-              return 1;
-            }
-            
-            return 0;
-          });
+          .filter((conv) => conv !== null);
 
-        return validConversations;
+        return sortConversations(validConversations);
       } catch (error) {
         console.error('Error in conversations query:', error);
         return [];
       }
     },
     enabled: !!user?.id,
-    refetchInterval: 30000, // Rafraîchir toutes les 30 secondes
-    staleTime: 10000, // Considérer les données comme fraîches pendant 10 secondes
+    refetchInterval: 30000,
+    staleTime: 10000,
   });
 };

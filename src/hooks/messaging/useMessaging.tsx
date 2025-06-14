@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useConversationsQuery } from './useConversationsQuery';
+import { Conversation } from '@/types/messaging';
 
 export const useMessaging = () => {
   const [unreadCount, setUnreadCount] = useState(0);
@@ -8,7 +9,7 @@ export const useMessaging = () => {
 
   // Calculer le nombre total de messages non lus
   useEffect(() => {
-    const totalUnread = conversations.reduce((sum, conv) => sum + conv.unread_count, 0);
+    const totalUnread = conversations.reduce((sum: number, conv: Conversation) => sum + conv.unread_count, 0);
     setUnreadCount(totalUnread);
   }, [conversations]);
 

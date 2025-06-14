@@ -2,17 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-
-interface ConversationDetails {
-  id: string;
-  type: 'direct' | 'team';
-  name?: string;
-  participants?: Array<{
-    id: string;
-    username: string;
-    avatar?: string;
-  }>;
-}
+import { ConversationDetails, Participant } from '@/types/messaging';
 
 export const useConversationDetails = (conversationId: string) => {
   const { user } = useAuth();
@@ -32,7 +22,7 @@ export const useConversationDetails = (conversationId: string) => {
       }
 
       // Récupérer les participants pour les conversations directes
-      let participants: Array<{ id: string; username: string; avatar?: string }> = [];
+      let participants: Participant[] = [];
       
       if (data.type === 'direct') {
         const { data: participantsData, error: participantsError } = await supabase

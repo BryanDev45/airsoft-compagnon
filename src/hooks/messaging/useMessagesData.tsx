@@ -1,16 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-
-interface Message {
-  id: string;
-  content: string;
-  sender_id: string;
-  sender_name: string;
-  sender_avatar?: string;
-  created_at: string;
-  is_deleted: boolean;
-}
+import { Message } from '@/types/messaging';
 
 export const useMessagesData = (conversationId: string) => {
   return useQuery({
@@ -57,6 +48,6 @@ export const useMessagesData = (conversationId: string) => {
       });
     },
     enabled: !!conversationId,
-    refetchInterval: 5000, // Rafraîchir toutes les 5 secondes
+    refetchInterval: 5000,
   });
 };
