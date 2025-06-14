@@ -201,6 +201,14 @@ export function ComboboxDemo({
     };
   }, [debouncedSearchTerm]);
 
+  const handleCitySelect = (selectedCity: City) => {
+    console.log('City selected:', selectedCity.fullName);
+    setValue(selectedCity.fullName);
+    onSelect(selectedCity.fullName);
+    setOpen(false);
+    setSearchTerm(""); // Reset search term after selection
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -246,12 +254,8 @@ export function ComboboxDemo({
                   <CommandItem
                     key={`${city.fullName}-${index}`}
                     value={city.fullName}
-                    onSelect={(currentValue: string) => {
-                      const safeValue = currentValue || "";
-                      setValue(safeValue);
-                      onSelect(safeValue);
-                      setOpen(false);
-                    }}
+                    onSelect={() => handleCitySelect(city)}
+                    className="cursor-pointer"
                   >
                     <Check
                       className={cn(
