@@ -41,6 +41,25 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       </div>
       
       <div className="px-6 pb-4 pt-16 relative">
+        {/* Moved buttons to the top */}
+        {isOwnProfile && (
+          <div className="absolute top-4 right-0 flex space-x-2">
+            {onEditBio && (
+              <Button variant="outline" size="sm" onClick={onEditBio}>
+                <Pencil className="h-4 w-4 mr-2" />
+                Modifier le profil
+              </Button>
+            )}
+            
+            {toggleProfileSettings && (
+              <Button variant="outline" size="sm" onClick={toggleProfileSettings}>
+                <Settings className="h-4 w-4 mr-2" />
+                Paramètres
+              </Button>
+            )}
+          </div>
+        )}
+
         <div className="absolute -top-12 left-6">
           <div className="relative">
             <Avatar className="h-24 w-24 border-4 border-white shadow-md ring-2 ring-airsoft-red">
@@ -57,7 +76,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           </div>
         </div>
         
-        <div className="flex flex-col md:flex-row md:items-end justify-between">
+        <div className="flex flex-col">
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold">{user?.username || 'Utilisateur'}</h1>
@@ -87,24 +106,6 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             
             <p className="text-gray-600 mt-1">{user?.bio || 'Aucune bio pour le moment'}</p>
           </div>
-          
-          {isOwnProfile && (
-            <div className="mt-4 md:mt-0 flex space-x-2">
-              {onEditBio && (
-                <Button variant="outline" size="sm" onClick={onEditBio}>
-                  <Pencil className="h-4 w-4 mr-2" />
-                  Modifier le profil
-                </Button>
-              )}
-              
-              {toggleProfileSettings && (
-                <Button variant="outline" size="sm" onClick={toggleProfileSettings}>
-                  <Settings className="h-4 w-4 mr-2" />
-                  Paramètres
-                </Button>
-              )}
-            </div>
-          )}
         </div>
       </div>
     </div>
