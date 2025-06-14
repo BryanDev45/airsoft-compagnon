@@ -31,7 +31,7 @@ export const usePdfDownload = () => {
       const tableData = participants.map((participant, index) => [
         index + 1,
         participant.profile?.username || 'Utilisateur inconnu',
-        participant.profile?.email || 'N/A',
+        participant.profile?.phone_number || participant.profile?.email || 'N/A',
         participant.profile?.team || 'Aucune équipe',
         participant.role || 'Participant',
         participant.status || 'Confirmé'
@@ -39,7 +39,7 @@ export const usePdfDownload = () => {
       
       // Génération du tableau
       autoTable(doc, {
-        head: [['#', 'Nom d\'utilisateur', 'Email', 'Équipe', 'Rôle', 'Statut']],
+        head: [['#', 'Nom d\'utilisateur', 'Contact', 'Équipe', 'Rôle', 'Statut']],
         body: tableData,
         startY: 70,
         styles: {
