@@ -33,7 +33,7 @@ export const useMapRenderer = ({
   const vectorLayer = useRef<VectorLayer<VectorSource> | null>(null);
   const isMapInitialized = useRef(false);
 
-  // Initialize map only once
+  // Initialize map only once - remove searchCenter from dependencies to prevent reinitialization
   useEffect(() => {
     if (!mapRef.current || !popupRef.current || isMapInitialized.current) return;
 
@@ -93,7 +93,7 @@ export const useMapRenderer = ({
         isMapInitialized.current = false;
       }
     };
-  }, [mapRef, popupRef, onMapReady, onMapLoaded]);
+  }, [mapRef, popupRef]); // Remove onMapReady, onMapLoaded, and searchCenter from dependencies
 
   // Update features without recreating the map
   useEffect(() => {
@@ -103,11 +103,6 @@ export const useMapRenderer = ({
     }
 
     console.log(`MapRenderer: Updating features - ${features.length} total`);
-    console.log(`MapRenderer: Features details:`, features.map(f => ({
-      type: f.get('type'),
-      geometry: f.getGeometry()?.getType(),
-      coordinates: f.getGeometry()?.getExtent()
-    })));
     
     const vectorSource = vectorLayer.current.getSource();
     if (vectorSource) {
@@ -131,7 +126,7 @@ export const useMapRenderer = ({
     }
   }, [features]);
 
-  // Update view center when search center changes
+  // Update view center when search center changes - separate effect
   useEffect(() => {
     if (!view.current || !isMapInitialized.current) return;
 

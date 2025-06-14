@@ -1,5 +1,5 @@
 
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import { MapPin } from 'lucide-react';
 import { fromLonLat } from 'ol/proj';
 import { MapEvent, MapStore } from '@/hooks/useGamesData';
@@ -32,8 +32,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
   const viewInstance = useRef<any>(null);
 
   console.log(`MapComponent: Rendering map with ${filteredEvents.length} events and ${stores.length} stores`);
-  console.log(`MapComponent: Events:`, filteredEvents.map(e => ({ title: e.title, lat: e.lat, lng: e.lng })));
-  console.log(`MapComponent: Stores:`, stores.map(s => ({ name: s.name, lat: s.lat, lng: s.lng })));
 
   // Memoize features to prevent unnecessary recalculations
   const allFeatures = useMemo(() => {
@@ -50,7 +48,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
     ];
 
     console.log(`MapComponent: Created ${features.length} features total (${eventFeatures.length} event features, ${storeFeatures.length} store features, ${radiusFeature ? 1 : 0} radius feature)`);
-    console.log(`MapComponent: Feature types:`, features.map(f => f.get('type')));
     
     return features;
   }, [filteredEvents, stores, searchCenter, searchRadius]);
@@ -63,7 +60,8 @@ const MapComponent: React.FC<MapComponentProps> = ({
     setSelectedStore
   });
 
-  const handleMapReady = useMemo(() => (mapObj: any, overlay: any, viewObj: any) => {
+  // Memoize callbacks to prevent map reinitialization
+  const handleMapReady = useCallback((mapObj: any, overlay: any, viewObj: any) => {
     console.log(`MapComponent: Map is ready`);
     mapInstance.current = mapObj;
     overlayInstance.current = overlay;
@@ -71,7 +69,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
     setupClickHandler();
   }, [setupClickHandler]);
 
-  const handleMapLoaded = useMemo(() => () => {
+  const handleMapLoaded = useCallback(() => {
     console.log(`MapComponent: Map has loaded`);
     setMapLoaded(true);
   }, []);
