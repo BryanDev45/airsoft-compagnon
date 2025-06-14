@@ -59,8 +59,7 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
           ...profileData, 
           reputation: displayedReputation,
           team_logo: profileData?.team_logo,
-          team_name: profileData?.team,
-          is_verified: profileData?.is_verified
+          team_name: profileData?.team
         }}
         isOwnProfile={isOwnProfile}
         toggleProfileSettings={toggleProfileSettings}

@@ -80,59 +80,42 @@ export const useVerificationRequests = () => {
 
   const updateRequestMutation = useMutation({
     mutationFn: async ({ requestId, status, adminNotes }: { requestId: string; status: string; adminNotes?: string }) => {
-      // Get user_id for this request before processing
-      const { data: requestData, error: fetchError } = await supabase
+      const { error } = await supabase
         .from('verification_requests')
-        .select('user_id')
-        .eq('id', requestId)
-        .single();
-
-      if (fetchError) throw fetchError;
-      if (!requestData) throw new Error('Request not found');
-
-      if (status === 'approved') {
-        // Update user's verified status
-        await supabase
-          .from('profiles')
-          .update({ is_verified: true })
-          .eq('id', requestData.user_id);
-
-        // Create approval notification
-        await supabase
-          .from('notifications')
-          .insert({
-            user_id: requestData.user_id,
-            type: 'verification_approved',
-            title: 'Compte vérifié',
-            message: 'Félicitations ! Votre demande de vérification a été approuvée. Votre compte est maintenant vérifié et vous avez reçu le badge de profil vérifié.',
-            link: '/profile'
-          });
-      } else if (status === 'rejected') {
-        // Create rejection notification with reason
-        await supabase
-          .from('notifications')
-          .insert({
-            user_id: requestData.user_id,
-            type: 'verification_rejected',
-            title: 'Demande de vérification refusée',
-            message: `Votre demande de vérification a été refusée. Raison : ${adminNotes || 'Aucune raison spécifiée'}. Vous pouvez soumettre une nouvelle demande en corrigeant les problèmes mentionnés.`,
-            link: '/profile?tab=verification'
-          });
-      }
-
-      // Delete the verification request from the database
-      const { error: deleteError } = await supabase
-        .from('verification_requests')
-        .delete()
+        .update({ 
+          status, 
+          admin_notes: adminNotes,
+          reviewed_at: new Date().toISOString(),
+          reviewed_by: (await supabase.auth.getUser()).data.user?.id
+        })
         .eq('id', requestId);
 
-      if (deleteError) throw deleteError;
+      if (error) throw error;
+
+      // If approved, update the user's verified status
+      if (status === 'approved') {
+        const request = requests.find(r => r.id === requestId);
+        if (request) {
+          const { data } = await supabase
+            .from('verification_requests')
+            .select('user_id')
+            .eq('id', requestId)
+            .single();
+
+          if (data) {
+            await supabase
+              .from('profiles')
+              .update({ is_verified: true })
+              .eq('id', data.user_id);
+          }
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['verification-requests'] });
       toast({
-        title: "Demande traitée",
-        description: "La demande de vérification a été traitée et supprimée avec succès."
+        title: "Demande mise à jour",
+        description: "Le statut de la demande a été mis à jour avec succès."
       });
     }
   });
