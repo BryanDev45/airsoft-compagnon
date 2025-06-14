@@ -50,7 +50,7 @@ export const useMessagesData = (conversationId: string) => {
     });
   }, [conversationId]);
 
-  return useQuery({
+  return useQuery<Message[], Error>({
     queryKey: ['messages', conversationId],
     queryFn,
     enabled: !!conversationId,

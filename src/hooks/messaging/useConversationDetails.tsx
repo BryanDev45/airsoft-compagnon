@@ -7,7 +7,7 @@ import { ConversationDetails, Participant } from '@/types/messaging';
 export const useConversationDetails = (conversationId: string) => {
   const { user } = useAuth();
 
-  return useQuery({
+  return useQuery<ConversationDetails | null, Error>({
     queryKey: ['conversation', conversationId],
     queryFn: async (): Promise<ConversationDetails | null> => {
       console.log('Fetching conversation details for:', conversationId);

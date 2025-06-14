@@ -103,7 +103,7 @@ export const useConversationsQuery = () => {
     }
   }, [user?.id, createTeamConversationIfNeeded, fetchConversationDetails]);
 
-  return useQuery({
+  return useQuery<Conversation[], Error>({
     queryKey: ['conversations', user?.id],
     queryFn,
     enabled: !!user?.id,

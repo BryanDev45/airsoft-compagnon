@@ -39,7 +39,7 @@ export function useNotifications() {
   const { optimizedQueryConfig } = useOptimizedQueries();
   
   // Requête optimisée avec React Query
-  const { data: notificationCount = 0 } = useQuery({
+  const { data: notificationCount = 0 } = useQuery<number, Error>({
     queryKey: ['unreadNotifications', user?.id],
     queryFn: () => fetchNotificationCount(user!.id),
     enabled: !!user?.id,
