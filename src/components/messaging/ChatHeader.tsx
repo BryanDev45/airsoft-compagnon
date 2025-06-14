@@ -30,21 +30,13 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ conversation, onBack }) => {
     return otherParticipant?.avatar;
   };
 
-  const getConversationAvatarFallback = () => {
+  const getConversationInitials = () => {
     if (conversation?.type === 'team') {
-      return (
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white font-semibold text-lg w-full h-full flex items-center justify-center">
-          <Users className="h-7 w-7" />
-        </div>
-      );
+      return null; // Nous utiliserons l'icône Users
     }
     const otherParticipant = conversation?.participants?.find(p => p.id !== user?.id);
-    const displayName = otherParticipant?.username || 'Utilisateur';
-    return (
-      <div className="bg-gradient-to-br from-airsoft-red to-red-600 text-white font-semibold text-lg w-full h-full flex items-center justify-center">
-        {displayName.charAt(0).toUpperCase()}
-      </div>
-    );
+    const displayName = otherParticipant?.username || 'U';
+    return displayName.charAt(0).toUpperCase();
   };
 
   return (
@@ -61,8 +53,16 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ conversation, onBack }) => {
         
         <Avatar className="h-10 w-10 md:h-12 md:w-12 ring-2 ring-white shadow-lg flex-shrink-0">
           <AvatarImage src={getConversationAvatar()} />
-          <AvatarFallback className="bg-gradient-to-br from-airsoft-red to-red-600 text-white font-semibold text-sm md:text-lg">
-            {getConversationAvatarFallback()}
+          <AvatarFallback className={`text-white font-semibold text-sm md:text-lg ${
+            conversation?.type === 'team' 
+              ? 'bg-gradient-to-br from-blue-500 to-blue-600' 
+              : 'bg-gradient-to-br from-airsoft-red to-red-600'
+          }`}>
+            {conversation?.type === 'team' ? (
+              <Users className="h-6 w-6 md:h-7 md:w-7" />
+            ) : (
+              getConversationInitials()
+            )}
           </AvatarFallback>
         </Avatar>
         
