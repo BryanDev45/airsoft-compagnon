@@ -1,10 +1,10 @@
 
 import { useEffect } from 'react';
 import { calculateDistance } from '../utils/mapUtils';
-import { getValidCoordinates } from '../utils/geocodingUtils';
 import { MapStore } from './useMapData';
 import { useFilterState } from './filters/useFilterState';
 import { useCountryCoordinates } from './filters/useCountryCoordinates';
+import { detectCountryFromStore } from '../utils/geocoding/countryDetection';
 
 export interface StoreFilterState {
   searchQuery: string;
@@ -32,30 +32,88 @@ export function useStoreFiltering(stores: MapStore[]) {
     updateSearchCenterForCountry(selectedCountry, setSearchCenter);
   }, [selectedCountry]);
 
-  // Enhanced store filtering with improved coordinates
+  // Enhanced store filtering with country filtering
   const filteredStores = stores.filter(store => {
     const matchesSearch = !searchQuery || 
                         store.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                         store.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
                         store.address.toLowerCase().includes(searchQuery.toLowerCase());
     
-    if (searchRadius[0] === 0) {
-      return matchesSearch;
+    // Country filtering logic
+    let matchesCountry = true;
+    if (selectedCountry !== 'all') {
+      // Detect the country of the store
+      const storeCountry = detectCountryFromStore({
+        name: store.name,
+        address: store.address,
+        city: store.city,
+        zip_code: store.zip_code
+      });
+      
+      // Normalize country names for comparison
+      const normalizeCountryName = (country: string): string => {
+        const mapping: { [key: string]: string } = {
+          'france': 'france',
+          'belgium': 'belgique',
+          'belgique': 'belgique',
+          'belgië': 'belgique',
+          'switzerland': 'suisse',
+          'suisse': 'suisse',
+          'schweiz': 'suisse',
+          'germany': 'allemagne',
+          'deutschland': 'allemagne',
+          'spain': 'espagne',
+          'españa': 'espagne',
+          'espagne': 'espagne',
+          'italy': 'italie',
+          'italia': 'italie',
+          'italie': 'italie',
+          'poland': 'pologne',
+          'polska': 'pologne',
+          'pologne': 'pologne',
+          'luxembourg': 'luxembourg'
+        };
+        
+        return mapping[country.toLowerCase()] || country.toLowerCase();
+      };
+      
+      const normalizedStoreCountry = normalizeCountryName(storeCountry);
+      const normalizedSelectedCountry = normalizeCountryName(selectedCountry);
+      
+      matchesCountry = normalizedStoreCountry === normalizedSelectedCountry;
+      
+      console.log('Store filtering - Country check:', {
+        storeName: store.name,
+        storeCity: store.city,
+        detectedCountry: storeCountry,
+        normalizedStoreCountry,
+        selectedCountry,
+        normalizedSelectedCountry,
+        matchesCountry
+      });
     }
     
-    if (searchCenter && searchRadius[0] > 0) {
-      // Use the store's actual coordinates, which should be improved by the geocoding
+    // Radius filtering
+    let matchesRadius = true;
+    if (searchRadius[0] > 0 && searchCenter) {
       const distance = calculateDistance(
         searchCenter[1], 
         searchCenter[0], 
         store.lat, 
         store.lng
       );
-      
-      return matchesSearch && distance <= searchRadius[0];
+      matchesRadius = distance <= searchRadius[0];
     }
     
-    return matchesSearch;
+    return matchesSearch && matchesCountry && matchesRadius;
+  });
+
+  console.log('Store filtering results:', {
+    totalStores: stores.length,
+    filteredStores: filteredStores.length,
+    selectedCountry,
+    searchQuery,
+    searchRadius: searchRadius[0]
   });
 
   return {

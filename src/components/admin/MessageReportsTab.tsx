@@ -2,257 +2,176 @@
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertTriangle, Clock, CheckCircle, XCircle, MessageSquare } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useState } from 'react';
+import { AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 
 interface MessageReport {
   id: string;
-  reporter_id: string;
-  message_id: string;
   reason: string;
-  details: string;
+  details?: string;
   status: string;
-  admin_notes: string;
-  reviewed_by: string;
-  reviewed_at: string;
   created_at: string;
-  reporter_profile: { username: string } | null;
+  admin_notes?: string;
+  reporter_profile: {
+    username: string;
+  } | null;
   message: {
     content: string;
-    sender_id: string;
-    sender_profile: { username: string } | null;
-  } | null;
+    sender_profile: {
+      username: string;
+    } | null;
+  };
 }
 
 const MessageReportsTab = () => {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [adminNotes, setAdminNotes] = useState<{ [key: string]: string }>({});
 
-  const { data: reports = [], isLoading, error } = useQuery({
-    queryKey: ['admin-message-reports'],
-    queryFn: async () => {
-      console.log('Fetching message reports...');
-      
+  const { data: reports = [], isLoading } = useQuery({
+    queryKey: ['message-reports'],
+    queryFn: async (): Promise<MessageReport[]> => {
       const { data, error } = await supabase
         .from('message_reports')
         .select(`
           *,
-          reporter_profile:profiles!reporter_id(username),
+          reporter_profile:profiles!message_reports_reporter_id_fkey(username),
           message:messages(
             content,
-            sender_id,
-            sender_profile:profiles(username)
+            sender_profile:profiles!messages_sender_id_fkey(username)
           )
         `)
         .order('created_at', { ascending: false });
 
-      console.log('Message reports query result:', { data, error });
-
-      if (error) {
-        console.error('Error fetching message reports:', error);
-        throw error;
-      }
-      
-      // Transform the data to handle SelectQueryError types
-      const transformedData = (data || []).map(report => ({
-        ...report,
-        reporter_profile: report.reporter_profile && 
-          typeof report.reporter_profile === 'object' && 
-          report.reporter_profile !== null && 
-          'username' in report.reporter_profile
-          ? report.reporter_profile as { username: string }
-          : null,
-        message: report.message && 
-          typeof report.message === 'object' && 
-          report.message !== null && 
-          'content' in report.message
-          ? {
-              ...report.message,
-              sender_profile: (report.message as any).sender_profile && 
-                typeof (report.message as any).sender_profile === 'object' && 
-                (report.message as any).sender_profile !== null && 
-                'username' in (report.message as any).sender_profile
-                ? (report.message as any).sender_profile as { username: string }
-                : null
-            }
-          : null
-      }));
-
-      return transformedData as MessageReport[];
+      if (error) throw error;
+      return data || [];
     }
   });
 
   const updateReportMutation = useMutation({
-    mutationFn: async ({ reportId, status, notes }: { reportId: string; status: string; notes?: string }) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      
+    mutationFn: async ({ reportId, status, adminNotes }: { reportId: string; status: string; adminNotes?: string }) => {
       const { error } = await supabase
         .from('message_reports')
-        .update({
-          status,
-          admin_notes: notes,
-          reviewed_by: user?.id,
-          reviewed_at: new Date().toISOString()
+        .update({ 
+          status, 
+          admin_notes: adminNotes,
+          reviewed_at: new Date().toISOString(),
+          reviewed_by: (await supabase.auth.getUser()).data.user?.id
         })
         .eq('id', reportId);
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-message-reports'] });
+      queryClient.invalidateQueries({ queryKey: ['message-reports'] });
       toast({
-        title: "Signalement mis à jour",
-        description: "Le statut du signalement a été modifié avec succès.",
-      });
-    },
-    onError: (error) => {
-      console.error('Error updating message report:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour le signalement.",
-        variant: "destructive",
+        title: "Rapport mis à jour",
+        description: "Le statut du rapport a été mis à jour avec succès."
       });
     }
   });
 
-  const handleUpdateStatus = (reportId: string, status: string) => {
-    const notes = adminNotes[reportId] || '';
-    updateReportMutation.mutate({ reportId, status, notes });
-  };
-
-  const getStatusBadge = (status: string) => {
+  const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'pending':
-        return <Badge variant="outline" className="text-yellow-600"><Clock className="h-3 w-3 mr-1" />En attente</Badge>;
-      case 'resolved':
-        return <Badge variant="outline" className="text-green-600"><CheckCircle className="h-3 w-3 mr-1" />Résolu</Badge>;
-      case 'dismissed':
-        return <Badge variant="outline" className="text-gray-600"><XCircle className="h-3 w-3 mr-1" />Rejeté</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
+      case 'resolved': return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'dismissed': return <CheckCircle className="h-4 w-4 text-gray-500" />;
+      default: return <Clock className="h-4 w-4 text-yellow-500" />;
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <div className="h-12 w-12 border-4 border-airsoft-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-500">Chargement des signalements...</p>
-        </div>
-      </div>
-    );
-  }
+  const getStatusBadge = (status: string) => {
+    const variants = {
+      pending: 'bg-yellow-100 text-yellow-800',
+      resolved: 'bg-green-100 text-green-800',
+      dismissed: 'bg-gray-100 text-gray-800'
+    };
+    return variants[status as keyof typeof variants] || variants.pending;
+  };
 
-  if (error) {
-    console.error('Message reports tab error:', error);
-    return (
-      <div className="text-center py-12">
-        <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-        <p className="text-gray-600">Erreur lors du chargement des signalements</p>
-        <p className="text-sm text-gray-500 mt-2">{error.message}</p>
-      </div>
-    );
+  if (isLoading) {
+    return <div className="flex justify-center p-8">Chargement des rapports...</div>;
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Signalements de messages</h2>
-        <Badge variant="outline" className="text-lg px-3 py-1">
-          {reports.length} signalement{reports.length !== 1 ? 's' : ''}
-        </Badge>
-      </div>
-
-      {reports.length === 0 ? (
-        <Card>
-          <CardContent className="text-center py-12">
-            <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">Aucun signalement de message</p>
+    <div className="space-y-4">
+      {reports.map((report) => (
+        <Card key={report.id}>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                {getStatusIcon(report.status)}
+                Rapport de message
+              </CardTitle>
+              <Badge className={getStatusBadge(report.status)}>
+                {report.status === 'pending' ? 'En attente' : 
+                 report.status === 'resolved' ? 'Résolu' : 'Rejeté'}
+              </Badge>
+            </div>
+            <CardDescription>
+              Signalé par: {report.reporter_profile?.username || 'Utilisateur supprimé'} • {new Date(report.created_at).toLocaleDateString()}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <strong>Raison:</strong> {report.reason}
+            </div>
+            {report.details && (
+              <div>
+                <strong>Détails:</strong> {report.details}
+              </div>
+            )}
+            <div className="bg-gray-50 p-3 rounded">
+              <strong>Message signalé:</strong>
+              <p className="mt-1">"{report.message.content}"</p>
+              <p className="text-sm text-gray-600 mt-1">
+                Par: {report.message.sender_profile?.username || 'Utilisateur supprimé'}
+              </p>
+            </div>
+            {report.admin_notes && (
+              <div>
+                <strong>Notes admin:</strong> {report.admin_notes}
+              </div>
+            )}
+            {report.status === 'pending' && (
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => updateReportMutation.mutate({ 
+                    reportId: report.id, 
+                    status: 'resolved',
+                    adminNotes: 'Message supprimé après vérification' 
+                  })}
+                  size="sm"
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  Résoudre
+                </Button>
+                <Button
+                  onClick={() => updateReportMutation.mutate({ 
+                    reportId: report.id, 
+                    status: 'dismissed',
+                    adminNotes: 'Rapport rejeté après vérification' 
+                  })}
+                  variant="outline"
+                  size="sm"
+                >
+                  Rejeter
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
-      ) : (
-        <div className="space-y-4">
-          {reports.map((report) => (
-            <Card key={report.id}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">
-                    Message de @{report.message?.sender_profile?.username || 'Utilisateur supprimé'}
-                  </CardTitle>
-                  {getStatusBadge(report.status)}
-                </div>
-                <div className="text-sm text-gray-600">
-                  Signalé par @{report.reporter_profile?.username || 'Utilisateur supprimé'} • {new Date(report.created_at).toLocaleDateString('fr-FR')}
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h4 className="font-medium mb-2">Message signalé :</h4>
-                  <div className="bg-gray-100 p-3 rounded-lg">
-                    <p className="text-gray-700">{report.message?.content || 'Message supprimé'}</p>
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="font-medium mb-2">Raison :</h4>
-                  <p className="text-gray-700">{report.reason}</p>
-                </div>
-
-                {report.details && (
-                  <div>
-                    <h4 className="font-medium mb-2">Détails :</h4>
-                    <p className="text-gray-700">{report.details}</p>
-                  </div>
-                )}
-
-                {report.admin_notes && (
-                  <div>
-                    <h4 className="font-medium mb-2">Notes administrateur :</h4>
-                    <p className="text-gray-700">{report.admin_notes}</p>
-                  </div>
-                )}
-
-                {report.status === 'pending' && (
-                  <div className="space-y-3">
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Notes administrateur (optionnel) :</label>
-                      <Textarea
-                        placeholder="Ajouter une note..."
-                        value={adminNotes[report.id] || ''}
-                        onChange={(e) => setAdminNotes(prev => ({ ...prev, [report.id]: e.target.value }))}
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => handleUpdateStatus(report.id, 'resolved')}
-                        className="bg-green-600 hover:bg-green-700"
-                        disabled={updateReportMutation.isPending}
-                      >
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Marquer comme résolu
-                      </Button>
-                      <Button
-                        onClick={() => handleUpdateStatus(report.id, 'dismissed')}
-                        variant="outline"
-                        disabled={updateReportMutation.isPending}
-                      >
-                        <XCircle className="h-4 w-4 mr-2" />
-                        Rejeter
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+      ))}
+      {reports.length === 0 && (
+        <Card>
+          <CardContent className="flex items-center justify-center p-8">
+            <div className="text-center">
+              <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500">Aucun rapport de message trouvé</p>
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
