@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose, SheetFooter, 
 import NotificationList from '@/components/notifications/NotificationList';
 import { Bell } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
+import { useNotificationActions } from '@/hooks/notifications/useNotificationActions';
 
 interface NotificationSheetProps {
   notifications: any[];
@@ -19,9 +20,19 @@ const NotificationSheet: React.FC<NotificationSheetProps> = ({
   handleSheetOpenChange,
   isMobile = false
 }) => {
+  const { handleMarkAllAsRead } = useNotificationActions();
+
+  const handleOpenChange = async (open: boolean) => {
+    if (!open) {
+      // Marquer toutes les notifications comme lues lors de la fermeture
+      await handleMarkAllAsRead();
+    }
+    handleSheetOpenChange(open);
+  };
+
   if (isMobile) {
     return (
-      <Sheet onOpenChange={handleSheetOpenChange}>
+      <Sheet onOpenChange={handleOpenChange}>
         <SheetTrigger asChild>
           <Button variant="ghost" size="sm" className="flex items-center gap-2 text-white">
             <Bell size={18} />
@@ -45,7 +56,7 @@ const NotificationSheet: React.FC<NotificationSheetProps> = ({
   }
 
   return (
-    <Sheet onOpenChange={handleSheetOpenChange}>
+    <Sheet onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell size={20} className={`${notificationCount > 0 ? 'text-airsoft-red' : 'text-white'} hover:text-airsoft-red transition-colors`} />
