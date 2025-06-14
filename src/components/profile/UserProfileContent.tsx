@@ -128,6 +128,7 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
         setShowBadgesDialog={setShowBadgesDialog}
         handleNavigateToGame={handleNavigateToGame}
         user={profileData}
+        userGames={userGames}
       />
     </div>
   );
