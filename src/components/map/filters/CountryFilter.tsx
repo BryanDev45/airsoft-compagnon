@@ -159,11 +159,11 @@ const CountryFilter: React.FC<CountryFilterProps> = ({
           <Command className="bg-gray-700">
             <CommandInput 
               placeholder="Rechercher un pays..." 
-              className="text-white placeholder:text-gray-400"
+              className="text-white placeholder:text-gray-400 bg-gray-700 border-gray-600"
             />
-            <CommandList>
-              <CommandEmpty className="text-gray-300">Aucun pays trouvé.</CommandEmpty>
-              <CommandGroup>
+            <CommandList className="bg-gray-700">
+              <CommandEmpty className="text-white">Aucun pays trouvé.</CommandEmpty>
+              <CommandGroup className="bg-gray-700">
                 {countries.map((country) => (
                   <CommandItem
                     key={country.value}
@@ -172,7 +172,7 @@ const CountryFilter: React.FC<CountryFilterProps> = ({
                       setSelectedCountry(currentValue === selectedCountry ? "all" : currentValue);
                       setOpen(false);
                     }}
-                    className="text-white hover:bg-gray-600 data-[selected=true]:bg-gray-600"
+                    className="text-white hover:bg-gray-600 data-[selected=true]:bg-gray-600 bg-gray-700"
                   >
                     <Check
                       className={cn(
