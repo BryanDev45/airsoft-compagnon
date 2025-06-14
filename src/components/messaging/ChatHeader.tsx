@@ -78,12 +78,12 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ conversation, onBack }) => {
       // Pour les conversations directes, afficher le vrai statut
       return (
         <p className={`text-xs md:text-sm font-medium flex items-center gap-2 ${
-          isOtherUserOnline ? 'text-green-600' : 'text-gray-400'
+          isOtherUserOnline ? 'text-green-600' : 'text-red-600'
         }`}>
           <div className={`w-2 h-2 rounded-full ${
             isOtherUserOnline 
               ? 'bg-green-500 animate-pulse' 
-              : 'bg-gray-400'
+              : 'bg-red-500'
           }`}></div>
           {isOtherUserOnline ? 'En ligne' : 'Hors ligne'}
         </p>
@@ -125,7 +125,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ conversation, onBack }) => {
           {/* Online status indicator sur l'avatar pour les conversations directes */}
           {conversation?.type === 'direct' && (
             <div className={`absolute bottom-0 right-0 w-3 h-3 md:w-4 md:h-4 rounded-full border-2 border-white shadow-sm ${
-              isOtherUserOnline ? 'bg-green-500' : 'bg-gray-400'
+              isOtherUserOnline ? 'bg-green-500' : 'bg-red-500'
             }`}></div>
           )}
         </div>

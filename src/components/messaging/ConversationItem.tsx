@@ -69,7 +69,7 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
           ) : (
             // For direct conversations, show real online status
             <div className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white shadow-sm ${
-              isOtherUserOnline ? 'bg-green-500' : 'bg-gray-400'
+              isOtherUserOnline ? 'bg-green-500' : 'bg-red-500'
             }`}></div>
           )}
         </div>
