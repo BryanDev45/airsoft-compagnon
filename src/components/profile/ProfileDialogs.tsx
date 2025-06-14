@@ -1,5 +1,5 @@
-
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,8 +16,10 @@ const ProfileDialogs = ({
   setShowBadgesDialog,
   handleNavigateToGame,
   user,
-  userGames = [] // Ajouter userGames comme prop
+  userGames = []
 }) => {
+  const navigate = useNavigate();
+
   // Formatage de la date pour l'affichage en utilisant la fonction formatGameDate
   const formatGameDateDisplay = (game) => {
     if (!game) {
@@ -79,6 +81,11 @@ const ProfileDialogs = ({
     if (game.id) {
       handleNavigateToGame(game.id);
     }
+  };
+
+  const handleViewGameDetails = (gameId) => {
+    setShowGameDialog(false);
+    navigate(`/game/${gameId}`);
   };
   
   // Debug pour voir le contenu de selectedGame
@@ -164,12 +171,7 @@ const ProfileDialogs = ({
               
               <div className="flex justify-end mt-4">
                 <Button 
-                  onClick={() => {
-                    setShowGameDialog(false);
-                    if (selectedGame.id) {
-                      handleNavigateToGame(selectedGame.id);
-                    }
-                  }}
+                  onClick={() => handleViewGameDetails(selectedGame.id)}
                   className="bg-airsoft-red hover:bg-red-700"
                 >
                   Voir la partie
