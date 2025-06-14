@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -59,7 +60,7 @@ const ProfileDialogs = ({
     });
   }, [userGames]);
 
-  const handleGameClick = (game: any) => {
+  const handleGameClick = (game) => {
     // Enrichir les données du jeu avec toutes les informations nécessaires pour le dialog
     const enrichedGame = {
       ...game,
@@ -195,7 +196,7 @@ const ProfileDialogs = ({
               </p>
             ) : (
               sortedAllGames.map(game => (
-                <div key={game.id} className="border border-green-500 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div key={game.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <h3 className="font-semibold text-lg mb-2">{game.title}</h3>
