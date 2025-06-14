@@ -2,20 +2,53 @@
 import { supabase } from '@/integrations/supabase/client';
 
 /**
+ * Extract relative file path from a full Supabase public URL
+ */
+const extractFilePathFromUrl = (url: string): string | null => {
+  try {
+    // Pattern for Supabase storage URLs: https://[project-ref].supabase.co/storage/v1/object/public/[bucket]/[path]
+    const urlPattern = /\/storage\/v1\/object\/public\/verification-photos\/(.+)$/;
+    const match = url.match(urlPattern);
+    return match ? match[1] : null;
+  } catch (error) {
+    console.error('Error extracting file path from URL:', error);
+    return null;
+  }
+};
+
+/**
+ * Check if a string is a full URL (old format)
+ */
+const isFullUrl = (path: string): boolean => {
+  return path.startsWith('http://') || path.startsWith('https://');
+};
+
+/**
  * Generate a signed URL for a verification photo stored in private bucket
  */
 export const getVerificationImageSignedUrl = async (filePath: string): Promise<string | null> => {
   try {
     if (!filePath) return null;
     
-    // If it's already a full URL (for backward compatibility), return as is
-    if (filePath.startsWith('http')) return filePath;
+    let actualFilePath = filePath;
     
-    console.log(`Generating signed URL for: ${filePath}`);
+    // If it's a full URL (old format), extract the relative path
+    if (isFullUrl(filePath)) {
+      console.log(`Extracting file path from old URL: ${filePath}`);
+      const extractedPath = extractFilePathFromUrl(filePath);
+      if (!extractedPath) {
+        console.error('Could not extract file path from URL:', filePath);
+        return null;
+      }
+      actualFilePath = extractedPath;
+      console.log(`Extracted file path: ${actualFilePath}`);
+    }
+    
+    console.log(`Generating signed URL for: ${actualFilePath}`);
     
     const { data, error } = await supabase.storage
       .from('verification-photos')
-      .createSignedUrl(filePath, 3600); // 1 hour expiry
+      .createSignedUrl(actualFilePath, 3600); // 1 hour expiry
     
     if (error) {
       console.error('Error generating signed URL:', error);

@@ -11,8 +11,18 @@ interface VerificationImageProps {
 export const VerificationImage = ({ src, alt, title }: VerificationImageProps) => {
   const [imageError, setImageError] = React.useState(false);
 
-  const handleError = () => {
+  const handleError = (event: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    console.error(`Image load error for ${title}:`, {
+      src,
+      error: event.currentTarget.error,
+      naturalHeight: event.currentTarget.naturalHeight,
+      naturalWidth: event.currentTarget.naturalWidth
+    });
     setImageError(true);
+  };
+
+  const handleLoad = () => {
+    console.log(`Image loaded successfully for ${title}: ${src}`);
   };
 
   return (
@@ -25,6 +35,7 @@ export const VerificationImage = ({ src, alt, title }: VerificationImageProps) =
             alt={alt}
             className="w-full h-48 object-contain bg-gray-50"
             onError={handleError}
+            onLoad={handleLoad}
           />
         ) : (
           <div className="h-48 flex items-center justify-center bg-gray-100 text-gray-500">
@@ -34,14 +45,19 @@ export const VerificationImage = ({ src, alt, title }: VerificationImageProps) =
                 {src ? "Image non disponible" : "Aucune image"}
               </div>
               {src && imageError && (
-                <a 
-                  href={src} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline text-xs mt-1 block"
-                >
-                  Ouvrir le lien
-                </a>
+                <div className="mt-2 space-y-1">
+                  <a 
+                    href={src} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline text-xs block"
+                  >
+                    Ouvrir le lien
+                  </a>
+                  <div className="text-xs text-gray-400 break-all">
+                    {src.length > 50 ? `${src.substring(0, 50)}...` : src}
+                  </div>
+                </div>
               )}
             </div>
           </div>
