@@ -14,33 +14,54 @@ interface ChatHeaderProps {
 const ChatHeader: React.FC<ChatHeaderProps> = ({ conversation, onBack }) => {
   const { user } = useAuth();
 
+  console.log('ChatHeader conversation data:', conversation);
+  console.log('Current user:', user);
+
   const getConversationTitle = () => {
-    if (conversation?.type === 'team' && conversation.name) {
+    if (!conversation) return 'Conversation';
+    
+    if (conversation.type === 'team' && conversation.name) {
       return conversation.name;
     }
-    const otherParticipant = conversation?.participants?.find(p => p.id !== user?.id);
+    
+    // Pour les conversations directes, trouver l'autre participant
+    const otherParticipant = conversation.participants?.find(p => p.id !== user?.id);
+    console.log('Other participant:', otherParticipant);
     return otherParticipant?.username || 'Conversation';
   };
 
   const getConversationAvatar = () => {
-    if (conversation?.type === 'team') {
+    if (!conversation) return undefined;
+    
+    if (conversation.type === 'team') {
       return undefined; // Forcer le fallback pour les équipes
     }
-    const otherParticipant = conversation?.participants?.find(p => p.id !== user?.id);
+    
+    // Pour les conversations directes, récupérer l'avatar de l'autre participant
+    const otherParticipant = conversation.participants?.find(p => p.id !== user?.id);
+    console.log('Avatar for participant:', otherParticipant?.avatar);
     return otherParticipant?.avatar;
   };
 
   const renderAvatarContent = () => {
-    if (conversation?.type === 'team') {
+    if (!conversation) return 'C';
+    
+    if (conversation.type === 'team') {
       // Pour les conversations d'équipe, afficher l'icône Users
       return <Users className="h-6 w-6 md:h-7 md:w-7" />;
     } else {
       // Pour les conversations directes, afficher les initiales de l'interlocuteur
-      const otherParticipant = conversation?.participants?.find(p => p.id !== user?.id);
+      const otherParticipant = conversation.participants?.find(p => p.id !== user?.id);
       const displayName = otherParticipant?.username || 'U';
       return displayName.charAt(0).toUpperCase();
     }
   };
+
+  const title = getConversationTitle();
+  const avatarSrc = getConversationAvatar();
+
+  console.log('Computed title:', title);
+  console.log('Computed avatar src:', avatarSrc);
 
   return (
     <div className="flex items-center justify-between p-4 md:p-6 bg-gradient-to-r from-white via-gray-50/50 to-white backdrop-blur-sm">
@@ -55,7 +76,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ conversation, onBack }) => {
         </Button>
         
         <Avatar className="h-10 w-10 md:h-12 md:w-12 ring-2 ring-white shadow-lg flex-shrink-0">
-          {conversation?.type !== 'team' && <AvatarImage src={getConversationAvatar()} />}
+          {conversation?.type !== 'team' && avatarSrc && <AvatarImage src={avatarSrc} />}
           <AvatarFallback className={`text-white font-semibold text-sm md:text-lg ${
             conversation?.type === 'team' 
               ? 'bg-gradient-to-br from-blue-500 to-blue-600' 
@@ -66,7 +87,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ conversation, onBack }) => {
         </Avatar>
         
         <div className="min-w-0 flex-1">
-          <h2 className="font-bold text-gray-900 text-lg md:text-xl truncate">{getConversationTitle()}</h2>
+          <h2 className="font-bold text-gray-900 text-lg md:text-xl truncate">{title}</h2>
           <p className="text-xs md:text-sm text-green-600 font-medium flex items-center gap-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             En ligne
