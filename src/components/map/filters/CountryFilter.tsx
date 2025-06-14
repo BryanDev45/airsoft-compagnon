@@ -173,7 +173,7 @@ const CountryFilter: React.FC<CountryFilterProps> = ({
                       setSelectedCountry(country.value);
                       setOpen(false);
                     }}
-                    className="text-white hover:bg-gray-600 aria-selected:bg-gray-600 cursor-pointer bg-gray-700 border-0"
+                    className="!text-white hover:!bg-gray-600 aria-selected:!bg-gray-600 cursor-pointer !bg-gray-700 !border-0 data-[disabled]:!opacity-100 data-[disabled]:!pointer-events-auto"
                   >
                     <Check
                       className={cn(
