@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -154,24 +155,25 @@ const CountryFilter: React.FC<CountryFilterProps> = ({
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-full p-0 bg-gray-700 border-gray-600">
-          <Command className="bg-gray-700">
+        <PopoverContent className="w-full p-0 bg-gray-700 border-gray-600 z-50">
+          <Command className="bg-gray-700 text-white">
             <CommandInput 
               placeholder="Rechercher un pays..." 
               className="text-white placeholder:text-gray-400 bg-gray-700 border-gray-600"
             />
             <CommandList className="bg-gray-700">
-              <CommandEmpty className="text-white">Aucun pays trouvé.</CommandEmpty>
+              <CommandEmpty className="text-white py-6 text-center">Aucun pays trouvé.</CommandEmpty>
               <CommandGroup className="bg-gray-700">
                 {countries.map((country) => (
                   <CommandItem
                     key={country.value}
-                    value={country.value}
+                    value={country.label}
                     onSelect={() => {
+                      console.log('Country selected:', country.value, country.label);
                       setSelectedCountry(country.value);
                       setOpen(false);
                     }}
-                    className="text-white hover:bg-gray-600 data-[selected=true]:bg-gray-600 bg-gray-700"
+                    className="text-white hover:bg-gray-600 aria-selected:bg-gray-600 cursor-pointer bg-gray-700 border-0"
                   >
                     <Check
                       className={cn(
