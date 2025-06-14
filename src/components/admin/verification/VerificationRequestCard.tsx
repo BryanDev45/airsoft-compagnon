@@ -41,19 +41,19 @@ export const VerificationRequestCard = ({
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           <VerificationImage
-            src={request.front_id_document}
+            src={request.frontIdUrl}
             alt="Document d'identité recto"
             title="Document d'identité (recto)"
           />
           
           <VerificationImage
-            src={request.back_id_document}
+            src={request.backIdUrl}
             alt="Document d'identité verso"
             title="Document d'identité (verso)"
           />
 
           <VerificationImage
-            src={request.face_photo}
+            src={request.facePhotoUrl}
             alt="Photo du visage"
             title="Photo du visage"
           />

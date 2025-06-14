@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { getVerificationImagesSignedUrls } from '@/utils/verificationImageUtils';
 
 export interface VerificationRequest {
   id: string;
@@ -15,6 +16,10 @@ export interface VerificationRequest {
     username: string;
     email: string;
   } | null;
+  // Signed URLs for display
+  frontIdUrl?: string | null;
+  backIdUrl?: string | null;
+  facePhotoUrl?: string | null;
 }
 
 export const useVerificationRequests = () => {
@@ -39,8 +44,8 @@ export const useVerificationRequests = () => {
 
       if (error) throw error;
 
-      // Fetch user profiles separately to avoid join issues
-      const requestsWithProfiles = await Promise.all(
+      // Fetch user profiles and generate signed URLs
+      const requestsWithProfilesAndUrls = await Promise.all(
         (data || []).map(async (request) => {
           // Fetch user profile
           const { data: userProfile } = await supabase
@@ -49,14 +54,24 @@ export const useVerificationRequests = () => {
             .eq('id', request.user_id)
             .single();
 
+          // Generate signed URLs for images
+          const { frontIdUrl, backIdUrl, facePhotoUrl } = await getVerificationImagesSignedUrls(
+            request.front_id_document,
+            request.back_id_document,
+            request.face_photo
+          );
+
           return {
             ...request,
-            user_profile: userProfile
+            user_profile: userProfile,
+            frontIdUrl,
+            backIdUrl,
+            facePhotoUrl,
           };
         })
       );
 
-      return requestsWithProfiles;
+      return requestsWithProfilesAndUrls;
     }
   });
 

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -20,9 +19,11 @@ const VerificationForm = ({ user, onVerificationRequested }: VerificationFormPro
     try {
       console.log(`Uploading file: ${fileName}`);
       
+      const filePath = `${user.id}/${fileName}`;
+      
       const { data, error } = await supabase.storage
         .from('verification-photos')
-        .upload(`${user.id}/${fileName}`, file, {
+        .upload(filePath, file, {
           cacheControl: '3600',
           upsert: true
         });
@@ -32,12 +33,8 @@ const VerificationForm = ({ user, onVerificationRequested }: VerificationFormPro
         throw error;
       }
 
-      const { data: publicUrlData } = supabase.storage
-        .from('verification-photos')
-        .getPublicUrl(`${user.id}/${fileName}`);
-
-      console.log(`File uploaded successfully: ${publicUrlData.publicUrl}`);
-      return publicUrlData.publicUrl;
+      console.log(`File uploaded successfully: ${filePath}`);
+      return filePath;
     } catch (error) {
       console.error('Error uploading file:', error);
       throw error;
@@ -68,35 +65,35 @@ const VerificationForm = ({ user, onVerificationRequested }: VerificationFormPro
     try {
       console.log('Starting verification request process...');
       
-      // Upload all three files
+      // Upload all three files and store paths instead of URLs
       const timestamp = Date.now();
-      const frontIdUrl = await uploadFile(
+      const frontIdPath = await uploadFile(
         frontIdFile, 
         `front_id_${timestamp}.${frontIdFile.name.split('.').pop()}`
       );
-      const backIdUrl = await uploadFile(
+      const backIdPath = await uploadFile(
         backIdFile, 
         `back_id_${timestamp}.${backIdFile.name.split('.').pop()}`
       );
-      const facePhotoUrl = await uploadFile(
+      const facePhotoPath = await uploadFile(
         facePhotoFile, 
         `face_photo_${timestamp}.${facePhotoFile.name.split('.').pop()}`
       );
 
-      if (!frontIdUrl || !backIdUrl || !facePhotoUrl) {
+      if (!frontIdPath || !backIdPath || !facePhotoPath) {
         throw new Error('Erreur lors du téléchargement des fichiers');
       }
 
       console.log('All files uploaded successfully, creating verification request...');
 
-      // Create verification request
+      // Create verification request with file paths
       const { data, error } = await supabase
         .from('verification_requests')
         .insert({
           user_id: user.id,
-          front_id_document: frontIdUrl,
-          back_id_document: backIdUrl,
-          face_photo: facePhotoUrl,
+          front_id_document: frontIdPath,
+          back_id_document: backIdPath,
+          face_photo: facePhotoPath,
           status: 'pending'
         })
         .select()
