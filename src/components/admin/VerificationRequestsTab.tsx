@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -5,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertCircle, CheckCircle, Clock, ExternalLink } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, ExternalLink, Camera } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 interface VerificationRequest {
@@ -14,6 +15,7 @@ interface VerificationRequest {
   created_at: string;
   front_id_document: string;
   back_id_document: string;
+  face_photo?: string;
   admin_notes?: string;
   user_profile: {
     username: string;
@@ -35,6 +37,7 @@ const VerificationRequestsTab = () => {
           created_at,
           front_id_document,
           back_id_document,
+          face_photo,
           admin_notes,
           user_id
         `)
@@ -76,6 +79,25 @@ const VerificationRequestsTab = () => {
         .eq('id', requestId);
 
       if (error) throw error;
+
+      // If approved, update the user's verified status
+      if (status === 'approved') {
+        const request = requests.find(r => r.id === requestId);
+        if (request) {
+          const { data } = await supabase
+            .from('verification_requests')
+            .select('user_id')
+            .eq('id', requestId)
+            .single();
+
+          if (data) {
+            await supabase
+              .from('profiles')
+              .update({ is_verified: true })
+              .eq('id', data.user_id);
+          }
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['verification-requests'] });
@@ -129,7 +151,7 @@ const VerificationRequestsTab = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <strong>Document d'identité (recto):</strong>
                 <div className="mt-2">
@@ -158,6 +180,22 @@ const VerificationRequestsTab = () => {
                   </a>
                 </div>
               </div>
+              {request.face_photo && (
+                <div>
+                  <strong>Photo du visage:</strong>
+                  <div className="mt-2">
+                    <a 
+                      href={request.face_photo} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-blue-600 hover:underline"
+                    >
+                      <Camera className="h-4 w-4" />
+                      Voir la photo du visage
+                    </a>
+                  </div>
+                </div>
+              )}
             </div>
             {request.admin_notes && (
               <div>

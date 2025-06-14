@@ -1068,6 +1068,7 @@ export type Database = {
           admin_notes: string | null
           back_id_document: string
           created_at: string
+          face_photo: string | null
           front_id_document: string
           id: string
           reviewed_at: string | null
@@ -1080,6 +1081,7 @@ export type Database = {
           admin_notes?: string | null
           back_id_document: string
           created_at?: string
+          face_photo?: string | null
           front_id_document: string
           id?: string
           reviewed_at?: string | null
@@ -1092,6 +1094,7 @@ export type Database = {
           admin_notes?: string | null
           back_id_document?: string
           created_at?: string
+          face_photo?: string | null
           front_id_document?: string
           id?: string
           reviewed_at?: string | null
