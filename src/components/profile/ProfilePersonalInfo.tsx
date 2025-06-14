@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Calendar, Phone, Globe } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
@@ -23,6 +23,12 @@ const ProfilePersonalInfo: React.FC<ProfilePersonalInfoProps> = ({
   const [currentPhoneNumber, setCurrentPhoneNumber] = useState(profileData?.phone_number || '');
   const [currentSpokenLanguage, setCurrentSpokenLanguage] = useState(profileData?.spoken_language || '');
 
+  // Synchroniser les états locaux avec les données du profil quand elles changent
+  useEffect(() => {
+    setCurrentPhoneNumber(profileData?.phone_number || '');
+    setCurrentSpokenLanguage(profileData?.spoken_language || '');
+  }, [profileData?.phone_number, profileData?.spoken_language]);
+
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
     try {
@@ -38,13 +44,19 @@ const ProfilePersonalInfo: React.FC<ProfilePersonalInfoProps> = ({
 
   const updatePhoneNumber = async (phoneNumber: string) => {
     try {
+      console.log('Updating phone number:', phoneNumber, 'for user:', user?.id);
+      
       const { error } = await supabase
         .from('profiles')
         .update({ phone_number: phoneNumber })
         .eq('id', user?.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error updating phone:', error);
+        throw error;
+      }
 
+      console.log('Phone number updated successfully');
       setCurrentPhoneNumber(phoneNumber);
       
       toast({
@@ -65,13 +77,19 @@ const ProfilePersonalInfo: React.FC<ProfilePersonalInfoProps> = ({
 
   const updateSpokenLanguage = async (language: string) => {
     try {
+      console.log('Updating spoken language:', language, 'for user:', user?.id);
+      
       const { error } = await supabase
         .from('profiles')
         .update({ spoken_language: language })
         .eq('id', user?.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error updating language:', error);
+        throw error;
+      }
 
+      console.log('Spoken language updated successfully');
       setCurrentSpokenLanguage(language);
       
       toast({
