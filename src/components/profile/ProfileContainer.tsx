@@ -15,7 +15,7 @@ interface ProfileContainerProps {
   profileData: any;
   userStats: any;
   equipment: any[];
-  games: any[];
+  userGames: any[]; // Changed from games to userGames to match ProfileLayout
   updateLocation: (location: string) => Promise<boolean>;
   updateUserStats: (gameType: string, role: string, level: string) => Promise<boolean>;
   fetchProfileData: () => Promise<void>;
@@ -36,7 +36,7 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
   profileData,
   userStats,
   equipment,
-  games = [],
+  userGames = [], // Changed from games to userGames
   updateLocation,
   updateUserStats,
   fetchProfileData,
@@ -75,7 +75,7 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
         
         <TabsContent value="games" className="p-1">
           <ProfileGames 
-            games={games.length > 0 ? games : (profileData?.games || [])} 
+            games={userGames.length > 0 ? userGames : (profileData?.games || [])} 
             handleViewGameDetails={game => {
               setSelectedGame(game);
               setShowGameDialog(true);
