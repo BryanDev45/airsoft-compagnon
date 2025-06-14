@@ -48,7 +48,7 @@ const UserReportCard: React.FC<UserReportCardProps> = ({
     const variants = {
       pending: 'bg-yellow-100 text-yellow-800',
       resolved: 'bg-green-100 text-green-800',
-      dismissed: 'bg-gray-100 text-gray-800'
+      dismissed: 'bg-red-100 text-red-800'
     };
     return variants[status as keyof typeof variants] || variants.pending;
   };
