@@ -85,6 +85,8 @@ export const useUserProfileFetch = (username: string | undefined) => {
           banner: userProfile.banner,
           bio: userProfile.bio,
           location: userProfile.location,
+          phone_number: userProfile.phone_number,
+          spoken_language: userProfile.spoken_language,
           team: userProfile.team,
           team_id: userProfile.team_id,
           team_logo: null,

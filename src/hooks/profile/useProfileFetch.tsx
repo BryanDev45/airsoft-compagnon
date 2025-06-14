@@ -76,6 +76,8 @@ export const useProfileFetch = (userId: string | undefined) => {
               banner: null,
               bio: null,
               location: null,
+              phone_number: null,
+              spoken_language: null,
               team: null,
               team_id: null,
               team_logo: null,
@@ -116,6 +118,8 @@ export const useProfileFetch = (userId: string | undefined) => {
             banner: profile.banner,
             bio: profile.bio,
             location: profile.location,
+            phone_number: profile.phone_number,
+            spoken_language: profile.spoken_language,
             team: profile.team,
             team_id: profile.team_id,
             team_logo: null, // This will be fetched from teams table if needed

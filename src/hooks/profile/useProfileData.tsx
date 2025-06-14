@@ -58,6 +58,8 @@ export const useProfileData = (userId: string | undefined) => {
             banner: null,
             bio: null,
             location: null,
+            phone_number: null,
+            spoken_language: null,
             team: null,
             team_id: null,
             team_logo: null,
