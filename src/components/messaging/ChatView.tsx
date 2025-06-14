@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -5,15 +6,19 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowLeft, Send, MoreVertical, Phone, Video } from 'lucide-react';
 import { useChatMessages } from '@/hooks/useChatMessages';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from '@/hooks/useAuth';
+
 interface ChatViewProps {
   conversationId: string;
   onBack: () => void;
 }
+
 const ChatView: React.FC<ChatViewProps> = ({
   conversationId,
   onBack
 }) => {
   const [newMessage, setNewMessage] = useState('');
+  const { user } = useAuth();
   const {
     messages,
     conversation,
@@ -21,11 +26,13 @@ const ChatView: React.FC<ChatViewProps> = ({
     markAsRead
   } = useChatMessages(conversationId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({
       behavior: "smooth"
     });
   };
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -37,6 +44,7 @@ const ChatView: React.FC<ChatViewProps> = ({
       markAsRead();
     }
   }, [conversationId, markAsRead]);
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
@@ -47,18 +55,21 @@ const ChatView: React.FC<ChatViewProps> = ({
       console.error('Error sending message:', error);
     }
   };
+
   const formatTime = (timestamp: string) => {
     return new Date(timestamp).toLocaleTimeString('fr-FR', {
       hour: '2-digit',
       minute: '2-digit'
     });
   };
+
   const getConversationTitle = () => {
     if (conversation?.type === 'team' && conversation.name) {
       return conversation.name;
     }
     return 'Conversation';
   };
+
   return <div className="flex flex-col h-full w-full bg-white">
       {/* Enhanced Header - Full Width */}
       <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-white via-gray-50/50 to-white backdrop-blur-sm shadow-sm">
@@ -83,8 +94,6 @@ const ChatView: React.FC<ChatViewProps> = ({
         </div>
         
         <div className="flex items-center gap-3">
-          
-          
           <Button variant="ghost" size="icon" className="hover:bg-gray-100 rounded-full h-12 w-12">
             <MoreVertical className="h-5 w-5 text-gray-600" />
           </Button>
@@ -95,8 +104,9 @@ const ChatView: React.FC<ChatViewProps> = ({
       <ScrollArea className="flex-1 bg-gradient-to-b from-gray-50/30 to-white">
         <div className="w-full max-w-none px-8 py-8 space-y-8">
           {messages.map(message => {
-          const isOwnMessage = message.sender_id === conversation?.id;
-          return <div key={message.id} className={`flex gap-4 w-full ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+            // Corriger la logique : comparer avec l'ID de l'utilisateur connecté
+            const isOwnMessage = message.sender_id === user?.id;
+            return <div key={message.id} className={`flex gap-4 w-full ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
                 {!isOwnMessage && <Avatar className="h-10 w-10 ring-2 ring-gray-200 shadow-sm flex-shrink-0">
                     <AvatarImage src={message.sender_avatar} />
                     <AvatarFallback className="bg-gradient-to-br from-gray-100 to-gray-200 text-gray-600 text-sm font-medium">
@@ -126,7 +136,7 @@ const ChatView: React.FC<ChatViewProps> = ({
                     </AvatarFallback>
                   </Avatar>}
               </div>;
-        })}
+          })}
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
@@ -146,4 +156,5 @@ const ChatView: React.FC<ChatViewProps> = ({
       </form>
     </div>;
 };
+
 export default ChatView;
