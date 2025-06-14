@@ -11,6 +11,20 @@ interface VerificationStatusProps {
 }
 
 const VerificationStatus = ({ isVerified, verificationRequested, existingRequest }: VerificationStatusProps) => {
+  const getBadgeVariant = () => {
+    if (isVerified) {
+      return { text: "Vérifié", className: "bg-blue-500 text-white" };
+    }
+    
+    if (verificationRequested || (existingRequest && existingRequest.status === 'pending')) {
+      return { text: "En attente", className: "bg-yellow-500 text-white" };
+    }
+    
+    return { text: "Non vérifié", className: "bg-red-500 text-white" };
+  };
+
+  const badge = getBadgeVariant();
+
   return (
     <>
       <div className="flex items-center justify-between">
@@ -18,11 +32,9 @@ const VerificationStatus = ({ isVerified, verificationRequested, existingRequest
           <Shield size={20} />
           <h4 className="font-medium">Vérification du compte</h4>
         </div>
-        {isVerified ? (
-          <Badge className="bg-blue-500">Vérifié</Badge>
-        ) : (
-          <Badge variant="outline" className="bg-gray-100 text-gray-700">Non vérifié</Badge>
-        )}
+        <Badge className={badge.className}>
+          {badge.text}
+        </Badge>
       </div>
       
       {isVerified ? (
