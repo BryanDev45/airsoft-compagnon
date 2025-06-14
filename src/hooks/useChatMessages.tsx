@@ -19,6 +19,11 @@ interface ConversationDetails {
   id: string;
   type: 'direct' | 'team';
   name?: string;
+  participants?: Array<{
+    id: string;
+    username: string;
+    avatar?: string;
+  }>;
 }
 
 export const useChatMessages = (conversationId: string) => {
@@ -40,10 +45,33 @@ export const useChatMessages = (conversationId: string) => {
         return null;
       }
 
+      // Récupérer les participants pour les conversations directes
+      let participants: Array<{ id: string; username: string; avatar?: string }> = [];
+      
+      if (data.type === 'direct') {
+        const { data: participantsData, error: participantsError } = await supabase
+          .from('conversation_participants')
+          .select('user_id')
+          .eq('conversation_id', conversationId)
+          .neq('user_id', user?.id);
+
+        if (!participantsError && participantsData && participantsData.length > 0) {
+          const { data: profilesData, error: profilesError } = await supabase
+            .from('profiles')
+            .select('id, username, avatar')
+            .in('id', participantsData.map(p => p.user_id));
+
+          if (!profilesError && profilesData) {
+            participants = profilesData;
+          }
+        }
+      }
+
       return {
         id: data.id,
         type: data.type as 'direct' | 'team',
-        name: data.name
+        name: data.name,
+        participants
       };
     },
     enabled: !!conversationId,
