@@ -23,7 +23,7 @@ export function ComboboxDemo({ defaultValue = "", onSelect }: CityComboboxProps)
   const { searchTerm, setSearchTerm, cities, isLoading, error } = useCitySearch();
 
   const handleCitySelect = (selectedCity: City) => {
-    console.log('City selected:', selectedCity.fullName);
+    console.log('City selected in parent:', selectedCity.fullName);
     setValue(selectedCity.fullName);
     onSelect(selectedCity.fullName);
     setOpen(false);

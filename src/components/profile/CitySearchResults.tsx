@@ -50,6 +50,18 @@ export const CitySearchResults = ({
     );
   }
 
+  const handleCityClick = (city: City, event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    console.log('City selected via click:', city.fullName);
+    onCitySelect(city);
+  };
+
+  const handleCitySelect = (city: City) => {
+    console.log('City selected via onSelect:', city.fullName);
+    onCitySelect(city);
+  };
+
   return (
     <CommandGroup>
       {cities.map((city, index) => (
@@ -57,11 +69,9 @@ export const CitySearchResults = ({
           key={`${city.fullName}-${index}`}
           value={city.fullName}
           className="cursor-pointer hover:bg-accent text-black"
-          onMouseDown={(e) => {
-            e.preventDefault();
-            console.log('City selected via mouse:', city.fullName);
-            onCitySelect(city);
-          }}
+          onSelect={() => handleCitySelect(city)}
+          onMouseDown={(e) => handleCityClick(city, e)}
+          onClick={(e) => handleCityClick(city, e)}
         >
           <Check
             className={cn(
