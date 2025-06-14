@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatGameDate } from '@/utils/dateUtils';
-
 interface Game {
   id: string;
   title: string;
@@ -25,13 +24,11 @@ interface Game {
   zip_code?: string;
   end_date?: string;
 }
-
 interface ProfileGamesProps {
   games: Game[];
   handleViewGameDetails: (game: Game) => void;
   handleViewAllGames: () => void;
 }
-
 const ProfileGames = ({
   games,
   handleViewGameDetails,
@@ -54,7 +51,6 @@ const ProfileGames = ({
 
   // Limiter à 10 parties pour l'affichage principal
   const displayedGames = sortedGames.slice(0, 10);
-
   const handleGameClick = (game: Game) => {
     // Enrichir les données du jeu avec toutes les informations nécessaires pour le dialog
     const enrichedGame = {
@@ -65,16 +61,13 @@ const ProfileGames = ({
       // Construire l'adresse complète si elle n'existe pas
       address: game.location || (game.city && game.zip_code ? `${game.city}, ${game.zip_code}` : game.address) || 'Lieu non spécifié'
     };
-    
     handleViewGameDetails(enrichedGame);
   };
-
-  return (
-    <Card>
+  return <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle>Mes parties</CardTitle>
+            <CardTitle className="text-left">Mes parties</CardTitle>
             <CardDescription>
               {games.length > 10 ? `${displayedGames.length} dernières parties sur ${games.length} au total` : 'Historique et parties à venir'}
             </CardDescription>
@@ -89,13 +82,9 @@ const ProfileGames = ({
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {displayedGames && displayedGames.length === 0 ? (
-            <p className="text-center text-gray-500 py-6">
+          {displayedGames && displayedGames.length === 0 ? <p className="text-center text-gray-500 py-6">
               Vous n'avez pas encore participé à des parties.
-            </p>
-          ) : (
-            displayedGames && displayedGames.map(game => (
-              <div key={game.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow flex justify-between items-center">
+            </p> : displayedGames && displayedGames.map(game => <div key={game.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow flex justify-between items-center">
                 <div>
                   <h3 className="font-semibold text-left">{game.title}</h3>
                   <div className="flex items-center gap-4 mt-1 text-sm text-gray-600">
@@ -111,31 +100,18 @@ const ProfileGames = ({
                   <Badge className={game.status === "À venir" ? "bg-blue-500" : game.status === "Terminé" ? "bg-gray-500" : "bg-green-500"}>
                     {game.status}
                   </Badge>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white" 
-                    onClick={() => handleGameClick(game)}
-                  >
+                  <Button variant="outline" size="sm" className="border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white" onClick={() => handleGameClick(game)}>
                     Détails
                   </Button>
                 </div>
-              </div>
-            ))
-          )}
+              </div>)}
         </div>
       </CardContent>
       <CardFooter>
-        <Button 
-          className="bg-airsoft-red hover:bg-red-700" 
-          onClick={handleViewAllGames}
-          disabled={games.length === 0}
-        >
+        <Button className="bg-airsoft-red hover:bg-red-700" onClick={handleViewAllGames} disabled={games.length === 0}>
           Voir toutes mes parties {games.length > 0 && `(${games.length})`}
         </Button>
       </CardFooter>
-    </Card>
-  );
+    </Card>;
 };
-
 export default ProfileGames;
