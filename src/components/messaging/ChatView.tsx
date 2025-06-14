@@ -31,26 +31,26 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, onBack }) => {
   }, [conversationId, markAsRead]);
 
   return (
-    <div className="flex flex-col h-full w-full bg-white relative">
-      {/* Header fixe qui reste toujours visible */}
-      <div className="sticky top-0 z-10 bg-white border-b shadow-sm">
+    <div className="flex flex-col h-full w-full bg-white">
+      {/* Header fixe */}
+      <div className="flex-shrink-0 bg-white border-b shadow-sm z-20 relative">
         <ChatHeader conversation={conversation} onBack={onBack} />
       </div>
 
-      {/* Zone de messages avec scroll */}
-      <div className="flex-1 overflow-hidden">
+      {/* Zone de messages avec scroll - prend tout l'espace disponible */}
+      <div className="flex-1 min-h-0 relative">
         <ScrollArea className="h-full bg-gradient-to-b from-gray-50/30 to-white">
-          <div className="w-full max-w-none px-8 py-8 space-y-8">
+          <div className="w-full max-w-none px-8 py-8 space-y-8 min-h-full">
             {messages.map(message => (
               <MessageItem key={message.id} message={message} />
             ))}
-            <div ref={messagesEndRef} />
+            <div ref={messagesEndRef} className="h-4" />
           </div>
         </ScrollArea>
       </div>
 
       {/* Input fixe en bas */}
-      <div className="sticky bottom-0 z-10 bg-white border-t">
+      <div className="flex-shrink-0 bg-white border-t z-20 relative">
         <MessageInput onSendMessage={sendMessage} />
       </div>
     </div>
