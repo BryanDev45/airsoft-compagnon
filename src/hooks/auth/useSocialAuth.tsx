@@ -14,15 +14,20 @@ export const useSocialAuth = () => {
       // Générer l'URL de redirection
       const redirectTo = `${window.location.origin}/profile`;
       
+      const authOptions = {
+        redirectTo: redirectTo,
+        queryParams: provider === 'google' ? {
+          access_type: 'offline',
+          prompt: 'consent',
+        } : {
+          // Facebook spécifique
+          scope: 'email,public_profile'
+        }
+      };
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
-        options: {
-          redirectTo: redirectTo,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          }
-        }
+        options: authOptions
       });
 
       if (error) {
