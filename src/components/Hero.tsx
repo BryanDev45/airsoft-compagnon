@@ -16,19 +16,6 @@ const Hero = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-black to-transparent opacity-50"></div>
       </div>
       
-      {/* Red border outline following the clip-path shape */}
-      <div className="absolute inset-0 z-20 pointer-events-none">
-        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <path 
-            d="M0,0 L100,0 L100,85 L50,100 L0,85 Z" 
-            fill="none" 
-            stroke="#ea384c" 
-            strokeWidth="0.8"
-            vectorEffect="non-scaling-stroke"
-          />
-        </svg>
-      </div>
-      
       <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 lg:py-16 md:py-[80px]">
         <div className="max-w-3xl mx-auto text-center">
           <div className="mb-8">
