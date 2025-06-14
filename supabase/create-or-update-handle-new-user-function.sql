@@ -7,7 +7,32 @@ AS $function$
 DECLARE
     calculated_age INTEGER;
     avatar_url TEXT;
+    user_name TEXT;
+    first_name TEXT;
+    last_name TEXT;
+    email_username TEXT;
 BEGIN
+    -- Récupération des données depuis les métadonnées ou depuis l'email
+    first_name := COALESCE(NEW.raw_user_meta_data->>'first_name', NEW.raw_user_meta_data->>'given_name');
+    last_name := COALESCE(NEW.raw_user_meta_data->>'last_name', NEW.raw_user_meta_data->>'family_name');
+    
+    -- Génération du nom d'utilisateur
+    IF (NEW.raw_user_meta_data->>'username') IS NOT NULL THEN
+        user_name := NEW.raw_user_meta_data->>'username';
+    ELSIF first_name IS NOT NULL AND last_name IS NOT NULL THEN
+        user_name := LOWER(first_name || '.' || last_name);
+    ELSIF NEW.email IS NOT NULL THEN
+        email_username := SPLIT_PART(NEW.email, '@', 1);
+        user_name := email_username;
+    ELSE
+        user_name := 'user_' || left(NEW.id::text, 8);
+    END IF;
+    
+    -- S'assurer que le nom d'utilisateur est unique
+    WHILE EXISTS (SELECT 1 FROM public.profiles WHERE username = user_name) LOOP
+        user_name := user_name || '_' || floor(random() * 1000)::text;
+    END LOOP;
+    
     -- Calcul de l'âge si la date de naissance est disponible
     IF (NEW.raw_user_meta_data->>'birth_date') IS NOT NULL THEN
         calculated_age := DATE_PART('year', AGE(CURRENT_DATE, (NEW.raw_user_meta_data->>'birth_date')::date));
@@ -15,8 +40,12 @@ BEGIN
         calculated_age := NULL;
     END IF;
     
-    -- Récupération de l'avatar aléatoire depuis les métadonnées
-    avatar_url := NEW.raw_user_meta_data->>'avatar';
+    -- Récupération de l'avatar (Google fournit picture, d'autres peuvent fournir avatar)
+    avatar_url := COALESCE(
+        NEW.raw_user_meta_data->>'picture',
+        NEW.raw_user_meta_data->>'avatar',
+        NEW.raw_user_meta_data->>'avatar_url'
+    );
     
     -- Create profile with secure defaults if data is missing
     INSERT INTO public.profiles (
@@ -32,10 +61,10 @@ BEGIN
     )
     VALUES (
         NEW.id, 
-        COALESCE(NEW.raw_user_meta_data->>'username', 'user_' || left(NEW.id::text, 8)),
+        user_name,
         NEW.email,
-        NEW.raw_user_meta_data->>'firstname',
-        NEW.raw_user_meta_data->>'lastname',
+        first_name,
+        last_name,
         (CASE WHEN (NEW.raw_user_meta_data->>'birth_date') IS NOT NULL 
             THEN (NEW.raw_user_meta_data->>'birth_date')::date 
             ELSE NULL 

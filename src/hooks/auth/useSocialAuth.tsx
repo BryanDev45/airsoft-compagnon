@@ -9,12 +9,19 @@ export const useSocialAuth = () => {
   const handleSocialAuth = async (provider: 'google' | 'facebook') => {
     try {
       setLoading(true);
+      console.log(`Attempting ${provider} authentication`);
       
-      // Set redirect URL
+      // Générer l'URL de redirection
+      const redirectTo = `${window.location.origin}/profile`;
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/profile`,
+          redirectTo: redirectTo,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
         }
       });
 
@@ -28,7 +35,14 @@ export const useSocialAuth = () => {
         return false;
       }
       
-      // No need to manually redirect as Supabase handles this
+      console.log(`${provider} auth data:`, data);
+      
+      // Si on reçoit une URL, l'utilisateur sera redirigé automatiquement
+      if (data?.url) {
+        console.log(`Redirecting to ${provider} auth URL`);
+        window.location.href = data.url;
+      }
+      
       return true;
     } catch (error: any) {
       console.error(`${provider} auth error:`, error);
