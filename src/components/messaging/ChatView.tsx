@@ -60,10 +60,10 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, onBack }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white">
-      {/* Enhanced Header */}
-      <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-white via-gray-50/50 to-white backdrop-blur-sm shadow-sm">
-        <div className="flex items-center gap-3">
+    <div className="flex flex-col h-full w-full bg-white">
+      {/* Enhanced Header - Full Width */}
+      <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-white via-gray-50/50 to-white backdrop-blur-sm shadow-sm">
+        <div className="flex items-center gap-4">
           <Button
             variant="ghost"
             size="icon"
@@ -73,43 +73,46 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, onBack }) => {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           
-          <Avatar className="h-10 w-10 ring-2 ring-white shadow-sm">
-            <AvatarFallback className="bg-gradient-to-br from-airsoft-red to-red-600 text-white font-semibold">
+          <Avatar className="h-12 w-12 ring-2 ring-white shadow-lg">
+            <AvatarFallback className="bg-gradient-to-br from-airsoft-red to-red-600 text-white font-semibold text-lg">
               {getConversationTitle().charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           
           <div>
-            <h2 className="font-semibold text-gray-900 text-lg">{getConversationTitle()}</h2>
-            <p className="text-sm text-green-600 font-medium">En ligne</p>
+            <h2 className="font-bold text-gray-900 text-xl">{getConversationTitle()}</h2>
+            <p className="text-sm text-green-600 font-medium flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              En ligne
+            </p>
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="hover:bg-gray-100 rounded-full">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" className="hover:bg-gray-100 rounded-full h-12 w-12">
             <Phone className="h-5 w-5 text-gray-600" />
           </Button>
-          <Button variant="ghost" size="icon" className="hover:bg-gray-100 rounded-full">
+          <Button variant="ghost" size="icon" className="hover:bg-gray-100 rounded-full h-12 w-12">
             <Video className="h-5 w-5 text-gray-600" />
           </Button>
-          <Button variant="ghost" size="icon" className="hover:bg-gray-100 rounded-full">
+          <Button variant="ghost" size="icon" className="hover:bg-gray-100 rounded-full h-12 w-12">
             <MoreVertical className="h-5 w-5 text-gray-600" />
           </Button>
         </div>
       </div>
 
-      {/* Enhanced Messages */}
+      {/* Enhanced Messages - Full Width Container */}
       <ScrollArea className="flex-1 bg-gradient-to-b from-gray-50/30 to-white">
-        <div className="p-6 space-y-6">
+        <div className="w-full max-w-none px-8 py-8 space-y-8">
           {messages.map((message) => {
             const isOwnMessage = message.sender_id === conversation?.id;
             return (
               <div
                 key={message.id}
-                className={`flex gap-3 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
+                className={`flex gap-4 w-full ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
               >
                 {!isOwnMessage && (
-                  <Avatar className="h-8 w-8 ring-1 ring-gray-200 shadow-sm">
+                  <Avatar className="h-10 w-10 ring-2 ring-gray-200 shadow-sm flex-shrink-0">
                     <AvatarImage src={message.sender_avatar} />
                     <AvatarFallback className="bg-gradient-to-br from-gray-100 to-gray-200 text-gray-600 text-sm font-medium">
                       {message.sender_name[0]}
@@ -117,33 +120,41 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, onBack }) => {
                   </Avatar>
                 )}
                 
-                <div className={`max-w-[70%] ${isOwnMessage ? 'order-first' : ''}`}>
-                  <div className={`relative rounded-2xl px-4 py-3 shadow-sm ${
+                <div className={`flex flex-col max-w-[75%] ${isOwnMessage ? 'items-end' : 'items-start'}`}>
+                  <div className={`relative rounded-3xl px-6 py-4 shadow-lg transition-all duration-200 hover:shadow-xl ${
                     isOwnMessage
-                      ? 'bg-gradient-to-r from-airsoft-red to-red-600 text-white ml-auto'
+                      ? 'bg-gradient-to-r from-airsoft-red to-red-600 text-white'
                       : 'bg-white text-gray-900 border border-gray-100'
                   }`}>
                     {/* Message bubble tail */}
-                    <div className={`absolute top-3 w-3 h-3 transform rotate-45 ${
+                    <div className={`absolute top-4 w-4 h-4 transform rotate-45 ${
                       isOwnMessage 
-                        ? 'bg-gradient-to-br from-airsoft-red to-red-600 -right-1' 
-                        : 'bg-white border-r border-b border-gray-100 -left-1'
+                        ? 'bg-gradient-to-br from-airsoft-red to-red-600 -right-2' 
+                        : 'bg-white border-r border-b border-gray-100 -left-2'
                     }`}></div>
                     
-                    <p className="text-sm leading-relaxed relative z-10">{message.content}</p>
+                    <p className="text-base leading-relaxed relative z-10 break-words">{message.content}</p>
                   </div>
                   
-                  <div className={`text-xs text-gray-500 mt-2 flex items-center gap-2 ${
-                    isOwnMessage ? 'justify-end' : 'justify-start'
+                  <div className={`text-xs text-gray-500 mt-3 flex items-center gap-2 px-2 ${
+                    isOwnMessage ? 'flex-row-reverse' : 'flex-row'
                   }`}>
-                    <span className="font-medium">{message.sender_name}</span>
+                    <span className="font-semibold">{message.sender_name}</span>
                     <span>•</span>
                     <span>{formatTime(message.created_at)}</span>
                     {isOwnMessage && (
-                      <span className="text-green-600 font-medium">✓✓</span>
+                      <span className="text-green-600 font-bold text-sm">✓✓</span>
                     )}
                   </div>
                 </div>
+                
+                {isOwnMessage && (
+                  <Avatar className="h-10 w-10 ring-2 ring-red-200 shadow-sm flex-shrink-0">
+                    <AvatarFallback className="bg-gradient-to-br from-airsoft-red to-red-600 text-white font-medium text-sm">
+                      Moi
+                    </AvatarFallback>
+                  </Avatar>
+                )}
               </div>
             );
           })}
@@ -151,24 +162,25 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, onBack }) => {
         </div>
       </ScrollArea>
 
-      {/* Enhanced Message Input */}
-      <form onSubmit={handleSendMessage} className="p-4 border-t bg-gradient-to-r from-white via-gray-50/30 to-white backdrop-blur-sm">
-        <div className="flex gap-3 items-end">
+      {/* Enhanced Message Input - Full Width */}
+      <form onSubmit={handleSendMessage} className="p-6 border-t bg-gradient-to-r from-white via-gray-50/30 to-white backdrop-blur-sm">
+        <div className="flex gap-4 items-end w-full max-w-none">
           <div className="flex-1 relative">
             <Input
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Tapez votre message..."
-              className="pr-12 py-3 rounded-2xl border-gray-200 bg-white/80 backdrop-blur-sm shadow-sm focus:ring-2 focus:ring-airsoft-red/20 focus:border-airsoft-red transition-all duration-200"
+              className="w-full pr-4 py-4 text-base rounded-3xl border-gray-200 bg-white/90 backdrop-blur-sm shadow-md focus:ring-2 focus:ring-airsoft-red/20 focus:border-airsoft-red transition-all duration-200 resize-none"
+              style={{ minHeight: '56px' }}
             />
           </div>
           <Button 
             type="submit" 
             size="icon" 
             disabled={!newMessage.trim()}
-            className="bg-gradient-to-r from-airsoft-red to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed h-12 w-12"
+            className="bg-gradient-to-r from-airsoft-red to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-3xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed h-14 w-14 flex-shrink-0"
           >
-            <Send className="h-5 w-5" />
+            <Send className="h-6 w-6" />
           </Button>
         </div>
       </form>
