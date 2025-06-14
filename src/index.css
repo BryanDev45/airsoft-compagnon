@@ -89,13 +89,40 @@
   position: absolute;
   bottom: 0;
   left: 0;
-  width: 100%;
+  right: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Bordure gauche */
+.clip-bottom::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 50%;
   height: 15%;
-  background: transparent;
-  border-left: 3px solid #e50000;
-  border-right: 3px solid #e50000;
   border-bottom: 3px solid #e50000;
-  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  border-left: 3px solid #e50000;
+  transform-origin: bottom right;
+  transform: skewY(-8.5deg);
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Bordure droite */
+.clip-bottom::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 50%;
+  height: 15%;
+  border-bottom: 3px solid #e50000;
+  border-right: 3px solid #e50000;
+  transform-origin: bottom left;
+  transform: skewY(8.5deg);
   pointer-events: none;
   z-index: 10;
 }
