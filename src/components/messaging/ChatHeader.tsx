@@ -24,7 +24,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ conversation, onBack }) => {
 
   const getConversationAvatar = () => {
     if (conversation?.type === 'team') {
-      return null; // Pas d'image pour les équipes
+      return undefined; // Forcer le fallback pour les équipes
     }
     const otherParticipant = conversation?.participants?.find(p => p.id !== user?.id);
     return otherParticipant?.avatar;
@@ -55,7 +55,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ conversation, onBack }) => {
         </Button>
         
         <Avatar className="h-10 w-10 md:h-12 md:w-12 ring-2 ring-white shadow-lg flex-shrink-0">
-          <AvatarImage src={getConversationAvatar()} />
+          {conversation?.type !== 'team' && <AvatarImage src={getConversationAvatar()} />}
           <AvatarFallback className={`text-white font-semibold text-sm md:text-lg ${
             conversation?.type === 'team' 
               ? 'bg-gradient-to-br from-blue-500 to-blue-600' 
