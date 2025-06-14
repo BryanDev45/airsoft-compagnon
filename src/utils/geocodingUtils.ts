@@ -19,44 +19,51 @@ export const areCoordinatesValid = (lat: number | null, lng: number | null): boo
   return !isCloseToZero && isInGlobalRange;
 };
 
-// Function to detect country from address or store info
+// Enhanced function to detect country from address or store info
 const detectCountryFromStore = (store: any): string => {
   // Check if store has country field
-  if (store.country) {
+  if (store?.country) {
     return store.country.toLowerCase();
   }
   
   // Try to detect from address patterns
-  const fullAddress = `${store.address} ${store.city}`.toLowerCase();
+  const fullAddress = `${store?.address || ''} ${store?.city || ''}`.toLowerCase();
+  const storeName = (store?.name || '').toLowerCase();
   
-  // Country detection patterns
-  if (fullAddress.includes('taiwan') || store.name?.toLowerCase().includes('taiwan')) {
-    return 'taiwan';
-  }
-  if (fullAddress.includes('poland') || fullAddress.includes('polska') || store.name?.toLowerCase().includes('poland')) {
-    return 'poland';
-  }
-  if (fullAddress.includes('germany') || fullAddress.includes('deutschland') || store.name?.toLowerCase().includes('german')) {
-    return 'germany';
-  }
-  if (fullAddress.includes('belgium') || fullAddress.includes('belgique') || fullAddress.includes('belgië')) {
-    return 'belgium';
-  }
-  if (fullAddress.includes('switzerland') || fullAddress.includes('suisse') || fullAddress.includes('schweiz')) {
-    return 'switzerland';
-  }
-  if (fullAddress.includes('spain') || fullAddress.includes('españa') || fullAddress.includes('espagne')) {
-    return 'spain';
-  }
-  if (fullAddress.includes('italy') || fullAddress.includes('italia') || fullAddress.includes('italie')) {
-    return 'italy';
+  // Enhanced country detection patterns including different alphabets
+  const countryPatterns = [
+    // Taiwan patterns
+    { keywords: ['taiwan', 'taipei', '台灣', '台北', '高雄', 'kaohsiung'], country: 'taiwan' },
+    // Poland patterns  
+    { keywords: ['poland', 'polska', 'warszawa', 'kraków', 'gdańsk', 'wrocław'], country: 'poland' },
+    // Germany patterns
+    { keywords: ['germany', 'deutschland', 'berlin', 'münchen', 'hamburg', 'köln'], country: 'germany' },
+    // Belgium patterns
+    { keywords: ['belgium', 'belgique', 'belgië', 'brussels', 'bruxelles', 'brussel', 'antwerp', 'gent'], country: 'belgium' },
+    // Switzerland patterns
+    { keywords: ['switzerland', 'suisse', 'schweiz', 'svizzera', 'bern', 'zürich', 'genève', 'basel'], country: 'switzerland' },
+    // Spain patterns
+    { keywords: ['spain', 'españa', 'espagne', 'madrid', 'barcelona', 'valencia', 'sevilla'], country: 'spain' },
+    // Italy patterns
+    { keywords: ['italy', 'italia', 'italie', 'roma', 'milano', 'napoli', 'torino'], country: 'italy' },
+    // Luxembourg patterns
+    { keywords: ['luxembourg', 'luxemburg'], country: 'luxembourg' }
+  ];
+  
+  for (const pattern of countryPatterns) {
+    for (const keyword of pattern.keywords) {
+      if (fullAddress.includes(keyword) || storeName.includes(keyword)) {
+        console.log(`Country detected: ${pattern.country} based on keyword: ${keyword}`);
+        return pattern.country;
+      }
+    }
   }
   
   // Default to France if no specific country detected
   return 'france';
 };
 
-// Function to geocode an address using OpenStreetMap Nominatim API with improved international support
+// Enhanced function to geocode an address using OpenStreetMap Nominatim API with improved international support
 export const geocodeAddress = async (
   address: string, 
   zipCode: string, 
@@ -94,12 +101,13 @@ export const geocodeAddress = async (
       'italy': 'Italy',
       'italia': 'Italy',
       'italie': 'Italy',
-      'france': 'France'
+      'france': 'France',
+      'luxembourg': 'Luxembourg'
     };
 
     const mappedCountry = countryMapping[detectedCountry.toLowerCase()] || detectedCountry;
 
-    // Try multiple search strategies for better international coverage
+    // Enhanced search strategies for better international coverage with different alphabets
     const searchQueries = [
       // Most specific first with cleaned data
       `${cleanAddress}, ${zipCode} ${cleanCity}, ${mappedCountry}`,
@@ -107,6 +115,8 @@ export const geocodeAddress = async (
       `${cleanAddress}, ${cleanCity}, ${mappedCountry}`,
       // Just city and country as fallback
       `${cleanCity}, ${mappedCountry}`,
+      // Store name + city + country for better recognition
+      ...(storeData?.name ? [`${storeData.name}, ${cleanCity}, ${mappedCountry}`] : []),
       // City only as last resort
       cleanCity
     ];
@@ -114,7 +124,8 @@ export const geocodeAddress = async (
     for (const query of searchQueries) {
       console.log('Geocoding attempt with query:', query, 'for store:', storeData?.name);
       
-      const geocodingUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1&countrycodes=${getCountryCode(mappedCountry)}`;
+      // Enhanced URL with better parameters for international support
+      const geocodingUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=10&addressdetails=1&extratags=1&namedetails=1&accept-language=en,local&countrycodes=${getCountryCode(mappedCountry)}`;
       
       const response = await fetch(geocodingUrl, {
         headers: {
@@ -130,9 +141,9 @@ export const geocodeAddress = async (
       const data = await response.json();
       
       if (data && data.length > 0) {
-        // Find the best match based on address components and country
+        // Enhanced result evaluation with better scoring for international addresses
         for (const result of data) {
-          const { lat, lon, address: resultAddress } = result;
+          const { lat, lon, address: resultAddress, namedetails, extratags } = result;
           const coordinates: Coordinates = {
             longitude: parseFloat(lon),
             latitude: parseFloat(lat)
@@ -140,17 +151,31 @@ export const geocodeAddress = async (
           
           // Validate that the result is reasonable and in the right country
           if (areCoordinatesValid(coordinates.latitude, coordinates.longitude)) {
-            // Additional validation: check if result is in expected country
             const resultCountry = resultAddress?.country?.toLowerCase() || '';
             const expectedCountry = mappedCountry.toLowerCase();
             
-            if (resultCountry.includes(expectedCountry) || expectedCountry.includes(resultCountry) || query === cleanCity) {
-              console.log('Geocoding successful with query:', query, 'Result:', coordinates, 'Country:', resultAddress?.country);
+            // Enhanced country validation including exact matches and partial matches
+            const isCountryMatch = resultCountry.includes(expectedCountry) || 
+                                 expectedCountry.includes(resultCountry) || 
+                                 query === cleanCity ||
+                                 (storeData?.name && query.includes(storeData.name));
+            
+            // Additional validation for city names in different languages
+            const resultCity = (resultAddress?.city || resultAddress?.town || resultAddress?.village || '').toLowerCase();
+            const isCityMatch = resultCity.includes(cleanCity.toLowerCase()) || 
+                              cleanCity.toLowerCase().includes(resultCity) ||
+                              query === cleanCity;
+            
+            if (isCountryMatch && (isCityMatch || query === cleanCity)) {
+              console.log('Geocoding successful with query:', query, 'Result:', coordinates, 'Country:', resultAddress?.country, 'City:', resultCity);
               return coordinates;
             }
           }
         }
       }
+      
+      // Add delay between requests to respect rate limits
+      await new Promise(resolve => setTimeout(resolve, 100));
     }
     
     console.log('No valid geocoding results found for:', { address, zipCode, city, country: mappedCountry, detectedCountry });
@@ -161,7 +186,7 @@ export const geocodeAddress = async (
   }
 };
 
-// Helper function to get country codes for Nominatim API
+// Enhanced helper function to get country codes for Nominatim API
 const getCountryCode = (country: string): string => {
   const countryCodes: { [key: string]: string } = {
     'France': 'fr',
@@ -171,13 +196,14 @@ const getCountryCode = (country: string): string => {
     'Spain': 'es',
     'Italy': 'it',
     'Poland': 'pl',
-    'Taiwan': 'tw'
+    'Taiwan': 'tw',
+    'Luxembourg': 'lu'
   };
   
   return countryCodes[country] || '';
 };
 
-// Default coordinates for different regions
+// Enhanced default coordinates for different regions
 export const getDefaultCoordinatesByCountry = (country: string): Coordinates => {
   const defaults: Record<string, Coordinates> = {
     'France': { longitude: 2.3522, latitude: 48.8566 }, // Paris
@@ -209,7 +235,7 @@ export const getDefaultCoordinatesByCountry = (country: string): Coordinates => 
   return defaults[country] || defaults['France']; // Default to France if country not found
 };
 
-// Function to get valid coordinates for a location, with fallback to geocoding
+// Enhanced function to get valid coordinates for a location, with fallback to geocoding
 export const getValidCoordinates = async (
   storedLat: number | null,
   storedLng: number | null,
