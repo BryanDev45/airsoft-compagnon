@@ -1,9 +1,8 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowLeft, Send, MoreVertical, Phone, Video } from 'lucide-react';
+import { ArrowLeft, Send, MoreVertical, Users } from 'lucide-react';
 import { useChatMessages } from '@/hooks/useChatMessages';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from '@/hooks/useAuth';
@@ -70,7 +69,35 @@ const ChatView: React.FC<ChatViewProps> = ({
     return 'Conversation';
   };
 
-  return <div className="flex flex-col h-full w-full bg-white">
+  const getConversationAvatar = () => {
+    if (conversation?.type === 'team') {
+      return null; // Pas d'image pour les équipes, on utilisera l'icône
+    }
+    // Pour les conversations directes, trouver l'autre participant
+    const otherParticipant = conversation?.participants?.find(p => p.id !== user?.id);
+    return otherParticipant?.avatar;
+  };
+
+  const getConversationAvatarFallback = () => {
+    if (conversation?.type === 'team') {
+      return (
+        <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white font-semibold text-lg w-full h-full flex items-center justify-center">
+          <Users className="h-7 w-7" />
+        </div>
+      );
+    }
+    // Pour les conversations directes
+    const otherParticipant = conversation?.participants?.find(p => p.id !== user?.id);
+    const displayName = otherParticipant?.username || 'Utilisateur';
+    return (
+      <div className="bg-gradient-to-br from-airsoft-red to-red-600 text-white font-semibold text-lg w-full h-full flex items-center justify-center">
+        {displayName.charAt(0).toUpperCase()}
+      </div>
+    );
+  };
+
+  return (
+    <div className="flex flex-col h-full w-full bg-white">
       {/* Enhanced Header - Full Width */}
       <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-white via-gray-50/50 to-white backdrop-blur-sm shadow-sm">
         <div className="flex items-center gap-4">
@@ -79,8 +106,9 @@ const ChatView: React.FC<ChatViewProps> = ({
           </Button>
           
           <Avatar className="h-12 w-12 ring-2 ring-white shadow-lg">
+            <AvatarImage src={getConversationAvatar()} />
             <AvatarFallback className="bg-gradient-to-br from-airsoft-red to-red-600 text-white font-semibold text-lg">
-              {getConversationTitle().charAt(0).toUpperCase()}
+              {getConversationAvatarFallback()}
             </AvatarFallback>
           </Avatar>
           
@@ -106,13 +134,16 @@ const ChatView: React.FC<ChatViewProps> = ({
           {messages.map(message => {
             // Corriger la logique : comparer avec l'ID de l'utilisateur connecté
             const isOwnMessage = message.sender_id === user?.id;
-            return <div key={message.id} className={`flex gap-4 w-full ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
-                {!isOwnMessage && <Avatar className="h-10 w-10 ring-2 ring-gray-200 shadow-sm flex-shrink-0">
+            return (
+              <div key={message.id} className={`flex gap-4 w-full ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                {!isOwnMessage && (
+                  <Avatar className="h-10 w-10 ring-2 ring-gray-200 shadow-sm flex-shrink-0">
                     <AvatarImage src={message.sender_avatar} />
                     <AvatarFallback className="bg-gradient-to-br from-gray-100 to-gray-200 text-gray-600 text-sm font-medium">
                       {message.sender_name[0]}
                     </AvatarFallback>
-                  </Avatar>}
+                  </Avatar>
+                )}
                 
                 <div className={`flex flex-col max-w-[75%] ${isOwnMessage ? 'items-end' : 'items-start'}`}>
                   <div className={`relative rounded-3xl px-6 py-4 shadow-lg transition-all duration-200 hover:shadow-xl ${isOwnMessage ? 'bg-gradient-to-r from-airsoft-red to-red-600 text-white' : 'bg-white text-gray-900 border border-gray-100'}`}>
@@ -130,12 +161,16 @@ const ChatView: React.FC<ChatViewProps> = ({
                   </div>
                 </div>
                 
-                {isOwnMessage && <Avatar className="h-10 w-10 ring-2 ring-red-200 shadow-sm flex-shrink-0">
+                {isOwnMessage && (
+                  <Avatar className="h-10 w-10 ring-2 ring-red-200 shadow-sm flex-shrink-0">
+                    <AvatarImage src={user?.avatar} />
                     <AvatarFallback className="bg-gradient-to-br from-airsoft-red to-red-600 text-white font-medium text-sm">
-                      Moi
+                      {user?.username?.charAt(0).toUpperCase() || 'U'}
                     </AvatarFallback>
-                  </Avatar>}
-              </div>;
+                  </Avatar>
+                )}
+              </div>
+            );
           })}
           <div ref={messagesEndRef} />
         </div>
@@ -154,7 +189,8 @@ const ChatView: React.FC<ChatViewProps> = ({
           </Button>
         </div>
       </form>
-    </div>;
+    </div>
+  );
 };
 
 export default ChatView;
