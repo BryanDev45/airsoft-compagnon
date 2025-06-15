@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -7,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatGameDate } from '@/utils/dateUtils';
 import { Calendar, Clock, MapPin, Users, Euro } from 'lucide-react';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface GameDetailsDialogProps {
   selectedGame: any;
@@ -21,7 +20,7 @@ const GameDetailsDialog: React.FC<GameDetailsDialogProps> = ({
   setShowGameDialog
 }) => {
   const navigate = useNavigate();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
 
   // Formatage de la date pour l'affichage en utilisant la fonction formatGameDate
   const formatGameDateDisplay = (game: any) => {
