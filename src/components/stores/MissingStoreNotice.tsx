@@ -28,9 +28,11 @@ const MissingStoreNotice: React.FC = () => {
   return (
     <Card className="border-blue-200 bg-blue-50">
       <CardContent className="pt-6">
-        <div className="flex items-start gap-3">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
           <div className="flex-shrink-0">
-            <Plus className="h-5 w-5 text-blue-600 mt-0.5" />
+            <div className="bg-blue-100 p-3 rounded-full inline-flex">
+              <Plus className="h-6 w-6 text-blue-600" />
+            </div>
           </div>
           <div className="flex-1">
             <h4 className="font-medium text-blue-900 mb-2">
