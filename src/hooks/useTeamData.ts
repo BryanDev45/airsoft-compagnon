@@ -1,9 +1,9 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNetworkRequest } from './useNetworkRequest';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "@/components/ui/use-toast";
+import { TeamMember } from '@/types/team';
 
 export const useTeamData = (teamId: string | undefined) => {
   const navigate = useNavigate();
@@ -49,11 +49,11 @@ export const useTeamData = (teamId: string | undefined) => {
       if (membersError) throw membersError;
 
       // Get profiles for team members
-      let formattedMembers = [];
-      let memberUserIds = [];
+      let formattedMembers: any[] = [];
+      let memberUserIds: string[] = [];
       
       if (teamMembers && teamMembers.length > 0) {
-        const userIds = teamMembers.map(member => member.user_id).filter(Boolean);
+        const userIds = (teamMembers as any[]).map(member => member.user_id).filter(Boolean);
         memberUserIds = [...userIds];
         
         if (userIds.length > 0) {
@@ -65,7 +65,7 @@ export const useTeamData = (teamId: string | undefined) => {
           if (profilesError) throw profilesError;
 
           // Match profiles with team members and format the data
-          formattedMembers = teamMembers.map(member => {
+          formattedMembers = (teamMembers as any[]).map(member => {
             const profile = profiles?.find(p => p.id === member.user_id);
             if (!profile) return null;
             

@@ -38,7 +38,7 @@ export const useTeamMembersFetch = (team: TeamData) => {
         return;
       }
       
-      const userIds = membersData.map(member => member.user_id).filter(Boolean);
+      const userIds = (membersData as TeamMember[]).map(member => member.user_id).filter(Boolean);
       
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
@@ -49,7 +49,7 @@ export const useTeamMembersFetch = (team: TeamData) => {
         console.error('Error fetching profiles:', profilesError);
       }
       
-      const membersWithProfiles: TeamMember[] = membersData.map(member => {
+      const membersWithProfiles: TeamMember[] = (membersData as TeamMember[]).map(member => {
         const profile = profilesData?.find(p => p.id === member.user_id) || {
           id: member.user_id || '',
           username: 'Utilisateur',

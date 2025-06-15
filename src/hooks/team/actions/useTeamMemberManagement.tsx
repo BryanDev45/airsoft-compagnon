@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
@@ -134,7 +135,7 @@ export const useTeamMemberManagement = (
       setTeamMembers(prev => 
         prev.map(member => 
           member.id === memberId 
-            ? { ...member, association_role: newAssociationRole } 
+            ? { ...(member as any), association_role: newAssociationRole } 
             : member
         )
       );
