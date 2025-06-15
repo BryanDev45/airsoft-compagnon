@@ -89,25 +89,6 @@ const TeamRating: React.FC<TeamRatingProps> = ({
       
       setUserRating(rating);
       
-      // Mettre à jour la note moyenne de l'équipe
-      const { data: ratings, error: avgError } = await supabase
-        .from('team_ratings')
-        .select('rating')
-        .eq('team_id', teamId);
-        
-      if (avgError) throw avgError;
-      
-      if (ratings && ratings.length > 0) {
-        const avgRating = ratings.reduce((sum: number, r: any) => sum + r.rating, 0) / ratings.length;
-        
-        const { error: updateError } = await supabase
-          .from('teams')
-          .update({ rating: avgRating })
-          .eq('id', teamId);
-          
-        if (updateError) throw updateError;
-      }
-      
       toast({
         title: "Note enregistrée",
         description: `Vous avez noté ${teamName} : ${rating}/5 étoiles`
