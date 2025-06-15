@@ -99,24 +99,22 @@ const TeamMembersList = ({
 
                 {isTeamLeader && (
                   <TableCell>
-                    {member.user_id !== teamLeaderId && (
-                      <Select
-                        value={member.game_role || ''}
-                        onValueChange={(value) => {
-                          if (value) handleUpdateMemberGameRole(member.id, value);
-                        }}
-                        disabled={loading}
-                      >
-                        <SelectTrigger className="w-[180px]">
-                          <SelectValue placeholder="Définir un rôle" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {gameRoles.map(role => (
-                            <SelectItem key={role} value={role}>{role}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
+                    <Select
+                      value={member.game_role || ''}
+                      onValueChange={(value) => {
+                        if (value) handleUpdateMemberGameRole(member.id, value);
+                      }}
+                      disabled={loading}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Définir un rôle" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {gameRoles.map(role => (
+                          <SelectItem key={role} value={role}>{role}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </TableCell>
                 )}
                 
