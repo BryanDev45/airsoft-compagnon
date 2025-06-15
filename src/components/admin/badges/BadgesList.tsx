@@ -29,7 +29,7 @@ const BadgesList: React.FC<BadgesListProps> = ({ badges, onEdit, onDelete }) => 
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-20">Icône</TableHead>
+            <TableHead className="w-32">Icônes</TableHead>
             <TableHead>Nom</TableHead>
             <TableHead>Description</TableHead>
             <TableHead className="w-40">Couleurs</TableHead>
@@ -40,7 +40,14 @@ const BadgesList: React.FC<BadgesListProps> = ({ badges, onEdit, onDelete }) => 
           {badges.map((badge) => (
             <TableRow key={badge.id}>
               <TableCell>
-                <img src={badge.icon} alt={badge.name} className="w-12 h-12 object-contain rounded-full" />
+                <div className="flex items-center gap-2">
+                  <img src={badge.icon} alt={badge.name} title="Débloqué" className="w-12 h-12 object-contain rounded-full border" />
+                  {badge.locked_icon ? (
+                    <img src={badge.locked_icon} alt={`${badge.name} (verrouillé)`} title="Verrouillé" className="w-12 h-12 object-contain rounded-full border" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full border bg-gray-100 flex items-center justify-center text-gray-400 text-xs text-center">Aucune</div>
+                  )}
+                </div>
               </TableCell>
               <TableCell className="font-medium">{badge.name}</TableCell>
               <TableCell className="text-sm text-gray-600">{badge.description}</TableCell>

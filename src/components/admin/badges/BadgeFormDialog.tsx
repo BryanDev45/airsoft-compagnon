@@ -24,6 +24,7 @@ const formSchema = z.object({
   background_color: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Format de couleur hexadécimal invalide (ex: #RRGGBB)."),
   border_color: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Format de couleur hexadécimal invalide (ex: #RRGGBB)."),
   iconFile: z.instanceof(File).optional(),
+  lockedIconFile: z.instanceof(File).optional(),
 });
 
 interface BadgeFormDialogProps {
@@ -46,6 +47,7 @@ const BadgeFormDialog: React.FC<BadgeFormDialogProps> = ({ isOpen, onOpenChange,
   });
   
   const [preview, setPreview] = useState<string | null>(null);
+  const [lockedPreview, setLockedPreview] = useState<string | null>(null);
   
   useEffect(() => {
     if (isOpen) {
@@ -57,6 +59,7 @@ const BadgeFormDialog: React.FC<BadgeFormDialogProps> = ({ isOpen, onOpenChange,
           border_color: badge.border_color,
         });
         setPreview(badge.icon);
+        setLockedPreview(badge.locked_icon || null);
       } else {
         form.reset({
           name: '',
@@ -65,6 +68,7 @@ const BadgeFormDialog: React.FC<BadgeFormDialogProps> = ({ isOpen, onOpenChange,
           border_color: '#000000',
         });
         setPreview(null);
+        setLockedPreview(null);
       }
     }
   }, [badge, isOpen, form]);
@@ -77,9 +81,17 @@ const BadgeFormDialog: React.FC<BadgeFormDialogProps> = ({ isOpen, onOpenChange,
     }
   };
 
+  const handleLockedFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      form.setValue('lockedIconFile', file);
+      setLockedPreview(URL.createObjectURL(file));
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{badge ? 'Modifier le badge' : 'Créer un nouveau badge'}</DialogTitle>
           <DialogDescription>
@@ -142,14 +154,24 @@ const BadgeFormDialog: React.FC<BadgeFormDialogProps> = ({ isOpen, onOpenChange,
                 )}
               />
             </div>
-            <FormItem>
-              <FormLabel>Icône</FormLabel>
-              <FormControl>
-                 <Input type="file" accept="image/png, image/jpeg, image/svg+xml" onChange={handleFileChange} />
-              </FormControl>
-              <FormMessage />
-              {(preview) && <img src={preview} alt="Aperçu de l'icône" className="mt-2 w-24 h-24 object-contain" />}
-            </FormItem>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormItem>
+                <FormLabel>Icône (Débloqué)</FormLabel>
+                <FormControl>
+                  <Input type="file" accept="image/png, image/jpeg, image/svg+xml" onChange={handleFileChange} />
+                </FormControl>
+                <FormMessage />
+                {preview && <img src={preview} alt="Aperçu de l'icône débloquée" className="mt-2 w-24 h-24 object-contain rounded-lg border p-1" />}
+              </FormItem>
+              <FormItem>
+                <FormLabel>Icône (Verrouillé)</FormLabel>
+                <FormControl>
+                  <Input type="file" accept="image/png, image/jpeg, image/svg+xml" onChange={handleLockedFileChange} />
+                </FormControl>
+                <FormMessage />
+                {lockedPreview ? <img src={lockedPreview} alt="Aperçu de l'icône verrouillée" className="mt-2 w-24 h-24 object-contain rounded-lg border p-1" /> : <div className="mt-2 w-24 h-24 rounded-lg border p-1 flex items-center justify-center bg-gray-50 text-xs text-gray-500">Aucun</div>}
+              </FormItem>
+            </div>
             
             <DialogFooter className="pt-4">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>Annuler</Button>

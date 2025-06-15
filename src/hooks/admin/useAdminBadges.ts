@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge as BadgeType } from '@/hooks/badges/useAllBadges';
@@ -39,7 +38,7 @@ export const useAdminBadges = () => {
 
 // --- Mutations ---
 
-type BadgeFormData = Omit<BadgeType, 'id' | 'created_at' | 'icon'> & { iconFile?: File, icon?: string };
+type BadgeFormData = Omit<BadgeType, 'id' | 'created_at' | 'icon' | 'locked_icon'> & { iconFile?: File, icon?: string, lockedIconFile?: File, locked_icon?: string | null };
 
 // Create a new badge
 const createBadge = async (badgeData: BadgeFormData) => {
@@ -48,11 +47,16 @@ const createBadge = async (badgeData: BadgeFormData) => {
     iconUrl = await uploadIcon(badgeData.iconFile);
   }
 
-  const { iconFile, ...badgeToInsert } = badgeData;
+  let lockedIconUrl: string | null = null;
+  if (badgeData.lockedIconFile) {
+    lockedIconUrl = await uploadIcon(badgeData.lockedIconFile);
+  }
+
+  const { iconFile, lockedIconFile, ...badgeToInsert } = badgeData;
 
   const { data, error } = await supabase
     .from('badges')
-    .insert({ ...badgeToInsert, icon: iconUrl })
+    .insert({ ...badgeToInsert, icon: iconUrl, locked_icon: lockedIconUrl })
     .select()
     .single();
 
@@ -82,9 +86,21 @@ const updateBadge = async (badgeData: Partial<BadgeFormData> & { id: string }) =
     iconUrl = await uploadIcon(badgeData.iconFile);
   }
 
-  const { iconFile, id, ...badgeToUpdate } = badgeData;
-  const updatePayload = { ...badgeToUpdate, icon: iconUrl };
+  let lockedIconUrl = badgeData.locked_icon;
+  if (badgeData.lockedIconFile) {
+    lockedIconUrl = await uploadIcon(badgeData.lockedIconFile);
+  } else if (badgeData.locked_icon === undefined) {
+    // Keep old value if not provided
+    lockedIconUrl = badgeData.locked_icon;
+  }
 
+  const { iconFile, lockedIconFile, id, ...badgeToUpdate } = badgeData;
+  const updatePayload: { [key: string]: any } = { ...badgeToUpdate, icon: iconUrl };
+
+  if (lockedIconUrl !== undefined) {
+    updatePayload.locked_icon = lockedIconUrl;
+  }
+  
   const { data, error } = await supabase
     .from('badges')
     .update(updatePayload)

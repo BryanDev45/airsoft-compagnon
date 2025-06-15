@@ -7,6 +7,7 @@ export interface Badge {
   name: string;
   description: string;
   icon: string;
+  locked_icon: string | null;
   background_color: string;
   border_color: string;
   created_at: string;

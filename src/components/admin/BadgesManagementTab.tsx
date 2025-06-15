@@ -35,7 +35,7 @@ const BadgesManagementTab = () => {
 
   const onFormSubmit = (data: any) => {
     if (selectedBadge) {
-      updateBadge({ ...data, id: selectedBadge.id, icon: selectedBadge.icon }, {
+      updateBadge({ ...data, id: selectedBadge.id, icon: selectedBadge.icon, locked_icon: selectedBadge.locked_icon }, {
         onSuccess: () => setIsFormOpen(false),
       });
     } else {
