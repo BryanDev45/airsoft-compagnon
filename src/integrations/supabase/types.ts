@@ -1264,6 +1264,10 @@ export type Database = {
         Args: { p_message_id: string; p_user_id: string }
         Returns: undefined
       }
+      update_user_games_stats_securely: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
       update_user_location: {
         Args: { p_user_id: string; p_location: string }
         Returns: undefined

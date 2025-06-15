@@ -155,7 +155,7 @@ export const uploadGameImages = async (gameId: string, images: File[]) => {
  * Trigger a secure update of a user's game statistics via a Supabase RPC function.
  */
 export const triggerUserStatsUpdate = async (userId: string) => {
-  const { error } = await supabase.rpc('update_user_games_stats_securely', {
+  const { error } = await supabase.rpc('update_user_games_stats_securely' as any, {
     p_user_id: userId,
   });
 
