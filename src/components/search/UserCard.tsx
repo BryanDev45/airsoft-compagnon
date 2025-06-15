@@ -75,7 +75,7 @@ const UserCard: React.FC<UserCardProps> = ({ userData, friendshipStatus, onFrien
         : 'border-l-transparent hover:border-l-airsoft-red bg-gradient-to-r from-white to-gray-50/50'
     }`}>
       <CardContent className="p-0">
-        <div className="flex items-center p-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center p-4 gap-4">
           {/* Avatar Section */}
           <div className="relative flex-shrink-0">
             <Avatar className={`h-14 w-14 ring-2 ring-white shadow-sm ${userData.Ban ? 'grayscale' : ''}`}>
@@ -110,7 +110,7 @@ const UserCard: React.FC<UserCardProps> = ({ userData, friendshipStatus, onFrien
           {/* Info Section */}
           <Link 
             to={`/user/${userData.username}`} 
-            className={`ml-4 flex-1 min-w-0 transition-colors duration-200 ${
+            className={`w-full sm:ml-4 flex-1 min-w-0 transition-colors duration-200 ${
               userData.Ban ? 'hover:text-red-600' : 'group-hover:text-airsoft-red'
             }`}
           >
@@ -154,7 +154,7 @@ const UserCard: React.FC<UserCardProps> = ({ userData, friendshipStatus, onFrien
           
           {/* Action Buttons */}
           {user && user.id !== userData.id && !userData.Ban && (
-            <div className="flex gap-2 ml-4 flex-shrink-0">
+            <div className="flex gap-2 sm:ml-4 flex-shrink-0 self-end sm:self-auto">
               <Button 
                 size="sm" 
                 variant="outline" 
@@ -220,7 +220,7 @@ const UserCard: React.FC<UserCardProps> = ({ userData, friendshipStatus, onFrien
 
           {/* Banned user - no action buttons available */}
           {userData.Ban && (
-            <div className="ml-4 flex-shrink-0">
+            <div className="sm:ml-4 flex-shrink-0 self-end sm:self-auto">
               <Badge variant="destructive" className="bg-red-100 text-red-800 border-red-200">
                 <Ban className="h-3 w-3 mr-1" />
                 Utilisateur banni

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -45,7 +46,7 @@ const TeamSearchResults: React.FC<TeamSearchResultsProps> = ({
   return <div className="space-y-3">
       {teams.map(team => <Card key={team.id} className="group overflow-hidden transition-all duration-200 hover:shadow-md border-l-4 border-l-transparent hover:border-l-airsoft-red bg-gradient-to-r from-white to-gray-50/50">
           <CardContent className="p-0">
-            <div className="flex items-center p-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center p-4 gap-4">
               {/* Team Logo */}
               <div className="flex-shrink-0">
                 <Avatar className="h-16 w-16 ring-2 ring-white shadow-sm">
@@ -56,7 +57,7 @@ const TeamSearchResults: React.FC<TeamSearchResultsProps> = ({
               </div>
               
               {/* Team Info */}
-              <Link to={`/team/${team.id}`} className="ml-4 flex-1 min-w-0 transition-colors duration-200 group-hover:text-airsoft-red">
+              <Link to={`/team/${team.id}`} className="w-full sm:ml-4 flex-1 min-w-0 transition-colors duration-200 group-hover:text-airsoft-red">
                 <div className="flex items-center gap-2 mb-2">
                   <h3 className="font-semibold text-lg truncate transition-colors duration-200 text-gray-900 group-hover:text-airsoft-red">
                     {team.name}
@@ -94,7 +95,7 @@ const TeamSearchResults: React.FC<TeamSearchResultsProps> = ({
               </Link>
               
               {/* Action Buttons */}
-              <div className="flex gap-2 ml-4 flex-shrink-0">
+              <div className="flex gap-2 sm:ml-4 flex-shrink-0 self-end sm:self-auto">
                 {team.is_recruiting && team.leader_id && <TeamApplicationButton teamId={team.id} teamName={team.name} leaderId={team.leader_id} isRecruiting={team.is_recruiting} />}
               </div>
             </div>
