@@ -7,7 +7,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 /**
  * Hook optimisé pour récupérer les parties d'un utilisateur avec mise en cache
  */
-export const useUserGamesFetch = (userId: string | undefined) => {
+export const useUserGamesFetch = (userId: string | undefined, currentUserId?: string | null) => {
   const queryClient = useQueryClient();
   
   // Force la re-exécution de la requête quand l'userId change
@@ -24,8 +24,9 @@ export const useUserGamesFetch = (userId: string | undefined) => {
 
   // Force la mise à jour des statistiques quand les parties changent
   useEffect(() => {
-    if (isSuccess && userId && Array.isArray(userGames)) {
-      console.log('Déclenchement de la mise à jour des statistiques pour:', userId, userGames.length, 'parties');
+    // On ne met à jour les stats que si l'utilisateur regarde son propre profil, pour éviter des problèmes de droits RLS
+    if (isSuccess && userId && userId === currentUserId && Array.isArray(userGames)) {
+      console.log('Déclenchement de la mise à jour des statistiques pour (profil propre):', userId, userGames.length, 'parties');
       updateUserGamesStats(userId, userGames)
         .then(() => {
           // Invalider le cache des user_stats pour forcer le rechargement
@@ -36,7 +37,7 @@ export const useUserGamesFetch = (userId: string | undefined) => {
           console.error('Erreur lors de la mise à jour des statistiques:', error);
         });
     }
-  }, [isSuccess, userId, userGames, queryClient]);
+  }, [isSuccess, userId, userGames, queryClient, currentUserId]);
 
   return {
     userGames,
