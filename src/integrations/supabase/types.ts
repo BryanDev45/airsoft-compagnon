@@ -876,6 +876,54 @@ export type Database = {
           },
         ]
       }
+      team_news: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          id: string
+          images: string[] | null
+          team_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          id?: string
+          images?: string[] | null
+          team_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          images?: string[] | null
+          team_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_news_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_news_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_ratings: {
         Row: {
           created_at: string
@@ -1257,6 +1305,10 @@ export type Database = {
       }
       is_participant: {
         Args: { p_conversation_id: string; p_user_id: string }
+        Returns: boolean
+      }
+      is_team_admin: {
+        Args: { p_team_id: string; p_user_id: string }
         Returns: boolean
       }
       is_user_online: {

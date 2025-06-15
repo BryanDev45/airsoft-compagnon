@@ -11,6 +11,7 @@ export interface TeamData {
   founded?: number;
   is_association?: boolean;
   members?: TeamMember[];
+  news?: TeamNews[];
 }
 
 export interface TeamMember {
@@ -25,4 +26,27 @@ export interface TeamMember {
     username?: string;
     avatar?: string;
   };
+}
+
+export interface TeamNews {
+  id: string;
+  team_id: string;
+  author_id: string;
+  title: string;
+  content: string;
+  images: string[] | null;
+  created_at: string;
+  updated_at: string;
+  author: {
+    id: string;
+    username: string | null;
+    avatar: string | null;
+  };
+}
+
+export interface TeamNewsFormData {
+  title: string;
+  content: string;
+  images?: FileList;
+  existingImages?: string[];
 }

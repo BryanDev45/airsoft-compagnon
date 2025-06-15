@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Header from '../components/Header';
@@ -14,6 +15,8 @@ import TeamMembers from '../components/team/TeamMembers';
 import TeamGames from '../components/team/TeamGames';
 import TeamField from '../components/team/TeamField';
 import TeamRating from '../components/team/TeamRating';
+import TeamNews from '../components/team/TeamNews';
+
 const Team = () => {
   const {
     id
@@ -128,12 +131,16 @@ const Team = () => {
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList>
                   <TabsTrigger value="members">Membres ({team.members?.length || 0})</TabsTrigger>
+                  <TabsTrigger value="news">Actualités</TabsTrigger>
                   <TabsTrigger value="games">Parties</TabsTrigger>
                   <TabsTrigger value="field">Terrain</TabsTrigger>
                   
                 </TabsList>
                 <TabsContent value="members" className="mt-4">
                   <TeamMembers members={team.members || []} handleViewMember={handleViewMember} isAssociation={team.is_association} />
+                </TabsContent>
+                <TabsContent value="news" className="mt-4">
+                  <TeamNews teamId={team.id} isTeamAdmin={isTeamAdmin} />
                 </TabsContent>
                 <TabsContent value="games" className="mt-4">
                   <TeamGames upcomingGames={team.upcomingGames || []} pastGames={team.pastGames || []} />
