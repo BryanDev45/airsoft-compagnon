@@ -20,8 +20,8 @@ const TeamBanner = ({
     }}>
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
       <div className="absolute bottom-0 left-0 w-full p-4 sm:p-6">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center sm:items-end justify-center sm:justify-between gap-4">
-          <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center sm:items-end justify-center sm:justify-between gap-4 text-center sm:text-left">
+          <div className="flex flex-col sm:flex-row items-center gap-4">
             <div className="relative flex-shrink-0">
               <img src={team.logo} alt={team.name} className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white/80 object-cover shadow-md" />
             </div>

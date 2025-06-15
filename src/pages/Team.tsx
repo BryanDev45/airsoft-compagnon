@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Header from '../components/Header';
@@ -129,13 +128,15 @@ const Team = () => {
 
             <div className="md:w-2/3">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList>
-                  <TabsTrigger value="members">Membres ({team.members?.length || 0})</TabsTrigger>
-                  <TabsTrigger value="news">Actualités</TabsTrigger>
-                  <TabsTrigger value="games">Parties</TabsTrigger>
-                  <TabsTrigger value="field">Terrain</TabsTrigger>
-                  
-                </TabsList>
+                <div className="overflow-x-auto pb-2 -mx-4 px-4">
+                  <TabsList>
+                    <TabsTrigger value="members">Membres ({team.members?.length || 0})</TabsTrigger>
+                    <TabsTrigger value="news">Actualités</TabsTrigger>
+                    <TabsTrigger value="games">Parties</TabsTrigger>
+                    <TabsTrigger value="field">Terrain</TabsTrigger>
+                    <TabsTrigger value="ratings">Avis</TabsTrigger>
+                  </TabsList>
+                </div>
                 <TabsContent value="members" className="mt-4">
                   <TeamMembers members={team.members || []} handleViewMember={handleViewMember} isAssociation={team.is_association} />
                 </TabsContent>
