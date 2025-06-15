@@ -27,12 +27,16 @@ const ProfileLayout = ({
   };
 
   const handleViewGameDetails = (game) => {
-    dialogStates.setSelectedGame(game);
-    dialogStates.setShowGameDialog(true);
+    dialogStates.showGameDetails(game);
   };
 
   const handleViewAllGames = () => {
     dialogStates.setShowAllGamesDialog(true);
+  };
+
+  const handleGameClickInAllGamesDialog = (game: any) => {
+    dialogStates.setShowAllGamesDialog(false);
+    dialogStates.showGameDetails(game);
   };
 
   return (
@@ -59,6 +63,18 @@ const ProfileLayout = ({
         </div>
       </main>
       <Footer />
+      <ProfileDialogs
+        selectedGame={dialogStates.selectedGame}
+        showGameDialog={dialogStates.showGameDialog}
+        setShowGameDialog={dialogStates.handleOpenChange}
+        showAllGamesDialog={dialogStates.showAllGamesDialog}
+        setShowAllGamesDialog={dialogStates.setShowAllGamesDialog}
+        showBadgesDialog={dialogStates.showBadgesDialog}
+        setShowBadgesDialog={dialogStates.setShowBadgesDialog}
+        user={profileData}
+        userGames={userGames}
+        onGameClick={handleGameClickInAllGamesDialog}
+      />
     </div>
   );
 };

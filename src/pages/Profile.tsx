@@ -9,6 +9,7 @@ import ProfileLoading from '../components/profile/ProfileLoading';
 import ProfileLayout from '../components/profile/ProfileLayout';
 import { toast } from '@/components/ui/use-toast';
 import { useUserBadges } from '@/hooks/user-profile/useUserBadges';
+import { useGameDetailsDialog } from '@/hooks/profile/useGameDetailsDialog';
 
 const Profile = () => {
   const { user, canFetchData, hasError, setHasError, initialLoading } = useProfileInitialization();
@@ -38,6 +39,12 @@ const Profile = () => {
   const { userBadges } = useUserBadges(canFetchData ? user?.id : undefined);
 
   const dialogStates = useProfileDialogs();
+  const gameDetailsDialog = useGameDetailsDialog();
+
+  const allDialogStates = {
+    ...dialogStates,
+    ...gameDetailsDialog,
+  };
 
   useEffect(() => {
     if (canFetchData && user?.id) {
@@ -79,7 +86,7 @@ const Profile = () => {
       equipment={equipment}
       userGames={userGames}
       userBadges={userBadges}
-      dialogStates={dialogStates}
+      dialogStates={allDialogStates}
       equipmentTypes={equipmentTypes}
       fetchEquipment={fetchEquipment}
       fetchUserGames={fetchUserGames}
