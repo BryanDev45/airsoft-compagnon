@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,14 +13,16 @@ interface TeamMember {
   game_role?: string;
   isTeamLeader?: boolean;
   status?: string; // Ajout du statut pour filtrer les membres
+  association_role?: string;
 }
 
 interface TeamMembersProps {
   members: TeamMember[];
   handleViewMember: (member: TeamMember) => void;
+  isAssociation?: boolean;
 }
 
-const TeamMembers = ({ members, handleViewMember }: TeamMembersProps) => {
+const TeamMembers = ({ members, handleViewMember, isAssociation }: TeamMembersProps) => {
   // Filtrer pour ne garder que les membres confirmés ou sans statut explicite
   const confirmedMembers = members.filter(member => 
     member.status === undefined || member.status === 'confirmed'
@@ -81,6 +84,11 @@ const TeamMembers = ({ members, handleViewMember }: TeamMembersProps) => {
               <p className="text-xs text-gray-600">
                 <span className="font-medium">Rôle en jeu:</span> {member.game_role || 'Non spécifié'}
               </p>
+              {isAssociation && (
+                <p className="text-xs text-gray-600 mt-1">
+                  <span className="font-medium">Rôle dans l'association:</span> {member.association_role || 'Non spécifié'}
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
