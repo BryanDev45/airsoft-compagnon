@@ -29,9 +29,11 @@ interface TeamMembersListProps {
   isTeamLeader: boolean;
   teamLeaderId?: string;
   currentUserId?: string;
+  isAssociation?: boolean;
   handleRemoveMember: (memberId: string) => Promise<void>;
   handleUpdateMemberRole: (memberId: string, newRole: string) => Promise<void>;
   handleUpdateMemberGameRole: (memberId: string, newGameRole: string) => Promise<void>;
+  handleUpdateMemberAssociationRole: (memberId: string, newAssociationRole: string) => Promise<void>;
   handleLeaveTeam: () => Promise<void>;
 }
 
@@ -41,12 +43,15 @@ const TeamMembersList = ({
   isTeamLeader,
   teamLeaderId,
   currentUserId,
+  isAssociation,
   handleRemoveMember,
   handleUpdateMemberRole,
   handleUpdateMemberGameRole,
+  handleUpdateMemberAssociationRole,
   handleLeaveTeam
 }: TeamMembersListProps) => {
   const gameRoles = ['Assaut', 'Sniper', 'Soutien', 'Médecin', 'Antitank', 'Eclaireur'];
+  const associationRoles = ['Président', 'Vice-Président', 'Trésorier', 'Secrétaire', 'Membre du bureau', 'Membre'];
 
   return (
     <div>
@@ -59,6 +64,7 @@ const TeamMembersList = ({
                 <TableHead>Membre</TableHead>
                 {isTeamLeader && <TableHead>Rôle</TableHead>}
                 {isTeamLeader && <TableHead>Rôle en jeu</TableHead>}
+                {isTeamLeader && isAssociation && <TableHead>Rôle associatif</TableHead>}
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -113,6 +119,27 @@ const TeamMembersList = ({
                         </SelectTrigger>
                         <SelectContent>
                           {gameRoles.map(role => (
+                            <SelectItem key={role} value={role}>{role}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                  )}
+
+                  {isTeamLeader && isAssociation && (
+                    <TableCell>
+                      <Select
+                        value={member.association_role || ''}
+                        onValueChange={(value) => {
+                          if (value) handleUpdateMemberAssociationRole(member.id, value);
+                        }}
+                        disabled={loading}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Définir un rôle" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {associationRoles.map(role => (
                             <SelectItem key={role} value={role}>{role}</SelectItem>
                           ))}
                         </SelectContent>

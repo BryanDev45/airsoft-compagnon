@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
@@ -119,10 +118,48 @@ export const useTeamMemberManagement = (
     }
   };
 
+  const handleUpdateMemberAssociationRole = async (memberId: string, newAssociationRole: string) => {
+    if (!isTeamLeader) return;
+    
+    setLoading(true);
+    
+    try {
+      const { error } = await supabase
+        .from('team_members')
+        .update({ association_role: newAssociationRole })
+        .eq('id', memberId);
+        
+      if (error) throw error;
+      
+      setTeamMembers(prev => 
+        prev.map(member => 
+          member.id === memberId 
+            ? { ...member, association_role: newAssociationRole } 
+            : member
+        )
+      );
+      
+      toast({
+        title: "Rôle associatif mis à jour",
+        description: "Le rôle associatif du membre a été mis à jour avec succès.",
+      });
+    } catch (error: any) {
+      console.error("Erreur lors de la mise à jour du rôle associatif:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour le rôle associatif: " + error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     loading,
     handleRemoveMember,
     handleUpdateMemberRole,
-    handleUpdateMemberGameRole
+    handleUpdateMemberGameRole,
+    handleUpdateMemberAssociationRole
   };
 };

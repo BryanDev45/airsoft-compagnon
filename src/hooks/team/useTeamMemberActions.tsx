@@ -23,7 +23,8 @@ export const useTeamMemberActions = (
     loading: managementLoading,
     handleRemoveMember,
     handleUpdateMemberRole,
-    handleUpdateMemberGameRole
+    handleUpdateMemberGameRole,
+    handleUpdateMemberAssociationRole
   } = useTeamMemberManagement(isTeamLeader, setTeamMembers);
 
   const {
@@ -41,6 +42,7 @@ export const useTeamMemberActions = (
     handleRemoveMember,
     handleUpdateMemberRole,
     handleUpdateMemberGameRole,
+    handleUpdateMemberAssociationRole,
     handleLeaveTeam
   };
 };

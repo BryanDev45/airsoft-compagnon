@@ -18,6 +18,7 @@ export interface TeamMember {
   user_id?: string;
   role?: string;
   game_role?: string;
+  association_role?: string;
   status?: string;
   profiles?: {
     id: string;

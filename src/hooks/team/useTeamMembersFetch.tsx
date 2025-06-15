@@ -16,7 +16,7 @@ export const useTeamMembersFetch = (team: TeamData) => {
       
       const { data: membersData, error: membersError } = await supabase
         .from('team_members')
-        .select('id, user_id, team_id, role, status, game_role')
+        .select('id, user_id, team_id, role, status, game_role, association_role')
         .eq('team_id', team.id);
         
       if (membersError) {

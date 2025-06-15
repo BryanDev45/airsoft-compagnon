@@ -24,6 +24,7 @@ export const useTeamMembers = (
     handleRemoveMember,
     handleUpdateMemberRole,
     handleUpdateMemberGameRole,
+    handleUpdateMemberAssociationRole,
     handleLeaveTeam
   } = useTeamMemberActions(
     team,
@@ -46,6 +47,7 @@ export const useTeamMembers = (
     handleRemoveMember,
     handleUpdateMemberRole,
     handleUpdateMemberGameRole,
+    handleUpdateMemberAssociationRole,
     handleLeaveTeam
   };
 };
