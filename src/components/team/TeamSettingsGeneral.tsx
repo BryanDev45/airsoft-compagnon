@@ -13,12 +13,10 @@ interface TeamSettingsGeneralProps {
   loading: boolean;
   setLoading: (loading: boolean) => void;
   onTeamUpdate?: (updatedTeam: Partial<TeamData>) => void;
+  isTeamAdmin: boolean;
 }
 
-const TeamSettingsGeneral = ({ team, loading, setLoading, onTeamUpdate }: TeamSettingsGeneralProps) => {
-  const { user } = useAuth();
-  const isTeamLeader = user?.id === team.leader_id;
-  
+const TeamSettingsGeneral = ({ team, loading, setLoading, onTeamUpdate, isTeamAdmin }: TeamSettingsGeneralProps) => {
   const {
     name,
     setName,
@@ -36,7 +34,7 @@ const TeamSettingsGeneral = ({ team, loading, setLoading, onTeamUpdate }: TeamSe
     handleUpdateDescription,
     handleToggleRecruitment,
     handleToggleAssociation
-  } = useTeamSettings(team, onTeamUpdate);
+  } = useTeamSettings(team, onTeamUpdate, isTeamAdmin);
 
   return (
     <div className="space-y-4">
@@ -49,6 +47,7 @@ const TeamSettingsGeneral = ({ team, loading, setLoading, onTeamUpdate }: TeamSe
         setFounded={setFounded}
         loading={loading}
         handleUpdateTeamInfo={handleUpdateTeamInfo}
+        disabled={!isTeamAdmin}
       />
       
       <TeamDescriptionEditor
@@ -61,7 +60,7 @@ const TeamSettingsGeneral = ({ team, loading, setLoading, onTeamUpdate }: TeamSe
         originalDescription={team.description}
       />
       
-      {isTeamLeader && (
+      {isTeamAdmin && (
         <>
           <TeamRecruitmentToggle
             isRecruitmentOpen={isRecruitmentOpen}

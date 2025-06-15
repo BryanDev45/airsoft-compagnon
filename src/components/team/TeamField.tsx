@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,13 +16,15 @@ interface TeamFieldProps {
   onEdit: (fieldId: string, updates: any) => void;
   onSave: (fieldId: string, updates: any) => void;
   onCancel: () => void;
+  isTeamAdmin?: boolean;
 }
 const TeamField: React.FC<TeamFieldProps> = ({
   field,
   isEditing,
   onEdit,
   onSave,
-  onCancel
+  onCancel,
+  isTeamAdmin
 }) => {
   const [showAddTerrainDialog, setShowAddTerrainDialog] = useState(false);
   const [addressCoordinates, setAddressCoordinates] = useState<[number, number] | null>(null);
@@ -150,7 +151,7 @@ const TeamField: React.FC<TeamFieldProps> = ({
               </div>
               <h3 className="text-xl font-semibold">Aucun terrain configuré</h3>
               <p className="text-gray-500 max-w-md">Ajoutez un terrain pour que vos membres puissent trouver facilement où se déroulent vos parties</p>
-              {addTerrainButton}
+              {isTeamAdmin && addTerrainButton}
             </div>
           </CardContent>
         </Card> : <Card className="overflow-hidden border border-gray-200 shadow-md">
@@ -205,10 +206,10 @@ const TeamField: React.FC<TeamFieldProps> = ({
                   <Check className="mr-2 h-4 w-4" />
                   Sauvegarder
                 </Button>
-              </div> : <Button onClick={() => onEdit(field?.id, editedField)} className="w-full mt-2">
+              </div> : (isTeamAdmin && <Button onClick={() => onEdit(field?.id, editedField)} className="w-full mt-2">
                 <Edit className="mr-2 h-4 w-4" />
                 Modifier
-              </Button>}
+              </Button>)}
           </CardContent>
         </Card>}
     </div>;

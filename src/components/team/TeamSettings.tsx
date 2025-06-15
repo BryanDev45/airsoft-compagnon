@@ -36,8 +36,10 @@ const TeamSettings = ({
   const [currentTab, setCurrentTab] = useState('general');
   const isMobile = useIsMobile();
 
-  // Vérifier si l'utilisateur est le propriétaire de l'équipe
+  // Vérifier si l'utilisateur est le propriétaire de l'équipe ou admin
   const isTeamLeader = user?.id === team?.leader_id;
+  const currentUserMember = team.members?.find(member => member.id === user?.id);
+  const isTeamAdmin = isTeamLeader || currentUserMember?.role === 'Admin';
 
   // If the user is not a team member, don't render the component
   if (!isTeamMember) return null;
@@ -51,10 +53,10 @@ const TeamSettings = ({
 
   const content = (
     <TeamSettingsTabs currentTab={currentTab} onTabChange={setCurrentTab}>
-      {currentTab === 'general' && <TeamSettingsGeneral team={team} loading={loading} setLoading={setLoading} onTeamUpdate={onTeamUpdate} />}
-      {currentTab === 'media' && <TeamSettingsMedia team={team} loading={loading} setLoading={setLoading} onTeamUpdate={onTeamUpdate} />}
-      {currentTab === 'members' && <TeamSettingsMembers team={team} loading={loading} setLoading={setLoading} isTeamLeader={isTeamLeader} user={user} onClose={() => setOpen(false)} onTeamUpdate={onTeamUpdate as () => void} />}
-      {currentTab === 'danger' && <TeamSettingsDanger team={team} loading={loading} setLoading={setLoading} isTeamLeader={isTeamLeader} user={user} onClose={() => setOpen(false)} />}
+      {currentTab === 'general' && <TeamSettingsGeneral team={team} loading={loading} setLoading={setLoading} onTeamUpdate={onTeamUpdate} isTeamAdmin={isTeamAdmin} />}
+      {currentTab === 'media' && <TeamSettingsMedia team={team} loading={loading} setLoading={setLoading} onTeamUpdate={onTeamUpdate} isTeamAdmin={isTeamAdmin} />}
+      {currentTab === 'members' && <TeamSettingsMembers team={team} loading={loading} setLoading={setLoading} isTeamAdmin={isTeamAdmin} user={user} onClose={() => setOpen(false)} onTeamUpdate={onTeamUpdate as () => void} />}
+      {currentTab === 'danger' && <TeamSettingsDanger team={team} loading={loading} setLoading={setLoading} isTeamLeader={isTeamAdmin} user={user} onClose={() => setOpen(false)} />}
     </TeamSettingsTabs>
   );
 

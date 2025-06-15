@@ -9,7 +9,7 @@ interface TeamSettingsMembersProps {
   team: TeamData;
   loading: boolean;
   setLoading: (loading: boolean) => void;
-  isTeamLeader: boolean;
+  isTeamAdmin: boolean;
   user: any;
   onClose: () => void;
   onTeamUpdate?: () => void;
@@ -19,7 +19,7 @@ const TeamSettingsMembers = ({
   team, 
   loading, 
   setLoading, 
-  isTeamLeader, 
+  isTeamAdmin, 
   user,
   onClose,
   onTeamUpdate
@@ -34,11 +34,11 @@ const TeamSettingsMembers = ({
     handleUpdateMemberGameRole,
     handleUpdateMemberAssociationRole,
     handleLeaveTeam
-  } = useTeamMembers(team, user, isTeamLeader, onClose, onTeamUpdate);
+  } = useTeamMembers(team, user, isTeamAdmin, onClose, onTeamUpdate);
 
   return (
     <div className="space-y-6">
-      {isTeamLeader && pendingMembers.length > 0 && (
+      {isTeamAdmin && pendingMembers.length > 0 && (
         <PendingMembersList
           pendingMembers={pendingMembers}
           loading={loading}
@@ -50,7 +50,7 @@ const TeamSettingsMembers = ({
       <TeamMembersList
         teamMembers={teamMembers}
         loading={loading}
-        isTeamLeader={isTeamLeader}
+        isTeamLeader={isTeamAdmin}
         teamLeaderId={team.leader_id}
         currentUserId={user?.id}
         isAssociation={team.is_association}

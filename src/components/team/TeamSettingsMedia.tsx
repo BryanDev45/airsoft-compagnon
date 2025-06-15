@@ -10,9 +10,10 @@ interface TeamSettingsMediaProps {
   loading: boolean;
   setLoading: (loading: boolean) => void;
   onTeamUpdate?: (updatedTeam: Partial<TeamData>) => void;
+  isTeamAdmin: boolean;
 }
 
-const TeamSettingsMedia = ({ team, loading, setLoading, onTeamUpdate }: TeamSettingsMediaProps) => {
+const TeamSettingsMedia = ({ team, loading, setLoading, onTeamUpdate, isTeamAdmin }: TeamSettingsMediaProps) => {
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState(team?.logo || '');
@@ -43,6 +44,10 @@ const TeamSettingsMedia = ({ team, loading, setLoading, onTeamUpdate }: TeamSett
   };
 
   const handleSaveMedia = async () => {
+    if (!isTeamAdmin) {
+      toast({ title: "Permission refusée", description: "Vous devez être administrateur pour effectuer cette action.", variant: "destructive" });
+      return;
+    }
     setLoading(true);
     
     try {
@@ -135,7 +140,7 @@ const TeamSettingsMedia = ({ team, loading, setLoading, onTeamUpdate }: TeamSett
           </div>
           
           <div>
-            <Button asChild variant="outline" className="mb-2">
+            <Button asChild variant="outline" className="mb-2" disabled={!isTeamAdmin}>
               <label className="cursor-pointer">
                 <Camera className="h-4 w-4 mr-2" />
                 Changer le logo
@@ -144,6 +149,7 @@ const TeamSettingsMedia = ({ team, loading, setLoading, onTeamUpdate }: TeamSett
                   accept="image/*" 
                   className="hidden" 
                   onChange={handleLogoChange}
+                  disabled={!isTeamAdmin}
                 />
               </label>
             </Button>
@@ -174,7 +180,7 @@ const TeamSettingsMedia = ({ team, loading, setLoading, onTeamUpdate }: TeamSett
             Format recommandé: 16:9 ou 4:1. JPG ou PNG. Résolution minimum 1280x720px.
           </p>
           
-          <Button asChild variant="outline">
+          <Button asChild variant="outline" disabled={!isTeamAdmin}>
             <label className="cursor-pointer">
               <Camera className="h-4 w-4 mr-2" />
               Changer la bannière
@@ -183,6 +189,7 @@ const TeamSettingsMedia = ({ team, loading, setLoading, onTeamUpdate }: TeamSett
                 accept="image/*" 
                 className="hidden" 
                 onChange={handleBannerChange}
+                disabled={!isTeamAdmin}
               />
             </label>
           </Button>
@@ -192,7 +199,7 @@ const TeamSettingsMedia = ({ team, loading, setLoading, onTeamUpdate }: TeamSett
       <div className="flex justify-end pt-4">
         <Button 
           onClick={handleSaveMedia}
-          disabled={loading}
+          disabled={loading || !isTeamAdmin}
         >
           {loading ? "Enregistrement..." : "Enregistrer les médias"}
         </Button>

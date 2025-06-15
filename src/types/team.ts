@@ -1,4 +1,3 @@
-
 export interface TeamData {
   id: string;
   name: string;
@@ -11,6 +10,7 @@ export interface TeamData {
   is_recruiting?: boolean;
   founded?: number;
   is_association?: boolean;
+  members?: TeamMember[];
 }
 
 export interface TeamMember {

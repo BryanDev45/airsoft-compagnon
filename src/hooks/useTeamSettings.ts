@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { TeamData } from '@/types/team';
 
-export const useTeamSettings = (team: TeamData, onTeamUpdate?: (updatedTeam: Partial<TeamData>) => void) => {
+export const useTeamSettings = (team: TeamData, onTeamUpdate?: (updatedTeam: Partial<TeamData>) => void, isTeamAdmin?: boolean) => {
   const [name, setName] = useState(team?.name || '');
   const [location, setLocation] = useState(team?.location || '');
   const [founded, setFounded] = useState(team?.founded ? String(team.founded) : '');
@@ -15,7 +14,6 @@ export const useTeamSettings = (team: TeamData, onTeamUpdate?: (updatedTeam: Par
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Update state when team props change
     setName(team?.name || '');
     setLocation(team?.location || '');
     setFounded(team?.founded ? String(team.founded) : '');
@@ -25,10 +23,13 @@ export const useTeamSettings = (team: TeamData, onTeamUpdate?: (updatedTeam: Par
   }, [team]);
 
   const handleUpdateTeamInfo = async () => {
+    if (!isTeamAdmin) {
+      toast({ title: "Permission refusée", description: "Vous devez être administrateur pour effectuer cette action.", variant: "destructive" });
+      return;
+    }
     setLoading(true);
     
     try {
-      // Convert founded to number or null if it's an empty string
       const foundedValue = founded.trim() !== '' ? Number(founded) : null;
       
       const updatedFields = {
@@ -46,7 +47,6 @@ export const useTeamSettings = (team: TeamData, onTeamUpdate?: (updatedTeam: Par
         
       if (error) throw error;
       
-      // Notify parent component about the update with updated team object
       if (onTeamUpdate) {
         onTeamUpdate({
           ...team,
@@ -71,6 +71,10 @@ export const useTeamSettings = (team: TeamData, onTeamUpdate?: (updatedTeam: Par
   };
 
   const handleUpdateDescription = async () => {
+    if (!isTeamAdmin) {
+      toast({ title: "Permission refusée", description: "Vous devez être administrateur pour effectuer cette action.", variant: "destructive" });
+      return;
+    }
     setLoading(true);
     
     try {
@@ -81,7 +85,6 @@ export const useTeamSettings = (team: TeamData, onTeamUpdate?: (updatedTeam: Par
         
       if (error) throw error;
       
-      // Notify parent component about the update with updated team object
       if (onTeamUpdate) {
         onTeamUpdate({
           ...team,
@@ -108,6 +111,10 @@ export const useTeamSettings = (team: TeamData, onTeamUpdate?: (updatedTeam: Par
   };
 
   const handleToggleRecruitment = async () => {
+    if (!isTeamAdmin) {
+      toast({ title: "Permission refusée", description: "Vous devez être administrateur pour effectuer cette action.", variant: "destructive" });
+      return;
+    }
     setLoading(true);
     
     try {
@@ -148,6 +155,10 @@ export const useTeamSettings = (team: TeamData, onTeamUpdate?: (updatedTeam: Par
   };
 
   const handleToggleAssociation = async () => {
+    if (!isTeamAdmin) {
+      toast({ title: "Permission refusée", description: "Vous devez être administrateur pour effectuer cette action.", variant: "destructive" });
+      return;
+    }
     setLoading(true);
     
     try {

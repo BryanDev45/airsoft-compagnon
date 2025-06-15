@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Header from '../components/Header';
@@ -52,6 +51,9 @@ const Team = () => {
     handleFieldEdit
   } = useTeamView(team, fetchTeamData);
   const [activeTab, setActiveTab] = useState('members');
+
+  const currentUserMember = team?.members?.find((m: any) => m.id === currentUserId);
+  const isTeamAdmin = team?.leader_id === currentUserId || currentUserMember?.role === 'Admin';
 
   // Function to handle team updates
   const handleTeamUpdate = () => {
@@ -137,16 +139,23 @@ const Team = () => {
                   <TeamGames upcomingGames={team.upcomingGames || []} pastGames={team.pastGames || []} />
                 </TabsContent>
                 <TabsContent value="field" className="mt-4">
-                  <TeamField field={team.field} isEditing={isEditingField} onEdit={(_fieldId, _updates) => {
-                  if (isTeamMember) setIsEditingField(true);
-                }} onSave={async (fieldId, updates) => {
-                  if (isTeamMember) {
-                    await handleFieldEdit(fieldId, updates);
-                    setIsEditingField(false);
-                  }
-                }} onCancel={() => {
-                  if (isTeamMember) setIsEditingField(false);
-                }} />
+                  <TeamField 
+                    field={team.field} 
+                    isEditing={isEditingField} 
+                    isTeamAdmin={isTeamAdmin}
+                    onEdit={(_fieldId, _updates) => {
+                      if (isTeamAdmin) setIsEditingField(true);
+                    }} 
+                    onSave={async (fieldId, updates) => {
+                      if (isTeamAdmin) {
+                        await handleFieldEdit(fieldId, updates);
+                        setIsEditingField(false);
+                      }
+                    }} 
+                    onCancel={() => {
+                      if (isTeamAdmin) setIsEditingField(false);
+                    }} 
+                  />
                 </TabsContent>
                 <TabsContent value="ratings" className="mt-4">
                   <TeamRating teamId={team.id} teamName={team.name} currentUserId={currentUserId} isTeamMember={isTeamMember} currentRating={team.stats?.averageRating ? parseFloat(team.stats.averageRating) : 0} onRatingUpdate={fetchTeamData} />
