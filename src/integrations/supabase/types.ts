@@ -1267,6 +1267,16 @@ export type Database = {
         Args: { other_user_id: string }
         Returns: string
       }
+      create_team_with_leader: {
+        Args: {
+          team_name: string
+          team_description: string
+          team_is_association: boolean
+          team_contact: string
+          team_location: string
+        }
+        Returns: string
+      }
       get_average_rating: {
         Args: { p_user_id: string }
         Returns: number

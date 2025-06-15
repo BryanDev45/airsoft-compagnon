@@ -43,53 +43,27 @@ export const useCreateTeam = () => {
     try {
       setIsSubmitting(true);
       
-      const defaultLogo = "/placeholder.svg";
-      const defaultBanner = "https://images.unsplash.com/photo-1553302948-2b3ec6d9eada?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&h=300&q=80";
-      
-      const { data: team, error } = await supabase
-        .from('teams')
-        .insert({
-          name: data.name,
-          description: data.description || "",
-          is_association: data.isAssociation,
-          contact: data.contact || "",
-          location: data.location || "",
-          leader_id: user.id,
-          member_count: 1,
-          logo: defaultLogo,
-          banner: defaultBanner,
-        })
-        .select()
-        .single();
+      const { data: teamId, error } = await supabase.rpc('create_team_with_leader', {
+        team_name: data.name,
+        team_description: data.description,
+        team_is_association: data.isAssociation,
+        team_contact: data.contact,
+        team_location: data.location,
+      });
       
       if (error) throw error;
       
-      if (team) {
-        const { error: memberError } = await supabase
-          .from('team_members')
-          .insert({
-            team_id: team.id,
-            user_id: user.id,
-            role: 'Admin',
-            status: 'confirmed',
-          });
-
-        if (memberError) {
-          console.error("Erreur lors de l'ajout du créateur comme membre:", memberError);
-          toast({
-            title: "Avertissement",
-            description: "Votre équipe a été créée, mais une erreur est survenue lors de votre affectation en tant que membre. Vous devrez peut-être le faire manuellement.",
-            variant: "default",
-          });
-        }
-      }
-
       toast({
         title: "Succès",
         description: "Votre équipe a été créée avec succès"
       });
       
-      navigate(`/team/${team.id}`);
+      if (teamId) {
+        navigate(`/team/${teamId}`);
+      } else {
+        console.error("La création de l'équipe a réussi mais l'ID de l'équipe n'a pas été retourné.");
+        navigate('/'); // Fallback navigation
+      }
     } catch (error: any) {
       console.error("Erreur lors de la création de l'équipe:", error);
       toast({
