@@ -13,7 +13,7 @@ export interface Badge {
   created_at: string;
 }
 
-const fetchAllBadges = async () => {
+const fetchAllBadges = async (): Promise<Badge[]> => {
   const { data, error } = await supabase
     .from('badges')
     .select('*')
@@ -22,7 +22,7 @@ const fetchAllBadges = async () => {
   if (error) {
     throw new Error(error.message);
   }
-  return data;
+  return data as Badge[];
 };
 
 export const useAllBadges = () => {
