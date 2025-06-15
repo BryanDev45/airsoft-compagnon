@@ -68,19 +68,23 @@ const TeamApplicationButton: React.FC<TeamApplicationButtonProps> = ({
       setIsApplying(true);
 
       // Check if user is already in a team
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('team_id')
-        .eq('id', user.id)
-        .single();
+      const { data: existingMember, error: memberError } = await supabase
+        .from('team_members')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('status', 'confirmed')
+        .limit(1)
+        .maybeSingle();
 
-      if (profileError) throw profileError;
+      if (memberError) {
+        throw memberError;
+      }
 
-      if (profileData?.team_id) {
+      if (existingMember) {
         toast({
           title: "Déjà membre d'une équipe",
-          description: "Vous devez d'abord quitter votre équipe actuelle",
-          variant: "destructive"
+          description: "Vous devez d'abord quitter votre équipe actuelle pour postuler.",
+          variant: "destructive",
         });
         return;
       }

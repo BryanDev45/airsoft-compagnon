@@ -33,16 +33,18 @@ const TeamApplicationButton: React.FC<TeamApplicationButtonProps> = ({
       if (!user || !teamId) return;
 
       try {
-        // Vérifier si l'utilisateur a déjà une équipe
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('team_id')
-          .eq('id', user.id)
-          .single();
+        // Check if user is already a confirmed member of any team
+        const { data: memberData, error: memberError } = await supabase
+          .from('team_members')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('status', 'confirmed')
+          .limit(1)
+          .maybeSingle();
 
-        if (profileError) throw profileError;
+        if (memberError) throw memberError;
 
-        if (profileData?.team_id) {
+        if (memberData) {
           setUserHasTeam(true);
           return;
         }
