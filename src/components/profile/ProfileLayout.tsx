@@ -56,19 +56,6 @@ const ProfileLayout = ({
             handleViewGameDetails={handleViewGameDetails}
             handleViewAllGames={handleViewAllGames}
           />
-          
-          <ProfileDialogs
-            selectedGame={dialogStates.selectedGame}
-            showGameDialog={dialogStates.showGameDialog}
-            setShowGameDialog={dialogStates.setShowGameDialog}
-            setSelectedGame={dialogStates.setSelectedGame}
-            showAllGamesDialog={dialogStates.showAllGamesDialog}
-            setShowAllGamesDialog={dialogStates.setShowAllGamesDialog}
-            showBadgesDialog={dialogStates.showBadgesDialog}
-            setShowBadgesDialog={dialogStates.setShowBadgesDialog}
-            user={user}
-            userGames={userGames}
-          />
         </div>
       </main>
       <Footer />
