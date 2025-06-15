@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -19,7 +20,7 @@ const Messages: React.FC = () => {
         <div className="max-w-7xl mx-auto h-full">
           {/* Enhanced Page Header */}
           <div className="mb-8">
-            <div className="flex items-center justify-center gap-4 mb-3">
+            <div className="flex flex-col text-center sm:text-left sm:flex-row items-center justify-center sm:justify-start gap-4 mb-3">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-airsoft-red to-red-600 rounded-xl blur-sm opacity-20"></div>
                 <div className="relative p-3 bg-gradient-to-br from-airsoft-red to-red-600 rounded-xl shadow-lg">
@@ -27,8 +28,8 @@ const Messages: React.FC = () => {
                 </div>
               </div>
               <div>
-                <h1 className="text-4xl font-bold text-gray-900 mb-1">Messages</h1>
-                <p className="text-gray-600 text-lg">Communiquez avec votre équipe et les autres joueurs</p>
+                <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-1">Messages</h1>
+                <p className="text-gray-600 text-base sm:text-lg">Communiquez avec votre équipe et les autres joueurs</p>
               </div>
             </div>
             
@@ -74,8 +75,8 @@ const Messages: React.FC = () => {
             </div>
           </div>
           
-          {/* Enhanced Main Content Card avec hauteur fixe */}
-          <Card className="shadow-2xl border-0 bg-white/90 backdrop-blur-sm ring-1 ring-white/20 h-[calc(100vh-360px)] min-h-[600px] flex flex-col">
+          {/* Enhanced Main Content Card avec hauteur flexible */}
+          <Card className="shadow-2xl border-0 bg-white/90 backdrop-blur-sm ring-1 ring-white/20 min-h-[70vh] md:min-h-[600px] lg:h-[calc(100vh-360px)] flex flex-col">
             <div className="flex h-full">
               {/* Enhanced Sidebar - Conversation List */}
               <div className={`${selectedConversationId ? 'hidden lg:block' : ''} w-full lg:w-96 border-r border-gray-100/80 bg-gradient-to-b from-white/95 to-gray-50/50 backdrop-blur-sm flex flex-col`}>
