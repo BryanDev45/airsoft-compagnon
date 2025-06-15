@@ -8,44 +8,27 @@ interface ProfileDialogsProps {
   selectedGame: any;
   showGameDialog: boolean;
   setShowGameDialog: (show: boolean) => void;
-  setSelectedGame: (game: any) => void;
   showAllGamesDialog: boolean;
   setShowAllGamesDialog: (show: boolean) => void;
   showBadgesDialog: boolean;
   setShowBadgesDialog: (show: boolean) => void;
   user: any;
   userGames: any[];
+  onGameClick: (game: any) => void;
 }
 
 const ProfileDialogs: React.FC<ProfileDialogsProps> = ({ 
   selectedGame,
   showGameDialog,
   setShowGameDialog,
-  setSelectedGame,
   showAllGamesDialog,
   setShowAllGamesDialog,
   showBadgesDialog,
   setShowBadgesDialog,
   user,
-  userGames = []
+  userGames = [],
+  onGameClick
 }) => {
-
-  const handleGameClick = (game: any) => {
-    // Enrichir les données du jeu avec toutes les informations nécessaires pour le dialog
-    const enrichedGame = {
-      ...game,
-      // S'assurer que toutes les propriétés nécessaires sont présentes
-      participantsCount: game.participants || game.participantsCount || 0,
-      max_players: game.maxParticipants || game.max_players,
-      // Construire l'adresse complète si elle n'existe pas
-      address: game.location || (game.city && game.zip_code ? `${game.city}, ${game.zip_code}` : game.address) || 'Lieu non spécifié'
-    };
-    
-    // Fermer le dialog "toutes les parties" et ouvrir le dialog de détails
-    setShowAllGamesDialog(false);
-    setSelectedGame(enrichedGame);
-    setShowGameDialog(true);
-  };
   
   return (
     <>
@@ -60,7 +43,7 @@ const ProfileDialogs: React.FC<ProfileDialogsProps> = ({
         setShowAllGamesDialog={setShowAllGamesDialog}
         user={user}
         userGames={userGames}
-        onGameClick={handleGameClick}
+        onGameClick={onGameClick}
       />
 
       <BadgesDialog

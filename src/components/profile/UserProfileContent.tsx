@@ -10,6 +10,7 @@ import ProfileBadges from './ProfileBadges';
 import ProfileDialogs from './ProfileDialogs';
 import ProfileFriends from './ProfileFriends';
 import { useProfileDialogs } from '@/hooks/profile/useProfileDialogs';
+import { useGameDetailsDialog } from '@/hooks/profile/useGameDetailsDialog';
 
 interface UserProfileContentProps {
   userData: any;
@@ -38,15 +39,18 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
 }) => {
   const navigate = useNavigate();
   const {
-    selectedGame,
-    setSelectedGame,
-    showGameDialog,
-    setShowGameDialog,
     showAllGamesDialog,
     setShowAllGamesDialog,
     showBadgesDialog,
     setShowBadgesDialog
   } = useProfileDialogs();
+
+  const {
+    selectedGame,
+    showGameDialog,
+    showGameDetails,
+    handleOpenChange,
+  } = useGameDetailsDialog();
   
   const equipmentTypes = ["Réplique principale", "Réplique secondaire", "Protection", "Accessoire"];
 
@@ -54,6 +58,15 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
     if (profileData?.team_id) {
       navigate(`/team/${profileData.team_id}`);
     }
+  };
+
+  const handleShowAllGames = () => {
+    setShowAllGamesDialog(true);
+  };
+
+  const handleGameClickInAllGamesDialog = (game: any) => {
+    setShowAllGamesDialog(false);
+    showGameDetails(game);
   };
 
   return (
@@ -81,17 +94,8 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
         <TabsContent value="games">
           <ProfileGames 
             games={userGames} 
-            handleViewGameDetails={(game: any) => {
-              const enrichedGame = {
-                ...game,
-                participantsCount: game.participants || game.participantsCount || 0,
-                max_players: game.maxParticipants || game.max_players,
-                address: game.location || (game.city && game.zip_code ? `${game.city}, ${game.zip_code}` : game.address) || 'Lieu non spécifié'
-              };
-              setSelectedGame(enrichedGame);
-              setShowGameDialog(true);
-            }} 
-            handleViewAllGames={() => setShowAllGamesDialog(true)} 
+            handleViewGameDetails={showGameDetails} 
+            handleViewAllGames={handleShowAllGames} 
           />
         </TabsContent>
         
@@ -130,14 +134,14 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
       <ProfileDialogs 
         selectedGame={selectedGame}
         showGameDialog={showGameDialog}
-        setShowGameDialog={setShowGameDialog}
-        setSelectedGame={setSelectedGame}
+        setShowGameDialog={handleOpenChange}
         showAllGamesDialog={showAllGamesDialog}
         setShowAllGamesDialog={setShowAllGamesDialog}
         showBadgesDialog={showBadgesDialog}
         setShowBadgesDialog={setShowBadgesDialog}
         user={profileData}
         userGames={userGames}
+        onGameClick={handleGameClickInAllGamesDialog}
       />
     </div>
   );
