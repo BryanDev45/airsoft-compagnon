@@ -1,5 +1,3 @@
-
-```typescript
 import { useUserProfileData } from './user-profile/useUserProfileData';
 import { useUserSocial } from './user-profile/useUserSocial';
 import { useQuery } from '@tanstack/react-query';
@@ -50,7 +48,7 @@ export const useUserProfile = (username: string | undefined) => {
         
         const { data, error } = await supabase
             .from('user_warnings')
-            .select(`*, admin_profile:admin_id(username)`)
+            .select('*, admin_profile:profiles(username)')
             .eq('warned_user_id', userData.id)
             .order('created_at', { ascending: false });
 
@@ -60,7 +58,7 @@ export const useUserProfile = (username: string | undefined) => {
             if (error.message.includes('could not find a relationship')) {
                  const { data: warningsData, error: warningsError } = await supabase
                     .from('user_warnings')
-                    .select(`*`)
+                    .select('*')
                     .eq('warned_user_id', userData.id)
                     .order('created_at', { ascending: false });
                 if(warningsError) throw warningsError;
@@ -96,4 +94,3 @@ export const useUserProfile = (username: string | undefined) => {
     fetchProfileData
   };
 };
-```
