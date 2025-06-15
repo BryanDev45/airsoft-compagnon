@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Calendar, User, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -51,18 +52,7 @@ const ProfileGames = ({
 
   // Limiter à 10 parties pour l'affichage principal
   const displayedGames = sortedGames.slice(0, 10);
-  const handleGameClick = (game: Game) => {
-    // Enrichir les données du jeu avec toutes les informations nécessaires pour le dialog
-    const enrichedGame = {
-      ...game,
-      // S'assurer que toutes les propriétés nécessaires sont présentes
-      participantsCount: game.participants || game.participantsCount || 0,
-      max_players: game.maxParticipants || game.max_players,
-      // Construire l'adresse complète si elle n'existe pas
-      address: game.location || (game.city && game.zip_code ? `${game.city}, ${game.zip_code}` : game.address) || 'Lieu non spécifié'
-    };
-    handleViewGameDetails(enrichedGame);
-  };
+  
   return <Card>
       <CardHeader>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -100,7 +90,7 @@ const ProfileGames = ({
                   <Badge className={game.status === "À venir" ? "bg-blue-500" : game.status === "Terminé" ? "bg-gray-500" : "bg-green-500"}>
                     {game.status}
                   </Badge>
-                  <Button variant="outline" size="sm" className="border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white" onClick={() => handleGameClick(game)}>
+                  <Button variant="outline" size="sm" className="border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white" onClick={() => handleViewGameDetails(game)}>
                     Détails
                   </Button>
                 </div>
@@ -115,3 +105,4 @@ const ProfileGames = ({
     </Card>;
 };
 export default ProfileGames;
+

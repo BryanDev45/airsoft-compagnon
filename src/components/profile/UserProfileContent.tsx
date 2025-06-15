@@ -82,7 +82,13 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
           <ProfileGames 
             games={userGames} 
             handleViewGameDetails={(game: any) => {
-              setSelectedGame(game);
+              const enrichedGame = {
+                ...game,
+                participantsCount: game.participants || game.participantsCount || 0,
+                max_players: game.maxParticipants || game.max_players,
+                address: game.location || (game.city && game.zip_code ? `${game.city}, ${game.zip_code}` : game.address) || 'Lieu non spécifié'
+              };
+              setSelectedGame(enrichedGame);
               setShowGameDialog(true);
             }} 
             handleViewAllGames={() => setShowAllGamesDialog(true)} 
