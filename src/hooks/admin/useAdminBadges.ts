@@ -81,26 +81,21 @@ export const useCreateBadge = () => {
 
 // Update a badge
 const updateBadge = async (badgeData: Partial<BadgeFormData> & { id: string }) => {
-  let iconUrl = badgeData.icon;
-  if (badgeData.iconFile) {
-    iconUrl = await uploadIcon(badgeData.iconFile);
+  const { id, iconFile, lockedIconFile, ...badgeToUpdate } = badgeData;
+  const updatePayload: { [key: string]: any } = badgeToUpdate;
+
+  if (iconFile) {
+    updatePayload.icon = await uploadIcon(iconFile);
   }
 
-  let lockedIconUrl = badgeData.locked_icon;
-  if (badgeData.lockedIconFile) {
-    lockedIconUrl = await uploadIcon(badgeData.lockedIconFile);
-  } else if (badgeData.locked_icon === undefined) {
-    // Keep old value if not provided
-    lockedIconUrl = badgeData.locked_icon;
+  if (lockedIconFile) {
+    updatePayload.locked_icon = await uploadIcon(lockedIconFile);
   }
 
-  const { iconFile, lockedIconFile, id, ...badgeToUpdate } = badgeData;
-  const updatePayload: { [key: string]: any } = { ...badgeToUpdate, icon: iconUrl };
+  // Remove keys that are not part of the 'badges' table columns
+  delete updatePayload.iconFile;
+  delete updatePayload.lockedIconFile;
 
-  if (lockedIconUrl !== undefined) {
-    updatePayload.locked_icon = lockedIconUrl;
-  }
-  
   const { data, error } = await supabase
     .from('badges')
     .update(updatePayload)

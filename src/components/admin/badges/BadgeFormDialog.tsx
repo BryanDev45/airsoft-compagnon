@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Badge as BadgeType } from '@/hooks/badges/useAllBadges';
-import { Loader2 } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
 
 const formSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères."),
@@ -25,6 +25,7 @@ const formSchema = z.object({
   border_color: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Format de couleur hexadécimal invalide (ex: #RRGGBB)."),
   iconFile: z.instanceof(File).optional(),
   lockedIconFile: z.instanceof(File).optional(),
+  locked_icon: z.string().nullable().optional(),
 });
 
 interface BadgeFormDialogProps {
@@ -57,6 +58,7 @@ const BadgeFormDialog: React.FC<BadgeFormDialogProps> = ({ isOpen, onOpenChange,
           description: badge.description,
           background_color: badge.background_color,
           border_color: badge.border_color,
+          locked_icon: badge.locked_icon,
         });
         setPreview(badge.icon);
         setLockedPreview(badge.locked_icon || null);
@@ -66,6 +68,9 @@ const BadgeFormDialog: React.FC<BadgeFormDialogProps> = ({ isOpen, onOpenChange,
           description: '',
           background_color: '#ffffff',
           border_color: '#000000',
+          iconFile: undefined,
+          lockedIconFile: undefined,
+          locked_icon: undefined,
         });
         setPreview(null);
         setLockedPreview(null);
@@ -87,6 +92,12 @@ const BadgeFormDialog: React.FC<BadgeFormDialogProps> = ({ isOpen, onOpenChange,
       form.setValue('lockedIconFile', file);
       setLockedPreview(URL.createObjectURL(file));
     }
+  };
+  
+  const handleRemoveLockedIcon = () => {
+    setLockedPreview(null);
+    form.setValue('lockedIconFile', undefined);
+    form.setValue('locked_icon', null);
   };
 
   return (
@@ -169,7 +180,15 @@ const BadgeFormDialog: React.FC<BadgeFormDialogProps> = ({ isOpen, onOpenChange,
                   <Input type="file" accept="image/png, image/jpeg, image/svg+xml" onChange={handleLockedFileChange} />
                 </FormControl>
                 <FormMessage />
-                {lockedPreview ? <img src={lockedPreview} alt="Aperçu de l'icône verrouillée" className="mt-2 w-24 h-24 object-contain rounded-lg border p-1" /> : <div className="mt-2 w-24 h-24 rounded-lg border p-1 flex items-center justify-center bg-gray-50 text-xs text-gray-500">Aucun</div>}
+                {lockedPreview ? (
+                  <div className="mt-2 flex items-start gap-2">
+                    <img src={lockedPreview} alt="Aperçu de l'icône verrouillée" className="w-24 h-24 object-contain rounded-lg border p-1" />
+                    <Button type="button" variant="ghost" size="icon" className="h-7 w-7 mt-1 text-red-500 hover:text-red-700" onClick={handleRemoveLockedIcon}>
+                      <X className="h-4 w-4" />
+                      <span className="sr-only">Retirer l'icône</span>
+                    </Button>
+                  </div>
+                ) : <div className="mt-2 w-24 h-24 rounded-lg border p-1 flex items-center justify-center bg-gray-50 text-xs text-gray-500">Aucun</div>}
               </FormItem>
             </div>
             

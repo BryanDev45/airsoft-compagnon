@@ -143,6 +143,7 @@ export type Database = {
           description: string | null
           icon: string | null
           id: string
+          locked_icon: string | null
           name: string
         }
         Insert: {
@@ -152,6 +153,7 @@ export type Database = {
           description?: string | null
           icon?: string | null
           id?: string
+          locked_icon?: string | null
           name: string
         }
         Update: {
@@ -161,6 +163,7 @@ export type Database = {
           description?: string | null
           icon?: string | null
           id?: string
+          locked_icon?: string | null
           name?: string
         }
         Relationships: []
