@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { FormattedGame, fetchParticipantCounts, formatParticipatedGame, formatCreatedGame } from './gameFormatters';
@@ -8,7 +7,7 @@ import { triggerUserStatsUpdate } from '@/utils/supabaseHelpers';
 /**
  * Hook optimisé pour récupérer les parties d'un utilisateur avec mise en cache
  */
-export const useUserGamesFetch = (userId: string | undefined, currentUserId?: string | null) => {
+export const useUserGamesFetch = (userId: string | undefined, username: string | undefined, currentUserId?: string | null) => {
   const queryClient = useQueryClient();
   
   // Force la re-exécution de la requête quand l'userId change
@@ -27,19 +26,18 @@ export const useUserGamesFetch = (userId: string | undefined, currentUserId?: st
   useEffect(() => {
     // La mise à jour est maintenant gérée par une fonction RPC sécurisée,
     // donc on peut la déclencher pour n'importe quel profil.
-    if (isSuccess && userId) {
+    if (isSuccess && userId && username) {
       console.log(`Déclenchement de la mise à jour des statistiques via RPC pour: ${userId}`);
       triggerUserStatsUpdate(userId)
         .then(({ error }) => {
           if (!error) {
-            // Invalider le cache des user_stats et profileData pour forcer le rechargement avec les nouvelles stats
-            console.log(`Invalidation du cache user_stats et profileData pour: ${userId}`);
-            queryClient.invalidateQueries({ queryKey: ['user_stats', userId] });
-            queryClient.invalidateQueries({ queryKey: ['profileData', userId] });
+            // Invalider le cache de userProfileData pour forcer le rechargement avec les nouvelles stats
+            console.log(`Invalidation du cache userProfileData pour: ${username}`);
+            queryClient.invalidateQueries({ queryKey: ['userProfileData', username] });
           }
         });
     }
-  }, [isSuccess, userId, queryClient]);
+  }, [isSuccess, userId, username, queryClient]);
 
   return {
     userGames,
