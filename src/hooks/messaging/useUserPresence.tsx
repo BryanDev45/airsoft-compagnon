@@ -63,12 +63,12 @@ export const useUserPresence = () => {
       clearInterval(intervalRef.current);
     }
 
-    // Update presence every 10 minutes instead of 5 minutes
+    // Update presence every 4 minutes to stay within the 5-minute online threshold
     intervalRef.current = setInterval(() => {
       if (!document.hidden && user?.id) {
         updatePresence(true);
       }
-    }, 10 * 60 * 1000);
+    }, 4 * 60 * 1000);
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('beforeunload', handleBeforeUnload);

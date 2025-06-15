@@ -7,8 +7,11 @@ import { useMessaging } from '@/hooks/messaging/useMessaging';
 import { useNavigate } from 'react-router-dom';
 import ConversationList from './ConversationList';
 import ChatView from './ChatView';
+import { useUserPresence } from '@/hooks/messaging/useUserPresence';
 
 const MessagingIcon: React.FC = () => {
+  useUserPresence(); // Initialize user presence tracking globally
+
   const [isOpen, setIsOpen] = useState(false);
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const { conversations, unreadCount } = useMessaging();
