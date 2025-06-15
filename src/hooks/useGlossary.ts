@@ -31,10 +31,15 @@ export const useGlossaryTerms = () => {
 };
 
 // Add a new glossary term
-const addGlossaryTerm = async (newTerm: Omit<GlossaryTerm, 'id' | 'created_at'>) => {
+const addGlossaryTerm = async (newTerm: Partial<Omit<GlossaryTerm, 'id' | 'created_at'>>) => {
+  const { term, definition, category } = newTerm;
+  if (!term || !definition || !category) {
+    throw new Error("Le terme, la définition et la catégorie sont requis pour ajouter un nouveau terme.");
+  }
+  
   const { data, error } = await supabase
     .from('glossary')
-    .insert([newTerm])
+    .insert([{ term, definition, category }])
     .select()
     .single();
     
@@ -57,7 +62,7 @@ export const useAddGlossaryTerm = () => {
 };
 
 // Update a glossary term
-const updateGlossaryTerm = async (updatedTerm: Omit<GlossaryTerm, 'created_at'>) => {
+const updateGlossaryTerm = async (updatedTerm: Partial<Omit<GlossaryTerm, 'created_at'>> & { id: string }) => {
     const { id, ...termData } = updatedTerm;
     const { data, error } = await supabase
         .from('glossary')
