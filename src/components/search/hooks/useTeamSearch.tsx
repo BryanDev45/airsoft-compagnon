@@ -69,5 +69,6 @@ export const useTeamSearch = (searchQuery: string) => {
     },
     // Always enable the query now, even with empty search
     enabled: true,
+    staleTime: 0,
   });
 };
