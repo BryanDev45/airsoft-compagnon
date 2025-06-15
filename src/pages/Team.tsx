@@ -13,7 +13,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TeamMembers from '../components/team/TeamMembers';
 import TeamGames from '../components/team/TeamGames';
 import TeamField from '../components/team/TeamField';
-import TeamRating from '../components/team/TeamRating';
 import TeamNews from '../components/team/TeamNews';
 
 const Team = () => {
@@ -134,7 +133,6 @@ const Team = () => {
                     <TabsTrigger value="news">Actualités</TabsTrigger>
                     <TabsTrigger value="games">Parties</TabsTrigger>
                     <TabsTrigger value="field">Terrain</TabsTrigger>
-                    <TabsTrigger value="ratings">Avis</TabsTrigger>
                   </TabsList>
                 </div>
                 <TabsContent value="members" className="mt-4">
@@ -164,9 +162,6 @@ const Team = () => {
                       if (isTeamAdmin) setIsEditingField(false);
                     }} 
                   />
-                </TabsContent>
-                <TabsContent value="ratings" className="mt-4">
-                  <TeamRating teamId={team.id} teamName={team.name} currentUserId={currentUserId} isTeamMember={isTeamMember} currentRating={team.stats?.averageRating ? parseFloat(team.stats.averageRating) : 0} onRatingUpdate={fetchTeamData} />
                 </TabsContent>
               </Tabs>
             </div>
