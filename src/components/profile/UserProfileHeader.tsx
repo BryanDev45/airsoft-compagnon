@@ -67,7 +67,7 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
       />
       
       {!isOwnProfile && (
-        <div className="absolute top-4 right-4 flex space-x-2">
+        <div className="absolute top-4 right-4 flex flex-wrap justify-end gap-2">
           {currentUserId && currentUserId !== userData?.id && (
             <Button 
               onClick={handleFollowUser}
