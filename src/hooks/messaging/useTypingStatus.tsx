@@ -44,18 +44,21 @@ export const useTypingStatus = (conversationId: string | null) => {
       setTypingUsers(typers);
     };
     
-    channel
-      .on('presence', { event: 'sync' }, onSync)
-      .subscribe((status, err) => {
-        if (status === 'SUBSCRIBED') {
-          console.log(`Presence subscribed to ${channelName}`);
-          // Track initial state when subscribed
-          channel.track({ typing: false, username: user.username });
-        }
-        if (status === 'CHANNEL_ERROR') {
-          console.error(`Presence channel error for ${channelName}:`, err);
-        }
-      });
+    if (channel.state !== 'joined' && channel.state !== 'joining') {
+      channel
+        .on('presence', { event: 'sync' }, onSync)
+        .subscribe((status, err) => {
+          if (status === 'SUBSCRIBED') {
+            console.log(`Presence subscribed to ${channelName}`);
+            // Track initial state when subscribed
+            channel.track({ typing: false, username: user.username });
+          }
+          if (status === 'CHANNEL_ERROR') {
+            console.error(`Presence channel error for ${channelName}:`, err);
+          }
+        });
+    }
+
 
     return () => {
       if (channelRef.current) {
