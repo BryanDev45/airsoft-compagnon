@@ -4,31 +4,28 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
 import TeamBanner from '../components/team/TeamBanner';
 import TeamAbout from '../components/team/TeamAbout';
 import TeamDialogs from '../components/team/TeamDialogs';
 import { useTeamData } from '@/hooks/useTeamData';
 import { useTeamView } from '@/hooks/team/useTeamView';
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TeamMembers from '../components/team/TeamMembers';
 import TeamGames from '../components/team/TeamGames';
 import TeamField from '../components/team/TeamField';
 import TeamRating from '../components/team/TeamRating';
-
 const Team = () => {
-  const { id } = useParams();
-  
-  const { 
-    team, 
-    loading, 
-    error, 
-    isTeamMember, 
-    currentUserId, 
-    fetchTeamData 
+  const {
+    id
+  } = useParams();
+  const {
+    team,
+    loading,
+    error,
+    isTeamMember,
+    currentUserId,
+    fetchTeamData
   } = useTeamData(id);
-
   const {
     selectedMember,
     setSelectedMember,
@@ -53,17 +50,14 @@ const Team = () => {
     handleShareVia,
     handleFieldEdit
   } = useTeamView(team, fetchTeamData);
-  
   const [activeTab, setActiveTab] = useState('members');
 
   // Function to handle team updates
   const handleTeamUpdate = () => {
     fetchTeamData();
   };
-
   if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col">
+    return <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-grow bg-gray-50 py-12 flex items-center justify-center">
           <div className="animate-pulse flex flex-col items-center">
@@ -73,13 +67,10 @@ const Team = () => {
           </div>
         </main>
         <Footer />
-      </div>
-    );
+      </div>;
   }
-
   if (error) {
-    return (
-      <div className="min-h-screen flex flex-col">
+    return <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-grow bg-gray-50 py-12 flex items-center justify-center">
           <Card>
@@ -88,10 +79,7 @@ const Team = () => {
               <CardDescription>{error.message}</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col items-center gap-4">
-              <Button 
-                onClick={() => fetchTeamData()}
-                className="bg-airsoft-red hover:bg-red-700"
-              >
+              <Button onClick={() => fetchTeamData()} className="bg-airsoft-red hover:bg-red-700">
                 Réessayer
               </Button>
               <Button asChild variant="outline">
@@ -101,13 +89,10 @@ const Team = () => {
           </Card>
         </main>
         <Footer />
-      </div>
-    );
+      </div>;
   }
-
   if (!team) {
-    return (
-      <div className="min-h-screen flex flex-col">
+    return <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-grow bg-gray-50 py-12 flex items-center justify-center">
           <Card>
@@ -123,31 +108,17 @@ const Team = () => {
           </Card>
         </main>
         <Footer />
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen flex flex-col">
+  return <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow bg-gray-50">
-        <TeamBanner 
-          team={team} 
-          isTeamMember={isTeamMember}
-          onTeamUpdate={handleTeamUpdate}
-        />
+        <TeamBanner team={team} isTeamMember={isTeamMember} onTeamUpdate={handleTeamUpdate} />
 
         <div className="max-w-6xl mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row md:items-start gap-8">
             <div className="md:w-1/3 space-y-6">
-              <TeamAbout 
-                team={team} 
-                handleContactTeam={handleContactTeam} 
-                handleShare={handleShare} 
-                isTeamMember={isTeamMember}
-                currentUserId={currentUserId}
-                onTeamUpdate={handleTeamUpdate}
-              />
+              <TeamAbout team={team} handleContactTeam={handleContactTeam} handleShare={handleShare} isTeamMember={isTeamMember} currentUserId={currentUserId} onTeamUpdate={handleTeamUpdate} />
             </div>
 
             <div className="md:w-2/3">
@@ -156,48 +127,28 @@ const Team = () => {
                   <TabsTrigger value="members">Membres ({team.members?.length || 0})</TabsTrigger>
                   <TabsTrigger value="games">Parties</TabsTrigger>
                   <TabsTrigger value="field">Terrain</TabsTrigger>
-                  <TabsTrigger value="ratings">Avis</TabsTrigger>
+                  
                 </TabsList>
                 <TabsContent value="members" className="mt-4">
-                  <TeamMembers 
-                    members={team.members || []} 
-                    handleViewMember={handleViewMember} 
-                    isAssociation={team.is_association}
-                  />
+                  <TeamMembers members={team.members || []} handleViewMember={handleViewMember} isAssociation={team.is_association} />
                 </TabsContent>
                 <TabsContent value="games" className="mt-4">
-                  <TeamGames
-                    upcomingGames={team.upcomingGames || []}
-                    pastGames={team.pastGames || []}
-                  />
+                  <TeamGames upcomingGames={team.upcomingGames || []} pastGames={team.pastGames || []} />
                 </TabsContent>
                 <TabsContent value="field" className="mt-4">
-                  <TeamField
-                    field={team.field}
-                    isEditing={isEditingField}
-                    onEdit={(_fieldId, _updates) => {
-                      if (isTeamMember) setIsEditingField(true);
-                    }}
-                    onSave={async (fieldId, updates) => {
-                      if (isTeamMember) {
-                        await handleFieldEdit(fieldId, updates);
-                        setIsEditingField(false);
-                      }
-                    }}
-                    onCancel={() => {
-                      if (isTeamMember) setIsEditingField(false);
-                    }}
-                  />
+                  <TeamField field={team.field} isEditing={isEditingField} onEdit={(_fieldId, _updates) => {
+                  if (isTeamMember) setIsEditingField(true);
+                }} onSave={async (fieldId, updates) => {
+                  if (isTeamMember) {
+                    await handleFieldEdit(fieldId, updates);
+                    setIsEditingField(false);
+                  }
+                }} onCancel={() => {
+                  if (isTeamMember) setIsEditingField(false);
+                }} />
                 </TabsContent>
                 <TabsContent value="ratings" className="mt-4">
-                  <TeamRating
-                    teamId={team.id}
-                    teamName={team.name}
-                    currentUserId={currentUserId}
-                    isTeamMember={isTeamMember}
-                    currentRating={team.stats?.averageRating ? parseFloat(team.stats.averageRating) : 0}
-                    onRatingUpdate={fetchTeamData}
-                  />
+                  <TeamRating teamId={team.id} teamName={team.name} currentUserId={currentUserId} isTeamMember={isTeamMember} currentRating={team.stats?.averageRating ? parseFloat(team.stats.averageRating) : 0} onRatingUpdate={fetchTeamData} />
                 </TabsContent>
               </Tabs>
             </div>
@@ -206,24 +157,7 @@ const Team = () => {
       </main>
       <Footer />
 
-      <TeamDialogs 
-        team={team}
-        selectedMember={selectedMember}
-        showMemberDialog={showMemberDialog}
-        setShowMemberDialog={setShowMemberDialog}
-        showContactDialog={showContactDialog}
-        setShowContactDialog={setShowContactDialog}
-        showShareDialog={showShareDialog}
-        setShowShareDialog={setShowShareDialog}
-        contactMessage={contactMessage}
-        setContactMessage={setContactMessage}
-        contactSubject={contactSubject}
-        setContactSubject={setContactSubject}
-        handleSendMessage={handleSendMessage}
-        handleShareVia={handleShareVia}
-      />
-    </div>
-  );
+      <TeamDialogs team={team} selectedMember={selectedMember} showMemberDialog={showMemberDialog} setShowMemberDialog={setShowMemberDialog} showContactDialog={showContactDialog} setShowContactDialog={setShowContactDialog} showShareDialog={showShareDialog} setShowShareDialog={setShowShareDialog} contactMessage={contactMessage} setContactMessage={setContactMessage} contactSubject={contactSubject} setContactSubject={setContactSubject} handleSendMessage={handleSendMessage} handleShareVia={handleShareVia} />
+    </div>;
 };
-
 export default Team;
