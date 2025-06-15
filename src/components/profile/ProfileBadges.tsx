@@ -56,7 +56,7 @@ const ProfileBadges = ({ badges, handleViewAllBadges }: ProfileBadgesProps) => {
           <Button
             variant="outline"
             onClick={handleViewAllBadges}
-            className="border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white"
+            className="border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white w-full sm:w-auto"
           >
             Voir tous les badges disponibles
           </Button>

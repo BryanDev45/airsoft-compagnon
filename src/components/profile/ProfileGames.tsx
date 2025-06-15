@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Calendar, User, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -66,15 +65,15 @@ const ProfileGames = ({
   };
   return <Card>
       <CardHeader>
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <CardTitle className="text-left">Mes parties</CardTitle>
             <CardDescription>
-              {games.length > 10 ? `${displayedGames.length} dernières parties sur ${games.length} au total` : 'Historique et parties à venir'}
+              {games.length > 10 ? `${sortedGames.slice(0, 10).length} dernières parties sur ${games.length} au total` : 'Historique et parties à venir'}
             </CardDescription>
           </div>
-          <Link to="/parties/create">
-            <Button className="bg-airsoft-red hover:bg-red-700">
+          <Link to="/parties/create" className="w-full sm:w-auto">
+            <Button className="bg-airsoft-red hover:bg-red-700 w-full">
               <Plus className="h-4 w-4 mr-2" />
               Créer une partie
             </Button>
@@ -109,7 +108,7 @@ const ProfileGames = ({
         </div>
       </CardContent>
       <CardFooter>
-        <Button className="bg-airsoft-red hover:bg-red-700" onClick={handleViewAllGames} disabled={games.length === 0}>
+        <Button className="bg-airsoft-red hover:bg-red-700 w-full sm:w-auto" onClick={handleViewAllGames} disabled={games.length === 0}>
           Voir toutes mes parties {games.length > 0 && `(${games.length})`}
         </Button>
       </CardFooter>

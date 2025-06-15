@@ -78,7 +78,7 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
         />
         
         {/* Tabs Content */}
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           <Tabs defaultValue="profile" className="rounded-md">
             <div className="overflow-x-auto -mx-6 px-6 mb-6">
               <TabsList className="justify-start sm:justify-center">
@@ -120,10 +120,10 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
             </TabsContent>
             
             <TabsContent value="equipment" className="p-1">
-              <div className="mb-4 flex justify-end">
+              <div className="mb-4 flex justify-center sm:justify-end">
                 <Button 
                   onClick={() => setShowAddEquipmentDialog(true)} 
-                  className="bg-airsoft-red hover:bg-red-700 text-white"
+                  className="bg-airsoft-red hover:bg-red-700 text-white w-full sm:w-auto"
                 >
                   <Plus className="h-4 w-4 mr-2" /> Ajouter un équipement
                 </Button>
