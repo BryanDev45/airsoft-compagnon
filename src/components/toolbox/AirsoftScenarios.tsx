@@ -2,8 +2,8 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Target } from 'lucide-react';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Target, Clock, Users } from 'lucide-react';
+import { Separator } from "@/components/ui/separator";
 
 const scenarios = {
   short: [
@@ -52,7 +52,7 @@ const scenarios = {
       ]
     }
   ],
-  operations: [
+  long: [
     {
       title: "Escorte VIP",
       duration: "2-3h",
@@ -96,9 +96,7 @@ const scenarios = {
         "Objectifs révélés progressivement",
         "Système de patrouilles et d'alarmes"
       ]
-    }
-  ],
-  survival: [
+    },
     {
       title: "Last Man Standing",
       duration: "3-5h",
@@ -124,6 +122,30 @@ const scenarios = {
   ]
 };
 
+const ScenarioCard = ({ scenario, index }: { scenario: any, index: number }) => (
+  <div key={index} className="border rounded-lg p-4 bg-white hover:shadow-md transition-shadow">
+    <h3 className="font-semibold text-lg mb-2 text-airsoft-red">{scenario.title}</h3>
+    <div className="space-y-2">
+      <p className="text-sm text-muted-foreground">{scenario.description}</p>
+      <div className="flex gap-2 flex-wrap">
+        <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full flex items-center gap-1">
+          <Clock className="h-3 w-3" />
+          {scenario.duration}
+        </span>
+        <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full flex items-center gap-1">
+          <Users className="h-3 w-3" />
+          {scenario.players} joueurs
+        </span>
+      </div>
+      <ul className="text-sm list-disc list-inside mt-2 space-y-1">
+        {scenario.rules.map((rule, ruleIndex) => (
+          <li key={ruleIndex} className="text-gray-700">{rule}</li>
+        ))}
+      </ul>
+    </div>
+  </div>
+);
+
 const AirsoftScenarios = () => {
   return (
     <Card>
@@ -137,95 +159,38 @@ const AirsoftScenarios = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[500px] pr-4">
-          <Accordion type="single" collapsible className="space-y-4">
-            <AccordionItem value="short">
-              <AccordionTrigger>Parties courtes</AccordionTrigger>
-              <AccordionContent>
-                <div className="space-y-4">
-                  {scenarios.short.map((scenario, index) => (
-                    <div key={index} className="border rounded-lg p-4">
-                      <h3 className="font-semibold text-lg mb-2">{scenario.title}</h3>
-                      <div className="space-y-2">
-                        <p className="text-sm text-muted-foreground">{scenario.description}</p>
-                        <div className="flex gap-2">
-                          <span className="text-xs px-2 py-1 bg-muted rounded-full">
-                            {scenario.duration}
-                          </span>
-                          <span className="text-xs px-2 py-1 bg-muted rounded-full">
-                            {scenario.players} joueurs
-                          </span>
-                        </div>
-                        <ul className="text-sm list-disc list-inside mt-2">
-                          {scenario.rules.map((rule, ruleIndex) => (
-                            <li key={ruleIndex}>{rule}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
+        <ScrollArea className="h-[600px] pr-4">
+          <div className="space-y-8">
+            {/* Section Scénarios Courts */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Clock className="h-5 w-5 text-blue-600" />
+                <h2 className="text-xl font-semibold text-gray-900">Scénarios Courts</h2>
+                <span className="text-sm text-muted-foreground">(10 min - 1h)</span>
+              </div>
+              <div className="grid gap-4">
+                {scenarios.short.map((scenario, index) => (
+                  <ScenarioCard key={index} scenario={scenario} index={index} />
+                ))}
+              </div>
+            </div>
 
-            <AccordionItem value="operations">
-              <AccordionTrigger>Opérations</AccordionTrigger>
-              <AccordionContent>
-                <div className="space-y-4">
-                  {scenarios.operations.map((scenario, index) => (
-                    <div key={index} className="border rounded-lg p-4">
-                      <h3 className="font-semibold text-lg mb-2">{scenario.title}</h3>
-                      <div className="space-y-2">
-                        <p className="text-sm text-muted-foreground">{scenario.description}</p>
-                        <div className="flex gap-2">
-                          <span className="text-xs px-2 py-1 bg-muted rounded-full">
-                            {scenario.duration}
-                          </span>
-                          <span className="text-xs px-2 py-1 bg-muted rounded-full">
-                            {scenario.players} joueurs
-                          </span>
-                        </div>
-                        <ul className="text-sm list-disc list-inside mt-2">
-                          {scenario.rules.map((rule, ruleIndex) => (
-                            <li key={ruleIndex}>{rule}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
+            <Separator className="my-6" />
 
-            <AccordionItem value="survival">
-              <AccordionTrigger>Survie & Événements spéciaux</AccordionTrigger>
-              <AccordionContent>
-                <div className="space-y-4">
-                  {scenarios.survival.map((scenario, index) => (
-                    <div key={index} className="border rounded-lg p-4">
-                      <h3 className="font-semibold text-lg mb-2">{scenario.title}</h3>
-                      <div className="space-y-2">
-                        <p className="text-sm text-muted-foreground">{scenario.description}</p>
-                        <div className="flex gap-2">
-                          <span className="text-xs px-2 py-1 bg-muted rounded-full">
-                            {scenario.duration}
-                          </span>
-                          <span className="text-xs px-2 py-1 bg-muted rounded-full">
-                            {scenario.players} joueurs
-                          </span>
-                        </div>
-                        <ul className="text-sm list-disc list-inside mt-2">
-                          {scenario.rules.map((rule, ruleIndex) => (
-                            <li key={ruleIndex}>{rule}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+            {/* Section Scénarios Longs */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Target className="h-5 w-5 text-orange-600" />
+                <h2 className="text-xl font-semibold text-gray-900">Scénarios Longs</h2>
+                <span className="text-sm text-muted-foreground">(2h+)</span>
+              </div>
+              <div className="grid gap-4">
+                {scenarios.long.map((scenario, index) => (
+                  <ScenarioCard key={index} scenario={scenario} index={index} />
+                ))}
+              </div>
+            </div>
+          </div>
         </ScrollArea>
       </CardContent>
     </Card>
