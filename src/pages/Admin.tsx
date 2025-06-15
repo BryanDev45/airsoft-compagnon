@@ -1,13 +1,13 @@
-
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Shield, AlertTriangle, UserCheck, MessageSquare, ArrowLeft } from 'lucide-react';
+import { Shield, AlertTriangle, UserCheck, MessageSquare, ArrowLeft, Badge } from 'lucide-react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import UserReportsTab from '@/components/admin/UserReportsTab';
 import MessageReportsTab from '@/components/admin/MessageReportsTab';
 import VerificationRequestsTab from '@/components/admin/VerificationRequestsTab';
+import BadgesManagementTab from '@/components/admin/BadgesManagementTab';
 
 const Admin = () => {
   const { user, initialLoading } = useAuth();
@@ -59,7 +59,7 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="user-reports" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="user-reports" className="flex items-center gap-2">
               <AlertTriangle className="h-4 w-4" />
               Signalements d'utilisateurs
@@ -71,6 +71,10 @@ const Admin = () => {
             <TabsTrigger value="verification-requests" className="flex items-center gap-2">
               <UserCheck className="h-4 w-4" />
               Vérifications de compte
+            </TabsTrigger>
+            <TabsTrigger value="badges-management" className="flex items-center gap-2">
+              <Badge className="h-4 w-4" />
+              Gestion des badges
             </TabsTrigger>
           </TabsList>
 
@@ -84,6 +88,10 @@ const Admin = () => {
 
           <TabsContent value="verification-requests">
             <VerificationRequestsTab />
+          </TabsContent>
+          
+          <TabsContent value="badges-management">
+            <BadgesManagementTab />
           </TabsContent>
         </Tabs>
       </div>
