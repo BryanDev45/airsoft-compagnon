@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useDirectConversationCreation } from '@/hooks/messaging/useDirectConversationCreation';
 import TeamInviteButton from './TeamInviteButton';
 import { toast } from '@/hooks/use-toast';
+import ReportUserButton from '@/components/profile/ReportUserButton';
 
 interface UserResult {
   id: string;
@@ -208,6 +209,12 @@ const UserCard: React.FC<UserCardProps> = ({ userData, friendshipStatus, onFrien
                   targetUsername={userData.username}
                 />
               )}
+
+              <ReportUserButton
+                reportedUserId={userData.id}
+                username={userData.username}
+                asIcon={true}
+              />
             </div>
           )}
 

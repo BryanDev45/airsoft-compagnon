@@ -26,9 +26,10 @@ import { supabase } from "@/integrations/supabase/client";
 interface ReportUserButtonProps {
   username: string;
   reportedUserId: string;
+  asIcon?: boolean;
 }
 
-const ReportUserButton = ({ username, reportedUserId }: ReportUserButtonProps) => {
+const ReportUserButton = ({ username, reportedUserId, asIcon = false }: ReportUserButtonProps) => {
   const [reason, setReason] = useState("");
   const [details, setDetails] = useState("");
   const [open, setOpen] = useState(false);
@@ -103,14 +104,25 @@ const ReportUserButton = ({ username, reportedUserId }: ReportUserButtonProps) =
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="sm"
-          className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
-        >
-          <UserX className="mr-2 h-4 w-4" />
-          Signaler
-        </Button>
+        {asIcon ? (
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 w-9 p-0 text-red-500 border-red-500 hover:bg-red-500 hover:text-white transition-all duration-200"
+            title={`Signaler ${username}`}
+          >
+            <UserX className="h-4 w-4" />
+          </Button>
+        ) : (
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
+          >
+            <UserX className="mr-2 h-4 w-4" />
+            Signaler
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
