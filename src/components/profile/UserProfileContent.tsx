@@ -22,7 +22,6 @@ interface UserProfileContentProps {
   updateUserStats: (stats: any) => void;
   fetchProfileData: () => void;
   isOwnProfile: boolean;
-  dialogStates?: ReturnType<typeof useProfileDialogs>;
 }
 
 const UserProfileContent: React.FC<UserProfileContentProps> = ({
@@ -36,13 +35,8 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
   updateUserStats,
   fetchProfileData,
   isOwnProfile,
-  dialogStates: inheritedDialogStates,
 }) => {
   const navigate = useNavigate();
-  const localDialogStates = useProfileDialogs();
-  
-  const dialogStates = inheritedDialogStates || localDialogStates;
-
   const {
     selectedGame,
     setSelectedGame,
@@ -52,7 +46,7 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
     setShowAllGamesDialog,
     showBadgesDialog,
     setShowBadgesDialog
-  } = dialogStates;
+  } = useProfileDialogs();
   
   const equipmentTypes = ["Réplique principale", "Réplique secondaire", "Protection", "Accessoire"];
 
