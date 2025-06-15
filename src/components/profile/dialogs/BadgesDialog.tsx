@@ -29,8 +29,12 @@ const BadgesDialog: React.FC<BadgesDialogProps> = ({
       const isUnlocked = userBadgeIds.includes(badge.id);
       let displayIcon = badge.icon;
 
-      if (!isUnlocked && badge.name === 'Profil vérifié') {
-        displayIcon = '/lovable-uploads/146443fc-6946-476d-b189-b53c17e48f0a.png';
+      if (badge.name === 'Profil vérifié') {
+        if (isUnlocked) {
+          displayIcon = '/lovable-uploads/3c025802-3046-4c34-ae5e-2328e941b479.png';
+        } else {
+          displayIcon = '/lovable-uploads/146443fc-6946-476d-b189-b53c17e48f0a.png';
+        }
       }
 
       return {
