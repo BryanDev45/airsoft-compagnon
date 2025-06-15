@@ -12,6 +12,8 @@ const languages = [
   { code: 'es', name: 'Español', flag: '🇪🇸' }
 ];
 
+const emojiFontStack = '"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", "EmojiOne Mozilla", "Twemoji Mozilla", "Noto Emoji", "Android Emoji", sans-serif';
+
 interface LanguageSelectorProps {
   isDesktop?: boolean;
 }
@@ -35,7 +37,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ isDesktop = 
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="flex items-center gap-1.5 text-white px-2">
             <Globe className="h-5 w-5" />
-            <span className="text-lg" style={{ fontFamily: 'sans-serif' }}>{selectedLanguage.flag}</span>
+            <span className="text-lg" style={{ fontFamily: emojiFontStack }}>{selectedLanguage.flag}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
@@ -45,7 +47,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ isDesktop = 
               className="flex items-center gap-2"
               onClick={() => handleLanguageChange(language.code)}
             >
-              <span className="text-lg" style={{ fontFamily: 'sans-serif' }}>{language.flag}</span>
+              <span className="text-lg" style={{ fontFamily: emojiFontStack }}>{language.flag}</span>
               <span>{language.name}</span>
             </DropdownMenuItem>
           ))}
@@ -69,7 +71,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ isDesktop = 
               className={`justify-start text-white hover:text-airsoft-red hover:bg-gray-800 p-2 h-auto ${selectedLanguage.code === language.code ? 'bg-gray-700' : ''}`}
               onClick={() => handleLanguageChange(language.code)}
             >
-              <span className="mr-2 text-base">{language.flag}</span>
+              <span className="mr-2 text-base" style={{ fontFamily: emojiFontStack }}>{language.flag}</span>
               <span className="text-sm">{language.name}</span>
             </Button>
           ))}
