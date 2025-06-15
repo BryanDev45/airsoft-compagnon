@@ -80,6 +80,27 @@ const CreateTeam = () => {
       
       if (error) throw error;
       
+      // Add the creator as a confirmed member of the team with an 'Admin' role
+      if (team) {
+        const { error: memberError } = await supabase
+          .from('team_members')
+          .insert({
+            team_id: team.id,
+            user_id: user.id,
+            role: 'Admin',
+            status: 'confirmed',
+          });
+
+        if (memberError) {
+          console.error("Erreur lors de l'ajout du créateur comme membre:", memberError);
+          toast({
+            title: "Avertissement",
+            description: "Votre équipe a été créée, mais une erreur est survenue lors de votre affectation en tant que membre. Vous devrez peut-être le faire manuellement.",
+            variant: "default",
+          });
+        }
+      }
+
       toast({
         title: "Succès",
         description: "Votre équipe a été créée avec succès"
@@ -201,3 +222,4 @@ const CreateTeam = () => {
 };
 
 export default CreateTeam;
+
