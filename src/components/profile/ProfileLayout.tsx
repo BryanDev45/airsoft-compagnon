@@ -12,6 +12,7 @@ const ProfileLayout = ({
   userStats,
   equipment,
   userGames,
+  userBadges,
   dialogStates,
   equipmentTypes,
   fetchEquipment,
@@ -45,6 +46,7 @@ const ProfileLayout = ({
             userStats={userStats}
             equipment={equipment}
             userGames={userGames}
+            userBadges={userBadges}
             dialogStates={dialogStates}
             equipmentTypes={equipmentTypes}
             fetchEquipment={fetchEquipment}

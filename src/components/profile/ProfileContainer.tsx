@@ -19,6 +19,7 @@ interface ProfileContainerProps {
   userStats: any;
   equipment: any[];
   userGames: any[];
+  userBadges: any[];
   dialogStates: any;
   equipmentTypes: string[];
   fetchEquipment: () => Promise<void>;
@@ -35,6 +36,7 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
   userStats,
   equipment,
   userGames = [],
+  userBadges,
   dialogStates,
   equipmentTypes,
   fetchEquipment,
@@ -137,7 +139,7 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
             
             <TabsContent value="badges" className="p-1">
               <ProfileBadges 
-                badges={profileData?.badges || []} 
+                badges={userBadges || []} 
                 handleViewAllBadges={() => setShowBadgesDialog(true)}
               />
             </TabsContent>
