@@ -23,7 +23,7 @@ const ShareDialog = ({ team, showShareDialog, setShowShareDialog, handleShareVia
         <div className="grid grid-cols-2 gap-4">
           <Button 
             variant="outline" 
-            className="flex flex-col items-center py-6"
+            className="flex flex-col items-center justify-center h-24"
             onClick={() => handleShareVia('facebook')}
           >
             <Facebook className="w-8 h-8 mb-2 text-blue-600" />
@@ -31,7 +31,7 @@ const ShareDialog = ({ team, showShareDialog, setShowShareDialog, handleShareVia
           </Button>
           <Button 
             variant="outline" 
-            className="flex flex-col items-center py-6"
+            className="flex flex-col items-center justify-center h-24"
             onClick={() => handleShareVia('twitter')}
           >
             <Twitter className="w-8 h-8 mb-2 text-blue-400" />
@@ -39,7 +39,7 @@ const ShareDialog = ({ team, showShareDialog, setShowShareDialog, handleShareVia
           </Button>
           <Button 
             variant="outline" 
-            className="flex flex-col items-center py-6"
+            className="flex flex-col items-center justify-center h-24"
             onClick={() => handleShareVia('whatsapp')}
           >
             <FaWhatsapp className="w-8 h-8 mb-2 text-green-500" />
@@ -47,7 +47,7 @@ const ShareDialog = ({ team, showShareDialog, setShowShareDialog, handleShareVia
           </Button>
           <Button 
             variant="outline" 
-            className="flex flex-col items-center py-6"
+            className="flex flex-col items-center justify-center h-24"
             onClick={() => handleShareVia('email')}
           >
             <MdEmail className="w-8 h-8 mb-2 text-gray-500" />
