@@ -115,7 +115,7 @@ const StoreResultsDisplay: React.FC<StoreResultsDisplayProps> = ({
                   </div>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-lg">{store.name}</CardTitle>
-                    <CardDescription className="flex items-center gap-1">
+                    <CardDescription className="flex items-center gap-1 text-left">
                       <MapPin className="h-4 w-4" />
                       {store.address}, {store.zip_code} {store.city}
                     </CardDescription>
