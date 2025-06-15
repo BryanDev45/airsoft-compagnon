@@ -14,6 +14,8 @@ interface ShareDialogProps {
 }
 
 const ShareDialog = ({ team, showShareDialog, setShowShareDialog, handleShareVia }: ShareDialogProps) => {
+  const shareButtonStyle = "flex flex-col items-center justify-center h-24 transition-transform duration-200 hover:scale-105";
+
   return (
     <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
       <DialogContent className="sm:max-w-md">
@@ -23,7 +25,7 @@ const ShareDialog = ({ team, showShareDialog, setShowShareDialog, handleShareVia
         <div className="grid grid-cols-2 gap-4">
           <Button 
             variant="outline" 
-            className="flex flex-col items-center justify-center h-24"
+            className={shareButtonStyle}
             onClick={() => handleShareVia('facebook')}
           >
             <Facebook className="w-8 h-8 mb-2 text-blue-600" />
@@ -31,7 +33,7 @@ const ShareDialog = ({ team, showShareDialog, setShowShareDialog, handleShareVia
           </Button>
           <Button 
             variant="outline" 
-            className="flex flex-col items-center justify-center h-24"
+            className={shareButtonStyle}
             onClick={() => handleShareVia('twitter')}
           >
             <Twitter className="w-8 h-8 mb-2 text-blue-400" />
@@ -39,7 +41,7 @@ const ShareDialog = ({ team, showShareDialog, setShowShareDialog, handleShareVia
           </Button>
           <Button 
             variant="outline" 
-            className="flex flex-col items-center justify-center h-24"
+            className={shareButtonStyle}
             onClick={() => handleShareVia('whatsapp')}
           >
             <FaWhatsapp className="w-8 h-8 mb-2 text-green-500" />
@@ -47,7 +49,7 @@ const ShareDialog = ({ team, showShareDialog, setShowShareDialog, handleShareVia
           </Button>
           <Button 
             variant="outline" 
-            className="flex flex-col items-center justify-center h-24"
+            className={shareButtonStyle}
             onClick={() => handleShareVia('email')}
           >
             <MdEmail className="w-8 h-8 mb-2 text-gray-500" />
@@ -56,10 +58,10 @@ const ShareDialog = ({ team, showShareDialog, setShowShareDialog, handleShareVia
         </div>
         <div className="mt-4">
           <Button 
-            className="w-full flex items-center justify-center gap-2 bg-airsoft-red hover:bg-red-700 text-white"
+            className="w-full"
             onClick={() => handleShareVia('copy')}
           >
-            <Share size={16} />
+            <Share />
             Copier le lien
           </Button>
         </div>
