@@ -668,6 +668,39 @@ export type Database = {
           },
         ]
       }
+      scenarios: {
+        Row: {
+          created_at: string
+          description: string
+          duration: string
+          id: string
+          players: string
+          rules: string[]
+          title: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          duration: string
+          id?: string
+          players: string
+          rules: string[]
+          title: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          duration?: string
+          id?: string
+          players?: string
+          rules?: string[]
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
       stores: {
         Row: {
           address: string
