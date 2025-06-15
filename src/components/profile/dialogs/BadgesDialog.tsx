@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useAllBadges } from '@/hooks/badges/useAllBadges';
@@ -33,6 +34,13 @@ const BadgesDialog: React.FC<BadgesDialogProps> = ({
           displayIcon = '/lovable-uploads/3c025802-3046-4c34-ae5e-2328e941b479.png';
         } else {
           displayIcon = '/lovable-uploads/146443fc-6946-476d-b189-b53c17e48f0a.png';
+        }
+      }
+      if (badge.name === 'Membre d\'équipe') {
+        if (isUnlocked) {
+          displayIcon = '/lovable-uploads/2537f58d-1e88-417d-af4a-86212ad60901.png';
+        } else {
+          displayIcon = '/lovable-uploads/b73c24b9-91ba-4b0b-afee-97380da692f2.png';
         }
       }
       return {

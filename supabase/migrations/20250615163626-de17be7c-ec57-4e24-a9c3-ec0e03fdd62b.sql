@@ -4,7 +4,7 @@ INSERT INTO public.badges (name, description, icon, background_color, border_col
 SELECT
   'Membre d''équipe',
   'Fait partie d''une équipe.',
-  '/lovable-uploads/0a0bcbde-e57e-4ff6-b182-ae6cdb53ea0d.png',
+  '/lovable-uploads/2537f58d-1e88-417d-af4a-86212ad60901.png',
   '#e6f7ff',
   '#91d5ff'
 WHERE NOT EXISTS (
