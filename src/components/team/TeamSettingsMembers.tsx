@@ -12,6 +12,7 @@ interface TeamSettingsMembersProps {
   isTeamLeader: boolean;
   user: any;
   onClose: () => void;
+  onTeamUpdate?: () => void;
 }
 
 const TeamSettingsMembers = ({ 
@@ -20,7 +21,8 @@ const TeamSettingsMembers = ({
   setLoading, 
   isTeamLeader, 
   user,
-  onClose
+  onClose,
+  onTeamUpdate
 }: TeamSettingsMembersProps) => {
   const {
     teamMembers,
@@ -32,7 +34,7 @@ const TeamSettingsMembers = ({
     handleUpdateMemberGameRole,
     handleUpdateMemberAssociationRole,
     handleLeaveTeam
-  } = useTeamMembers(team, user, isTeamLeader, onClose);
+  } = useTeamMembers(team, user, isTeamLeader, onClose, onTeamUpdate);
 
   return (
     <div className="space-y-6">

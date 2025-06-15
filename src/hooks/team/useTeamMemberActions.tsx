@@ -11,7 +11,8 @@ export const useTeamMemberActions = (
   onClose: () => void,
   setTeamMembers: React.Dispatch<React.SetStateAction<TeamMember[]>>,
   setPendingMembers: React.Dispatch<React.SetStateAction<TeamMember[]>>,
-  fetchTeamMembers: () => Promise<void>
+  fetchTeamMembers: () => Promise<void>,
+  onTeamUpdate?: () => void
 ) => {
   const {
     loading: acceptanceLoading,
@@ -25,7 +26,7 @@ export const useTeamMemberActions = (
     handleUpdateMemberRole,
     handleUpdateMemberGameRole,
     handleUpdateMemberAssociationRole
-  } = useTeamMemberManagement(isTeamLeader, setTeamMembers);
+  } = useTeamMemberManagement(isTeamLeader, setTeamMembers, onTeamUpdate);
 
   const {
     loading: leavingLoading,

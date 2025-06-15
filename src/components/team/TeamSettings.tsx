@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
@@ -54,7 +53,7 @@ const TeamSettings = ({
     <TeamSettingsTabs currentTab={currentTab} onTabChange={setCurrentTab}>
       {currentTab === 'general' && <TeamSettingsGeneral team={team} loading={loading} setLoading={setLoading} onTeamUpdate={onTeamUpdate} />}
       {currentTab === 'media' && <TeamSettingsMedia team={team} loading={loading} setLoading={setLoading} onTeamUpdate={onTeamUpdate} />}
-      {currentTab === 'members' && <TeamSettingsMembers team={team} loading={loading} setLoading={setLoading} isTeamLeader={isTeamLeader} user={user} onClose={() => setOpen(false)} />}
+      {currentTab === 'members' && <TeamSettingsMembers team={team} loading={loading} setLoading={setLoading} isTeamLeader={isTeamLeader} user={user} onClose={() => setOpen(false)} onTeamUpdate={onTeamUpdate as () => void} />}
       {currentTab === 'danger' && <TeamSettingsDanger team={team} loading={loading} setLoading={setLoading} isTeamLeader={isTeamLeader} user={user} onClose={() => setOpen(false)} />}
     </TeamSettingsTabs>
   );

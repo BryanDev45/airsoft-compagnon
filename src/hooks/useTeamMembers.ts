@@ -1,3 +1,4 @@
+
 import { useTeamMembersFetch } from './team/useTeamMembersFetch';
 import { useTeamMemberActions } from './team/useTeamMemberActions';
 import { TeamData } from '@/types/team';
@@ -6,7 +7,8 @@ export const useTeamMembers = (
   team: TeamData, 
   user: any, 
   isTeamLeader: boolean, 
-  onClose: () => void
+  onClose: () => void,
+  onTeamUpdate?: () => void
 ) => {
   const {
     teamMembers,
@@ -33,7 +35,8 @@ export const useTeamMembers = (
     onClose,
     setTeamMembers,
     setPendingMembers,
-    fetchTeamMembers
+    fetchTeamMembers,
+    onTeamUpdate
   );
 
   return {

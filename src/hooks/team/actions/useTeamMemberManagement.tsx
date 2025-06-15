@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
@@ -5,7 +6,8 @@ import { TeamMember } from '@/types/team';
 
 export const useTeamMemberManagement = (
   isTeamLeader: boolean,
-  setTeamMembers: React.Dispatch<React.SetStateAction<TeamMember[]>>
+  setTeamMembers: React.Dispatch<React.SetStateAction<TeamMember[]>>,
+  onTeamUpdate?: () => void
 ) => {
   const [loading, setLoading] = useState(false);
 
@@ -27,6 +29,7 @@ export const useTeamMemberManagement = (
       if (error) throw error;
       
       setTeamMembers(prev => prev.filter(member => member.id !== memberId));
+      onTeamUpdate?.();
       
       toast({
         title: "Membre supprimé",
@@ -64,6 +67,7 @@ export const useTeamMemberManagement = (
             : member
         )
       );
+      onTeamUpdate?.();
       
       toast({
         title: "Rôle mis à jour",
@@ -101,6 +105,7 @@ export const useTeamMemberManagement = (
             : member
         )
       );
+      onTeamUpdate?.();
       
       toast({
         title: "Rôle en jeu mis à jour",
@@ -138,6 +143,7 @@ export const useTeamMemberManagement = (
             : member
         )
       );
+      onTeamUpdate?.();
       
       toast({
         title: "Rôle associatif mis à jour",
