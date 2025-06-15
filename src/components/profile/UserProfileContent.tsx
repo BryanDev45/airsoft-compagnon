@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileInfo from './ProfileInfo';
@@ -8,6 +9,7 @@ import ProfileEquipment from './ProfileEquipment';
 import ProfileBadges from './ProfileBadges';
 import ProfileDialogs from './ProfileDialogs';
 import ProfileFriends from './ProfileFriends';
+import { useProfileDialogs } from '@/hooks/profile/useProfileDialogs';
 
 interface UserProfileContentProps {
   userData: any;
@@ -35,10 +37,16 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
   isOwnProfile
 }) => {
   const navigate = useNavigate();
-  const [selectedGame, setSelectedGame] = useState(null);
-  const [showGameDialog, setShowGameDialog] = useState(false);
-  const [showAllGamesDialog, setShowAllGamesDialog] = useState(false);
-  const [showBadgesDialog, setShowBadgesDialog] = useState(false);
+  const {
+    selectedGame,
+    setSelectedGame,
+    showGameDialog,
+    setShowGameDialog,
+    showAllGamesDialog,
+    setShowAllGamesDialog,
+    showBadgesDialog,
+    setShowBadgesDialog
+  } = useProfileDialogs();
   
   const equipmentTypes = ["Réplique principale", "Réplique secondaire", "Protection", "Accessoire"];
 
