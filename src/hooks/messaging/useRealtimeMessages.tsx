@@ -1,9 +1,7 @@
-
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Message } from '@/types/messaging';
 
 export const useRealtimeMessages = () => {
   const { user } = useAuth();
@@ -21,7 +19,7 @@ export const useRealtimeMessages = () => {
       queryClient.invalidateQueries({ queryKey: ['unreadNotifications', user.id] });
 
       // Invalider aussi les messages de la conversation spécifique
-      const record = (payload.new || payload.old) as Partial<Message>;
+      const record = (payload.new || payload.old) as { conversation_id?: string };
       if (record?.conversation_id) {
         queryClient.invalidateQueries({ queryKey: ['messages', record.conversation_id] });
       }
