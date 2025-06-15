@@ -13,6 +13,9 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useDeleteUserWarning } from '@/hooks/admin/useUserWarnings';
 import { Button } from '@/components/ui/button';
+import { useProfileDialogs } from '@/hooks/profile/useProfileDialogs';
+import { useGameDetailsDialog } from '@/hooks/profile/useGameDetailsDialog';
+import ProfileDialogs from '../components/profile/ProfileDialogs';
 
 const UserProfile = () => {
   const { username } = useParams();
@@ -40,6 +43,27 @@ const UserProfile = () => {
   } = useUserProfile(username);
 
   const { mutate: deleteWarning, isPending: isDeletingWarning } = useDeleteUserWarning();
+
+  const dialogs = useProfileDialogs();
+  const gameDetailsDialog = useGameDetailsDialog();
+  const allDialogStates = { ...dialogs, ...gameDetailsDialog };
+
+  const handleGameClickInAllGamesDialog = (game: any) => {
+    allDialogStates.setShowAllGamesDialog(false);
+    allDialogStates.showGameDetails(game);
+  };
+  
+  const handleViewGameDetails = (game) => {
+    allDialogStates.showGameDetails(game);
+  };
+
+  const handleViewAllGames = () => {
+    allDialogStates.setShowAllGamesDialog(true);
+  };
+
+  const handleViewAllBadges = () => {
+    allDialogStates.setShowBadgesDialog(true);
+  }
 
   const handleDeleteWarning = (warningId: string) => {
     // Une boîte de dialogue de confirmation pourrait être ajoutée ici plus tard si nécessaire.
@@ -133,11 +157,26 @@ const UserProfile = () => {
               updateUserStats={updateUserStats}
               fetchProfileData={fetchProfileData}
               isOwnProfile={isOwnProfile}
+              handleViewGameDetails={handleViewGameDetails}
+              handleViewAllGames={handleViewAllGames}
+              handleViewAllBadges={handleViewAllBadges}
             />
           </div>
         </div>
       </main>
       <Footer />
+      <ProfileDialogs 
+        selectedGame={allDialogStates.selectedGame}
+        showGameDialog={allDialogStates.showGameDialog}
+        setShowGameDialog={allDialogStates.handleOpenChange}
+        showAllGamesDialog={allDialogStates.showAllGamesDialog}
+        setShowAllGamesDialog={allDialogStates.setShowAllGamesDialog}
+        showBadgesDialog={allDialogStates.showBadgesDialog}
+        setShowBadgesDialog={allDialogStates.setShowBadgesDialog}
+        user={profileData}
+        userGames={userGames}
+        onGameClick={handleGameClickInAllGamesDialog}
+      />
     </div>
   );
 };

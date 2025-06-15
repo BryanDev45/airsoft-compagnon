@@ -7,10 +7,7 @@ import ProfileGames from './ProfileGames';
 import ProfileStats from './ProfileStats';
 import ProfileEquipment from './ProfileEquipment';
 import ProfileBadges from './ProfileBadges';
-import ProfileDialogs from './ProfileDialogs';
 import ProfileFriends from './ProfileFriends';
-import { useProfileDialogs } from '@/hooks/profile/useProfileDialogs';
-import { useGameDetailsDialog } from '@/hooks/profile/useGameDetailsDialog';
 
 interface UserProfileContentProps {
   userData: any;
@@ -23,6 +20,9 @@ interface UserProfileContentProps {
   updateUserStats: (stats: any) => void;
   fetchProfileData: () => void;
   isOwnProfile: boolean;
+  handleViewGameDetails: (game: any) => void;
+  handleViewAllGames: () => void;
+  handleViewAllBadges: () => void;
 }
 
 const UserProfileContent: React.FC<UserProfileContentProps> = ({
@@ -36,37 +36,17 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
   updateUserStats,
   fetchProfileData,
   isOwnProfile,
+  handleViewGameDetails,
+  handleViewAllGames,
+  handleViewAllBadges,
 }) => {
   const navigate = useNavigate();
-  const {
-    showAllGamesDialog,
-    setShowAllGamesDialog,
-    showBadgesDialog,
-    setShowBadgesDialog
-  } = useProfileDialogs();
-
-  const {
-    selectedGame,
-    showGameDialog,
-    showGameDetails,
-    handleOpenChange,
-  } = useGameDetailsDialog();
-  
   const equipmentTypes = ["Réplique principale", "Réplique secondaire", "Protection", "Accessoire"];
 
   const handleNavigateToTeam = () => {
     if (profileData?.team_id) {
       navigate(`/team/${profileData.team_id}`);
     }
-  };
-
-  const handleShowAllGames = () => {
-    setShowAllGamesDialog(true);
-  };
-
-  const handleGameClickInAllGamesDialog = (game: any) => {
-    setShowAllGamesDialog(false);
-    showGameDetails(game);
   };
 
   return (
@@ -94,8 +74,8 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
         <TabsContent value="games">
           <ProfileGames 
             games={userGames} 
-            handleViewGameDetails={showGameDetails} 
-            handleViewAllGames={handleShowAllGames} 
+            handleViewGameDetails={handleViewGameDetails} 
+            handleViewAllGames={handleViewAllGames} 
           />
         </TabsContent>
         
@@ -119,7 +99,7 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
         <TabsContent value="badges">
           <ProfileBadges 
             badges={userBadges} 
-            handleViewAllBadges={() => setShowBadgesDialog(true)} 
+            handleViewAllBadges={handleViewAllBadges} 
           />
         </TabsContent>
 
@@ -130,19 +110,6 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
           />
         </TabsContent>
       </Tabs>
-
-      <ProfileDialogs 
-        selectedGame={selectedGame}
-        showGameDialog={showGameDialog}
-        setShowGameDialog={handleOpenChange}
-        showAllGamesDialog={showAllGamesDialog}
-        setShowAllGamesDialog={setShowAllGamesDialog}
-        showBadgesDialog={showBadgesDialog}
-        setShowBadgesDialog={setShowBadgesDialog}
-        user={profileData}
-        userGames={userGames}
-        onGameClick={handleGameClickInAllGamesDialog}
-      />
     </div>
   );
 };

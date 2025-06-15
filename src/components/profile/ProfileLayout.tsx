@@ -34,6 +34,10 @@ const ProfileLayout = ({
     dialogStates.setShowAllGamesDialog(true);
   };
 
+  const handleViewAllBadges = () => {
+    dialogStates.setShowBadgesDialog(true);
+  };
+
   const handleGameClickInAllGamesDialog = (game: any) => {
     dialogStates.setShowAllGamesDialog(false);
     dialogStates.showGameDetails(game);
@@ -59,6 +63,7 @@ const ProfileLayout = ({
             handleAddEquipment={handleAddEquipment}
             handleViewGameDetails={handleViewGameDetails}
             handleViewAllGames={handleViewAllGames}
+            handleViewAllBadges={handleViewAllBadges}
           />
         </div>
       </main>
