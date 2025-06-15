@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +19,7 @@ interface UserReport {
   reported_profile: {
     username: string;
   } | null;
+  reported_user_id: string;
 }
 
 interface UserReportCardProps {
