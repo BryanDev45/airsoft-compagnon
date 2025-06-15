@@ -1252,6 +1252,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      is_participant: {
+        Args: { p_conversation_id: string; p_user_id: string }
+        Returns: boolean
+      }
       is_user_online: {
         Args: { p_user_id: string }
         Returns: boolean
