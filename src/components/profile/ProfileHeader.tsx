@@ -29,8 +29,8 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   onEditBio
 }) => {
   return <div className="relative">
-      <div className="w-full h-64 md:h-72 bg-gray-200 overflow-hidden">
-        {user?.banner ? <img src={user.banner} alt="Profile banner" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gradient-to-r from-gray-400 to-gray-300" />}
+      <div className="w-full h-64 md:h-72 bg-black overflow-hidden">
+        {user?.banner ? <img src={user.banner} alt="Profile banner" className="w-full h-full object-contain md:object-cover" /> : <div className="w-full h-full bg-gradient-to-r from-gray-400 to-gray-300" />}
       </div>
       
       <div className="px-4 sm:px-6 pb-4 pt-16 relative">
