@@ -15,13 +15,12 @@ export const useTypingStatus = (conversationId: string | null) => {
   const channelRef = useRef<RealtimeChannel | null>(null);
 
   useEffect(() => {
-    if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-    }
-
     if (!conversationId || !user?.id || !user.username) {
       setTypingUsers([]);
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
       return;
     }
 
@@ -44,27 +43,23 @@ export const useTypingStatus = (conversationId: string | null) => {
       setTypingUsers(typers);
     };
     
-    if (channel.state !== 'joined' && channel.state !== 'joining') {
-      channel
-        .on('presence', { event: 'sync' }, onSync)
-        .subscribe((status, err) => {
-          if (status === 'SUBSCRIBED') {
-            console.log(`Presence subscribed to ${channelName}`);
-            // Track initial state when subscribed
-            channel.track({ typing: false, username: user.username });
-          }
-          if (status === 'CHANNEL_ERROR') {
-            console.error(`Presence channel error for ${channelName}:`, err);
-          }
-        });
-    }
+    channel
+      .on('presence', { event: 'sync' }, onSync)
+      .subscribe((status, err) => {
+        if (status === 'SUBSCRIBED') {
+          console.log(`Presence subscribed to ${channelName}`);
+          // Track initial state when subscribed
+          channel.track({ typing: false, username: user.username });
+        }
+        if (status === 'CHANNEL_ERROR') {
+          console.error(`Presence channel error for ${channelName}:`, err);
+        }
+      });
 
 
     return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
+      supabase.removeChannel(channel);
+      channelRef.current = null;
     };
   }, [conversationId, user?.id, user?.username]);
 

@@ -32,20 +32,17 @@ export const useRealtimeMessages = () => {
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
     };
 
-    // Only subscribe if the channel is not already connected.
-    if (channel.state !== 'joined' && channel.state !== 'joining') {
-      channel
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, handleMessageChange)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, handleConversationChange)
-        .subscribe((status, err) => {
-          if (status === 'SUBSCRIBED') {
-            console.log(`Real-time subscribed to ${channelName}!`);
-          }
-          if (status === 'CHANNEL_ERROR') {
-            console.error(`Real-time channel error for ${channelName}:`, err);
-          }
-        });
-    }
+    channel
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, handleMessageChange)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, handleConversationChange)
+      .subscribe((status, err) => {
+        if (status === 'SUBSCRIBED') {
+          console.log(`Real-time subscribed to ${channelName}!`);
+        }
+        if (status === 'CHANNEL_ERROR') {
+          console.error(`Real-time channel error for ${channelName}:`, err);
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel).catch(err => console.error('Error removing channel', err));
