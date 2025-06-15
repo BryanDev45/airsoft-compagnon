@@ -80,14 +80,16 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
         {/* Tabs Content */}
         <div className="p-6">
           <Tabs defaultValue="profile" className="rounded-md">
-            <TabsList className="mb-6">
-              <TabsTrigger value="profile">Profil</TabsTrigger>
-              <TabsTrigger value="games">Mes parties</TabsTrigger>
-              <TabsTrigger value="stats">Statistiques</TabsTrigger>
-              <TabsTrigger value="equipment">Équipement</TabsTrigger>
-              <TabsTrigger value="badges">Badges</TabsTrigger>
-              <TabsTrigger value="friends">Amis</TabsTrigger>
-            </TabsList>
+            <div className="overflow-x-auto -mx-6 px-6 mb-6">
+              <TabsList className="justify-start sm:justify-center">
+                <TabsTrigger value="profile">Profil</TabsTrigger>
+                <TabsTrigger value="games">Mes parties</TabsTrigger>
+                <TabsTrigger value="stats">Statistiques</TabsTrigger>
+                <TabsTrigger value="equipment">Équipement</TabsTrigger>
+                <TabsTrigger value="badges">Badges</TabsTrigger>
+                <TabsTrigger value="friends">Amis</TabsTrigger>
+              </TabsList>
+            </div>
             
             <TabsContent value="profile" className="p-1">
               <ProfileInfo 
