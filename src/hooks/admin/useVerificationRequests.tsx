@@ -93,21 +93,52 @@ export const useVerificationRequests = () => {
 
       if (updateError) throw updateError;
 
-      // If approved, update the user's verified status
+      // If approved, update the user's verified status and grant badge
       if (status === 'approved') {
-        const request = requests.find(r => r.id === requestId);
-        if (request) {
-          const { data } = await supabase
-            .from('verification_requests')
-            .select('user_id')
-            .eq('id', requestId)
+        const { data: requestData, error: requestError } = await supabase
+          .from('verification_requests')
+          .select('user_id')
+          .eq('id', requestId)
+          .single();
+
+        if (requestError) {
+          console.error("Error fetching request details for approval:", requestError.message);
+        } else if (requestData) {
+          const { user_id } = requestData;
+
+          // Update user's profile to be verified
+          await supabase
+            .from('profiles')
+            .update({ is_verified: true })
+            .eq('id', user_id);
+
+          // Find and assign the 'Profil vérifié' badge
+          const { data: badge, error: badgeError } = await supabase
+            .from('badges')
+            .select('id')
+            .eq('name', 'Profil vérifié')
             .single();
 
-          if (data) {
-            await supabase
-              .from('profiles')
-              .update({ is_verified: true })
-              .eq('id', data.user_id);
+          if (badgeError) {
+            console.error('Error fetching "Profil vérifié" badge:', badgeError.message);
+            toast({
+              title: "Erreur de badge",
+              description: "L'utilisateur a été vérifié mais le badge 'Profil vérifié' n'a pas pu être trouvé.",
+              variant: "destructive",
+            });
+          } else if (badge) {
+            const { error: assignError } = await supabase
+              .from('user_badges')
+              .insert({ user_id: user_id, badge_id: badge.id, date: new Date().toISOString().split('T')[0] });
+            
+            if (assignError) {
+              console.error("Error assigning 'Profil vérifié' badge:", assignError.message);
+              toast({
+                title: "Erreur de badge",
+                description: "L'utilisateur a été vérifié mais le badge n'a pas pu lui être attribué.",
+                variant: "destructive",
+              });
+            }
           }
         }
       }
