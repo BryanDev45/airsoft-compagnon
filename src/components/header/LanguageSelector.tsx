@@ -4,15 +4,13 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Globe } from 'lucide-react';
 
-// Define language structure with flags
+// Define language structure with country codes for flags
 const languages = [
-  { code: 'fr', name: 'Français', flag: '🇫🇷' },
-  { code: 'en', name: 'English', flag: '🇬🇧' },
-  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-  { code: 'es', name: 'Español', flag: '🇪🇸' }
+  { code: 'fr', name: 'Français', countryCode: 'fr' },
+  { code: 'en', name: 'English', countryCode: 'gb' },
+  { code: 'de', name: 'Deutsch', countryCode: 'de' },
+  { code: 'es', name: 'Español', countryCode: 'es' }
 ];
-
-const emojiFontStack = '"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", "EmojiOne Mozilla", "Twemoji Mozilla", "Noto Emoji", "Android Emoji", sans-serif';
 
 interface LanguageSelectorProps {
   isDesktop?: boolean;
@@ -37,7 +35,11 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ isDesktop = 
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="flex items-center gap-1.5 text-white px-2">
             <Globe className="h-5 w-5" />
-            <span className="text-lg" style={{ fontFamily: emojiFontStack }}>{selectedLanguage.flag}</span>
+            <img
+              src={`https://flagcdn.com/h20/${selectedLanguage.countryCode}.png`}
+              alt={`${selectedLanguage.name} flag`}
+              className="h-4 w-auto rounded-sm"
+            />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
@@ -47,7 +49,11 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ isDesktop = 
               className="flex items-center gap-2"
               onClick={() => handleLanguageChange(language.code)}
             >
-              <span className="text-lg" style={{ fontFamily: emojiFontStack }}>{language.flag}</span>
+              <img
+                src={`https://flagcdn.com/h20/${language.countryCode}.png`}
+                alt={`${language.name} flag`}
+                className="h-4 w-auto rounded-sm"
+              />
               <span>{language.name}</span>
             </DropdownMenuItem>
           ))}
@@ -71,7 +77,11 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ isDesktop = 
               className={`justify-start text-white hover:text-airsoft-red hover:bg-gray-800 p-2 h-auto ${selectedLanguage.code === language.code ? 'bg-gray-700' : ''}`}
               onClick={() => handleLanguageChange(language.code)}
             >
-              <span className="mr-2 text-base" style={{ fontFamily: emojiFontStack }}>{language.flag}</span>
+              <img
+                src={`https://flagcdn.com/h20/${language.countryCode}.png`}
+                alt={`${language.name} flag`}
+                className="h-4 w-auto rounded-sm mr-2"
+              />
               <span className="text-sm">{language.name}</span>
             </Button>
           ))}
