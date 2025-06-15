@@ -61,11 +61,11 @@ const ProfileLayout = ({
             selectedGame={dialogStates.selectedGame}
             showGameDialog={dialogStates.showGameDialog}
             setShowGameDialog={dialogStates.setShowGameDialog}
+            setSelectedGame={dialogStates.setSelectedGame}
             showAllGamesDialog={dialogStates.showAllGamesDialog}
             setShowAllGamesDialog={dialogStates.setShowAllGamesDialog}
             showBadgesDialog={dialogStates.showBadgesDialog}
             setShowBadgesDialog={dialogStates.setShowBadgesDialog}
-            handleNavigateToGame={handleNavigateToGame}
             user={user}
             userGames={userGames}
           />

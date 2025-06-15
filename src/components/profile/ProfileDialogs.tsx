@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import GameDetailsDialog from './dialogs/GameDetailsDialog';
 import AllGamesDialog from './dialogs/AllGamesDialog';
 import BadgesDialog from './dialogs/BadgesDialog';
@@ -9,11 +8,11 @@ interface ProfileDialogsProps {
   selectedGame: any;
   showGameDialog: boolean;
   setShowGameDialog: (show: boolean) => void;
+  setSelectedGame: (game: any) => void;
   showAllGamesDialog: boolean;
   setShowAllGamesDialog: (show: boolean) => void;
   showBadgesDialog: boolean;
   setShowBadgesDialog: (show: boolean) => void;
-  handleNavigateToGame: (gameId: string) => void;
   user: any;
   userGames: any[];
 }
@@ -22,15 +21,14 @@ const ProfileDialogs: React.FC<ProfileDialogsProps> = ({
   selectedGame,
   showGameDialog,
   setShowGameDialog,
+  setSelectedGame,
   showAllGamesDialog,
   setShowAllGamesDialog,
   showBadgesDialog,
   setShowBadgesDialog,
-  handleNavigateToGame,
   user,
   userGames = []
 }) => {
-  const navigate = useNavigate();
 
   const handleGameClick = (game: any) => {
     // Enrichir les données du jeu avec toutes les informations nécessaires pour le dialog
@@ -45,12 +43,8 @@ const ProfileDialogs: React.FC<ProfileDialogsProps> = ({
     
     // Fermer le dialog "toutes les parties" et ouvrir le dialog de détails
     setShowAllGamesDialog(false);
+    setSelectedGame(enrichedGame);
     setShowGameDialog(true);
-    // Note: il faudrait aussi passer selectedGame, mais comme on ne peut pas le faire ici,
-    // on va utiliser handleNavigateToGame directement
-    if (game.id) {
-      handleNavigateToGame(game.id);
-    }
   };
   
   return (
