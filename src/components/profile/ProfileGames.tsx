@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Calendar, User, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -84,10 +85,10 @@ const ProfileGames = ({
         <div className="space-y-4">
           {displayedGames && displayedGames.length === 0 ? <p className="text-center text-gray-500 py-6">
               Vous n'avez pas encore participé à des parties.
-            </p> : displayedGames && displayedGames.map(game => <div key={game.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow flex justify-between items-center">
+            </p> : displayedGames && displayedGames.map(game => <div key={game.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                   <h3 className="font-semibold text-left">{game.title}</h3>
-                  <div className="flex items-center gap-4 mt-1 text-sm text-gray-600">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-gray-600">
                     <span className="flex items-center gap-1">
                       <Calendar size={14} /> {formatGameDate(game.date, game.end_date)}
                     </span>
@@ -96,7 +97,7 @@ const ProfileGames = ({
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 self-end sm:self-center">
                   <Badge className={game.status === "À venir" ? "bg-blue-500" : game.status === "Terminé" ? "bg-gray-500" : "bg-green-500"}>
                     {game.status}
                   </Badge>
