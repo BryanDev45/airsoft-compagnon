@@ -1,21 +1,52 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Send } from 'lucide-react';
 
 interface MessageInputProps {
   onSendMessage: (content: string) => Promise<void>;
+  onTyping: (isTyping: boolean) => void;
   disabled?: boolean;
 }
 
-const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, disabled = false }) => {
+const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, onTyping, disabled = false }) => {
   const [newMessage, setNewMessage] = useState('');
+  const timeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (newMessage.length > 0) {
+      onTyping(true);
+
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
+      timeoutRef.current = window.setTimeout(() => {
+        onTyping(false);
+      }, 3000);
+    } else {
+      onTyping(false);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    }
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [newMessage, onTyping]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || disabled) return;
     
+    onTyping(false);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
     try {
       await onSendMessage(newMessage);
       setNewMessage('');

@@ -5,6 +5,7 @@ import { useChatMessages } from '@/hooks/useChatMessages';
 import ChatHeader from './ChatHeader';
 import MessageItem from './MessageItem';
 import MessageInput from './MessageInput';
+import { useTypingStatus } from '@/hooks/messaging/useTypingStatus';
 
 interface ChatViewProps {
   conversationId: string;
@@ -13,6 +14,7 @@ interface ChatViewProps {
 
 const ChatView: React.FC<ChatViewProps> = ({ conversationId, onBack }) => {
   const { messages, conversation, sendMessage, markAsRead } = useChatMessages(conversationId);
+  const { typingUsers, trackTyping } = useTypingStatus(conversationId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -25,30 +27,40 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, onBack }) => {
 
   useEffect(() => {
     if (conversationId) {
-      console.log('Marking messages as read for conversation:', conversationId);
       markAsRead();
     }
   }, [conversationId, markAsRead]);
 
-  // Marquer les messages comme lus quand de nouveaux messages arrivent
   useEffect(() => {
     if (messages.length > 0) {
       const timeoutId = setTimeout(() => {
         markAsRead();
-      }, 1000); // Attendre 1 seconde avant de marquer comme lu
+      }, 1000);
 
       return () => clearTimeout(timeoutId);
     }
   }, [messages.length, markAsRead]);
 
+  const getTypingText = () => {
+    if (typingUsers.length === 0) return null;
+    if (typingUsers.length === 1) return `${typingUsers[0]} est en train d'écrire...`;
+    if (typingUsers.length === 2) return `${typingUsers[0]} et ${typingUsers[1]} sont en train d'écrire...`;
+    return `Plusieurs personnes sont en train d'écrire...`;
+  };
+  const typingText = getTypingText();
+
   return (
     <div className="h-full w-full bg-white flex flex-col">
-      {/* Header - reste en haut */}
       <div className="flex-shrink-0 border-b shadow-sm">
         <ChatHeader conversation={conversation} onBack={onBack} />
       </div>
 
-      {/* Zone de messages - prend tout l'espace disponible entre header et input */}
+      {typingText && (
+        <div className="px-8 py-2 text-sm text-gray-500 animate-pulse bg-gray-50/80">
+          {typingText}
+        </div>
+      )}
+
       <div className="flex-1 overflow-hidden">
         <ScrollArea className="h-full bg-gradient-to-b from-gray-50/30 to-white">
           <div className="px-8 py-8 space-y-8">
@@ -60,9 +72,8 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, onBack }) => {
         </ScrollArea>
       </div>
 
-      {/* Input - reste en bas */}
       <div className="flex-shrink-0 border-t">
-        <MessageInput onSendMessage={sendMessage} />
+        <MessageInput onSendMessage={sendMessage} onTyping={trackTyping} />
       </div>
     </div>
   );
