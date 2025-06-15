@@ -834,6 +834,7 @@ export type Database = {
       }
       team_members: {
         Row: {
+          game_role: string | null
           id: string
           joined_at: string | null
           role: string | null
@@ -842,6 +843,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          game_role?: string | null
           id?: string
           joined_at?: string | null
           role?: string | null
@@ -850,6 +852,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          game_role?: string | null
           id?: string
           joined_at?: string | null
           role?: string | null

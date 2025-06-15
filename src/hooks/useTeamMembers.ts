@@ -1,4 +1,3 @@
-
 import { useTeamMembersFetch } from './team/useTeamMembersFetch';
 import { useTeamMemberActions } from './team/useTeamMemberActions';
 import { TeamData } from '@/types/team';
@@ -24,6 +23,7 @@ export const useTeamMembers = (
     handleRejectMember,
     handleRemoveMember,
     handleUpdateMemberRole,
+    handleUpdateMemberGameRole,
     handleLeaveTeam
   } = useTeamMemberActions(
     team,
@@ -45,6 +45,7 @@ export const useTeamMembers = (
     handleRejectMember,
     handleRemoveMember,
     handleUpdateMemberRole,
+    handleUpdateMemberGameRole,
     handleLeaveTeam
   };
 };

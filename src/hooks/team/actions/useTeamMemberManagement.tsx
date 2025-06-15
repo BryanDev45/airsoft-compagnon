@@ -82,9 +82,47 @@ export const useTeamMemberManagement = (
     }
   };
 
+  const handleUpdateMemberGameRole = async (memberId: string, newGameRole: string) => {
+    if (!isTeamLeader) return;
+    
+    setLoading(true);
+    
+    try {
+      const { error } = await supabase
+        .from('team_members')
+        .update({ game_role: newGameRole })
+        .eq('id', memberId);
+        
+      if (error) throw error;
+      
+      setTeamMembers(prev => 
+        prev.map(member => 
+          member.id === memberId 
+            ? { ...member, game_role: newGameRole } 
+            : member
+        )
+      );
+      
+      toast({
+        title: "Rôle en jeu mis à jour",
+        description: "Le rôle en jeu du membre a été mis à jour avec succès.",
+      });
+    } catch (error: any) {
+      console.error("Erreur lors de la mise à jour du rôle en jeu:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour le rôle en jeu: " + error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     loading,
     handleRemoveMember,
-    handleUpdateMemberRole
+    handleUpdateMemberRole,
+    handleUpdateMemberGameRole
   };
 };

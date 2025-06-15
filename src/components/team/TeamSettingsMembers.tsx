@@ -29,6 +29,7 @@ const TeamSettingsMembers = ({
     handleRejectMember,
     handleRemoveMember,
     handleUpdateMemberRole,
+    handleUpdateMemberGameRole,
     handleLeaveTeam
   } = useTeamMembers(team, user, isTeamLeader, onClose);
 
@@ -51,6 +52,7 @@ const TeamSettingsMembers = ({
         currentUserId={user?.id}
         handleRemoveMember={handleRemoveMember}
         handleUpdateMemberRole={handleUpdateMemberRole}
+        handleUpdateMemberGameRole={handleUpdateMemberGameRole}
         handleLeaveTeam={handleLeaveTeam}
       />
     </div>

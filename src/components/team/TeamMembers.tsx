@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,7 @@ interface TeamMember {
   avatar?: string;
   joinedTeam?: string;
   verified?: boolean;
-  specialty?: string;
+  game_role?: string;
   isTeamLeader?: boolean;
   status?: string; // Ajout du statut pour filtrer les membres
 }
@@ -80,7 +79,7 @@ const TeamMembers = ({ members, handleViewMember }: TeamMembersProps) => {
             </div>
             <div className="bg-gray-50 px-4 py-2 border-t">
               <p className="text-xs text-gray-600">
-                <span className="font-medium">Spécialité:</span> {member.specialty}
+                <span className="font-medium">Rôle en jeu:</span> {member.game_role || 'Non spécifié'}
               </p>
             </div>
           </CardContent>

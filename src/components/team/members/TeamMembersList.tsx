@@ -12,6 +12,13 @@ import {
   ToggleGroup,
   ToggleGroupItem
 } from "@/components/ui/toggle-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Button } from "@/components/ui/button";
 import { UserMinus, LogOut } from "lucide-react";
 import { TeamMember } from '@/types/team';
@@ -24,6 +31,7 @@ interface TeamMembersListProps {
   currentUserId?: string;
   handleRemoveMember: (memberId: string) => Promise<void>;
   handleUpdateMemberRole: (memberId: string, newRole: string) => Promise<void>;
+  handleUpdateMemberGameRole: (memberId: string, newGameRole: string) => Promise<void>;
   handleLeaveTeam: () => Promise<void>;
 }
 
@@ -35,8 +43,11 @@ const TeamMembersList = ({
   currentUserId,
   handleRemoveMember,
   handleUpdateMemberRole,
+  handleUpdateMemberGameRole,
   handleLeaveTeam
 }: TeamMembersListProps) => {
+  const gameRoles = ['Assaut', 'Sniper', 'Soutien', 'Médecin', 'Antitank', 'Eclaireur'];
+
   return (
     <div>
       <h3 className="font-medium mb-2">Membres de l'équipe ({teamMembers.length})</h3>
@@ -46,6 +57,7 @@ const TeamMembersList = ({
             <TableRow>
               <TableHead>Membre</TableHead>
               {isTeamLeader && <TableHead>Rôle</TableHead>}
+              {isTeamLeader && <TableHead>Rôle en jeu</TableHead>}
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -83,6 +95,29 @@ const TeamMembersList = ({
                         <ToggleGroupItem value="Modérateur" size="sm">Modérateur</ToggleGroupItem>
                         <ToggleGroupItem value="Admin" size="sm">Admin</ToggleGroupItem>
                       </ToggleGroup>
+                    )}
+                  </TableCell>
+                )}
+
+                {isTeamLeader && (
+                  <TableCell>
+                    {member.user_id !== teamLeaderId && (
+                      <Select
+                        value={member.game_role || ''}
+                        onValueChange={(value) => {
+                          if (value) handleUpdateMemberGameRole(member.id, value);
+                        }}
+                        disabled={loading}
+                      >
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="Définir un rôle" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {gameRoles.map(role => (
+                            <SelectItem key={role} value={role}>{role}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     )}
                   </TableCell>
                 )}

@@ -42,7 +42,7 @@ export const useTeamData = (teamId: string | undefined) => {
       // Get team members
       const { data: teamMembers, error: membersError } = await supabase
         .from('team_members')
-        .select('id, role, user_id, status')
+        .select('id, role, user_id, status, game_role')
         .eq('team_id', teamData.id)
         .eq('status', 'confirmed');
 
@@ -73,10 +73,10 @@ export const useTeamData = (teamId: string | undefined) => {
               id: profile.id,
               username: profile.username,
               role: member.role,
+              game_role: member.game_role,
               avatar: profile.avatar,
               joinedTeam: profile.join_date ? new Date(profile.join_date).toLocaleDateString('fr-FR') : 'N/A',
               verified: profile.is_verified,
-              specialty: 'Non spécifié', // Default value
               isTeamLeader: member.user_id === teamData.leader_id,
               status: member.status
             };
