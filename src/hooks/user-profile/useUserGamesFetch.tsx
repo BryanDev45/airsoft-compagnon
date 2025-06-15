@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { FormattedGame, fetchParticipantCounts, formatParticipatedGame, formatCreatedGame, updateUserGamesStats } from './gameFormatters';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -11,11 +11,11 @@ export const useUserGamesFetch = (userId: string | undefined) => {
   const queryClient = useQueryClient();
   
   // Force la re-exécution de la requête quand l'userId change
-  const { data: userGames = [], isLoading: loading, refetch } = useQuery({
+  const { data: userGames = [], isLoading: loading, refetch, isSuccess } = useQuery({
     queryKey: ['userGames', userId],
     queryFn: () => fetchUserGames(userId),
     enabled: !!userId,
-    staleTime: 120000, // Increased from 30s to 2 minutes
+    staleTime: 30000, // Reduced from 2 minutes to 30 seconds for more frequent updates
     gcTime: 300000, // 5 minutes
     refetchOnWindowFocus: false, // Disabled to reduce requests
     refetchOnMount: true,
@@ -24,7 +24,7 @@ export const useUserGamesFetch = (userId: string | undefined) => {
 
   // Force la mise à jour des statistiques quand les parties changent
   useEffect(() => {
-    if (userId && Array.isArray(userGames) && userGames.length >= 0) {
+    if (isSuccess && userId && Array.isArray(userGames)) {
       console.log('Déclenchement de la mise à jour des statistiques pour:', userId, userGames.length, 'parties');
       updateUserGamesStats(userId, userGames)
         .then(() => {
@@ -36,7 +36,7 @@ export const useUserGamesFetch = (userId: string | undefined) => {
           console.error('Erreur lors de la mise à jour des statistiques:', error);
         });
     }
-  }, [userId, userGames, queryClient]);
+  }, [isSuccess, userId, userGames, queryClient]);
 
   return {
     userGames,
