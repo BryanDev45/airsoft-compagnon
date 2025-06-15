@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
@@ -17,9 +18,9 @@ const fetchTeamNews = async (teamId: string): Promise<TeamNews[]> => {
 
 // Upload images to storage
 const uploadNewsImages = async (teamId: string, newsId: string, files: File[]): Promise<string[]> => {
-  const uploadPromises = files.map(async (file) => {
+  const uploadPromises = files.map(async (file, index) => {
     const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}.${fileExt}`;
+    const fileName = `${Date.now()}-${index}.${fileExt}`;
     const filePath = `${teamId}/${newsId}/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
