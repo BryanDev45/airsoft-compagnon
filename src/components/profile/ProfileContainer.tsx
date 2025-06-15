@@ -28,6 +28,7 @@ interface ProfileContainerProps {
   handleAddEquipment: any;
   handleViewGameDetails: (game: any) => void;
   handleViewAllGames: () => void;
+  handleViewAllBadges: () => void;
 }
 
 const ProfileContainer: React.FC<ProfileContainerProps> = ({
@@ -44,7 +45,8 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
   fetchProfileData,
   handleAddEquipment,
   handleViewGameDetails,
-  handleViewAllGames
+  handleViewAllGames,
+  handleViewAllBadges,
 }) => {
   // Extract dialog state functions from dialogStates object
   const {
@@ -53,7 +55,6 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
     showEditBioDialog,
     setShowEditBioDialog,
     setShowAddEquipmentDialog,
-    setShowBadgesDialog
   } = dialogStates;
 
   const toggleProfileSettings = () => {
@@ -142,7 +143,7 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
             <TabsContent value="badges" className="p-1">
               <ProfileBadges 
                 badges={userBadges || []} 
-                handleViewAllBadges={() => setShowBadgesDialog(true)}
+                handleViewAllBadges={handleViewAllBadges}
               />
             </TabsContent>
 
