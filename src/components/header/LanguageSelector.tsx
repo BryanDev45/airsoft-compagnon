@@ -35,7 +35,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ isDesktop = 
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="flex items-center gap-1.5 text-white px-2">
             <Globe className="h-5 w-5" />
-            <span className="text-lg">{selectedLanguage.flag}</span>
+            <span className="text-lg" style={{ fontFamily: 'sans-serif' }}>{selectedLanguage.flag}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
@@ -45,7 +45,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ isDesktop = 
               className="flex items-center gap-2"
               onClick={() => handleLanguageChange(language.code)}
             >
-              <span className="text-lg">{language.flag}</span>
+              <span className="text-lg" style={{ fontFamily: 'sans-serif' }}>{language.flag}</span>
               <span>{language.name}</span>
             </DropdownMenuItem>
           ))}
