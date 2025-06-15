@@ -1,8 +1,9 @@
 
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { FormattedGame, fetchParticipantCounts, formatParticipatedGame, formatCreatedGame, updateUserGamesStats } from './gameFormatters';
+import { FormattedGame, fetchParticipantCounts, formatParticipatedGame, formatCreatedGame } from './gameFormatters';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { triggerUserStatsUpdate } from '@/utils/supabaseHelpers';
 
 /**
  * Hook optimisé pour récupérer les parties d'un utilisateur avec mise en cache
@@ -24,20 +25,21 @@ export const useUserGamesFetch = (userId: string | undefined, currentUserId?: st
 
   // Force la mise à jour des statistiques quand les parties changent
   useEffect(() => {
-    // On ne met à jour les stats que si l'utilisateur regarde son propre profil, pour éviter des problèmes de droits RLS
-    if (isSuccess && userId && userId === currentUserId && Array.isArray(userGames)) {
-      console.log('Déclenchement de la mise à jour des statistiques pour (profil propre):', userId, userGames.length, 'parties');
-      updateUserGamesStats(userId, userGames)
-        .then(() => {
-          // Invalider le cache des user_stats pour forcer le rechargement
-          queryClient.invalidateQueries({ queryKey: ['user_stats', userId] });
-          queryClient.invalidateQueries({ queryKey: ['profileData', userId] });
-        })
-        .catch(error => {
-          console.error('Erreur lors de la mise à jour des statistiques:', error);
+    // La mise à jour est maintenant gérée par une fonction RPC sécurisée,
+    // donc on peut la déclencher pour n'importe quel profil.
+    if (isSuccess && userId) {
+      console.log(`Déclenchement de la mise à jour des statistiques via RPC pour: ${userId}`);
+      triggerUserStatsUpdate(userId)
+        .then(({ error }) => {
+          if (!error) {
+            // Invalider le cache des user_stats et profileData pour forcer le rechargement avec les nouvelles stats
+            console.log(`Invalidation du cache user_stats et profileData pour: ${userId}`);
+            queryClient.invalidateQueries({ queryKey: ['user_stats', userId] });
+            queryClient.invalidateQueries({ queryKey: ['profileData', userId] });
+          }
         });
     }
-  }, [isSuccess, userId, userGames, queryClient, currentUserId]);
+  }, [isSuccess, userId, queryClient]);
 
   return {
     userGames,

@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 
@@ -150,4 +149,21 @@ export const uploadGameImages = async (gameId: string, images: File[]) => {
     console.error('Erreur lors du téléchargement des images du jeu:', error);
     return { data: null, error };
   }
+};
+
+/**
+ * Trigger a secure update of a user's game statistics via a Supabase RPC function.
+ */
+export const triggerUserStatsUpdate = async (userId: string) => {
+  const { error } = await supabase.rpc('update_user_games_stats_securely', {
+    p_user_id: userId,
+  });
+
+  if (error) {
+    console.error(`Error triggering user stats update for ${userId}:`, error);
+    return { error };
+  }
+  
+  console.log(`Successfully triggered user stats update for: ${userId}`);
+  return { error: null };
 };
