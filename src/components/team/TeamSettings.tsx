@@ -18,6 +18,7 @@ import TeamSettingsMembers from './TeamSettingsMembers';
 import TeamSettingsDanger from './TeamSettingsDanger';
 import { TeamData } from '@/types/team';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
 interface TeamSettingsProps {
   team: TeamData;
@@ -78,7 +79,10 @@ const TeamSettings = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className={cn(
+        "max-h-[90vh] overflow-y-auto",
+        currentTab === 'members' ? "sm:max-w-4xl" : "sm:max-w-2xl"
+      )}>
         <DialogHeader>
           <DialogTitle>
             {isTeamLeader ? "Paramètres de l'équipe" : "Gestion de l'équipe"}

@@ -57,126 +57,124 @@ const TeamMembersList = ({
     <div>
       <h3 className="font-medium mb-2">Membres de l'équipe ({teamMembers.length})</h3>
       {teamMembers.length > 0 ? (
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Membre</TableHead>
-                {isTeamLeader && <TableHead>Rôle</TableHead>}
-                {isTeamLeader && <TableHead>Rôle en jeu</TableHead>}
-                {isTeamLeader && isAssociation && <TableHead>Rôle associatif</TableHead>}
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {teamMembers.map((member) => (
-                <TableRow key={member.id}>
-                  <TableCell className="flex items-center space-x-2">
-                    <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
-                      <img 
-                        src={member.profiles?.avatar}
-                        alt={member.profiles?.username || "Utilisateur"} 
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <span>{member.profiles?.username || "Utilisateur"}</span>
-                    {member.user_id === teamLeaderId && (
-                      <span className="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-full">
-                        Leader
-                      </span>
-                    )}
-                  </TableCell>
-                  
-                  {isTeamLeader && (
-                    <TableCell>
-                      {member.user_id !== teamLeaderId && (
-                        <ToggleGroup 
-                          type="single" 
-                          value={member.role || "Membre"}
-                          onValueChange={(value) => {
-                            if (value) handleUpdateMemberRole(member.id, value);
-                          }}
-                          className="justify-start"
-                        >
-                          <ToggleGroupItem value="Membre" size="sm">Membre</ToggleGroupItem>
-                          <ToggleGroupItem value="Admin" size="sm">Admin</ToggleGroupItem>
-                        </ToggleGroup>
-                      )}
-                    </TableCell>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Membre</TableHead>
+              {isTeamLeader && <TableHead>Rôle</TableHead>}
+              {isTeamLeader && <TableHead>Rôle en jeu</TableHead>}
+              {isTeamLeader && isAssociation && <TableHead>Rôle associatif</TableHead>}
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {teamMembers.map((member) => (
+              <TableRow key={member.id}>
+                <TableCell className="flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
+                    <img 
+                      src={member.profiles?.avatar}
+                      alt={member.profiles?.username || "Utilisateur"} 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <span>{member.profiles?.username || "Utilisateur"}</span>
+                  {member.user_id === teamLeaderId && (
+                    <span className="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-full">
+                      Leader
+                    </span>
                   )}
-
-                  {isTeamLeader && (
-                    <TableCell>
-                      <Select
-                        value={member.game_role || ''}
-                        onValueChange={(value) => {
-                          if (value) handleUpdateMemberGameRole(member.id, value);
-                        }}
-                        disabled={loading}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Définir un rôle" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {gameRoles.map(role => (
-                            <SelectItem key={role} value={role}>{role}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                  )}
-
-                  {isTeamLeader && isAssociation && (
-                    <TableCell>
-                      <Select
-                        value={member.association_role || ''}
-                        onValueChange={(value) => {
-                          if (value) handleUpdateMemberAssociationRole(member.id, value);
-                        }}
-                        disabled={loading}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Définir un rôle" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {associationRoles.map(role => (
-                            <SelectItem key={role} value={role}>{role}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                  )}
-                  
+                </TableCell>
+                
+                {isTeamLeader && (
                   <TableCell>
-                    {isTeamLeader && member.user_id !== teamLeaderId && member.user_id !== currentUserId && (
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleRemoveMember(member.id)}
-                        disabled={loading}
+                    {member.user_id !== teamLeaderId && (
+                      <ToggleGroup 
+                        type="single" 
+                        value={member.role || "Membre"}
+                        onValueChange={(value) => {
+                          if (value) handleUpdateMemberRole(member.id, value);
+                        }}
+                        className="justify-start"
                       >
-                        <UserMinus className="h-4 w-4 mr-1" />
-                        Supprimer
-                      </Button>
-                    )}
-                    
-                    {!isTeamLeader && member.user_id === currentUserId && (
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={handleLeaveTeam}
-                        disabled={loading}
-                      >
-                        <LogOut className="h-4 w-4 mr-1" />
-                        Quitter
-                      </Button>
+                        <ToggleGroupItem value="Membre" size="sm">Membre</ToggleGroupItem>
+                        <ToggleGroupItem value="Admin" size="sm">Admin</ToggleGroupItem>
+                      </ToggleGroup>
                     )}
                   </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+                )}
+
+                {isTeamLeader && (
+                  <TableCell>
+                    <Select
+                      value={member.game_role || ''}
+                      onValueChange={(value) => {
+                        if (value) handleUpdateMemberGameRole(member.id, value);
+                      }}
+                      disabled={loading}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Définir un rôle" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {gameRoles.map(role => (
+                          <SelectItem key={role} value={role}>{role}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                )}
+
+                {isTeamLeader && isAssociation && (
+                  <TableCell>
+                    <Select
+                      value={member.association_role || ''}
+                      onValueChange={(value) => {
+                        if (value) handleUpdateMemberAssociationRole(member.id, value);
+                      }}
+                      disabled={loading}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Définir un rôle" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {associationRoles.map(role => (
+                          <SelectItem key={role} value={role}>{role}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                )}
+                
+                <TableCell>
+                  {isTeamLeader && member.user_id !== teamLeaderId && member.user_id !== currentUserId && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleRemoveMember(member.id)}
+                      disabled={loading}
+                    >
+                      <UserMinus className="h-4 w-4 mr-1" />
+                      Supprimer
+                    </Button>
+                  )}
+                  
+                  {!isTeamLeader && member.user_id === currentUserId && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={handleLeaveTeam}
+                      disabled={loading}
+                    >
+                      <LogOut className="h-4 w-4 mr-1" />
+                      Quitter
+                    </Button>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       ) : (
         <p className="text-gray-500 text-center py-4">Aucun membre confirmé dans l'équipe</p>
       )}
