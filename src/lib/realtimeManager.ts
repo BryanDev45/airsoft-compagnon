@@ -1,53 +1,42 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import type { QueryClient } from '@tanstack/react-query';
 
 class RealtimeManager {
-  private channel: RealtimeChannel | null = null;
+  private channel: RealtimeChannel;
   private listenerCount = 0;
   private queryClient: QueryClient | null = null;
   private userId: string | null = null;
+  private readonly channelName = 'realtime:all';
 
-  public addListener(queryClient: QueryClient, userId: string) {
-    if (this.userId && this.userId !== userId) {
-      this.cleanup();
-    }
-    
-    this.listenerCount++;
-    
-    this.queryClient = queryClient;
-    this.userId = userId;
-
-    if (!this.channel) {
-      this.subscribe();
-    }
-  }
-
-  public removeListener() {
-    this.listenerCount--;
-    if (this.listenerCount <= 0) {
-      this.cleanup();
-    }
-  }
-
-  private subscribe() {
-    if (!this.userId || !this.queryClient) return;
-    
-    const channelName = 'realtime:all';
-    this.channel = supabase.channel(channelName);
-
+  constructor() {
+    this.channel = supabase.channel(this.channelName);
     this.channel
       .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, (payload) => this.handleMessageChange(payload))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, (payload) => this.handleConversationChange(payload))
       .subscribe((status, err) => {
         if (status === 'SUBSCRIBED') {
-          console.log(`Real-time subscribed to ${channelName}!`);
+          console.log(`Real-time subscribed to ${this.channelName}!`);
         }
         if (status === 'CHANNEL_ERROR') {
-          console.error(`Real-time channel error for ${channelName}:`, err);
-          this.cleanup();
+          console.error(`Real-time channel error for ${this.channelName}:`, err);
         }
       });
+  }
+
+  public addListener(queryClient: QueryClient, userId: string) {
+    this.listenerCount++;
+    this.queryClient = queryClient;
+    this.userId = userId;
+  }
+
+  public removeListener() {
+    this.listenerCount--;
+    if (this.listenerCount <= 0) {
+      this.queryClient = null;
+      this.userId = null;
+    }
   }
 
   private handleMessageChange = (payload: any) => {
@@ -64,16 +53,6 @@ class RealtimeManager {
   private handleConversationChange = (payload: any) => {
     if (!this.queryClient) return;
     this.queryClient.invalidateQueries({ queryKey: ['conversations'] });
-  }
-
-  private cleanup = () => {
-    if (this.channel) {
-      supabase.removeChannel(this.channel).catch(err => console.error('Error removing channel', err));
-      this.channel = null;
-    }
-    this.listenerCount = 0;
-    this.userId = null;
-    this.queryClient = null;
   }
 }
 
