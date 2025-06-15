@@ -1,6 +1,10 @@
 
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useAllBadges } from '@/hooks/badges/useAllBadges';
+import { useUserBadges } from '@/hooks/user-profile/useUserBadges';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Loader2, Lock } from 'lucide-react';
 
 interface BadgesDialogProps {
   showBadgesDialog: boolean;
@@ -13,15 +17,75 @@ const BadgesDialog: React.FC<BadgesDialogProps> = ({
   setShowBadgesDialog,
   user
 }) => {
+  const { data: allBadges, isLoading: isLoadingAll } = useAllBadges();
+  const { userBadges, loading: isLoadingUserBadges } = useUserBadges(user?.id);
+
+  const isLoading = isLoadingAll || isLoadingUserBadges;
+
+  const userBadgeIds = React.useMemo(() => userBadges.map(b => b.id), [userBadges]);
+
+  const badgesToDisplay = React.useMemo(() => {
+    return allBadges?.map(badge => {
+      const isUnlocked = userBadgeIds.includes(badge.id);
+      let displayIcon = badge.icon;
+
+      if (!isUnlocked && badge.name === 'Profil vérifié') {
+        displayIcon = '/lovable-uploads/146443fc-6946-476d-b189-b53c17e48f0a.png';
+      }
+
+      return {
+        ...badge,
+        isUnlocked,
+        displayIcon,
+      };
+    });
+  }, [allBadges, userBadgeIds]);
+
   return (
     <Dialog open={showBadgesDialog} onOpenChange={setShowBadgesDialog}>
-      <DialogContent className="sm:max-w-lg max-h-screen overflow-y-auto">
+      <DialogContent className="sm:max-w-3xl max-h-[80vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Tous les badges de {user?.username || 'l\'utilisateur'}</DialogTitle>
+          <DialogTitle>Tous les badges disponibles</DialogTitle>
+          <DialogDescription>
+            Voici la liste de tous les badges que vous pouvez obtenir sur la plateforme. Participez, contribuez et débloquez-les tous !
+          </DialogDescription>
         </DialogHeader>
-        <div className="p-2">
-          {/* Implementing this would require passing badges to this component */}
-          <p>Fonctionnalité à venir.</p>
+        <div className="flex-grow overflow-hidden pr-2">
+          <ScrollArea className="h-full pr-4">
+            {isLoading ? (
+              <div className="flex justify-center items-center h-full py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-airsoft-red" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 py-4">
+                {badgesToDisplay?.map((badge) => (
+                  <div
+                    key={badge.id}
+                    className="border rounded-lg p-4 flex flex-col items-center text-center transition-all"
+                    style={{
+                      backgroundColor: badge.isUnlocked ? badge.background_color : '#f8fafc',
+                      borderColor: badge.isUnlocked ? badge.border_color : '#e2e8f0'
+                    }}
+                  >
+                    <div className="relative w-24 h-24 mb-3">
+                      <img
+                        src={badge.displayIcon}
+                        alt={badge.name}
+                        className={`w-full h-full object-contain ${!badge.isUnlocked && badge.displayIcon === badge.icon ? 'grayscale' : ''}`}
+                      />
+                      {!badge.isUnlocked && (
+                        <div className="absolute inset-0 bg-slate-800 bg-opacity-50 flex items-center justify-center">
+                          <Lock className="text-white h-10 w-10" />
+                        </div>
+                      )}
+                    </div>
+                    <h3 className="font-semibold mb-1 text-base">{badge.name}</h3>
+                    <p className="text-xs text-slate-600 flex-grow">{badge.description}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
         </div>
       </DialogContent>
     </Dialog>
