@@ -1,7 +1,9 @@
 
 import React from 'react';
-import { Send, Share, Shield } from 'lucide-react';
+import { Send, Share, Shield, Facebook, Twitter } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { FaWhatsapp } from 'react-icons/fa';
+import { MdEmail } from 'react-icons/md';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -175,7 +177,7 @@ const TeamDialogs = ({
               className="flex flex-col items-center py-6"
               onClick={() => handleShareVia('facebook')}
             >
-              <img src="/lovable-uploads/1cc60b94-2b6c-4e0e-9ab8-1bd1e8cb1098.png" alt="Facebook" className="w-8 h-8 mb-2" />
+              <Facebook className="w-8 h-8 mb-2 text-blue-600" />
               <span>Facebook</span>
             </Button>
             <Button 
@@ -183,7 +185,7 @@ const TeamDialogs = ({
               className="flex flex-col items-center py-6"
               onClick={() => handleShareVia('twitter')}
             >
-              <img src="/lovable-uploads/84404d08-fa37-4317-80e0-d607d3676fd5.png" alt="Twitter" className="w-8 h-8 mb-2" />
+              <Twitter className="w-8 h-8 mb-2 text-blue-400" />
               <span>Twitter</span>
             </Button>
             <Button 
@@ -191,7 +193,7 @@ const TeamDialogs = ({
               className="flex flex-col items-center py-6"
               onClick={() => handleShareVia('whatsapp')}
             >
-              <img src="/lovable-uploads/e3177716-6012-4386-a9b2-607ab6f838b0.png" alt="WhatsApp" className="w-8 h-8 mb-2" />
+              <FaWhatsapp className="w-8 h-8 mb-2 text-green-500" />
               <span>WhatsApp</span>
             </Button>
             <Button 
@@ -199,7 +201,7 @@ const TeamDialogs = ({
               className="flex flex-col items-center py-6"
               onClick={() => handleShareVia('email')}
             >
-              <img src="/lovable-uploads/c242d3b0-8906-4f00-9b3b-fc251f703e4b.png" alt="Email" className="w-8 h-8 mb-2" />
+              <MdEmail className="w-8 h-8 mb-2 text-gray-500" />
               <span>Email</span>
             </Button>
           </div>
