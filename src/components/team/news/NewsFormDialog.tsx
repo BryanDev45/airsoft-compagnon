@@ -18,6 +18,8 @@ const newsSchema = z.object({
   images: z.instanceof(FileList).optional(),
 });
 
+type NewsFormSchema = z.infer<typeof newsSchema>;
+
 interface NewsFormDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
@@ -34,6 +36,7 @@ const NewsFormDialog: React.FC<NewsFormDialogProps> = ({
   updateNews,
 }) => {
   const isEditing = !!newsItem;
+  const mutation = isEditing ? updateNews : createNews;
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
@@ -43,7 +46,7 @@ const NewsFormDialog: React.FC<NewsFormDialogProps> = ({
     reset,
     formState: { errors, isSubmitting },
     watch,
-  } = useForm<Omit<TeamNewsFormData, 'existingImages'>>({
+  } = useForm<NewsFormSchema>({
     resolver: zodResolver(newsSchema),
   });
 
@@ -71,8 +74,7 @@ const NewsFormDialog: React.FC<NewsFormDialogProps> = ({
     setImagePreviews([]);
   }, [newImages]);
 
-  const onSubmit = async (data: Omit<TeamNewsFormData, 'existingImages'>) => {
-    const mutation = isEditing ? updateNews : createNews;
+  const onSubmit = async (data: NewsFormSchema) => {
     const payload = isEditing ? { ...data, id: newsItem!.id, existingImages } : data;
     
     await mutation.mutateAsync(payload as any);
@@ -149,3 +151,4 @@ const NewsFormDialog: React.FC<NewsFormDialogProps> = ({
 };
 
 export default NewsFormDialog;
+
