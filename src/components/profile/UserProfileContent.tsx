@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -42,10 +41,6 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
   const [showBadgesDialog, setShowBadgesDialog] = useState(false);
   
   const equipmentTypes = ["Réplique principale", "Réplique secondaire", "Protection", "Accessoire"];
-
-  const handleNavigateToGame = (gameId: string) => {
-    navigate(`/game/${gameId}`);
-  };
 
   const handleNavigateToTeam = () => {
     if (profileData?.team_id) {
@@ -122,11 +117,11 @@ const UserProfileContent: React.FC<UserProfileContentProps> = ({
         selectedGame={selectedGame}
         showGameDialog={showGameDialog}
         setShowGameDialog={setShowGameDialog}
+        setSelectedGame={setSelectedGame}
         showAllGamesDialog={showAllGamesDialog}
         setShowAllGamesDialog={setShowAllGamesDialog}
         showBadgesDialog={showBadgesDialog}
         setShowBadgesDialog={setShowBadgesDialog}
-        handleNavigateToGame={handleNavigateToGame}
         user={profileData}
         userGames={userGames}
       />
