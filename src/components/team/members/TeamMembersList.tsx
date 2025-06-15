@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Table,
@@ -92,7 +91,6 @@ const TeamMembersList = ({
                         className="justify-start"
                       >
                         <ToggleGroupItem value="Membre" size="sm">Membre</ToggleGroupItem>
-                        <ToggleGroupItem value="Modérateur" size="sm">Modérateur</ToggleGroupItem>
                         <ToggleGroupItem value="Admin" size="sm">Admin</ToggleGroupItem>
                       </ToggleGroup>
                     )}
