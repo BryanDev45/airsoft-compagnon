@@ -354,6 +354,30 @@ export type Database = {
         }
         Relationships: []
       }
+      glossary: {
+        Row: {
+          category: string
+          created_at: string
+          definition: string
+          id: string
+          term: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          definition: string
+          id?: string
+          term: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          definition?: string
+          id?: string
+          term?: string
+        }
+        Relationships: []
+      }
       message_read_status: {
         Row: {
           created_at: string
