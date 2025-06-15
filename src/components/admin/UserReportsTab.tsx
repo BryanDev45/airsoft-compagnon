@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,6 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import ResolveReportDialog from './ResolveReportDialog';
 import UserReportCard from './reports/UserReportCard';
 import UserReportsEmpty from './reports/UserReportsEmpty';
+import WarnUserDialog from './WarnUserDialog';
+import { useAddUserWarning } from '@/hooks/admin/useUserWarnings';
 
 interface UserReport {
   id: string;
@@ -21,6 +22,7 @@ interface UserReport {
   reported_profile: {
     username: string;
   } | null;
+  reported_user_id: string;
 }
 
 const UserReportsTab = () => {
@@ -28,6 +30,10 @@ const UserReportsTab = () => {
   const navigate = useNavigate();
   const [resolveDialogOpen, setResolveDialogOpen] = useState(false);
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
+  const [warnDialogOpen, setWarnDialogOpen] = useState(false);
+  const [selectedUserToWarn, setSelectedUserToWarn] = useState<{ id: string, username: string, reportId: string } | null>(null);
+
+  const addUserWarningMutation = useAddUserWarning();
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ['user-reports'],
@@ -48,7 +54,6 @@ const UserReportsTab = () => {
 
       if (error) throw error;
 
-      // Fetch profiles separately to avoid join issues
       const reportsWithProfiles = await Promise.all(
         (data || []).map(async (report) => {
           // Fetch reporter profile
@@ -131,6 +136,28 @@ const UserReportsTab = () => {
     });
   };
 
+  const handleWarnClick = (report: UserReport) => {
+    if (report.reported_profile && report.reported_user_id) {
+        setSelectedUserToWarn({ id: report.reported_user_id, username: report.reported_profile.username, reportId: report.id });
+        setWarnDialogOpen(true);
+    }
+  };
+
+  const handleWarnConfirm = (reason: string) => {
+    if (selectedUserToWarn) {
+        addUserWarningMutation.mutate({
+            warnedUserId: selectedUserToWarn.id,
+            reason: reason,
+            context: `Suite au rapport #${selectedUserToWarn.reportId}`
+        }, {
+            onSuccess: () => {
+                setWarnDialogOpen(false);
+                setSelectedUserToWarn(null);
+            }
+        });
+    }
+  };
+
   if (isLoading) {
     return <div className="flex justify-center p-8">Chargement des rapports...</div>;
   }
@@ -144,7 +171,8 @@ const UserReportsTab = () => {
           onResolveClick={handleResolveClick}
           onDismiss={handleDismiss}
           onViewProfile={handleViewProfile}
-          isLoading={updateReportMutation.isPending}
+          onWarnClick={handleWarnClick}
+          isLoading={updateReportMutation.isPending || addUserWarningMutation.isPending}
         />
       ))}
       
@@ -157,6 +185,14 @@ const UserReportsTab = () => {
         isLoading={updateReportMutation.isPending}
         title="Résoudre le signalement d'utilisateur"
         description="Ajoutez un commentaire sur les actions prises concernant ce signalement d'utilisateur."
+      />
+
+      <WarnUserDialog
+        open={warnDialogOpen}
+        onOpenChange={setWarnDialogOpen}
+        onConfirm={handleWarnConfirm}
+        isLoading={addUserWarningMutation.isPending}
+        username={selectedUserToWarn?.username || ''}
       />
     </div>
   );

@@ -1126,6 +1126,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_warnings: {
+        Row: {
+          admin_id: string | null
+          context: string | null
+          created_at: string
+          id: string
+          reason: string
+          warned_user_id: string
+        }
+        Insert: {
+          admin_id?: string | null
+          context?: string | null
+          created_at?: string
+          id?: string
+          reason: string
+          warned_user_id: string
+        }
+        Update: {
+          admin_id?: string | null
+          context?: string | null
+          created_at?: string
+          id?: string
+          reason?: string
+          warned_user_id?: string
+        }
+        Relationships: []
+      }
       verification_requests: {
         Row: {
           admin_notes: string | null

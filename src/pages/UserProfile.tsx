@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import Header from '../components/Header';
@@ -7,6 +6,10 @@ import { useUserProfile } from '../hooks/useUserProfile';
 import UserProfileHeader from '../components/profile/UserProfileHeader';
 import UserProfileBanner from '../components/profile/UserProfileBanner';
 import UserProfileContent from '../components/profile/UserProfileContent';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertTriangle } from 'lucide-react';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 const UserProfile = () => {
   const { username } = useParams();
@@ -25,6 +28,7 @@ const UserProfile = () => {
     userReputation,
     currentUserId,
     isCurrentUserAdmin,
+    userWarnings,
     handleFollowUser,
     handleRatingChange,
     updateLocation,
@@ -55,6 +59,33 @@ const UserProfile = () => {
       <main className="flex-grow bg-gray-50 py-12">
         <div className="max-w-6xl mx-auto px-4">
           <UserProfileBanner userData={userData} />
+
+          {isCurrentUserAdmin && userWarnings && userWarnings.length > 0 && (
+            <Card className="my-6 border-orange-200 bg-orange-50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-orange-800">
+                  <AlertTriangle />
+                  Avertissements de l'utilisateur
+                </CardTitle>
+                <CardDescription className="text-orange-700">
+                  Cette section est visible uniquement par les administrateurs.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {userWarnings.map((warning) => (
+                  <div key={warning.id} className="p-3 border-t border-orange-200 first:border-t-0">
+                    <p><strong>Raison :</strong> {warning.reason}</p>
+                    {warning.context && <p className="text-sm text-gray-600"><strong>Contexte :</strong> {warning.context}</p>}
+                    <p className="text-xs text-gray-500 mt-1">
+                      Donné le {format(new Date(warning.created_at), 'd MMMM yyyy à HH:mm', { locale: fr })}
+                      {warning.admin_profile ? ` par ${warning.admin_profile.username}` : ''}
+                    </p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <UserProfileHeader
               profileData={profileData}

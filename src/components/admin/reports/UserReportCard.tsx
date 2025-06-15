@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +25,7 @@ interface UserReportCardProps {
   onResolveClick: (reportId: string) => void;
   onDismiss: (reportId: string) => void;
   onViewProfile: (username: string) => void;
+  onWarnClick: (report: UserReport) => void;
   isLoading: boolean;
 }
 
@@ -34,6 +34,7 @@ const UserReportCard: React.FC<UserReportCardProps> = ({
   onResolveClick,
   onDismiss,
   onViewProfile,
+  onWarnClick,
   isLoading
 }) => {
   const getStatusIcon = (status: string) => {
@@ -96,6 +97,7 @@ const UserReportCard: React.FC<UserReportCardProps> = ({
           report={report}
           onResolveClick={onResolveClick}
           onDismiss={onDismiss}
+          onWarnClick={onWarnClick}
           isLoading={isLoading}
         />
       </CardContent>
