@@ -46,6 +46,23 @@ const Profile = () => {
     ...gameDetailsDialog,
   };
 
+  const handleViewGameDetails = (game: any) => {
+    allDialogStates.showGameDetails(game);
+  };
+
+  const handleViewAllGames = () => {
+    allDialogStates.setShowAllGamesDialog(true);
+  };
+
+  const handleViewAllBadges = () => {
+    allDialogStates.setShowBadgesDialog(true);
+  };
+
+  const handleGameClickInAllGamesDialog = (game: any) => {
+    allDialogStates.setShowAllGamesDialog(false);
+    allDialogStates.showGameDetails(game);
+  };
+
   useEffect(() => {
     if (canFetchData && user?.id) {
       fetchEquipment();
@@ -92,6 +109,10 @@ const Profile = () => {
       fetchUserGames={fetchUserGames}
       fetchProfileData={fetchProfileData}
       handleAddEquipment={handleAddEquipment}
+      handleViewGameDetails={handleViewGameDetails}
+      handleViewAllGames={handleViewAllGames}
+      handleViewAllBadges={handleViewAllBadges}
+      handleGameClickInAllGamesDialog={handleGameClickInAllGamesDialog}
     />
   );
 };

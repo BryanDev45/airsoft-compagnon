@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import Header from '../Header';
 import Footer from '../Footer';
 import ProfileContainer from './ProfileContainer';
@@ -18,31 +17,12 @@ const ProfileLayout = ({
   fetchEquipment,
   fetchUserGames,
   fetchProfileData,
-  handleAddEquipment
+  handleAddEquipment,
+  handleViewGameDetails,
+  handleViewAllGames,
+  handleViewAllBadges,
+  handleGameClickInAllGamesDialog,
 }) => {
-  const navigate = useNavigate();
-
-  const handleNavigateToGame = (gameId) => {
-    navigate(`/games/${gameId}`);
-  };
-
-  const handleViewGameDetails = (game) => {
-    dialogStates.showGameDetails(game);
-  };
-
-  const handleViewAllGames = () => {
-    dialogStates.setShowAllGamesDialog(true);
-  };
-
-  const handleViewAllBadges = () => {
-    dialogStates.setShowBadgesDialog(true);
-  };
-
-  const handleGameClickInAllGamesDialog = (game: any) => {
-    dialogStates.setShowAllGamesDialog(false);
-    dialogStates.showGameDetails(game);
-  };
-
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
