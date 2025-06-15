@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Users, Calendar, Share2, Mail, Trophy, Star } from 'lucide-react';
 import TeamApplicationButton from './TeamApplicationButton';
-import TeamRating from './TeamRating';
 
 interface TeamAboutProps {
   team: any;
@@ -110,16 +109,6 @@ const TeamAbout: React.FC<TeamAboutProps> = ({
           </div>
         </CardContent>
       </Card>
-
-      {/* Composant de notation pour les non-membres */}
-      <TeamRating
-        teamId={team.id}
-        teamName={team.name}
-        currentUserId={currentUserId}
-        isTeamMember={isTeamMember}
-        currentRating={team.rating}
-        onRatingUpdate={onTeamUpdate}
-      />
 
       {/* Section Actions */}
       <Card>
