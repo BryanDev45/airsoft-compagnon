@@ -834,6 +834,7 @@ export type Database = {
       }
       team_members: {
         Row: {
+          association_role: string | null
           game_role: string | null
           id: string
           joined_at: string | null
@@ -843,6 +844,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          association_role?: string | null
           game_role?: string | null
           id?: string
           joined_at?: string | null
@@ -852,6 +854,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          association_role?: string | null
           game_role?: string | null
           id?: string
           joined_at?: string | null

@@ -53,7 +53,7 @@ export const useTeamData = (teamId: string | undefined) => {
       let memberUserIds: string[] = [];
       
       if (teamMembers && teamMembers.length > 0) {
-        const userIds = (teamMembers as any[]).map(member => member.user_id).filter(Boolean);
+        const userIds = teamMembers.map(member => member.user_id).filter(Boolean);
         memberUserIds = [...userIds];
         
         if (userIds.length > 0) {
@@ -65,7 +65,7 @@ export const useTeamData = (teamId: string | undefined) => {
           if (profilesError) throw profilesError;
 
           // Match profiles with team members and format the data
-          formattedMembers = (teamMembers as any[]).map(member => {
+          formattedMembers = teamMembers.map(member => {
             const profile = profiles?.find(p => p.id === member.user_id);
             if (!profile) return null;
             
