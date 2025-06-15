@@ -2,46 +2,20 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useTeamConversationManager } from './useTeamConversationManager';
 import { useConversationData } from './useConversationData';
 import { useOptimizedQueries } from './useOptimizedQueries';
 import { Conversation } from '@/types/messaging';
 import { sortConversations } from '@/utils/messaging';
-import { useCallback, useRef } from 'react';
 
 export const useConversationsQuery = () => {
   const { user } = useAuth();
-  const { createTeamConversationIfNeeded } = useTeamConversationManager();
   const { fetchConversationDetails } = useConversationData();
   const { optimizedQueryConfig } = useOptimizedQueries();
-  const errorCountRef = useRef(0);
 
-  const queryFn = useCallback(async (): Promise<Conversation[]> => {
+  const queryFn = async (): Promise<Conversation[]> => {
     if (!user?.id) return [];
 
     try {
-      // Récupérer les informations de l'équipe de l'utilisateur seulement une fois
-      const { data: userProfile, error: profileError } = await supabase
-        .from('profiles')
-        .select('team_id, team')
-        .eq('id', user.id)
-        .single();
-
-      // Ne créer la conversation d'équipe que si nécessaire et pas trop d'erreurs
-      if (!profileError && userProfile?.team_id && userProfile?.team && errorCountRef.current < 3) {
-        try {
-          await createTeamConversationIfNeeded(userProfile.team_id, userProfile.team);
-          errorCountRef.current = 0; // Reset error count on success
-        } catch (error) {
-          errorCountRef.current++;
-          console.error('Error creating team conversation, attempt:', errorCountRef.current, error);
-          // Stop trying after 3 attempts to prevent infinite loops
-          if (errorCountRef.current >= 3) {
-            console.warn('Stopped attempting to create team conversation after 3 failures');
-          }
-        }
-      }
-
       // Récupérer les conversations de l'utilisateur
       const { data: userParticipations, error: participationsError } = await supabase
         .from('conversation_participants')
@@ -101,7 +75,7 @@ export const useConversationsQuery = () => {
       console.error('Error in conversations query:', error);
       return [];
     }
-  }, [user?.id, createTeamConversationIfNeeded, fetchConversationDetails]);
+  };
 
   return useQuery<Conversation[], Error>({
     queryKey: ['conversations', user?.id],
