@@ -108,7 +108,7 @@ const ReportUserButton = ({ username, reportedUserId, asIcon = false }: ReportUs
           <Button
             variant="outline"
             size="sm"
-            className="h-9 w-9 p-0 text-red-500 border-red-500 hover:bg-red-500 hover:text-white transition-all duration-200"
+            className="h-9 w-9 p-0 text-orange-500 border-orange-500 hover:bg-orange-500 hover:text-white transition-all duration-200"
             title={`Signaler ${username}`}
           >
             <UserX className="h-4 w-4" />
