@@ -1,3 +1,4 @@
+
 import { useUserProfileData } from './user-profile/useUserProfileData';
 import { useUserSocial } from './user-profile/useUserSocial';
 import { useQuery } from '@tanstack/react-query';
@@ -46,28 +47,47 @@ export const useUserProfile = (username: string | undefined) => {
     queryFn: async () => {
         if (!userData?.id) return [];
         
-        const { data, error } = await supabase
+        const { data: warnings, error: warningsError } = await supabase
             .from('user_warnings')
-            .select('*, admin_profile:profiles(username)')
+            .select('*')
             .eq('warned_user_id', userData.id)
             .order('created_at', { ascending: false });
 
-        if (error) {
-            console.error("Error fetching user warnings:", error.message);
-            // If join fails, try fetching without it.
-            if (error.message.includes('could not find a relationship')) {
-                 const { data: warningsData, error: warningsError } = await supabase
-                    .from('user_warnings')
-                    .select('*')
-                    .eq('warned_user_id', userData.id)
-                    .order('created_at', { ascending: false });
-                if(warningsError) throw warningsError;
-                return warningsData || [];
-            }
-            throw error;
+        if (warningsError) {
+            console.error("Error fetching user warnings:", warningsError.message);
+            throw warningsError;
         }
 
-        return data || [];
+        if (!warnings || warnings.length === 0) {
+            return [];
+        }
+
+        const adminIds = [...new Set(warnings.map(w => w.admin_id).filter(Boolean))];
+
+        if (adminIds.length === 0) {
+            return warnings.map(w => ({ ...w, admin_profile: null }));
+        }
+
+        const { data: profiles, error: profileError } = await supabase
+            .from('profiles')
+            .select('id, username')
+            .in('id', adminIds as string[]);
+
+        if (profileError) {
+            console.error("Error fetching admin profiles for warnings:", profileError.message);
+            // Return warnings without admin names in case of profile fetch error
+            return warnings.map(w => ({ ...w, admin_profile: null }));
+        }
+
+        const profilesById = new Map(profiles.map(p => [p.id, p]));
+
+        return warnings.map(warning => {
+            const adminProfile = warning.admin_id ? profilesById.get(warning.admin_id) : null;
+            return {
+                ...warning,
+                admin_profile: (adminProfile && adminProfile.username) ? { username: adminProfile.username } : null,
+            };
+        });
     },
     enabled: !!userData?.id && isCurrentUserAdmin,
   });
