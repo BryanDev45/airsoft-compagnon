@@ -33,7 +33,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         {user?.banner ? <img src={user.banner} alt="Profile banner" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gradient-to-r from-gray-400 to-gray-300" />}
       </div>
       
-      <div className="px-6 pb-4 pt-16 relative">
+      <div className="px-4 sm:px-6 pb-4 pt-16 relative">
         {/* Moved buttons to the top with adjusted positioning */}
         {isOwnProfile && <div className="absolute top-4 right-4 flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 items-end md:items-center">
             {onEditBio && <Button variant="outline" size="sm" onClick={onEditBio}>
@@ -47,7 +47,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               </Button>}
           </div>}
 
-        <div className="absolute -top-12 left-6">
+        <div className="absolute -top-12 left-4 sm:left-6">
           <div className="relative">
             <Avatar className="h-24 w-24 border-4 border-white shadow-md ring-2 ring-airsoft-red">
               <AvatarImage src={user?.avatar || undefined} alt={user?.username || 'Utilisateur'} />
@@ -63,7 +63,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         
         <div className="flex flex-col">
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-2xl font-bold">{user?.username || 'Utilisateur'}</h1>
               {user?.is_verified && <VerifiedBadge size={24} />}
               {user?.reputation && user.reputation > 0 ? <div className="flex items-center bg-amber-50 px-2 py-1 rounded-full">
