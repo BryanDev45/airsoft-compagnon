@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
@@ -118,26 +117,28 @@ const Recherche = () => {
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-              <TabsList className="mb-8">
-                <TabsTrigger value="parties" className="flex items-center gap-1">
-                  <MapPin className="h-4 w-4" />
-                  Parties
-                </TabsTrigger>
-                <TabsTrigger value="joueurs" className="flex items-center gap-1">
-                  <User className="h-4 w-4" />
-                  Joueurs
-                  {!user && <Lock className="h-3 w-3 ml-1" />}
-                </TabsTrigger>
-                <TabsTrigger value="equipes" className="flex items-center gap-1">
-                  <Users className="h-4 w-4" />
-                  Équipes
-                  {!user && <Lock className="h-3 w-3 ml-1" />}
-                </TabsTrigger>
-                <TabsTrigger value="magasins" className="flex items-center gap-1">
-                  <Store className="h-4 w-4" />
-                  Magasins
-                </TabsTrigger>
-              </TabsList>
+              <div className="overflow-x-auto pb-2">
+                <TabsList className="mb-8">
+                  <TabsTrigger value="parties" className="flex items-center gap-1">
+                    <MapPin className="h-4 w-4" />
+                    Parties
+                  </TabsTrigger>
+                  <TabsTrigger value="joueurs" className="flex items-center gap-1">
+                    <User className="h-4 w-4" />
+                    Joueurs
+                    {!user && <Lock className="h-3 w-3 ml-1" />}
+                  </TabsTrigger>
+                  <TabsTrigger value="equipes" className="flex items-center gap-1">
+                    <Users className="h-4 w-4" />
+                    Équipes
+                    {!user && <Lock className="h-3 w-3 ml-1" />}
+                  </TabsTrigger>
+                  <TabsTrigger value="magasins" className="flex items-center gap-1">
+                    <Store className="h-4 w-4" />
+                    Magasins
+                  </TabsTrigger>
+                </TabsList>
+              </div>
               
               <TabsContent value="parties">
                 <MapSection />
@@ -164,7 +165,7 @@ const Recherche = () => {
                 <AuthRequiredContent tabName="équipes">
                   <Card>
                     <CardContent className="pt-6">
-                      <div className="flex justify-between items-center mb-6">
+                      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
                         <div className="flex items-center border rounded-md overflow-hidden w-full max-w-md">
                           <Input placeholder="Rechercher une équipe par nom, région..." className="border-0 focus-visible:ring-0 flex-1" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
                           <Button variant="ghost" className="rounded-l-none">
@@ -172,7 +173,7 @@ const Recherche = () => {
                           </Button>
                         </div>
                         
-                        {!user?.team_id && !initialLoading && <Button onClick={handleCreateTeam} className="bg-airsoft-red hover:bg-red-700 text-white ml-4">
+                        {!user?.team_id && !initialLoading && <Button onClick={handleCreateTeam} className="bg-airsoft-red hover:bg-red-700 text-white w-full sm:w-auto">
                             <Plus className="h-4 w-4 mr-2" /> Créer une équipe
                           </Button>}
                       </div>
@@ -184,9 +185,9 @@ const Recherche = () => {
               </TabsContent>
               
               <TabsContent value="magasins">
-                <div className="mb-6 flex justify-end">
+                <div className="mb-6 flex flex-col sm:flex-row sm:justify-end">
                   {isAdmin && (
-                    <Button onClick={() => setIsAddStoreDialogOpen(true)} className="bg-airsoft-red hover:bg-red-700 text-white">
+                    <Button onClick={() => setIsAddStoreDialogOpen(true)} className="bg-airsoft-red hover:bg-red-700 text-white w-full sm:w-auto">
                       <Plus className="h-4 w-4 mr-2" /> Ajouter un magasin
                     </Button>
                   )}
