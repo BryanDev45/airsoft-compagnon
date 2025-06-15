@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import type { QueryClient } from '@tanstack/react-query';
@@ -10,11 +9,11 @@ class RealtimeManager {
   private userId: string | null = null;
 
   public addListener(queryClient: QueryClient, userId: string) {
-    this.listenerCount++;
-
     if (this.userId && this.userId !== userId) {
       this.cleanup();
     }
+    
+    this.listenerCount++;
     
     this.queryClient = queryClient;
     this.userId = userId;

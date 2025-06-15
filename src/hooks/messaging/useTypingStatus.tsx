@@ -25,9 +25,6 @@ export const useTypingStatus = (conversationId: string | null) => {
       return;
     }
 
-    // Clean up the old channel when the conversationId changes.
-    // This is handled by the effect's cleanup function.
-
     const channelName = `typing:${conversationId}`;
     const channel = supabase.channel(channelName, {
       config: {
@@ -47,9 +44,10 @@ export const useTypingStatus = (conversationId: string | null) => {
       setTypingUsers(typers);
     };
     
-    channel
-      .on('presence', { event: 'sync' }, onSync)
-      .subscribe((status, err) => {
+    channel.on('presence', { event: 'sync' }, onSync)
+
+    if (channel.state !== 'joined' && channel.state !== 'joining') {
+      channel.subscribe((status, err) => {
         if (status === 'SUBSCRIBED') {
           console.log(`Presence subscribed to ${channelName}`);
           // Track initial state when subscribed
@@ -59,7 +57,12 @@ export const useTypingStatus = (conversationId: string | null) => {
           console.error(`Presence channel error for ${channelName}:`, err);
         }
       });
-
+    } else if (channel.state === 'joined') {
+      // Already subscribed, so just track our presence.
+      // And call onSync to get the current state for this component instance.
+      channel.track({ typing: false, username: user.username });
+      onSync();
+    }
 
     return () => {
       supabase.removeChannel(channel);
