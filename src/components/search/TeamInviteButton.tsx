@@ -137,10 +137,13 @@ const TeamInviteButton: React.FC<TeamInviteButtonProps> = ({
       variant="outline"
       onClick={handleInviteToTeam}
       disabled={isInviting}
-      className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300"
+      className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 p-0 w-9 sm:w-auto sm:px-3"
+      title="Inviter dans l'équipe"
     >
-      <UserPlus className="h-4 w-4 mr-1" />
-      {isInviting ? "Envoi..." : "Inviter dans l'équipe"}
+      <UserPlus className="h-4 w-4" />
+      <span className="hidden sm:inline sm:ml-1">
+        {isInviting ? "Envoi..." : "Inviter dans l'équipe"}
+      </span>
     </Button>
   );
 };
