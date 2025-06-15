@@ -15,14 +15,18 @@ export const useTypingStatus = (conversationId: string | null) => {
   const channelRef = useRef<RealtimeChannel | null>(null);
 
   useEffect(() => {
+    // If conversationId or user details are missing, clean up any existing channel.
     if (!conversationId || !user?.id || !user.username) {
-      setTypingUsers([]);
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
       }
+      setTypingUsers([]);
       return;
     }
+
+    // Clean up the old channel when the conversationId changes.
+    // This is handled by the effect's cleanup function.
 
     const channelName = `typing:${conversationId}`;
     const channel = supabase.channel(channelName, {
@@ -35,8 +39,8 @@ export const useTypingStatus = (conversationId: string | null) => {
     channelRef.current = channel;
 
     const onSync = () => {
-      if(channel.state !== 'joined') return;
-      const presenceState = channel.presenceState<PresenceState>();
+      if(channelRef.current?.state !== 'joined') return;
+      const presenceState = channelRef.current.presenceState<PresenceState>();
       const typers = Object.entries(presenceState)
         .filter(([key, value]) => key !== user.id && value[0]?.typing)
         .map(([, value]) => value[0].username);
