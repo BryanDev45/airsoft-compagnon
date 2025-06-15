@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -8,10 +8,15 @@ import { Button } from "@/components/ui/button";
 
 import TeamBanner from '../components/team/TeamBanner';
 import TeamAbout from '../components/team/TeamAbout';
-import TeamContent from '../components/team/TeamContent';
 import TeamDialogs from '../components/team/TeamDialogs';
 import { useTeamData } from '@/hooks/useTeamData';
 import { useTeamView } from '@/hooks/team/useTeamView';
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import TeamMembers from '../components/team/TeamMembers';
+import TeamGames from '../components/team/TeamGames';
+import TeamField from '../components/team/TeamField';
+import TeamRating from '../components/team/TeamRating';
 
 const Team = () => {
   const { id } = useParams();
@@ -49,6 +54,8 @@ const Team = () => {
     handleShareVia,
     handleFieldEdit
   } = useTeamView(team, fetchTeamData);
+  
+  const [activeTab, setActiveTab] = useState('members');
 
   // Function to handle team updates
   const handleTeamUpdate = () => {
@@ -144,17 +151,41 @@ const Team = () => {
               />
             </div>
 
-            <TeamContent
-              team={team}
-              isTeamMember={isTeamMember}
-              handleViewMember={handleViewMember}
-              isEditingField={isEditingField}
-              setIsEditingField={setIsEditingField}
-              selectedField={selectedField}
-              setSelectedField={setSelectedField}
-              fetchTeamData={fetchTeamData}
-              handleFieldEdit={handleFieldEdit}
-            />
+            <div className="md:w-2/3">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList>
+                  <TabsTrigger value="members">Membres ({team.members?.length || 0})</TabsTrigger>
+                  <TabsTrigger value="games">Parties</TabsTrigger>
+                  <TabsTrigger value="field">Terrain</TabsTrigger>
+                  <TabsTrigger value="ratings">Avis</TabsTrigger>
+                </TabsList>
+                <TabsContent value="members" className="mt-4">
+                  <TeamMembers 
+                    members={team.members || []} 
+                    handleViewMember={handleViewMember} 
+                    isAssociation={team.is_association}
+                  />
+                </TabsContent>
+                <TabsContent value="games" className="mt-4">
+                  <TeamGames team={team} />
+                </TabsContent>
+                <TabsContent value="field" className="mt-4">
+                  <TeamField 
+                    team={team} 
+                    isTeamMember={isTeamMember}
+                    isEditingField={isEditingField}
+                    setIsEditingField={setIsEditingField}
+                    selectedField={selectedField}
+                    setSelectedField={setSelectedField}
+                    fetchTeamData={fetchTeamData}
+                    onFieldEdit={handleFieldEdit}
+                  />
+                </TabsContent>
+                <TabsContent value="ratings" className="mt-4">
+                  <TeamRating teamId={team.id} />
+                </TabsContent>
+              </Tabs>
+            </div>
           </div>
         </div>
       </main>
