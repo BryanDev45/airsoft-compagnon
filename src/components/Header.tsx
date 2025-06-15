@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
@@ -34,9 +33,8 @@ const Header = () => {
           <Link to="/parties" className="hover:text-airsoft-red transition-colors">Recherche</Link>
           <Link to="/toolbox" className="hover:text-airsoft-red transition-colors">ToolBox</Link>
 
-          <LanguageSelector />
-
-          <div className="flex items-center gap-4 ml-4">
+          <div className="flex items-center gap-4">
+            <LanguageSelector />
             {isAuthenticated && <MessagingIcon />}
             <AuthSection 
               notificationCount={notificationCount} 
