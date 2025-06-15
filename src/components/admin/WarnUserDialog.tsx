@@ -1,6 +1,5 @@
 
-```typescript
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -30,13 +29,17 @@ const WarnUserDialog: React.FC<WarnUserDialogProps> = ({
 }) => {
   const [reason, setReason] = useState('');
 
+  useEffect(() => {
+    if (!open) {
+      setReason('');
+    }
+  }, [open]);
+
   const handleConfirm = () => {
     onConfirm(reason);
-    setReason('');
   };
 
   const handleCancel = () => {
-    setReason('');
     onOpenChange(false);
   };
 
@@ -81,4 +84,3 @@ const WarnUserDialog: React.FC<WarnUserDialogProps> = ({
 };
 
 export default WarnUserDialog;
-```

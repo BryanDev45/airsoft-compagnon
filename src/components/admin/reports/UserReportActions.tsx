@@ -1,13 +1,8 @@
 
-```typescript
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
-
-interface UserReport {
-  id: string;
-  status: string;
-}
+import { UserReport } from '@/components/admin/UserReportsTab';
 
 interface UserReportActionsProps {
   report: UserReport;
@@ -61,4 +56,3 @@ const UserReportActions: React.FC<UserReportActionsProps> = ({
 };
 
 export default UserReportActions;
-```
