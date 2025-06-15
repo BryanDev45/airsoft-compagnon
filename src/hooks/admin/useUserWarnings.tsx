@@ -39,3 +39,34 @@ export const useAddUserWarning = () => {
     }
   });
 };
+
+export const useDeleteUserWarning = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (warningId: string) => {
+      const { error } = await supabase
+        .from('user_warnings')
+        .delete()
+        .eq('id', warningId);
+
+      if (error) {
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      toast({
+        title: "Avertissement supprimé",
+        description: "L'avertissement a été supprimé avec succès.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['user-warnings'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Erreur",
+        description: `Une erreur est survenue lors de la suppression de l'avertissement: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+};

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import Header from '../components/Header';
@@ -7,9 +8,11 @@ import UserProfileHeader from '../components/profile/UserProfileHeader';
 import UserProfileBanner from '../components/profile/UserProfileBanner';
 import UserProfileContent from '../components/profile/UserProfileContent';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useDeleteUserWarning } from '@/hooks/admin/useUserWarnings';
+import { Button } from '@/components/ui/button';
 
 const UserProfile = () => {
   const { username } = useParams();
@@ -35,6 +38,13 @@ const UserProfile = () => {
     updateUserStats,
     fetchProfileData
   } = useUserProfile(username);
+
+  const { mutate: deleteWarning, isPending: isDeletingWarning } = useDeleteUserWarning();
+
+  const handleDeleteWarning = (warningId: string) => {
+    // Une boîte de dialogue de confirmation pourrait être ajoutée ici plus tard si nécessaire.
+    deleteWarning(warningId);
+  };
 
   if (loading) {
     return (
@@ -73,13 +83,25 @@ const UserProfile = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 {userWarnings.map((warning) => (
-                  <div key={warning.id} className="p-3 border-t border-orange-200 first:border-t-0">
-                    <p><strong>Raison :</strong> {warning.reason}</p>
-                    {warning.context && <p className="text-sm text-gray-600"><strong>Contexte :</strong> {warning.context}</p>}
-                    <p className="text-xs text-gray-500 mt-1">
-                      Donné le {format(new Date(warning.created_at), 'd MMMM yyyy à HH:mm', { locale: fr })}
-                      {warning.admin_profile ? ` par ${warning.admin_profile.username}` : ''}
-                    </p>
+                  <div key={warning.id} className="p-3 border-t border-orange-200 first:border-t-0 flex justify-between items-start gap-4">
+                    <div className="flex-grow">
+                      <p><strong>Raison :</strong> {warning.reason}</p>
+                      {warning.context && <p className="text-sm text-gray-600"><strong>Contexte :</strong> {warning.context}</p>}
+                      <p className="text-xs text-gray-500 mt-1">
+                        Donné le {format(new Date(warning.created_at), 'd MMMM yyyy à HH:mm', { locale: fr })}
+                        {warning.admin_profile ? ` par ${warning.admin_profile.username}` : ''}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteWarning(warning.id)}
+                      disabled={isDeletingWarning}
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
+                      aria-label="Supprimer l'avertissement"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 ))}
               </CardContent>
