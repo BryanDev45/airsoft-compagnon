@@ -256,7 +256,7 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
   return (
     <div className="space-y-6">
       {isOwnProfile && (
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
           <div className="flex items-center space-x-3">
             <Switch 
               id="public-friends-list"
@@ -271,7 +271,7 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
           <Button 
             variant="default"
             onClick={navigateToSearch}
-            className="bg-airsoft-red hover:bg-red-700 text-white"
+            className="bg-airsoft-red hover:bg-red-700 text-white w-full sm:w-auto"
           >
             <UserPlus className="h-4 w-4 mr-2" />
             Rechercher des joueurs
@@ -280,11 +280,11 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
       )}
 
       {isOwnProfile && pendingRequests.length > 0 && (
-        <div className="bg-gradient-to-r from-airsoft-red/10 to-red-100 p-6 rounded-lg border border-airsoft-red/20">
+        <div className="bg-gradient-to-r from-airsoft-red/10 to-red-100 p-4 sm:p-6 rounded-lg border border-airsoft-red/20">
           <h3 className="text-lg font-medium mb-4 text-airsoft-red">Demandes d'amitié en attente</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {pendingRequests.map((request) => (
-              <div key={request.id} className="bg-white p-4 rounded-lg shadow-sm flex items-center justify-between">
+              <div key={request.id} className="bg-white p-4 rounded-lg shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div 
                   className="flex items-center space-x-4 cursor-pointer hover:text-airsoft-red"
                   onClick={() => navigateToUserProfile(request.username)}
@@ -300,7 +300,7 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
                     )}
                   </div>
                 </div>
-                <div className="flex space-x-2">
+                <div className="flex flex-col sm:flex-row gap-2 self-end sm:self-auto">
                   <Button 
                     variant="default" 
                     size="sm"
@@ -325,7 +325,7 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
         </div>
       )}
 
-      <Card className="p-6">
+      <Card className="p-4 sm:p-6">
         <h3 className="text-lg font-medium mb-4">Amis</h3>
         
         {!shouldShowFriendsList ? (
@@ -335,15 +335,15 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
             {friends.map((friend) => (
               <Card 
                 key={friend.id} 
-                className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
+                className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors gap-2"
                 onClick={() => navigateToUserProfile(friend.username)}
               >
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-4 min-w-0">
                   <Avatar>
                     <AvatarImage src={friend.avatar || '/placeholder.svg'} alt={friend.username} />
                     <AvatarFallback>{friend.username?.[0]?.toUpperCase()}</AvatarFallback>
                   </Avatar>
-                  <span className="hover:text-airsoft-red transition-colors">{friend.username}</span>
+                  <span className="hover:text-airsoft-red transition-colors truncate">{friend.username}</span>
                 </div>
                 {isOwnProfile && (
                   <Button 
@@ -353,6 +353,7 @@ const ProfileFriends = ({ userId, isOwnProfile }) => {
                       e.stopPropagation(); // Prevent navigation when clicking the button
                       handleRemoveFriend(friend.friendshipId);
                     }}
+                    className="flex-shrink-0"
                   >
                     <UserMinus className="h-4 w-4 mr-1" />
                     Retirer

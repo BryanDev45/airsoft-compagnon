@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -68,8 +67,8 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData, isOwnProfi
   const reputation = profileData?.reputation || 0;
 
   return (
-    <Card className="p-6 shadow-md bg-gradient-to-br from-white to-gray-50">
-      <div className="flex items-center justify-between mb-6">
+    <Card className="p-4 sm:p-6 shadow-md bg-gradient-to-br from-white to-gray-50">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div className="flex items-center gap-2">
           <Medal className="h-6 w-6 text-amber-500" />
           <h2 className="text-xl font-semibold">Statistiques et préférences</h2>
@@ -79,17 +78,18 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData, isOwnProfi
             variant="default"
             size="sm"
             onClick={() => setIsEditing(true)}
-            className="bg-airsoft-red hover:bg-red-700"
+            className="bg-airsoft-red hover:bg-red-700 w-full sm:w-auto"
           >
             <Edit className="h-4 w-4 mr-2" />
             Modifier
           </Button>
         ) : isEditing ? (
-          <div className="flex space-x-2">
+          <div className="flex space-x-2 w-full sm:w-auto">
             <Button
               variant="outline"
               size="sm"
               onClick={() => setIsEditing(false)}
+              className="flex-1 sm:flex-none"
             >
               <X className="h-4 w-4 mr-2" />
               Annuler
@@ -98,7 +98,7 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData, isOwnProfi
               variant="default"
               size="sm"
               onClick={handleSave}
-              className="bg-airsoft-red hover:bg-red-700"
+              className="bg-airsoft-red hover:bg-red-700 flex-1 sm:flex-none"
               disabled={isSaving}
             >
               <Save className="h-4 w-4 mr-2" />
@@ -108,8 +108,8 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData, isOwnProfi
         ) : null}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-6">
-        <div className="space-y-1 bg-gradient-to-br from-amber-50 to-amber-100 p-6 rounded-lg shadow-sm border border-amber-200 flex items-center">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-6">
+        <div className="space-y-1 bg-gradient-to-br from-amber-50 to-amber-100 p-4 sm:p-6 rounded-lg shadow-sm border border-amber-200 flex items-center">
           <Trophy className="text-amber-500 w-10 h-10 mr-4" />
           <div>
             <span className="text-sm font-medium text-amber-700">Parties jouées</span>
@@ -117,7 +117,7 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData, isOwnProfi
           </div>
         </div>
 
-        <div className="space-y-1 bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg shadow-sm border border-blue-200 flex items-center">
+        <div className="space-y-1 bg-gradient-to-br from-blue-50 to-blue-100 p-4 sm:p-6 rounded-lg shadow-sm border border-blue-200 flex items-center">
           <Calendar className="text-blue-500 w-10 h-10 mr-4" />
           <div>
             <span className="text-sm font-medium text-blue-700">Parties créées</span>
@@ -125,7 +125,7 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData, isOwnProfi
           </div>
         </div>
 
-        <div className="space-y-1 bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg shadow-sm border border-purple-200 flex items-center">
+        <div className="space-y-1 bg-gradient-to-br from-purple-50 to-purple-100 p-4 sm:p-6 rounded-lg shadow-sm border border-purple-200 flex items-center">
           <Star className="text-purple-500 w-10 h-10 mr-4" />
           <div>
             <span className="text-sm font-medium text-purple-700">Réputation</span>
@@ -134,8 +134,8 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData, isOwnProfi
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div className="space-y-1 bg-gradient-to-br from-indigo-50 to-indigo-100 p-6 rounded-lg shadow-sm border border-indigo-200">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+        <div className="space-y-1 bg-gradient-to-br from-indigo-50 to-indigo-100 p-4 sm:p-6 rounded-lg shadow-sm border border-indigo-200">
           <span className="text-sm font-medium text-indigo-700">Type de partie préféré</span>
           {isEditing ? (
             <Select value={gameType} onValueChange={setGameType}>
@@ -156,7 +156,7 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData, isOwnProfi
           )}
         </div>
 
-        <div className="space-y-1 bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg shadow-sm border border-green-200">
+        <div className="space-y-1 bg-gradient-to-br from-green-50 to-green-100 p-4 sm:p-6 rounded-lg shadow-sm border border-green-200">
           <span className="text-sm font-medium text-green-700">Rôle préféré</span>
           {isEditing ? (
             <Select value={role} onValueChange={setRole}>
@@ -177,7 +177,7 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData, isOwnProfi
           )}
         </div>
 
-        <div className="space-y-1 bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-lg shadow-sm border border-gray-200 col-span-1 sm:col-span-2">
+        <div className="space-y-1 bg-gradient-to-br from-gray-50 to-gray-100 p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200 col-span-1 sm:col-span-2">
           <span className="text-sm font-medium text-gray-700">Niveau</span>
           {isEditing ? (
             <Select value={level} onValueChange={setLevel}>
@@ -191,14 +191,14 @@ const ProfileStats = ({ userStats, updateUserStats, fetchProfileData, isOwnProfi
               </SelectContent>
             </Select>
           ) : (
-            <div className="flex items-center justify-between mt-2">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between mt-2 gap-2">
               <div className="flex items-center">
                 <Award className="text-gray-500 w-5 h-5 mr-2" />
                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getLevelColor(userStats?.level || 'Débutant')}`}>
                   {userStats?.level || 'Débutant'}
                 </span>
               </div>
-              <div className="w-2/3 bg-gray-200 rounded-full h-2.5">
+              <div className="w-full sm:w-2/3 bg-gray-200 rounded-full h-2.5">
                 <div 
                   className="bg-gradient-to-r from-green-400 to-airsoft-red h-2.5 rounded-full" 
                   style={{ 
