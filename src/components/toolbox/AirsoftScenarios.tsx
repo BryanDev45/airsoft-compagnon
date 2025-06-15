@@ -36,7 +36,8 @@ const ScenarioCard = ({ scenario }: { scenario: Scenario }) => (
 
 const AirsoftScenarios = () => {
   const { data: scenarios, isLoading, error } = useScenarios();
-  const { isAdmin } = useAuth();
+  const { user } = useAuth();
+  const isAdmin = user?.Admin;
   const [showAdminDialog, setShowAdminDialog] = useState(false);
 
   const { shortScenarios, longScenarios } = useMemo(() => {

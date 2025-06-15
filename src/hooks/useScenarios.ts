@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -35,7 +34,7 @@ export const useScenarios = () => {
 };
 
 // Add a new scenario
-const addScenario = async (newScenario: Partial<Omit<Scenario, 'id' | 'created_at'>>) => {
+const addScenario = async (newScenario: Omit<Scenario, 'id' | 'created_at'>) => {
   const { data, error } = await supabase
     .from('scenarios')
     .insert([newScenario])
