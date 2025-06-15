@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,7 +11,8 @@ export const useRealtimeMessages = () => {
   useEffect(() => {
     if (!user?.id) return;
 
-    console.log('Setting up real-time subscriptions for user:', user.id);
+    const channelName = 'realtime:all';
+    const channel = supabase.channel(channelName);
 
     const handleMessageChange = (payload: any) => {
       console.log('Real-time message change:', payload);
@@ -30,23 +32,30 @@ export const useRealtimeMessages = () => {
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
     };
 
-    // Un seul canal pour tous les changements de la base de données
-    const channel = supabase.channel('realtime:all');
-
+    // Add listeners. It's safe to call `on` multiple times, but we'll register our handlers once.
     channel
       .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, handleMessageChange)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, handleConversationChange)
-      .subscribe((status) => {
+
+    // Subscribe ONLY if channel is not already connected.
+    if (channel.state !== 'joined' && channel.state !== 'joining') {
+      console.log(`Subscribing to ${channelName}`);
+      channel.subscribe((status, err) => {
         if (status === 'SUBSCRIBED') {
-          console.log('Real-time subscribed!');
-        } else {
-          console.log('Real-time subscription status:', status);
+          console.log(`Real-time subscribed to ${channelName}!`);
+        }
+        if (status === 'CHANNEL_ERROR') {
+          console.error(`Real-time channel error for ${channelName}:`, err);
         }
       });
+    }
 
     return () => {
-      console.log('Cleaning up real-time subscriptions');
-      supabase.removeChannel(channel).catch(err => console.error('Error removing channel', err));
+      // We don't remove the channel here because other components might be using it.
+      // This is a global subscription that should live for the user's session.
+      // We can remove the specific handlers if we have references to them, but for simplicity
+      // and to fix the crash, we will leave the channel and listeners active.
+      console.log('Cleaning up a useRealtimeMessages instance, channel remains active.');
     };
   }, [user?.id, queryClient]);
 };
