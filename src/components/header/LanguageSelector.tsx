@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Globe } from 'lucide-react';
@@ -17,8 +17,14 @@ interface LanguageSelectorProps {
 }
 
 export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ isDesktop = true }) => {
+  const [selectedLanguage, setSelectedLanguage] = useState(languages[0]);
+
   // Language selection functionality would be implemented here
   const handleLanguageChange = (code: string) => {
+    const language = languages.find(lang => lang.code === code);
+    if (language) {
+      setSelectedLanguage(language);
+    }
     console.log(`Language changed to ${code}`);
     // Implementation for language switching would go here
   };
@@ -27,8 +33,9 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ isDesktop = 
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="text-white">
+          <Button variant="ghost" className="flex items-center gap-1.5 text-white px-2">
             <Globe className="h-5 w-5" />
+            <span className="text-lg">{selectedLanguage.flag}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
@@ -59,7 +66,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ isDesktop = 
               key={language.code} 
               variant="ghost" 
               size="sm"
-              className="justify-start text-white hover:text-airsoft-red hover:bg-gray-800 p-2 h-auto"
+              className={`justify-start text-white hover:text-airsoft-red hover:bg-gray-800 p-2 h-auto ${selectedLanguage.code === language.code ? 'bg-gray-700' : ''}`}
               onClick={() => handleLanguageChange(language.code)}
             >
               <span className="mr-2 text-base">{language.flag}</span>
