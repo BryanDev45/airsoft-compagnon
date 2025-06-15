@@ -1,9 +1,17 @@
 
 import React from 'react';
-import { Share, Facebook, Twitter } from 'lucide-react';
+import { Copy, Facebook, Twitter } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import { MdEmail } from 'react-icons/md';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
 interface ShareDialogProps {
@@ -14,57 +22,86 @@ interface ShareDialogProps {
 }
 
 const ShareDialog = ({ team, showShareDialog, setShowShareDialog, handleShareVia }: ShareDialogProps) => {
-  const shareButtonStyle = "flex flex-col items-center justify-center h-24 transition-transform duration-200 hover:scale-105";
+  if (!team) return null;
+
+  const teamUrl = `${window.location.origin}/team/${team.id}`;
 
   return (
     <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Partager {team.name}</DialogTitle>
+          <DialogTitle>Partager l'équipe {team.name}</DialogTitle>
+          <DialogDescription>
+            Partagez cette équipe avec vos amis via le lien ou les réseaux sociaux.
+          </DialogDescription>
         </DialogHeader>
-        <div className="grid grid-cols-2 gap-4">
-          <Button 
-            variant="outline" 
-            className={shareButtonStyle}
-            onClick={() => handleShareVia('facebook')}
-          >
-            <Facebook className="w-8 h-8 mb-2 text-blue-600" />
-            <span>Facebook</span>
-          </Button>
-          <Button 
-            variant="outline" 
-            className={shareButtonStyle}
-            onClick={() => handleShareVia('twitter')}
-          >
-            <Twitter className="w-8 h-8 mb-2 text-blue-400" />
-            <span>Twitter</span>
-          </Button>
-          <Button 
-            variant="outline" 
-            className={shareButtonStyle}
-            onClick={() => handleShareVia('whatsapp')}
-          >
-            <FaWhatsapp className="w-8 h-8 mb-2 text-green-500" />
-            <span>WhatsApp</span>
-          </Button>
-          <Button 
-            variant="outline" 
-            className={shareButtonStyle}
-            onClick={() => handleShareVia('email')}
-          >
-            <MdEmail className="w-8 h-8 mb-2 text-gray-500" />
-            <span>Email</span>
-          </Button>
+        <div className="space-y-4 py-4">
+          <div className="flex items-center gap-2">
+            <div className="grid flex-1 gap-2">
+              <label htmlFor="link" className="sr-only">Lien</label>
+              <input
+                id="link"
+                className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full"
+                readOnly
+                value={teamUrl}
+              />
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleShareVia('copy')}
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+          </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">Ou partager via</span>
+            </div>
+          </div>
+
+          <div className="flex justify-center gap-4">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => handleShareVia('facebook')}
+            >
+              <Facebook className="text-blue-600 h-5 w-5" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => handleShareVia('twitter')}
+            >
+              <Twitter className="text-blue-400 h-5 w-5" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => handleShareVia('whatsapp')}
+            >
+              <FaWhatsapp className="text-green-500 h-5 w-5" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => handleShareVia('email')}
+            >
+              <MdEmail className="text-gray-500 h-5 w-5" />
+            </Button>
+          </div>
         </div>
-        <div className="mt-4">
-          <Button 
-            className="w-full"
-            onClick={() => handleShareVia('copy')}
-          >
-            <Share />
-            Copier le lien
-          </Button>
-        </div>
+        <DialogFooter className="sm:justify-center">
+          <DialogClose asChild>
+            <Button variant="secondary">
+              Fermer
+            </Button>
+          </DialogClose>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
