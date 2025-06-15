@@ -57,7 +57,7 @@ export const useAddGlossaryTerm = () => {
 };
 
 // Update a glossary term
-const updateGlossaryTerm = async (updatedTerm: Partial<GlossaryTerm> & { id: string }) => {
+const updateGlossaryTerm = async (updatedTerm: Omit<GlossaryTerm, 'created_at'>) => {
     const { id, ...termData } = updatedTerm;
     const { data, error } = await supabase
         .from('glossary')
