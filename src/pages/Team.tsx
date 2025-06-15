@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Header from '../components/Header';
@@ -56,7 +57,7 @@ const Team = () => {
   const handleTeamUpdate = () => {
     fetchTeamData();
   };
-  if (loading) {
+  if (loading && !team) {
     return <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-grow bg-gray-50 py-12 flex items-center justify-center">
