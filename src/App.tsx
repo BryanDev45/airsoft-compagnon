@@ -31,6 +31,7 @@ import { Toaster } from "@/components/ui/toaster";
 import CookieConsent from './components/CookieConsent';
 import QueryProvider from './components/QueryProvider';
 import { getStorageWithExpiry, setStorageWithExpiry, CACHE_DURATIONS } from '@/utils/cacheUtils';
+import GlobalServices from './components/GlobalServices';
 
 function App() {
   const [cookiesAccepted, setCookiesAccepted] = useState<boolean | null>(null);
@@ -69,6 +70,7 @@ function App() {
   return (
     <QueryProvider>
       <Router>
+        <GlobalServices />
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<Index />} />

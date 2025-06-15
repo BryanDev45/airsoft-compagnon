@@ -1,9 +1,7 @@
-
 import React, { useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useMessaging } from '@/hooks/messaging/useMessaging';
-import { useUserPresence } from '@/hooks/messaging/useUserPresence';
 import ConversationList from '@/components/messaging/ConversationList';
 import ChatView from '@/components/messaging/ChatView';
 import { Card } from '@/components/ui/card';
@@ -13,9 +11,6 @@ const Messages: React.FC = () => {
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const { conversations, isLoading } = useMessaging();
   
-  // Initialize user presence tracking
-  useUserPresence();
-
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40">
       <Header />
