@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Header from '../components/Header';
@@ -167,22 +166,38 @@ const Team = () => {
                   />
                 </TabsContent>
                 <TabsContent value="games" className="mt-4">
-                  <TeamGames team={team} />
+                  <TeamGames
+                    upcomingGames={team.upcomingGames || []}
+                    pastGames={team.pastGames || []}
+                  />
                 </TabsContent>
                 <TabsContent value="field" className="mt-4">
-                  <TeamField 
-                    team={team} 
-                    isTeamMember={isTeamMember}
-                    isEditingField={isEditingField}
-                    setIsEditingField={setIsEditingField}
-                    selectedField={selectedField}
-                    setSelectedField={setSelectedField}
-                    fetchTeamData={fetchTeamData}
-                    onFieldEdit={handleFieldEdit}
+                  <TeamField
+                    field={team.field}
+                    isEditing={isEditingField}
+                    onEdit={(_fieldId, _updates) => {
+                      if (isTeamMember) setIsEditingField(true);
+                    }}
+                    onSave={async (fieldId, updates) => {
+                      if (isTeamMember) {
+                        await handleFieldEdit(fieldId, updates);
+                        setIsEditingField(false);
+                      }
+                    }}
+                    onCancel={() => {
+                      if (isTeamMember) setIsEditingField(false);
+                    }}
                   />
                 </TabsContent>
                 <TabsContent value="ratings" className="mt-4">
-                  <TeamRating teamId={team.id} />
+                  <TeamRating
+                    teamId={team.id}
+                    teamName={team.name}
+                    currentUserId={currentUserId}
+                    isTeamMember={isTeamMember}
+                    currentRating={team.stats?.averageRating ? parseFloat(team.stats.averageRating) : 0}
+                    onRatingUpdate={fetchTeamData}
+                  />
                 </TabsContent>
               </Tabs>
             </div>
