@@ -36,14 +36,14 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       <div className="px-4 sm:px-6 pb-4 pt-16 relative">
         {/* Moved buttons to the top with adjusted positioning */}
         {isOwnProfile && <div className="absolute top-4 right-4 flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 items-end md:items-center">
-            {onEditBio && <Button variant="outline" size="sm" onClick={onEditBio}>
-                <Pencil className="h-4 w-4 mr-2" />
-                Modifier le profil
+            {onEditBio && <Button variant="outline" size="sm" onClick={onEditBio} className="w-9 p-2 md:w-auto md:px-3">
+                <Pencil className="h-4 w-4" />
+                <span className="hidden md:inline">Modifier le profil</span>
               </Button>}
             
-            {toggleProfileSettings && <Button variant="outline" size="sm" onClick={toggleProfileSettings}>
-                <Settings className="h-4 w-4 mr-2" />
-                Paramètres
+            {toggleProfileSettings && <Button variant="outline" size="sm" onClick={toggleProfileSettings} className="w-9 p-2 md:w-auto md:px-3">
+                <Settings className="h-4 w-4" />
+                <span className="hidden md:inline">Paramètres</span>
               </Button>}
           </div>}
 
