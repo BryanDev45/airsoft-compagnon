@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Copy, Facebook, Twitter } from 'lucide-react';
+import { Copy, Facebook } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import { MdEmail } from 'react-icons/md';
 import {
@@ -77,7 +77,9 @@ const ShareDialog = ({ team, showShareDialog, setShowShareDialog, handleShareVia
               size="icon"
               onClick={() => handleShareVia('twitter')}
             >
-              <Twitter className="text-blue-400 h-5 w-5" />
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+                <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932L18.901 1.153zm-1.61 19.99h2.136L4.36 2.161H2.125l15.166 19.006z"/>
+              </svg>
             </Button>
             <Button
               variant="outline"
