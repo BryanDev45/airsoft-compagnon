@@ -32,7 +32,7 @@ const UserReportsTab = () => {
   const [resolveDialogOpen, setResolveDialogOpen] = useState(false);
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
   const [warnDialogOpen, setWarnDialogOpen] = useState(false);
-  const [selectedUserToWarn, setSelectedUserToWarn] = useState<{ id: string, username: string, reportId: string } | null>(null);
+  const [selectedUserToWarn, setSelectedUserToWarn] = useState<{ id: string; username: string; report: UserReport } | null>(null);
 
   const addUserWarningMutation = useAddUserWarning();
 
@@ -139,17 +139,21 @@ const UserReportsTab = () => {
 
   const handleWarnClick = (report: UserReport) => {
     if (report.reported_profile && report.reported_user_id) {
-        setSelectedUserToWarn({ id: report.reported_user_id, username: report.reported_profile.username, reportId: report.id });
+        setSelectedUserToWarn({ id: report.reported_user_id, username: report.reported_profile.username, report: report });
         setWarnDialogOpen(true);
     }
   };
 
   const handleWarnConfirm = (reason: string) => {
     if (selectedUserToWarn) {
+        const reporterUsername = selectedUserToWarn.report.reporter_profile?.username || 'un utilisateur';
+        const reportReason = selectedUserToWarn.report.reason;
+        const context = `Signalement par ${reporterUsername}. Raison : "${reportReason}"`;
+
         addUserWarningMutation.mutate({
             warnedUserId: selectedUserToWarn.id,
             reason: reason,
-            context: `Suite au rapport #${selectedUserToWarn.reportId}`
+            context: context
         }, {
             onSuccess: () => {
                 setWarnDialogOpen(false);
