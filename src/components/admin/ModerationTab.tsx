@@ -30,12 +30,12 @@ interface UserWarning {
   reason: string;
   context: string | null;
   created_at: string;
-  user_profile?: {
+  warned_user?: {
     username: string;
     firstname: string;
     lastname: string;
   };
-  admin_profile?: {
+  admin_user?: {
     username: string;
   };
 }
@@ -49,7 +49,7 @@ interface BannedUser {
   ban_date: string;
   ban_reason: string;
   banned_by: string;
-  ban_admin_profile?: {
+  ban_admin?: {
     username: string;
   };
 }
@@ -65,14 +65,49 @@ const ModerationTab = () => {
       let query = supabase
         .from('user_warnings')
         .select(`
-          *,
-          user_profile:profiles!warned_user_id(username, firstname, lastname),
-          admin_profile:profiles!admin_id(username)
+          id,
+          warned_user_id,
+          admin_id,
+          reason,
+          context,
+          created_at,
+          warned_user:profiles!user_warnings_warned_user_id_fkey(username, firstname, lastname),
+          admin_user:profiles!user_warnings_admin_id_fkey(username)
         `)
         .order('created_at', { ascending: false });
 
       if (searchTerm.trim()) {
-        query = query.or(`user_profile.username.ilike.%${searchTerm}%,user_profile.firstname.ilike.%${searchTerm}%,user_profile.lastname.ilike.%${searchTerm}%`);
+        // We need to join with profiles and filter on the user data
+        const { data: filteredWarnings, error } = await supabase
+          .from('user_warnings')
+          .select(`
+            id,
+            warned_user_id,
+            admin_id,
+            reason,
+            context,
+            created_at,
+            warned_user:profiles!user_warnings_warned_user_id_fkey(username, firstname, lastname),
+            admin_user:profiles!user_warnings_admin_id_fkey(username)
+          `)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        // Filter manually on the client side for now
+        const filtered = filteredWarnings?.filter((warning: any) => {
+          const user = warning.warned_user;
+          if (!user) return false;
+          
+          const searchLower = searchTerm.toLowerCase();
+          return (
+            user.username?.toLowerCase().includes(searchLower) ||
+            user.firstname?.toLowerCase().includes(searchLower) ||
+            user.lastname?.toLowerCase().includes(searchLower)
+          );
+        }) || [];
+
+        return filtered as UserWarning[];
       }
 
       const { data, error } = await query;
@@ -89,13 +124,14 @@ const ModerationTab = () => {
         .from('profiles')
         .select(`
           id, username, firstname, lastname, Ban, ban_date, ban_reason, banned_by,
-          ban_admin_profile:profiles!banned_by(username)
+          ban_admin:profiles!profiles_banned_by_fkey(username)
         `)
         .eq('Ban', true)
         .order('ban_date', { ascending: false });
 
       if (searchTerm.trim()) {
-        query = query.or(`username.ilike.%${searchTerm}%,firstname.ilike.%${searchTerm}%,lastname.ilike.%${searchTerm}%`);
+        const searchLower = searchTerm.toLowerCase();
+        query = query.or(`username.ilike.%${searchLower}%,firstname.ilike.%${searchLower}%,lastname.ilike.%${searchLower}%`);
       }
 
       const { data, error } = await query;
@@ -208,7 +244,7 @@ const ModerationTab = () => {
                       <div className="flex items-center gap-2 mb-2">
                         <User className="h-4 w-4 text-gray-600" />
                         <span className="font-medium">
-                          {getDisplayName(warning.user_profile || {})}
+                          {getDisplayName(warning.warned_user || {})}
                         </span>
                         <Badge variant="outline" className="text-orange-700 border-orange-300">
                           Avertissement
@@ -224,7 +260,7 @@ const ModerationTab = () => {
                       )}
                       <p className="text-xs text-gray-500">
                         Donné le {format(new Date(warning.created_at), 'd MMMM yyyy à HH:mm', { locale: fr })}
-                        {warning.admin_profile?.username && ` par ${warning.admin_profile.username}`}
+                        {warning.admin_user?.username && ` par ${warning.admin_user.username}`}
                       </p>
                     </div>
                     <AlertDialog>
@@ -300,7 +336,7 @@ const ModerationTab = () => {
                       </p>
                       <p className="text-xs text-gray-500">
                         Banni le {user.ban_date ? format(new Date(user.ban_date), 'd MMMM yyyy à HH:mm', { locale: fr }) : 'Date inconnue'}
-                        {user.ban_admin_profile?.username && ` par ${user.ban_admin_profile.username}`}
+                        {user.ban_admin?.username && ` par ${user.ban_admin.username}`}
                       </p>
                     </div>
                     <AlertDialog>
