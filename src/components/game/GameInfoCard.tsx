@@ -4,6 +4,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check } from 'lucide-react';
 import { formatGameDate, formatGameTimeRange } from '@/utils/dateUtils';
+import InvoiceDownloadButton from './InvoiceDownloadButton';
+import { GameData } from '@/types/game';
+import { Profile } from '@/types/profile';
 
 interface GameInfoCardProps {
   price: number | null;
@@ -16,6 +19,9 @@ interface GameInfoCardProps {
   isRegistered: boolean;
   loadingRegistration: boolean;
   onRegister: () => void;
+  gameData?: GameData;
+  userProfile?: Profile | null;
+  user?: any;
 }
 
 const GameInfoCard: React.FC<GameInfoCardProps> = ({
@@ -28,7 +34,10 @@ const GameInfoCard: React.FC<GameInfoCardProps> = ({
   maxPlayers,
   isRegistered,
   loadingRegistration,
-  onRegister
+  onRegister,
+  gameData,
+  userProfile,
+  user
 }) => {
   // Utiliser formatGameDate qui gère l'affichage conditionnel des plages de dates
   const formattedDate = formatGameDate(date, endDate);
@@ -68,7 +77,7 @@ const GameInfoCard: React.FC<GameInfoCardProps> = ({
           </div>
         </div>
         
-        <div className="mt-6">
+        <div className="mt-6 space-y-3">
           <Button 
             className={`w-full ${isRegistered ? 'bg-green-600 hover:bg-green-700' : 'bg-airsoft-red hover:bg-red-700'}`} 
             onClick={onRegister} 
@@ -89,6 +98,16 @@ const GameInfoCard: React.FC<GameInfoCardProps> = ({
               </>
             )}
           </Button>
+          
+          {/* Bouton de téléchargement de facture - visible uniquement pour les inscrits */}
+          {user && isRegistered && gameData && (
+            <InvoiceDownloadButton
+              gameData={gameData}
+              userProfile={userProfile}
+              isRegistered={isRegistered}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+            />
+          )}
         </div>
       </CardContent>
     </Card>

@@ -132,18 +132,6 @@ const GameDetails = () => {
               <div className="my-6">
                 <GameImages images={gameImages} title={gameData.title} />
               </div>
-
-              {/* Bouton de téléchargement de facture - visible uniquement pour les inscrits */}
-              {user && isRegistered && (
-                <div className="mb-6 flex justify-center">
-                  <InvoiceDownloadButton
-                    gameData={gameData}
-                    userProfile={userProfile}
-                    isRegistered={isRegistered}
-                    className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-                  />
-                </div>
-              )}
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="md:col-span-2">
@@ -163,6 +151,8 @@ const GameDetails = () => {
                   isRegistered={isRegistered}
                   loadingRegistration={loadingRegistration}
                   onRegister={() => handleRegistration(isRegistered)}
+                  userProfile={userProfile}
+                  user={user}
                 />
               </div>
             </>

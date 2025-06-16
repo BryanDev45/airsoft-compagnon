@@ -2,24 +2,17 @@
 import React from 'react';
 import GameInfoCard from './GameInfoCard';
 import GameLocationCard from './GameLocationCard';
+import { GameData } from '@/types/game';
+import { Profile } from '@/types/profile';
 
 interface GameSidebarProps {
-  gameData: {
-    price?: number;
-    date: string;
-    start_time: string;
-    end_time: string;
-    max_players: number;
-    address: string;
-    zip_code: string;
-    city: string;
-    longitude?: number;
-    latitude?: number;
-  };
+  gameData: GameData;
   participantsCount: number;
   isRegistered: boolean;
   loadingRegistration: boolean;
   onRegister: () => void;
+  userProfile?: Profile | null;
+  user?: any;
 }
 
 const GameSidebar: React.FC<GameSidebarProps> = ({
@@ -27,13 +20,16 @@ const GameSidebar: React.FC<GameSidebarProps> = ({
   participantsCount,
   isRegistered,
   loadingRegistration,
-  onRegister
+  onRegister,
+  userProfile,
+  user
 }) => {
   return (
     <div className="space-y-6">
       <GameInfoCard
         price={gameData.price || null}
         date={gameData.date}
+        endDate={gameData.end_date}
         startTime={gameData.start_time}
         endTime={gameData.end_time}
         participantsCount={participantsCount}
@@ -41,6 +37,9 @@ const GameSidebar: React.FC<GameSidebarProps> = ({
         isRegistered={isRegistered}
         loadingRegistration={loadingRegistration}
         onRegister={onRegister}
+        gameData={gameData}
+        userProfile={userProfile}
+        user={user}
       />
       <GameLocationCard
         address={gameData.address}
