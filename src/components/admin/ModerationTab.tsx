@@ -34,10 +34,10 @@ interface UserWarning {
     username: string;
     firstname: string;
     lastname: string;
-  };
+  } | null;
   admin_user?: {
     username: string;
-  };
+  } | null;
 }
 
 interface BannedUser {
@@ -51,7 +51,7 @@ interface BannedUser {
   banned_by: string;
   ban_admin?: {
     username: string;
-  };
+  } | null;
 }
 
 const ModerationTab = () => {
@@ -62,57 +62,57 @@ const ModerationTab = () => {
   const { data: warnings = [], isLoading: isLoadingWarnings, refetch: refetchWarnings } = useQuery({
     queryKey: ['admin-warnings', searchTerm],
     queryFn: async () => {
-      let query = supabase
+      // Get all warnings with user data
+      const { data: warningsData, error: warningsError } = await supabase
         .from('user_warnings')
-        .select(`
-          id,
-          warned_user_id,
-          admin_id,
-          reason,
-          context,
-          created_at,
-          warned_user:profiles!user_warnings_warned_user_id_fkey(username, firstname, lastname),
-          admin_user:profiles!user_warnings_admin_id_fkey(username)
-        `)
+        .select('id, warned_user_id, admin_id, reason, context, created_at')
         .order('created_at', { ascending: false });
 
+      if (warningsError) throw warningsError;
+
+      if (!warningsData) return [];
+
+      // Get user profiles for warned users
+      const warnedUserIds = [...new Set(warningsData.map(w => w.warned_user_id))];
+      const { data: warnedUsers, error: warnedUsersError } = await supabase
+        .from('profiles')
+        .select('id, username, firstname, lastname')
+        .in('id', warnedUserIds);
+
+      if (warnedUsersError) throw warnedUsersError;
+
+      // Get admin profiles
+      const adminIds = [...new Set(warningsData.map(w => w.admin_id).filter(Boolean))];
+      const { data: adminUsers, error: adminUsersError } = await supabase
+        .from('profiles')
+        .select('id, username')
+        .in('id', adminIds);
+
+      if (adminUsersError) throw adminUsersError;
+
+      // Combine the data
+      const combinedWarnings: UserWarning[] = warningsData.map(warning => ({
+        ...warning,
+        warned_user: warnedUsers?.find(user => user.id === warning.warned_user_id) || null,
+        admin_user: adminUsers?.find(admin => admin.id === warning.admin_id) || null
+      }));
+
+      // Apply search filter
       if (searchTerm.trim()) {
-        // We need to join with profiles and filter on the user data
-        const { data: filteredWarnings, error } = await supabase
-          .from('user_warnings')
-          .select(`
-            id,
-            warned_user_id,
-            admin_id,
-            reason,
-            context,
-            created_at,
-            warned_user:profiles!user_warnings_warned_user_id_fkey(username, firstname, lastname),
-            admin_user:profiles!user_warnings_admin_id_fkey(username)
-          `)
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-
-        // Filter manually on the client side for now
-        const filtered = filteredWarnings?.filter((warning: any) => {
+        const searchLower = searchTerm.toLowerCase();
+        return combinedWarnings.filter(warning => {
           const user = warning.warned_user;
           if (!user) return false;
           
-          const searchLower = searchTerm.toLowerCase();
           return (
             user.username?.toLowerCase().includes(searchLower) ||
             user.firstname?.toLowerCase().includes(searchLower) ||
             user.lastname?.toLowerCase().includes(searchLower)
           );
-        }) || [];
-
-        return filtered as UserWarning[];
+        });
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as UserWarning[];
+      return combinedWarnings;
     },
   });
 
@@ -122,10 +122,7 @@ const ModerationTab = () => {
     queryFn: async () => {
       let query = supabase
         .from('profiles')
-        .select(`
-          id, username, firstname, lastname, Ban, ban_date, ban_reason, banned_by,
-          ban_admin:profiles!profiles_banned_by_fkey(username)
-        `)
+        .select('id, username, firstname, lastname, Ban, ban_date, ban_reason, banned_by')
         .eq('Ban', true)
         .order('ban_date', { ascending: false });
 
@@ -134,9 +131,27 @@ const ModerationTab = () => {
         query = query.or(`username.ilike.%${searchLower}%,firstname.ilike.%${searchLower}%,lastname.ilike.%${searchLower}%`);
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as BannedUser[];
+      const { data: bannedData, error: bannedError } = await query;
+      if (bannedError) throw bannedError;
+
+      if (!bannedData) return [];
+
+      // Get admin profiles for banned users
+      const banAdminIds = [...new Set(bannedData.map(user => user.banned_by).filter(Boolean))];
+      const { data: banAdmins, error: banAdminsError } = await supabase
+        .from('profiles')
+        .select('id, username')
+        .in('id', banAdminIds);
+
+      if (banAdminsError) throw banAdminsError;
+
+      // Combine the data
+      const combinedBannedUsers: BannedUser[] = bannedData.map(user => ({
+        ...user,
+        ban_admin: banAdmins?.find(admin => admin.id === user.banned_by) || null
+      }));
+
+      return combinedBannedUsers;
     },
   });
 
@@ -177,7 +192,8 @@ const ModerationTab = () => {
     });
   };
 
-  const getDisplayName = (user: { username?: string; firstname?: string; lastname?: string }) => {
+  const getDisplayName = (user: { username?: string; firstname?: string; lastname?: string } | null | undefined) => {
+    if (!user) return 'Utilisateur inconnu';
     if (user.username) return user.username;
     if (user.firstname && user.lastname) return `${user.firstname} ${user.lastname}`;
     if (user.firstname) return user.firstname;
@@ -244,7 +260,7 @@ const ModerationTab = () => {
                       <div className="flex items-center gap-2 mb-2">
                         <User className="h-4 w-4 text-gray-600" />
                         <span className="font-medium">
-                          {getDisplayName(warning.warned_user || {})}
+                          {getDisplayName(warning.warned_user)}
                         </span>
                         <Badge variant="outline" className="text-orange-700 border-orange-300">
                           Avertissement
