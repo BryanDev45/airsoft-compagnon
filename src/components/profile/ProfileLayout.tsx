@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Header from '../Header';
 import Footer from '../Footer';
@@ -51,7 +50,7 @@ const ProfileLayout = ({
       <ProfileDialogs
         selectedGame={dialogStates.selectedGame}
         showGameDialog={dialogStates.showGameDialog}
-        setShowGameDialog={dialogStates.handleOpenChange}
+        setShowGameDialog={dialogStates.setShowGameDialog}
         showAllGamesDialog={dialogStates.showAllGamesDialog}
         setShowAllGamesDialog={dialogStates.setShowAllGamesDialog}
         showBadgesDialog={dialogStates.showBadgesDialog}

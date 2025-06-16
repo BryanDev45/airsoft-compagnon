@@ -19,18 +19,16 @@ export const useGameDetailsDialog = () => {
     setShowGameDialog(true);
   }, []);
 
-  const handleOpenChange = (isOpen: boolean) => {
-      setShowGameDialog(isOpen);
-      if (!isOpen) {
-          // Attendre un peu avant de vider les données pour que l'animation de fermeture se termine
-          setTimeout(() => setSelectedGame(null), 300);
-      }
-  }
+  const handleCloseDialog = useCallback(() => {
+    setShowGameDialog(false);
+    setSelectedGame(null);
+  }, []);
 
   return {
     selectedGame,
     showGameDialog,
     showGameDetails,
-    handleOpenChange
+    setShowGameDialog,
+    handleCloseDialog
   };
 };

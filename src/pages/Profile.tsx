@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useProfileData } from '../hooks/profile/useProfileData';
 import { useEquipmentActions } from '../hooks/profile/useEquipmentActions';
