@@ -68,58 +68,58 @@ const Admin = () => {
 
         {/* Tabs section - mobile responsive */}
         <Tabs defaultValue="user-reports" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 gap-1 h-auto p-1">
+          <TabsList className="grid w-full grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1 h-auto p-1">
             <TabsTrigger 
               value="user-reports" 
-              className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 p-2 sm:p-3 text-xs sm:text-sm"
+              className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 p-3 text-xs sm:text-sm min-h-[60px] sm:min-h-[40px]"
             >
-              <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="text-center">
-                <span className="block sm:hidden">Signalements</span>
+              <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+              <span className="text-center leading-tight">
+                <span className="block sm:hidden">Signalements utilisateurs</span>
                 <span className="hidden sm:block">Signalements d'utilisateurs</span>
               </span>
             </TabsTrigger>
             
             <TabsTrigger 
               value="message-reports" 
-              className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 p-2 sm:p-3 text-xs sm:text-sm"
+              className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 p-3 text-xs sm:text-sm min-h-[60px] sm:min-h-[40px]"
             >
-              <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="text-center">
-                <span className="block sm:hidden">Messages</span>
+              <MessageSquare className="h-4 w-4 flex-shrink-0" />
+              <span className="text-center leading-tight">
+                <span className="block sm:hidden">Signalements messages</span>
                 <span className="hidden sm:block">Signalements de messages</span>
               </span>
             </TabsTrigger>
             
             <TabsTrigger 
               value="verification-requests" 
-              className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 p-2 sm:p-3 text-xs sm:text-sm"
+              className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 p-3 text-xs sm:text-sm min-h-[60px] sm:min-h-[40px]"
             >
-              <UserCheck className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="text-center">
-                <span className="block sm:hidden">Vérifications</span>
+              <UserCheck className="h-4 w-4 flex-shrink-0" />
+              <span className="text-center leading-tight">
+                <span className="block sm:hidden">Vérifications comptes</span>
                 <span className="hidden sm:block">Vérifications de compte</span>
               </span>
             </TabsTrigger>
             
             <TabsTrigger 
               value="moderation" 
-              className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 p-2 sm:p-3 text-xs sm:text-sm"
+              className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 p-3 text-xs sm:text-sm min-h-[60px] sm:min-h-[40px]"
             >
-              <Gavel className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="text-center">
-                <span className="block sm:hidden">Modération</span>
+              <Gavel className="h-4 w-4 flex-shrink-0" />
+              <span className="text-center leading-tight">
+                <span className="block sm:hidden">Bans & Avertissements</span>
                 <span className="hidden sm:block">Bans & Avertissements</span>
               </span>
             </TabsTrigger>
             
             <TabsTrigger 
               value="badges-management" 
-              className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 p-2 sm:p-3 text-xs sm:text-sm"
+              className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 p-3 text-xs sm:text-sm min-h-[60px] sm:min-h-[40px] col-span-1 xs:col-span-2 sm:col-span-3 lg:col-span-1"
             >
-              <Badge className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="text-center">
-                <span className="block sm:hidden">Badges</span>
+              <Badge className="h-4 w-4 flex-shrink-0" />
+              <span className="text-center leading-tight">
+                <span className="block sm:hidden">Gestion badges</span>
                 <span className="hidden sm:block">Gestion des badges</span>
               </span>
             </TabsTrigger>
