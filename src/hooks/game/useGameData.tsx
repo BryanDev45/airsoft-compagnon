@@ -33,7 +33,51 @@ export const useGameData = (id: string | undefined) => {
           .single();
         
         if (profile) {
-          setUserProfile(profile);
+          // Construire le profil avec toutes les propriétés requises par le type Profile
+          const completeProfile: Profile = {
+            id: profile.id,
+            username: profile.username,
+            email: profile.email,
+            firstname: profile.firstname,
+            lastname: profile.lastname,
+            birth_date: profile.birth_date,
+            age: profile.age,
+            join_date: profile.join_date,
+            avatar: profile.avatar,
+            banner: profile.banner,
+            bio: profile.bio,
+            location: profile.location,
+            phone_number: profile.phone_number,
+            team: profile.team,
+            team_id: profile.team_id,
+            team_logo: null, // Initialisé à null, sera mis à jour si l'utilisateur a une équipe
+            is_team_leader: profile.is_team_leader,
+            is_verified: profile.is_verified,
+            newsletter_subscribed: profile.newsletter_subscribed ?? null,
+            Admin: profile.Admin,
+            Ban: profile.Ban,
+            ban_date: profile.ban_date,
+            ban_reason: profile.ban_reason,
+            banned_by: profile.banned_by,
+            reputation: profile.reputation,
+            friends_list_public: profile.friends_list_public,
+            spoken_language: profile.spoken_language
+          };
+
+          // Si l'utilisateur a une équipe, charger le logo de l'équipe
+          if (profile.team_id) {
+            const { data: teamData } = await supabase
+              .from('teams')
+              .select('logo')
+              .eq('id', profile.team_id)
+              .single();
+            
+            if (teamData?.logo) {
+              completeProfile.team_logo = teamData.logo;
+            }
+          }
+
+          setUserProfile(completeProfile);
         }
       }
     };
