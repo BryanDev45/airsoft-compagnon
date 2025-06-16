@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from "@/components/ui/use-toast";
@@ -12,6 +11,7 @@ import GameSidebar from '@/components/game/GameSidebar';
 import ShareDialog from '@/components/game/ShareDialog';
 import GameImages from '@/components/game/GameImages';
 import RegistrationDialog from '@/components/game/RegistrationDialog';
+import InvoiceDownloadButton from '@/components/game/InvoiceDownloadButton';
 import { useGameData } from '@/hooks/game/useGameData';
 import { useGameActions } from '@/hooks/game/useGameActions';
 
@@ -28,6 +28,8 @@ const GameDetails = () => {
     loading,
     isRegistered,
     creatorRating,
+    creatorProfile,
+    userProfile,
     loadParticipants
   } = useGameData(id);
 
@@ -130,6 +132,18 @@ const GameDetails = () => {
               <div className="my-6">
                 <GameImages images={gameImages} title={gameData.title} />
               </div>
+
+              {/* Bouton de téléchargement de facture - visible uniquement pour les inscrits */}
+              {user && isRegistered && (
+                <div className="mb-6 flex justify-center">
+                  <InvoiceDownloadButton
+                    gameData={gameData}
+                    userProfile={userProfile}
+                    isRegistered={isRegistered}
+                    className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+                  />
+                </div>
+              )}
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="md:col-span-2">

@@ -3,11 +3,13 @@ import { useState, useEffect } from 'react';
 import { Profile } from '@/types/profile';
 import { useAuth } from '@/hooks/useAuth';
 import { useGameDataQueries } from './useGameDataQueries';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useGameData = (id: string | undefined) => {
   const { user } = useAuth();
   const [isRegistered, setIsRegistered] = useState(false);
   const [creatorProfile, setCreatorProfile] = useState<Profile | null>(null);
+  const [userProfile, setUserProfile] = useState<Profile | null>(null);
 
   const {
     gameData,
@@ -19,6 +21,25 @@ export const useGameData = (id: string | undefined) => {
     participantsError,
     refetchParticipants
   } = useGameDataQueries(id);
+
+  // Charger le profil de l'utilisateur connecté
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user?.id) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        
+        if (profile) {
+          setUserProfile(profile);
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, [user?.id]);
 
   // Vérifier si l'utilisateur est inscrit
   useEffect(() => {
@@ -48,6 +69,7 @@ export const useGameData = (id: string | undefined) => {
     isRegistered,
     creatorRating,
     creatorProfile,
+    userProfile,
     loadParticipants: refetchParticipants
   };
 };
