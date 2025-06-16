@@ -44,29 +44,28 @@ const UserProfile = () => {
 
   const { mutate: deleteWarning, isPending: isDeletingWarning } = useDeleteUserWarning();
 
-  const dialogs = useProfileDialogs();
-  const gameDetailsDialog = useGameDetailsDialog();
-  const allDialogStates = { ...dialogs, ...gameDetailsDialog };
-
+  // Séparer complètement les hooks pour éviter les conflits
+  const profileDialogs = useProfileDialogs();
+  const gameDialog = useGameDetailsDialog();
+  
   const handleGameClickInAllGamesDialog = (game: any) => {
-    allDialogStates.setShowAllGamesDialog(false);
-    allDialogStates.showGameDetails(game);
+    profileDialogs.setShowAllGamesDialog(false);
+    gameDialog.showGameDetails(game);
   };
   
-  const handleViewGameDetails = (game) => {
-    allDialogStates.showGameDetails(game);
+  const handleViewGameDetails = (game: any) => {
+    gameDialog.showGameDetails(game);
   };
 
   const handleViewAllGames = () => {
-    allDialogStates.setShowAllGamesDialog(true);
+    profileDialogs.setShowAllGamesDialog(true);
   };
 
   const handleViewAllBadges = () => {
-    allDialogStates.setShowBadgesDialog(true);
+    profileDialogs.setShowBadgesDialog(true);
   }
 
   const handleDeleteWarning = (warningId: string) => {
-    // Une boîte de dialogue de confirmation pourrait être ajoutée ici plus tard si nécessaire.
     deleteWarning(warningId);
   };
 
@@ -165,14 +164,15 @@ const UserProfile = () => {
         </div>
       </main>
       <Footer />
+      
       <ProfileDialogs 
-        selectedGame={allDialogStates.selectedGame}
-        showGameDialog={allDialogStates.showGameDialog}
-        setShowGameDialog={allDialogStates.setShowGameDialog}
-        showAllGamesDialog={allDialogStates.showAllGamesDialog}
-        setShowAllGamesDialog={allDialogStates.setShowAllGamesDialog}
-        showBadgesDialog={allDialogStates.showBadgesDialog}
-        setShowBadgesDialog={allDialogStates.setShowBadgesDialog}
+        selectedGame={gameDialog.selectedGame}
+        showGameDialog={gameDialog.showGameDialog}
+        setShowGameDialog={gameDialog.setShowGameDialog}
+        showAllGamesDialog={profileDialogs.showAllGamesDialog}
+        setShowAllGamesDialog={profileDialogs.setShowAllGamesDialog}
+        showBadgesDialog={profileDialogs.showBadgesDialog}
+        setShowBadgesDialog={profileDialogs.setShowBadgesDialog}
         user={profileData}
         userGames={userGames}
         onGameClick={handleGameClickInAllGamesDialog}

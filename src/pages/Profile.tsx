@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useProfileData } from '../hooks/profile/useProfileData';
 import { useEquipmentActions } from '../hooks/profile/useEquipmentActions';
@@ -37,29 +38,25 @@ const Profile = () => {
 
   const { userBadges } = useUserBadges(canFetchData ? user?.id : undefined);
 
-  const dialogStates = useProfileDialogs();
-  const gameDetailsDialog = useGameDetailsDialog();
-
-  const allDialogStates = {
-    ...dialogStates,
-    ...gameDetailsDialog,
-  };
+  // Séparer les hooks pour éviter les conflits d'état
+  const profileDialogs = useProfileDialogs();
+  const gameDialog = useGameDetailsDialog();
 
   const handleViewGameDetails = (game: any) => {
-    allDialogStates.showGameDetails(game);
+    gameDialog.showGameDetails(game);
   };
 
   const handleViewAllGames = () => {
-    allDialogStates.setShowAllGamesDialog(true);
+    profileDialogs.setShowAllGamesDialog(true);
   };
 
   const handleViewAllBadges = () => {
-    allDialogStates.setShowBadgesDialog(true);
+    profileDialogs.setShowBadgesDialog(true);
   };
 
   const handleGameClickInAllGamesDialog = (game: any) => {
-    allDialogStates.setShowAllGamesDialog(false);
-    allDialogStates.showGameDetails(game);
+    profileDialogs.setShowAllGamesDialog(false);
+    gameDialog.showGameDetails(game);
   };
 
   useEffect(() => {
@@ -94,6 +91,16 @@ const Profile = () => {
     updateNewsletterSubscription,
   };
 
+  // Créer l'objet dialogStates sans conflit
+  const combinedDialogStates = {
+    ...profileDialogs,
+    selectedGame: gameDialog.selectedGame,
+    showGameDialog: gameDialog.showGameDialog,
+    setShowGameDialog: gameDialog.setShowGameDialog,
+    showGameDetails: gameDialog.showGameDetails,
+    handleCloseDialog: gameDialog.handleCloseDialog
+  };
+
   return (
     <ProfileLayout
       user={userWithUpdates}
@@ -102,7 +109,7 @@ const Profile = () => {
       equipment={equipment}
       userGames={userGames}
       userBadges={userBadges}
-      dialogStates={allDialogStates}
+      dialogStates={combinedDialogStates}
       equipmentTypes={equipmentTypes}
       fetchEquipment={fetchEquipment}
       fetchUserGames={fetchUserGames}

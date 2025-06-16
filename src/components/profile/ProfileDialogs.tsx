@@ -17,7 +17,7 @@ interface ProfileDialogsProps {
   onGameClick: (game: any) => void;
 }
 
-const ProfileDialogs: React.FC<ProfileDialogsProps> = ({ 
+const ProfileDialogs: React.FC<ProfileDialogsProps> = React.memo(({ 
   selectedGame,
   showGameDialog,
   setShowGameDialog,
@@ -32,27 +32,35 @@ const ProfileDialogs: React.FC<ProfileDialogsProps> = ({
   
   return (
     <>
-      <GameDetailsDialog
-        selectedGame={selectedGame}
-        showGameDialog={showGameDialog}
-        setShowGameDialog={setShowGameDialog}
-      />
+      {showGameDialog && (
+        <GameDetailsDialog
+          selectedGame={selectedGame}
+          showGameDialog={showGameDialog}
+          setShowGameDialog={setShowGameDialog}
+        />
+      )}
 
-      <AllGamesDialog
-        showAllGamesDialog={showAllGamesDialog}
-        setShowAllGamesDialog={setShowAllGamesDialog}
-        user={user}
-        userGames={userGames}
-        onGameClick={onGameClick}
-      />
+      {showAllGamesDialog && (
+        <AllGamesDialog
+          showAllGamesDialog={showAllGamesDialog}
+          setShowAllGamesDialog={setShowAllGamesDialog}
+          user={user}
+          userGames={userGames}
+          onGameClick={onGameClick}
+        />
+      )}
 
-      <BadgesDialog
-        showBadgesDialog={showBadgesDialog}
-        setShowBadgesDialog={setShowBadgesDialog}
-        user={user}
-      />
+      {showBadgesDialog && (
+        <BadgesDialog
+          showBadgesDialog={showBadgesDialog}
+          setShowBadgesDialog={setShowBadgesDialog}
+          user={user}
+        />
+      )}
     </>
   );
-};
+});
+
+ProfileDialogs.displayName = 'ProfileDialogs';
 
 export default ProfileDialogs;
