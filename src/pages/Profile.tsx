@@ -7,7 +7,7 @@ import { useProfileDialogs } from '../hooks/profile/useProfileDialogs';
 import { useProfileInitialization } from '../hooks/profile/useProfileInitialization';
 import ProfileLoading from '../components/profile/ProfileLoading';
 import ProfileLayout from '../components/profile/ProfileLayout';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { useUserBadges } from '@/hooks/user-profile/useUserBadges';
 import { useGameDetailsDialog } from '@/hooks/profile/useGameDetailsDialog';
 
