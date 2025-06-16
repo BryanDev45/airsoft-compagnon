@@ -108,15 +108,14 @@ const BadgesDialog: React.FC<BadgesDialogProps> = ({
             Voici la liste de tous les badges que vous pouvez obtenir sur la plateforme. Participez, contribuez et débloquez-les tous !
           </DialogDescription>
         </DialogHeader>
-        <div className="flex-grow overflow-hidden pr-2">
-          <ScrollArea className="h-full pr-4">
+        <ScrollArea className="flex-grow h-[60vh] w-full rounded-md border">
+          <div className="p-4">
             <BadgesContent user={user} />
-          </ScrollArea>
-        </div>
+          </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
 };
 
 export default BadgesDialog;
-
