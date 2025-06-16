@@ -168,7 +168,7 @@ const UserProfile = () => {
       <ProfileDialogs 
         selectedGame={allDialogStates.selectedGame}
         showGameDialog={allDialogStates.showGameDialog}
-        setShowGameDialog={allDialogStates.handleOpenChange}
+        setShowGameDialog={allDialogStates.setShowGameDialog}
         showAllGamesDialog={allDialogStates.showAllGamesDialog}
         setShowAllGamesDialog={allDialogStates.setShowAllGamesDialog}
         showBadgesDialog={allDialogStates.showBadgesDialog}
