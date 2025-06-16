@@ -3,12 +3,13 @@ import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Shield, AlertTriangle, UserCheck, MessageSquare, ArrowLeft, Badge } from 'lucide-react';
+import { Shield, AlertTriangle, UserCheck, MessageSquare, ArrowLeft, Badge, Gavel } from 'lucide-react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import UserReportsTab from '@/components/admin/UserReportsTab';
 import MessageReportsTab from '@/components/admin/MessageReportsTab';
 import VerificationRequestsTab from '@/components/admin/VerificationRequestsTab';
 import BadgesManagementTab from '@/components/admin/BadgesManagementTab';
+import ModerationTab from '@/components/admin/ModerationTab';
 
 const Admin = () => {
   const { user, initialLoading } = useAuth();
@@ -67,7 +68,7 @@ const Admin = () => {
 
         {/* Tabs section - mobile responsive */}
         <Tabs defaultValue="user-reports" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-1 h-auto p-1">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 gap-1 h-auto p-1">
             <TabsTrigger 
               value="user-reports" 
               className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 p-2 sm:p-3 text-xs sm:text-sm"
@@ -102,6 +103,17 @@ const Admin = () => {
             </TabsTrigger>
             
             <TabsTrigger 
+              value="moderation" 
+              className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 p-2 sm:p-3 text-xs sm:text-sm"
+            >
+              <Gavel className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="text-center">
+                <span className="block sm:hidden">Modération</span>
+                <span className="hidden sm:block">Bans & Avertissements</span>
+              </span>
+            </TabsTrigger>
+            
+            <TabsTrigger 
               value="badges-management" 
               className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 p-2 sm:p-3 text-xs sm:text-sm"
             >
@@ -123,6 +135,10 @@ const Admin = () => {
 
           <TabsContent value="verification-requests">
             <VerificationRequestsTab />
+          </TabsContent>
+          
+          <TabsContent value="moderation">
+            <ModerationTab />
           </TabsContent>
           
           <TabsContent value="badges-management">
