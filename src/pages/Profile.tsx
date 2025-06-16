@@ -3,13 +3,12 @@ import React, { useEffect } from 'react';
 import { useProfileData } from '../hooks/profile/useProfileData';
 import { useEquipmentActions } from '../hooks/profile/useEquipmentActions';
 import { useUserGames } from '../hooks/profile/useUserGames';
-import { useProfileDialogs } from '../hooks/profile/useProfileDialogs';
 import { useProfileInitialization } from '../hooks/profile/useProfileInitialization';
 import ProfileLoading from '../components/profile/ProfileLoading';
 import ProfileLayout from '../components/profile/ProfileLayout';
 import { toast } from '@/hooks/use-toast';
 import { useUserBadges } from '@/hooks/user-profile/useUserBadges';
-import { useGameDetailsDialog } from '@/hooks/profile/useGameDetailsDialog';
+import { useUnifiedDialogs } from '@/hooks/profile/useUnifiedDialogs';
 
 const Profile = () => {
   const { user, canFetchData, hasError, setHasError, initialLoading } = useProfileInitialization();
@@ -38,26 +37,8 @@ const Profile = () => {
 
   const { userBadges } = useUserBadges(canFetchData ? user?.id : undefined);
 
-  // Séparer les hooks pour éviter les conflits d'état
-  const profileDialogs = useProfileDialogs();
-  const gameDialog = useGameDetailsDialog();
-
-  const handleViewGameDetails = (game: any) => {
-    gameDialog.showGameDetails(game);
-  };
-
-  const handleViewAllGames = () => {
-    profileDialogs.setShowAllGamesDialog(true);
-  };
-
-  const handleViewAllBadges = () => {
-    profileDialogs.setShowBadgesDialog(true);
-  };
-
-  const handleGameClickInAllGamesDialog = (game: any) => {
-    profileDialogs.setShowAllGamesDialog(false);
-    gameDialog.showGameDetails(game);
-  };
+  // Hook unifié pour tous les dialogs
+  const dialogStates = useUnifiedDialogs();
 
   useEffect(() => {
     if (canFetchData && user?.id) {
@@ -91,16 +72,6 @@ const Profile = () => {
     updateNewsletterSubscription,
   };
 
-  // Créer l'objet dialogStates sans conflit
-  const combinedDialogStates = {
-    ...profileDialogs,
-    selectedGame: gameDialog.selectedGame,
-    showGameDialog: gameDialog.showGameDialog,
-    setShowGameDialog: gameDialog.setShowGameDialog,
-    showGameDetails: gameDialog.showGameDetails,
-    handleCloseDialog: gameDialog.handleCloseDialog
-  };
-
   return (
     <ProfileLayout
       user={userWithUpdates}
@@ -109,16 +80,16 @@ const Profile = () => {
       equipment={equipment}
       userGames={userGames}
       userBadges={userBadges}
-      dialogStates={combinedDialogStates}
+      dialogStates={dialogStates}
       equipmentTypes={equipmentTypes}
       fetchEquipment={fetchEquipment}
       fetchUserGames={fetchUserGames}
       fetchProfileData={fetchProfileData}
       handleAddEquipment={handleAddEquipment}
-      handleViewGameDetails={handleViewGameDetails}
-      handleViewAllGames={handleViewAllGames}
-      handleViewAllBadges={handleViewAllBadges}
-      handleGameClickInAllGamesDialog={handleGameClickInAllGamesDialog}
+      handleViewGameDetails={dialogStates.showGameDetails}
+      handleViewAllGames={dialogStates.openAllGamesDialog}
+      handleViewAllBadges={dialogStates.openBadgesDialog}
+      handleGameClickInAllGamesDialog={dialogStates.handleGameClickInAllGamesDialog}
     />
   );
 };

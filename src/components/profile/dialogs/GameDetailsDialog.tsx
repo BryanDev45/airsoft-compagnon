@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -22,7 +23,6 @@ const GameDetailsDialog: React.FC<GameDetailsDialogProps> = ({
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  // Formatage de la date pour l'affichage en utilisant la fonction formatGameDate
   const formatGameDateDisplay = (game: any) => {
     if (!game) {
       console.warn('Game object is missing:', game);
@@ -31,7 +31,6 @@ const GameDetailsDialog: React.FC<GameDetailsDialogProps> = ({
     
     console.log('Game object for date formatting:', game);
     
-    // Utiliser la date au format ISO stockée dans game.date et game.end_date
     const startDate = game.date || game.rawDate;
     const endDate = game.end_date;
     
@@ -41,7 +40,6 @@ const GameDetailsDialog: React.FC<GameDetailsDialogProps> = ({
     }
     
     try {
-      // Utiliser formatGameDate qui gère automatiquement les plages de dates
       return formatGameDate(startDate, endDate);
     } catch (error) {
       console.error('Error formatting game date:', error, { startDate, endDate, game });
@@ -50,11 +48,11 @@ const GameDetailsDialog: React.FC<GameDetailsDialogProps> = ({
   };
 
   const handleViewGameDetails = (gameId: string) => {
+    console.log('Navigating to game details with ID:', gameId);
     setShowGameDialog(false);
     navigate(`/game/${gameId}`);
   };
 
-  // Debug pour voir le contenu de selectedGame
   console.log("Selected game in dialog:", selectedGame);
 
   if (!selectedGame) {
@@ -62,8 +60,8 @@ const GameDetailsDialog: React.FC<GameDetailsDialogProps> = ({
   }
 
   const DetailsContent = () => (
-    <>
-      <div className="grid grid-cols-1 gap-4 rounded-lg sm:border-none sm:shadow-none sm:bg-transparent sm:p-0">
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4">
         <div className="flex items-center gap-2 text-gray-700">
           <Calendar className="text-airsoft-red flex-shrink-0" size={18} />
           <span className="font-medium">{formatGameDateDisplay(selectedGame)}</span>
@@ -128,15 +126,16 @@ const GameDetailsDialog: React.FC<GameDetailsDialogProps> = ({
         </div>
       </div>
       
-      <div className="flex justify-end mt-4">
+      <div className="flex justify-end mt-6">
         <Button 
           onClick={() => handleViewGameDetails(selectedGame.id)}
           className="bg-airsoft-red hover:bg-red-700 w-full sm:w-auto"
+          type="button"
         >
           Voir la partie
         </Button>
       </div>
-    </>
+    </div>
   );
 
   if (isMobile) {
@@ -164,7 +163,7 @@ const GameDetailsDialog: React.FC<GameDetailsDialogProps> = ({
             Détails de la partie
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-4">
+        <div className="py-4">
           <DetailsContent />
         </div>
       </DialogContent>

@@ -13,8 +13,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useDeleteUserWarning } from '@/hooks/admin/useUserWarnings';
 import { Button } from '@/components/ui/button';
-import { useProfileDialogs } from '@/hooks/profile/useProfileDialogs';
-import { useGameDetailsDialog } from '@/hooks/profile/useGameDetailsDialog';
+import { useUnifiedDialogs } from '@/hooks/profile/useUnifiedDialogs';
 import ProfileDialogs from '../components/profile/ProfileDialogs';
 
 const UserProfile = () => {
@@ -44,26 +43,8 @@ const UserProfile = () => {
 
   const { mutate: deleteWarning, isPending: isDeletingWarning } = useDeleteUserWarning();
 
-  // Séparer complètement les hooks pour éviter les conflits
-  const profileDialogs = useProfileDialogs();
-  const gameDialog = useGameDetailsDialog();
-  
-  const handleGameClickInAllGamesDialog = (game: any) => {
-    profileDialogs.setShowAllGamesDialog(false);
-    gameDialog.showGameDetails(game);
-  };
-  
-  const handleViewGameDetails = (game: any) => {
-    gameDialog.showGameDetails(game);
-  };
-
-  const handleViewAllGames = () => {
-    profileDialogs.setShowAllGamesDialog(true);
-  };
-
-  const handleViewAllBadges = () => {
-    profileDialogs.setShowBadgesDialog(true);
-  }
+  // Hook unifié pour tous les dialogs
+  const dialogStates = useUnifiedDialogs();
 
   const handleDeleteWarning = (warningId: string) => {
     deleteWarning(warningId);
@@ -156,9 +137,9 @@ const UserProfile = () => {
               updateUserStats={updateUserStats}
               fetchProfileData={fetchProfileData}
               isOwnProfile={isOwnProfile}
-              handleViewGameDetails={handleViewGameDetails}
-              handleViewAllGames={handleViewAllGames}
-              handleViewAllBadges={handleViewAllBadges}
+              handleViewGameDetails={dialogStates.showGameDetails}
+              handleViewAllGames={dialogStates.openAllGamesDialog}
+              handleViewAllBadges={dialogStates.openBadgesDialog}
             />
           </div>
         </div>
@@ -166,16 +147,16 @@ const UserProfile = () => {
       <Footer />
       
       <ProfileDialogs 
-        selectedGame={gameDialog.selectedGame}
-        showGameDialog={gameDialog.showGameDialog}
-        setShowGameDialog={gameDialog.setShowGameDialog}
-        showAllGamesDialog={profileDialogs.showAllGamesDialog}
-        setShowAllGamesDialog={profileDialogs.setShowAllGamesDialog}
-        showBadgesDialog={profileDialogs.showBadgesDialog}
-        setShowBadgesDialog={profileDialogs.setShowBadgesDialog}
+        selectedGame={dialogStates.selectedGame}
+        showGameDialog={dialogStates.showGameDialog}
+        setShowGameDialog={dialogStates.setShowGameDialog}
+        showAllGamesDialog={dialogStates.showAllGamesDialog}
+        setShowAllGamesDialog={dialogStates.setShowAllGamesDialog}
+        showBadgesDialog={dialogStates.showBadgesDialog}
+        setShowBadgesDialog={dialogStates.setShowBadgesDialog}
         user={profileData}
         userGames={userGames}
-        onGameClick={handleGameClickInAllGamesDialog}
+        onGameClick={dialogStates.handleGameClickInAllGamesDialog}
       />
     </div>
   );
