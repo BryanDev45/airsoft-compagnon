@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useGamesData } from '@/hooks/useGamesData';
 import { useMapFiltering } from '@/hooks/useMapFiltering';
 import { useMapLocation } from '@/hooks/useMapLocation';
@@ -7,6 +7,7 @@ import MapComponent from './map/MapComponent';
 import MapSectionHeader from './map/MapSectionHeader';
 import SearchFiltersSidebar from './map/SearchFiltersSidebar';
 import MapResultsDisplay from './map/MapResultsDisplay';
+import MobileFiltersToggle from './map/MobileFiltersToggle';
 import { useAuth } from '@/hooks/useAuth';
 import { AlertCircle } from 'lucide-react';
 import { Button } from './ui/button';
@@ -15,6 +16,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 const MapSection: React.FC = () => {
   const { user } = useAuth();
   const isMobile = useIsMobile();
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const { data: events = [], isLoading: eventsLoading, error: eventsError } = useGamesData(user?.id);
   
   console.log('MapSection - User:', user ? 'authenticated' : 'anonymous');
@@ -57,30 +59,53 @@ const MapSection: React.FC = () => {
         <MapSectionHeader />
         
         <div className="bg-white rounded-lg overflow-hidden shadow-xl mb-8 border border-gray-200">
-          <div className={`flex ${isMobile ? 'flex-col' : 'flex-col md:flex-row'} min-h-[600px]`}>
-            <SearchFiltersSidebar
-              loading={loading}
-              filteredEventsCount={filteredEvents.length}
-              stores={[]}
-              filterState={{
-                searchQuery,
-                selectedType,
-                selectedDepartment,
-                selectedDate,
-                selectedCountry,
-                searchRadius,
-                searchCenter
-              }}
-              setSearchQuery={setSearchQuery}
-              setSelectedType={setSelectedType}
-              setSelectedDepartment={setSelectedDepartment}
-              setSelectedCountry={setSelectedCountry}
-              setSelectedDate={setSelectedDate}
-              setSearchRadius={setSearchRadius}
-              getCurrentPosition={getCurrentPosition}
-            />
+          <div className={`flex ${isMobile ? 'flex-col relative' : 'flex-col md:flex-row'} min-h-[600px]`}>
+            {/* Filtres - cachés par défaut sur mobile */}
+            <div className={`
+              ${isMobile ? (
+                showMobileFilters 
+                  ? 'fixed inset-0 z-40 bg-white' 
+                  : 'hidden'
+              ) : 'w-full md:w-1/4'}
+            `}>
+              <SearchFiltersSidebar
+                loading={loading}
+                filteredEventsCount={filteredEvents.length}
+                stores={[]}
+                filterState={{
+                  searchQuery,
+                  selectedType,
+                  selectedDepartment,
+                  selectedDate,
+                  selectedCountry,
+                  searchRadius,
+                  searchCenter
+                }}
+                setSearchQuery={setSearchQuery}
+                setSelectedType={setSelectedType}
+                setSelectedDepartment={setSelectedDepartment}
+                setSelectedCountry={setSelectedCountry}
+                setSelectedDate={setSelectedDate}
+                setSearchRadius={setSearchRadius}
+                getCurrentPosition={getCurrentPosition}
+              />
+            </div>
             
-            <div className={`${isMobile ? 'w-full h-[400px]' : 'w-full md:w-3/4'} flex-1 relative`}>
+            {/* Bouton toggle pour mobile */}
+            {isMobile && (
+              <MobileFiltersToggle
+                isOpen={showMobileFilters}
+                onToggle={() => setShowMobileFilters(!showMobileFilters)}
+                filteredCount={filteredEvents.length}
+              />
+            )}
+            
+            {/* Carte - prend toute la largeur sur mobile quand les filtres sont cachés */}
+            <div className={`
+              ${isMobile ? 'w-full h-[400px]' : 'w-full md:w-3/4'} 
+              flex-1 relative
+              ${isMobile && showMobileFilters ? 'hidden' : ''}
+            `}>
               {loading ? (
                 <div className="flex items-center justify-center h-full min-h-[400px]">
                   <div className="text-center">

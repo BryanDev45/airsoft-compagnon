@@ -1,11 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useStores } from '@/hooks/useStores';
 import { useStoreFiltering } from '@/hooks/useStoreFiltering';
 import { useMapLocation } from '@/hooks/useMapLocation';
 import MapComponent from '../map/MapComponent';
 import StoreFiltersSidebar from './StoreFiltersSidebar';
 import StoreResultsDisplay from './StoreResultsDisplay';
+import MobileFiltersToggle from '../map/MobileFiltersToggle';
 import { AlertCircle } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -13,6 +14,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 const StoresMapSection: React.FC = () => {
   const { stores, loading: storesLoading, error: storesError } = useStores();
   const isMobile = useIsMobile();
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   
   const {
     searchQuery,
@@ -39,23 +41,46 @@ const StoresMapSection: React.FC = () => {
     <div className="py-12 md:py-0">
       <div className="max-w-7xl mx-auto px-4 py-[30px]">
         <div className="bg-white rounded-lg overflow-hidden shadow-xl mb-8 border border-gray-200">
-          <div className={`flex ${isMobile ? 'flex-col' : 'flex-col md:flex-row'} h-full`}>
-            <StoreFiltersSidebar
-              loading={loading}
-              filteredStoresCount={filteredStores.length}
-              filterState={{
-                searchQuery,
-                selectedCountry,
-                searchRadius,
-                searchCenter
-              }}
-              setSearchQuery={setSearchQuery}
-              setSelectedCountry={setSelectedCountry}
-              setSearchRadius={setSearchRadius}
-              getCurrentPosition={getCurrentPosition}
-            />
+          <div className={`flex ${isMobile ? 'flex-col relative' : 'flex-col md:flex-row'} h-full`}>
+            {/* Filtres - cachés par défaut sur mobile */}
+            <div className={`
+              ${isMobile ? (
+                showMobileFilters 
+                  ? 'fixed inset-0 z-40 bg-white' 
+                  : 'hidden'
+              ) : 'w-full md:w-1/4'}
+            `}>
+              <StoreFiltersSidebar
+                loading={loading}
+                filteredStoresCount={filteredStores.length}
+                filterState={{
+                  searchQuery,
+                  selectedCountry,
+                  searchRadius,
+                  searchCenter
+                }}
+                setSearchQuery={setSearchQuery}
+                setSelectedCountry={setSelectedCountry}
+                setSearchRadius={setSearchRadius}
+                getCurrentPosition={getCurrentPosition}
+              />
+            </div>
             
-            <div className={`${isMobile ? 'w-full h-[400px]' : 'w-full md:w-3/4 h-[600px]'} relative`}>
+            {/* Bouton toggle pour mobile */}
+            {isMobile && (
+              <MobileFiltersToggle
+                isOpen={showMobileFilters}
+                onToggle={() => setShowMobileFilters(!showMobileFilters)}
+                filteredCount={filteredStores.length}
+              />
+            )}
+            
+            {/* Carte - prend toute la largeur sur mobile quand les filtres sont cachés */}
+            <div className={`
+              ${isMobile ? 'w-full h-[400px]' : 'w-full md:w-3/4 h-[600px]'} 
+              relative
+              ${isMobile && showMobileFilters ? 'hidden' : ''}
+            `}>
               {loading ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center">
