@@ -8,9 +8,11 @@ import StoreFiltersSidebar from './StoreFiltersSidebar';
 import StoreResultsDisplay from './StoreResultsDisplay';
 import { AlertCircle } from 'lucide-react';
 import { Button } from '../ui/button';
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const StoresMapSection: React.FC = () => {
   const { stores, loading: storesLoading, error: storesError } = useStores();
+  const isMobile = useIsMobile();
   
   const {
     searchQuery,
@@ -37,7 +39,7 @@ const StoresMapSection: React.FC = () => {
     <div className="py-12 md:py-0">
       <div className="max-w-7xl mx-auto px-4 py-[30px]">
         <div className="bg-white rounded-lg overflow-hidden shadow-xl mb-8 border border-gray-200">
-          <div className="flex flex-col md:flex-row h-full">
+          <div className={`flex ${isMobile ? 'flex-col' : 'flex-col md:flex-row'} h-full`}>
             <StoreFiltersSidebar
               loading={loading}
               filteredStoresCount={filteredStores.length}
@@ -53,7 +55,7 @@ const StoresMapSection: React.FC = () => {
               getCurrentPosition={getCurrentPosition}
             />
             
-            <div className="w-full md:w-3/4 h-[600px] relative">
+            <div className={`${isMobile ? 'w-full h-[400px]' : 'w-full md:w-3/4 h-[600px]'} relative`}>
               {loading ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center">
@@ -63,7 +65,7 @@ const StoresMapSection: React.FC = () => {
                 </div>
               ) : error ? (
                 <div className="flex items-center justify-center h-full flex-col">
-                  <div className="text-center">
+                  <div className="text-center px-4">
                     <AlertCircle className="h-12 w-12 text-airsoft-red mx-auto mb-4" />
                     <p className="text-gray-700 mb-3 font-semibold">Impossible de charger les magasins</p>
                     <p className="text-gray-500 mb-6">Veuillez vérifier votre connexion internet et réessayer</p>
@@ -84,7 +86,7 @@ const StoresMapSection: React.FC = () => {
                 />
               ) : (
                 <div className="flex items-center justify-center h-full">
-                  <div className="text-center">
+                  <div className="text-center px-4">
                     <p className="text-gray-500">Aucun magasin trouvé correspondant à vos critères</p>
                   </div>
                 </div>
