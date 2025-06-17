@@ -86,9 +86,9 @@ const SearchFiltersSidebar: React.FC<SearchFiltersSidebarProps> = ({
   }) => {
     if (!isMobile) {
       return (
-        <div className="space-y-2 w-full">
+        <div className="space-y-2">
           <h3 className="text-sm font-medium text-gray-300 mb-2">{title}</h3>
-          <div className="w-full">
+          <div>
             {children}
           </div>
         </div>
@@ -99,20 +99,17 @@ const SearchFiltersSidebar: React.FC<SearchFiltersSidebarProps> = ({
       <Collapsible 
         open={openSections[id] ?? defaultOpen} 
         onOpenChange={() => toggleSection(id)}
-        className="w-full"
       >
         <CollapsibleTrigger className="flex items-center justify-between w-full p-3 text-left bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors">
           <span className="text-sm font-medium text-white">{title}</span>
           {openSections[id] ? (
-            <ChevronUp className="h-4 w-4 text-gray-300" />
+            <ChevronUp className="h-4 w-4 text-gray-300 flex-shrink-0" />
           ) : (
-            <ChevronDown className="h-4 w-4 text-gray-300" />
+            <ChevronDown className="h-4 w-4 text-gray-300 flex-shrink-0" />
           )}
         </CollapsibleTrigger>
-        <CollapsibleContent className="mt-3 space-y-3 px-1 w-full">
-          <div className="w-full">
-            {children}
-          </div>
+        <CollapsibleContent className="mt-3 space-y-3 px-1">
+          {children}
         </CollapsibleContent>
       </Collapsible>
     );
@@ -120,17 +117,17 @@ const SearchFiltersSidebar: React.FC<SearchFiltersSidebarProps> = ({
 
   return (
     <div className={`
-      w-full bg-gray-800 border-r border-gray-700
-      ${isMobile ? 'p-4 h-full' : 'md:w-1/4 p-6'}
+      bg-gray-800 border-r border-gray-700
+      ${isMobile ? 'w-full p-4 h-full' : 'w-full p-6'}
     `}>
-      <div className="flex items-center gap-2 mb-6 w-full">
-        <Filter className="h-5 w-5 text-airsoft-red" />
+      <div className="flex items-center gap-2 mb-6">
+        <Filter className="h-5 w-5 text-airsoft-red flex-shrink-0" />
         <h2 className={`font-semibold text-white ${isMobile ? 'text-lg' : 'text-xl'}`}>
           Filtres de recherche
         </h2>
       </div>
 
-      <div className={`space-y-${isMobile ? '4' : '6'} w-full`}>
+      <div className={`space-y-${isMobile ? '4' : '6'}`}>
         <FilterSection id="location" title="Localisation" defaultOpen={true}>
           <LocationSearchFilter
             searchQuery={searchQuery}
@@ -174,15 +171,15 @@ const SearchFiltersSidebar: React.FC<SearchFiltersSidebarProps> = ({
           />
         </FilterSection>
 
-        <div className={`pt-4 border-t border-gray-600 w-full ${isMobile ? 'sticky bottom-0 bg-gray-800 pb-2' : ''}`}>
-          <div className="text-sm text-gray-300 w-full">
+        <div className={`pt-4 border-t border-gray-600 ${isMobile ? 'sticky bottom-0 bg-gray-800 pb-2' : ''}`}>
+          <div className="text-sm text-gray-300">
             {loading ? (
-              <div className="flex items-center gap-2 justify-center w-full">
+              <div className="flex items-center gap-2 justify-center">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Recherche en cours...
               </div>
             ) : (
-              <p className="font-medium text-center w-full">
+              <p className="font-medium text-center">
                 {filteredEventsCount} parties trouvées
               </p>
             )}

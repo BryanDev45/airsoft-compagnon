@@ -59,100 +59,170 @@ const MapSection: React.FC = () => {
         <MapSectionHeader />
         
         <div className="bg-white rounded-lg overflow-hidden shadow-xl mb-8 border border-gray-200">
-          <div className={`flex ${isMobile ? 'flex-col' : 'flex-col md:flex-row'} min-h-[600px]`}>
-            {/* Filtres - positionnement adaptatif */}
-            <div className={`
-              ${isMobile ? (
-                showMobileFilters 
-                  ? 'fixed inset-0 z-40 bg-white overflow-y-auto' 
-                  : 'hidden'
-              ) : 'w-full md:w-1/4'}
-            `}>
-              <SearchFiltersSidebar
-                loading={loading}
-                filteredEventsCount={filteredEvents.length}
-                stores={[]}
-                filterState={{
-                  searchQuery,
-                  selectedType,
-                  selectedDepartment,
-                  selectedDate,
-                  selectedCountry,
-                  searchRadius,
-                  searchCenter
-                }}
-                setSearchQuery={setSearchQuery}
-                setSelectedType={setSelectedType}
-                setSelectedDepartment={setSelectedDepartment}
-                setSelectedCountry={setSelectedCountry}
-                setSelectedDate={setSelectedDate}
-                setSearchRadius={setSearchRadius}
-                getCurrentPosition={getCurrentPosition}
+          {isMobile ? (
+            // Layout mobile : carte en plein écran avec overlay des filtres
+            <div className="relative w-full h-[600px]">
+              {/* Bouton toggle pour mobile */}
+              <MobileFiltersToggle
+                isOpen={showMobileFilters}
+                onToggle={() => setShowMobileFilters(!showMobileFilters)}
+                filteredCount={filteredEvents.length}
               />
-            </div>
-            
-            {/* Conteneur de la carte avec position relative */}
-            <div className={`
-              ${isMobile ? 'w-full min-h-[400px]' : 'w-full md:w-3/4'} 
-              flex-1 relative
-            `}>
-              {/* Bouton toggle pour mobile - positionné dans le conteneur de la carte */}
-              {isMobile && (
-                <MobileFiltersToggle
-                  isOpen={showMobileFilters}
-                  onToggle={() => setShowMobileFilters(!showMobileFilters)}
-                  filteredCount={filteredEvents.length}
-                />
+              
+              {/* Filtres en overlay sur mobile */}
+              {showMobileFilters && (
+                <div className="absolute inset-0 z-40 bg-white overflow-y-auto">
+                  <SearchFiltersSidebar
+                    loading={loading}
+                    filteredEventsCount={filteredEvents.length}
+                    stores={[]}
+                    filterState={{
+                      searchQuery,
+                      selectedType,
+                      selectedDepartment,
+                      selectedDate,
+                      selectedCountry,
+                      searchRadius,
+                      searchCenter
+                    }}
+                    setSearchQuery={setSearchQuery}
+                    setSelectedType={setSelectedType}
+                    setSelectedDepartment={setSelectedDepartment}
+                    setSelectedCountry={setSelectedCountry}
+                    setSelectedDate={setSelectedDate}
+                    setSearchRadius={setSearchRadius}
+                    getCurrentPosition={getCurrentPosition}
+                  />
+                </div>
               )}
               
-              {loading ? (
-                <div className="flex items-center justify-center h-full min-h-[400px]">
-                  <div className="text-center">
-                    <div className="h-12 w-12 border-4 border-airsoft-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-gray-500">Chargement de la carte...</p>
+              {/* Carte */}
+              <div className="w-full h-full">
+                {loading ? (
+                  <div className="flex items-center justify-center h-full">
+                    <div className="text-center">
+                      <div className="h-12 w-12 border-4 border-airsoft-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                      <p className="text-gray-500">Chargement de la carte...</p>
+                    </div>
                   </div>
-                </div>
-              ) : error && !events.length ? (
-                <div className="flex items-center justify-center h-full min-h-[400px] flex-col">
-                  <div className="text-center">
-                    <AlertCircle className="h-12 w-12 text-airsoft-red mx-auto mb-4" />
-                    <p className="text-gray-700 mb-3 font-semibold">Impossible de charger les parties</p>
-                    <p className="text-gray-500 mb-6">Veuillez vérifier votre connexion internet et réessayer</p>
-                    <Button 
-                      className="bg-airsoft-red hover:bg-red-700"
-                      onClick={handleRetry}
-                    >
-                      Réessayer
-                    </Button>
+                ) : error && !events.length ? (
+                  <div className="flex items-center justify-center h-full flex-col">
+                    <div className="text-center">
+                      <AlertCircle className="h-12 w-12 text-airsoft-red mx-auto mb-4" />
+                      <p className="text-gray-700 mb-3 font-semibold">Impossible de charger les parties</p>
+                      <p className="text-gray-500 mb-6">Veuillez vérifier votre connexion internet et réessayer</p>
+                      <Button 
+                        className="bg-airsoft-red hover:bg-red-700"
+                        onClick={handleRetry}
+                      >
+                        Réessayer
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ) : filteredEvents.length > 0 ? (
-                <div className={`h-full ${isMobile ? 'min-h-[400px]' : 'min-h-[600px]'}`}>
+                ) : filteredEvents.length > 0 ? (
                   <MapComponent 
                     searchCenter={searchCenter} 
                     searchRadius={searchRadius[0]} 
                     filteredEvents={filteredEvents}
                     stores={[]}
                   />
-                </div>
-              ) : (
-                <div className={`flex items-center justify-center h-full ${isMobile ? 'min-h-[400px]' : 'min-h-[600px]'}`}>
-                  <div className="text-center px-4">
-                    <p className="text-gray-500 text-lg mb-2">
-                      {events.length === 0 
-                        ? "Aucune partie disponible actuellement" 
-                        : "Aucune partie trouvée correspondant à vos critères"}
-                    </p>
-                    {events.length === 0 && (
-                      <p className="text-gray-400 text-sm">
-                        {user ? "Aucune partie n'est programmée pour le moment" : "Les parties publiques apparaîtront ici"}
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <div className="text-center px-4">
+                      <p className="text-gray-500 text-lg mb-2">
+                        {events.length === 0 
+                          ? "Aucune partie disponible actuellement" 
+                          : "Aucune partie trouvée correspondant à vos critères"}
                       </p>
-                    )}
+                      {events.length === 0 && (
+                        <p className="text-gray-400 text-sm">
+                          {user ? "Aucune partie n'est programmée pour le moment" : "Les parties publiques apparaîtront ici"}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
+          ) : (
+            // Layout desktop : côte à côte
+            <div className="flex min-h-[600px]">
+              {/* Filtres desktop */}
+              <div className="w-1/4">
+                <SearchFiltersSidebar
+                  loading={loading}
+                  filteredEventsCount={filteredEvents.length}
+                  stores={[]}
+                  filterState={{
+                    searchQuery,
+                    selectedType,
+                    selectedDepartment,
+                    selectedDate,
+                    selectedCountry,
+                    searchRadius,
+                    searchCenter
+                  }}
+                  setSearchQuery={setSearchQuery}
+                  setSelectedType={setSelectedType}
+                  setSelectedDepartment={setSelectedDepartment}
+                  setSelectedCountry={setSelectedCountry}
+                  setSelectedDate={setSelectedDate}
+                  setSearchRadius={setSearchRadius}
+                  getCurrentPosition={getCurrentPosition}
+                />
+              </div>
+              
+              {/* Carte desktop */}
+              <div className="w-3/4 relative">
+                {loading ? (
+                  <div className="flex items-center justify-center h-full min-h-[600px]">
+                    <div className="text-center">
+                      <div className="h-12 w-12 border-4 border-airsoft-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                      <p className="text-gray-500">Chargement de la carte...</p>
+                    </div>
+                  </div>
+                ) : error && !events.length ? (
+                  <div className="flex items-center justify-center h-full min-h-[600px] flex-col">
+                    <div className="text-center">
+                      <AlertCircle className="h-12 w-12 text-airsoft-red mx-auto mb-4" />
+                      <p className="text-gray-700 mb-3 font-semibold">Impossible de charger les parties</p>
+                      <p className="text-gray-500 mb-6">Veuillez vérifier votre connexion internet et réessayer</p>
+                      <Button 
+                        className="bg-airsoft-red hover:bg-red-700"
+                        onClick={handleRetry}
+                      >
+                        Réessayer
+                      </Button>
+                    </div>
+                  </div>
+                ) : filteredEvents.length > 0 ? (
+                  <div className="h-full min-h-[600px]">
+                    <MapComponent 
+                      searchCenter={searchCenter} 
+                      searchRadius={searchRadius[0]} 
+                      filteredEvents={filteredEvents}
+                      stores={[]}
+                    />
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-full min-h-[600px]">
+                    <div className="text-center px-4">
+                      <p className="text-gray-500 text-lg mb-2">
+                        {events.length === 0 
+                          ? "Aucune partie disponible actuellement" 
+                          : "Aucune partie trouvée correspondant à vos critères"}
+                      </p>
+                      {events.length === 0 && (
+                        <p className="text-gray-400 text-sm">
+                          {user ? "Aucune partie n'est programmée pour le moment" : "Les parties publiques apparaîtront ici"}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
         
         <MapResultsDisplay 
