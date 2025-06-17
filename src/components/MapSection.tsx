@@ -59,12 +59,12 @@ const MapSection: React.FC = () => {
         <MapSectionHeader />
         
         <div className="bg-white rounded-lg overflow-hidden shadow-xl mb-8 border border-gray-200">
-          <div className={`flex ${isMobile ? 'flex-col relative' : 'flex-col md:flex-row'} min-h-[600px]`}>
-            {/* Filtres - cachés par défaut sur mobile */}
+          <div className={`flex ${isMobile ? 'flex-col' : 'flex-col md:flex-row'} min-h-[600px]`}>
+            {/* Filtres - positionnement adaptatif */}
             <div className={`
               ${isMobile ? (
                 showMobileFilters 
-                  ? 'fixed inset-0 z-40 bg-white' 
+                  ? 'fixed inset-0 z-40 bg-white overflow-y-auto' 
                   : 'hidden'
               ) : 'w-full md:w-1/4'}
             `}>
@@ -91,21 +91,20 @@ const MapSection: React.FC = () => {
               />
             </div>
             
-            {/* Bouton toggle pour mobile */}
-            {isMobile && (
-              <MobileFiltersToggle
-                isOpen={showMobileFilters}
-                onToggle={() => setShowMobileFilters(!showMobileFilters)}
-                filteredCount={filteredEvents.length}
-              />
-            )}
-            
-            {/* Carte - prend toute la largeur sur mobile quand les filtres sont cachés */}
+            {/* Conteneur de la carte avec position relative */}
             <div className={`
-              ${isMobile ? 'w-full h-[400px]' : 'w-full md:w-3/4'} 
+              ${isMobile ? 'w-full min-h-[400px]' : 'w-full md:w-3/4'} 
               flex-1 relative
-              ${isMobile && showMobileFilters ? 'hidden' : ''}
             `}>
+              {/* Bouton toggle pour mobile - positionné dans le conteneur de la carte */}
+              {isMobile && (
+                <MobileFiltersToggle
+                  isOpen={showMobileFilters}
+                  onToggle={() => setShowMobileFilters(!showMobileFilters)}
+                  filteredCount={filteredEvents.length}
+                />
+              )}
+              
               {loading ? (
                 <div className="flex items-center justify-center h-full min-h-[400px]">
                   <div className="text-center">

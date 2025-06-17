@@ -17,7 +17,7 @@ const MobileFiltersToggle: React.FC<MobileFiltersToggleProps> = ({
   return (
     <Button
       onClick={onToggle}
-      className="fixed top-4 left-4 z-50 bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 shadow-lg"
+      className="absolute top-4 left-4 z-30 bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 shadow-lg"
       size="sm"
     >
       {isOpen ? (
