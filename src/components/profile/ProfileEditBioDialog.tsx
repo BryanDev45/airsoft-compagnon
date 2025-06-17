@@ -1,11 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsMobile } from "@/hooks/use-mobile";
 import ProfileEditTabs from './media/ProfileEditTabs';
 
 interface ProfileEditBioDialogProps {
@@ -28,6 +30,7 @@ const ProfileEditBioDialog = ({
   const [currentTab, setCurrentTab] = useState("bio");
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+  const isMobile = useIsMobile();
   
   useEffect(() => {
     const fetchCurrentImages = async () => {
@@ -104,6 +107,59 @@ const ProfileEditBioDialog = ({
     }
   };
 
+  const content = (
+    <div className="py-4">
+      <ProfileEditTabs
+        currentTab={currentTab}
+        onTabChange={setCurrentTab}
+        username={username}
+        bio={bio}
+        avatarPreview={avatarPreview}
+        bannerPreview={bannerPreview}
+        onUsernameChange={setUsername}
+        onBioChange={setBio}
+        onAvatarChange={setAvatarPreview}
+        onBannerChange={setBannerPreview}
+      />
+    </div>
+  );
+
+  if (isMobile) {
+    return (
+      <Drawer open={open} onOpenChange={onOpenChange}>
+        <DrawerContent className="max-h-[85vh]">
+          <DrawerHeader>
+            <DrawerTitle>Modifier votre profil</DrawerTitle>
+            <DrawerDescription>
+              Modifiez votre profil pour qu'il reflète au mieux votre personnalité
+            </DrawerDescription>
+          </DrawerHeader>
+          
+          <ScrollArea className="flex-1 px-4">
+            {content}
+          </ScrollArea>
+
+          <DrawerFooter className="mt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              disabled={isUpdating}
+            >
+              Annuler
+            </Button>
+            <Button 
+              onClick={handleSave}
+              className="bg-airsoft-red hover:bg-red-700"
+              disabled={isUpdating}
+            >
+              {isUpdating ? "Enregistrement..." : "Enregistrer les modifications"}
+            </Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] h-[85vh] flex flex-col p-0">
@@ -115,20 +171,7 @@ const ProfileEditBioDialog = ({
         </DialogHeader>
         
         <ScrollArea className="flex-1 px-6">
-          <div className="py-4">
-            <ProfileEditTabs
-              currentTab={currentTab}
-              onTabChange={setCurrentTab}
-              username={username}
-              bio={bio}
-              avatarPreview={avatarPreview}
-              bannerPreview={bannerPreview}
-              onUsernameChange={setUsername}
-              onBioChange={setBio}
-              onAvatarChange={setAvatarPreview}
-              onBannerChange={setBannerPreview}
-            />
-          </div>
+          {content}
         </ScrollArea>
 
         <DialogFooter className="flex-shrink-0 p-6 pt-0">
