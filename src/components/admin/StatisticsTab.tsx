@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAdminStats } from '@/hooks/admin/useAdminStats';
@@ -173,11 +174,63 @@ const StatisticsTab: React.FC = () => {
       bgColor: 'bg-orange-50',
     },
     {
-      title: 'Visites page admin',
-      value: stats?.adminPageVisits || 0,
+      title: 'Visites page profil',
+      value: stats?.profilePageVisits || 0,
+      icon: Eye,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50',
+    },
+    {
+      title: 'Visites page équipe',
+      value: stats?.teamPageVisits || 0,
+      icon: Eye,
+      color: 'text-cyan-600',
+      bgColor: 'bg-cyan-50',
+    },
+  ];
+
+  const toolboxVisitCards = [
+    {
+      title: 'Calculateurs',
+      value: stats?.toolboxCalculatorsVisits || 0,
+      icon: Eye,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50',
+    },
+    {
+      title: 'Bot Discord',
+      value: stats?.toolboxDiscordBotVisits || 0,
+      icon: Eye,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50',
+    },
+    {
+      title: 'Glossaire',
+      value: stats?.toolboxGlossaryVisits || 0,
+      icon: Eye,
+      color: 'text-green-600',
+      bgColor: 'bg-green-50',
+    },
+    {
+      title: 'Scénarios',
+      value: stats?.toolboxScenariosVisits || 0,
+      icon: Eye,
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-50',
+    },
+    {
+      title: 'Dépannage',
+      value: stats?.toolboxTroubleshootingVisits || 0,
       icon: Eye,
       color: 'text-red-600',
       bgColor: 'bg-red-50',
+    },
+    {
+      title: 'Guides',
+      value: stats?.toolboxGuidesVisits || 0,
+      icon: Eye,
+      color: 'text-indigo-600',
+      bgColor: 'bg-indigo-50',
     },
   ];
 
@@ -210,12 +263,18 @@ const StatisticsTab: React.FC = () => {
                 <BarChart data={stats?.gamesPerMonth || []}>
                   <XAxis 
                     dataKey="month" 
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 12, fill: '#6b7280' }}
                     angle={-45}
                     textAnchor="end"
                     height={60}
+                    axisLine={{ stroke: '#e5e7eb' }}
+                    tickLine={{ stroke: '#e5e7eb' }}
                   />
-                  <YAxis tick={{ fontSize: 12 }} />
+                  <YAxis 
+                    tick={{ fontSize: 12, fill: '#6b7280' }} 
+                    axisLine={{ stroke: '#e5e7eb' }}
+                    tickLine={{ stroke: '#e5e7eb' }}
+                  />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Bar 
                     dataKey="count" 
@@ -239,25 +298,28 @@ const StatisticsTab: React.FC = () => {
           <CardContent>
             <ChartContainer config={chartConfig} className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={stats?.registrationsPerMonth || []}>
+                <BarChart data={stats?.registrationsPerMonth || []}>
                   <XAxis 
                     dataKey="month" 
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 12, fill: '#6b7280' }}
                     angle={-45}
                     textAnchor="end"
                     height={60}
+                    axisLine={{ stroke: '#e5e7eb' }}
+                    tickLine={{ stroke: '#e5e7eb' }}
                   />
-                  <YAxis tick={{ fontSize: 12 }} />
+                  <YAxis 
+                    tick={{ fontSize: 12, fill: '#6b7280' }} 
+                    axisLine={{ stroke: '#e5e7eb' }}
+                    tickLine={{ stroke: '#e5e7eb' }}
+                  />
                   <ChartTooltip content={<ChartTooltipContent />} />
-                  <Line 
-                    type="monotone" 
+                  <Bar 
                     dataKey="count" 
-                    stroke="#2563eb" 
-                    strokeWidth={3}
-                    dot={{ fill: "#2563eb", strokeWidth: 2, r: 4 }}
-                    activeDot={{ r: 6, stroke: "#2563eb", strokeWidth: 2 }}
+                    fill="#2563eb" 
+                    radius={[4, 4, 0, 0]}
                   />
-                </LineChart>
+                </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
           </CardContent>
@@ -300,16 +362,46 @@ const StatisticsTab: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {pageVisitCards.map((stat, index) => {
               const Icon = stat.icon;
               return (
-                <div key={index} className={`p-4 rounded-lg ${stat.bgColor}`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <Icon className={`h-5 w-5 ${stat.color}`} />
-                    <span className={`text-2xl font-bold ${stat.color}`}>
-                      {stat.value.toLocaleString()}
-                    </span>
+                <div key={index} className={`p-4 rounded-lg ${stat.bgColor} text-center`}>
+                  <div className="flex items-center justify-center mb-3">
+                    <Icon className={`h-6 w-6 ${stat.color}`} />
+                  </div>
+                  <div className={`text-2xl font-bold ${stat.color} mb-2`}>
+                    {stat.value.toLocaleString()}
+                  </div>
+                  <p className={`text-sm font-medium ${stat.color}`}>
+                    {stat.title}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Toolbox Visit Statistics */}
+      <Card className="border-0 shadow-md">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Eye className="h-5 w-5 text-orange-600" />
+            Statistiques des onglets de la boîte à outils
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+            {toolboxVisitCards.map((stat, index) => {
+              const Icon = stat.icon;
+              return (
+                <div key={index} className={`p-4 rounded-lg ${stat.bgColor} text-center`}>
+                  <div className="flex items-center justify-center mb-3">
+                    <Icon className={`h-6 w-6 ${stat.color}`} />
+                  </div>
+                  <div className={`text-2xl font-bold ${stat.color} mb-2`}>
+                    {stat.value.toLocaleString()}
                   </div>
                   <p className={`text-sm font-medium ${stat.color}`}>
                     {stat.title}

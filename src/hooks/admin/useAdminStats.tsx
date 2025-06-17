@@ -18,7 +18,14 @@ interface AdminStats {
   homePageVisits: number;
   partiesPageVisits: number;
   toolboxPageVisits: number;
-  adminPageVisits: number;
+  profilePageVisits: number;
+  teamPageVisits: number;
+  toolboxCalculatorsVisits: number;
+  toolboxDiscordBotVisits: number;
+  toolboxGlossaryVisits: number;
+  toolboxScenariosVisits: number;
+  toolboxTroubleshootingVisits: number;
+  toolboxGuidesVisits: number;
   gamesPerMonth: Array<{ month: string; count: number }>;
   registrationsPerMonth: Array<{ month: string; count: number }>;
 }
@@ -103,7 +110,19 @@ export const useAdminStats = () => {
       const { data: pageStats } = await supabase
         .from('page_visit_stats')
         .select('page_path, visit_count')
-        .in('page_path', ['/', '/parties', '/toolbox', '/admin']);
+        .in('page_path', [
+          '/', 
+          '/parties', 
+          '/toolbox', 
+          '/profile', 
+          '/team',
+          '/toolbox/calculators',
+          '/toolbox/discord-bot',
+          '/toolbox/glossary',
+          '/toolbox/scenarios',
+          '/toolbox/troubleshooting',
+          '/toolbox/guides'
+        ]);
 
       // Récupérer les données pour le graphique des parties par mois (12 derniers mois)
       const { data: gamesData } = await supabase
@@ -174,7 +193,14 @@ export const useAdminStats = () => {
         homePageVisits: pageStats?.find(p => p.page_path === '/')?.visit_count || 0,
         partiesPageVisits: pageStats?.find(p => p.page_path === '/parties')?.visit_count || 0,
         toolboxPageVisits: pageStats?.find(p => p.page_path === '/toolbox')?.visit_count || 0,
-        adminPageVisits: pageStats?.find(p => p.page_path === '/admin')?.visit_count || 0,
+        profilePageVisits: pageStats?.find(p => p.page_path === '/profile')?.visit_count || 0,
+        teamPageVisits: pageStats?.find(p => p.page_path === '/team')?.visit_count || 0,
+        toolboxCalculatorsVisits: pageStats?.find(p => p.page_path === '/toolbox/calculators')?.visit_count || 0,
+        toolboxDiscordBotVisits: pageStats?.find(p => p.page_path === '/toolbox/discord-bot')?.visit_count || 0,
+        toolboxGlossaryVisits: pageStats?.find(p => p.page_path === '/toolbox/glossary')?.visit_count || 0,
+        toolboxScenariosVisits: pageStats?.find(p => p.page_path === '/toolbox/scenarios')?.visit_count || 0,
+        toolboxTroubleshootingVisits: pageStats?.find(p => p.page_path === '/toolbox/troubleshooting')?.visit_count || 0,
+        toolboxGuidesVisits: pageStats?.find(p => p.page_path === '/toolbox/guides')?.visit_count || 0,
         gamesPerMonth,
         registrationsPerMonth,
       };
