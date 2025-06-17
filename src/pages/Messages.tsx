@@ -5,6 +5,7 @@ import Footer from '@/components/Footer';
 import { useMessaging } from '@/hooks/messaging/useMessaging';
 import ConversationList from '@/components/messaging/ConversationList';
 import ChatView from '@/components/messaging/ChatView';
+import NewConversationDialog from '@/components/messaging/NewConversationDialog';
 import { Card } from '@/components/ui/card';
 import { MessageSquare, Users, Sparkles } from 'lucide-react';
 
@@ -12,6 +13,10 @@ const Messages: React.FC = () => {
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const { conversations, isLoading } = useMessaging();
   
+  const handleNewConversationCreated = (conversationId: string) => {
+    setSelectedConversationId(conversationId);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40">
       <Header />
@@ -81,7 +86,7 @@ const Messages: React.FC = () => {
               {/* Enhanced Sidebar - Conversation List */}
               <div className={`${selectedConversationId ? 'hidden lg:block' : ''} w-full lg:w-96 border-r border-gray-100/80 bg-gradient-to-b from-white/95 to-gray-50/50 backdrop-blur-sm flex flex-col`}>
                 <div className="p-6 border-b border-gray-100/80 bg-gradient-to-r from-gray-50/80 via-white/90 to-gray-50/80 backdrop-blur-sm flex-shrink-0">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-sm">
                         <Users className="h-5 w-5 text-white" />
@@ -94,6 +99,9 @@ const Messages: React.FC = () => {
                       </span>
                     )}
                   </div>
+                  
+                  {/* Bouton Nouvelle conversation */}
+                  <NewConversationDialog onConversationSelected={handleNewConversationCreated} />
                 </div>
                 
                 <div className="flex-1 overflow-hidden">

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,6 +7,7 @@ import { useMessaging } from '@/hooks/messaging/useMessaging';
 import { useNavigate } from 'react-router-dom';
 import ConversationList from './ConversationList';
 import ChatView from './ChatView';
+import NewConversationDialog from './NewConversationDialog';
 
 const MessagingIcon: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -23,6 +25,10 @@ const MessagingIcon: React.FC = () => {
     if (!open) {
       setSelectedConversationId(null);
     }
+  };
+
+  const handleNewConversationCreated = (conversationId: string) => {
+    setSelectedConversationId(conversationId);
   };
 
   return (
@@ -46,7 +52,7 @@ const MessagingIcon: React.FC = () => {
         ) : (
           <>
             <SheetHeader className="p-6 border-b">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-4">
                 <SheetTitle>Messages</SheetTitle>
                 <Button 
                   variant="outline" 
@@ -57,6 +63,7 @@ const MessagingIcon: React.FC = () => {
                   Voir tout
                 </Button>
               </div>
+              <NewConversationDialog onConversationSelected={handleNewConversationCreated} />
             </SheetHeader>
             <div className="flex-1 overflow-hidden">
               <ConversationList 

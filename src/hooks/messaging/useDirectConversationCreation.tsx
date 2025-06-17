@@ -13,10 +13,10 @@ export const useDirectConversationCreation = () => {
   const navigate = useNavigate();
   const [isCreating, setIsCreating] = useState(false);
 
-  const createDirectConversation = async (targetUserId: string, targetUsername: string) => {
+  const createDirectConversation = async (targetUserId: string, targetUsername: string): Promise<string | null> => {
     if (!user?.id) {
       navigate('/login');
-      return;
+      return null;
     }
 
     if (user.id === targetUserId) {
@@ -25,7 +25,7 @@ export const useDirectConversationCreation = () => {
         description: "Vous ne pouvez pas créer une conversation avec vous-même",
         variant: "destructive"
       });
-      return;
+      return null;
     }
 
     setIsCreating(true);
@@ -50,13 +50,12 @@ export const useDirectConversationCreation = () => {
 
       console.log('Conversation créée/récupérée avec succès:', conversationId);
 
-      // Rediriger vers la page des messages
-      navigate('/messages');
-      
       toast({
         title: "Conversation prête",
         description: `Conversation avec ${targetUsername} ouverte`,
       });
+
+      return conversationId;
 
     } catch (error) {
       console.error('Erreur lors de la création de la conversation directe:', error);
@@ -65,6 +64,7 @@ export const useDirectConversationCreation = () => {
         description: "Impossible de créer la conversation. Veuillez réessayer.",
         variant: "destructive"
       });
+      return null;
     } finally {
       setIsCreating(false);
     }
