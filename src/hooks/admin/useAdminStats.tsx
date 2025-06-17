@@ -19,6 +19,8 @@ interface AdminStats {
   partiesPageVisits: number;
   toolboxPageVisits: number;
   adminPageVisits: number;
+  gamesPerMonth: Array<{ month: string; count: number }>;
+  registrationsPerMonth: Array<{ month: string; count: number }>;
 }
 
 export const useAdminStats = () => {
@@ -103,6 +105,56 @@ export const useAdminStats = () => {
         .select('page_path, visit_count')
         .in('page_path', ['/', '/parties', '/toolbox', '/admin']);
 
+      // Récupérer les données pour le graphique des parties par mois (12 derniers mois)
+      const { data: gamesData } = await supabase
+        .from('airsoft_games')
+        .select('date')
+        .gte('date', new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+        .order('date', { ascending: true });
+
+      // Récupérer les données pour le graphique des inscriptions par mois (12 derniers mois)
+      const { data: registrationsData } = await supabase
+        .from('profiles')
+        .select('join_date')
+        .gte('join_date', new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+        .order('join_date', { ascending: true });
+
+      // Traiter les données pour les graphiques
+      const processMonthlyData = (data: any[], dateField: string) => {
+        const monthCounts: { [key: string]: number } = {};
+        
+        // Initialiser les 12 derniers mois
+        for (let i = 11; i >= 0; i--) {
+          const date = new Date();
+          date.setMonth(date.getMonth() - i);
+          const monthKey = date.toISOString().slice(0, 7); // YYYY-MM format
+          monthCounts[monthKey] = 0;
+        }
+
+        // Compter les éléments par mois
+        data?.forEach(item => {
+          if (item[dateField]) {
+            const monthKey = item[dateField].slice(0, 7);
+            if (monthCounts.hasOwnProperty(monthKey)) {
+              monthCounts[monthKey]++;
+            }
+          }
+        });
+
+        // Convertir en format pour le graphique
+        return Object.entries(monthCounts).map(([month, count]) => {
+          const date = new Date(month + '-01');
+          const monthName = date.toLocaleDateString('fr-FR', { 
+            month: 'short', 
+            year: '2-digit' 
+          });
+          return { month: monthName, count };
+        });
+      };
+
+      const gamesPerMonth = processMonthlyData(gamesData || [], 'date');
+      const registrationsPerMonth = processMonthlyData(registrationsData || [], 'join_date');
+
       console.log('Admin statistics fetched successfully');
 
       return {
@@ -123,6 +175,8 @@ export const useAdminStats = () => {
         partiesPageVisits: pageStats?.find(p => p.page_path === '/parties')?.visit_count || 0,
         toolboxPageVisits: pageStats?.find(p => p.page_path === '/toolbox')?.visit_count || 0,
         adminPageVisits: pageStats?.find(p => p.page_path === '/admin')?.visit_count || 0,
+        gamesPerMonth,
+        registrationsPerMonth,
       };
     },
     staleTime: 30000, // 30 secondes

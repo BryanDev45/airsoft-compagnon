@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAdminStats } from '@/hooks/admin/useAdminStats';
@@ -17,8 +16,16 @@ import {
   Bot,
   Download,
   Smartphone,
-  Eye
+  Eye,
+  BarChart3,
+  UserPlus
 } from 'lucide-react';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 const StatisticsTab: React.FC = () => {
   const { data: stats, isLoading, error } = useAdminStats();
@@ -41,6 +48,13 @@ const StatisticsTab: React.FC = () => {
       </div>
     );
   }
+
+  const chartConfig = {
+    count: {
+      label: "Nombre",
+      color: "#2563eb",
+    },
+  };
 
   const statisticsCards = [
     {
@@ -180,6 +194,76 @@ const StatisticsTab: React.FC = () => {
         </div>
       </div>
 
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* Games per Month Chart */}
+        <Card className="border-0 shadow-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-orange-600" />
+              Parties créées par mois
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig} className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={stats?.gamesPerMonth || []}>
+                  <XAxis 
+                    dataKey="month" 
+                    tick={{ fontSize: 12 }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                  />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar 
+                    dataKey="count" 
+                    fill="#ea580c" 
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+
+        {/* Registrations per Month Chart */}
+        <Card className="border-0 shadow-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UserPlus className="h-5 w-5 text-blue-600" />
+              Inscriptions par mois
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig} className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={stats?.registrationsPerMonth || []}>
+                  <XAxis 
+                    dataKey="month" 
+                    tick={{ fontSize: 12 }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                  />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Line 
+                    type="monotone" 
+                    dataKey="count" 
+                    stroke="#2563eb" 
+                    strokeWidth={3}
+                    dot={{ fill: "#2563eb", strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, stroke: "#2563eb", strokeWidth: 2 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Statistics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {statisticsCards.map((stat, index) => {
@@ -283,6 +367,7 @@ const StatisticsTab: React.FC = () => {
               <strong>Note :</strong> Les statistiques sont actualisées automatiquement toutes les 30 secondes. 
               Les utilisateurs en ligne sont ceux ayant eu une activité dans les 5 dernières minutes.
               Les statistiques de téléchargement et de visite sont mises à jour en temps réel.
+              Les graphiques montrent les données des 12 derniers mois.
             </p>
           </div>
         </CardContent>
