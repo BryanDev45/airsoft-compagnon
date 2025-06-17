@@ -13,7 +13,11 @@ import {
   MessageCircle,
   ShieldCheck,
   UserX,
-  TrendingUp
+  TrendingUp,
+  Bot,
+  Download,
+  Smartphone,
+  Eye
 } from 'lucide-react';
 
 const StatisticsTab: React.FC = () => {
@@ -109,6 +113,58 @@ const StatisticsTab: React.FC = () => {
       color: 'text-teal-600',
       bgColor: 'bg-teal-50',
     },
+    {
+      title: 'Bot Discord téléchargé',
+      value: stats?.discordBotDownloads || 0,
+      icon: Download,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50',
+    },
+    {
+      title: 'Bot Discord invité',
+      value: stats?.discordBotInvites || 0,
+      icon: Bot,
+      color: 'text-indigo-600',
+      bgColor: 'bg-indigo-50',
+    },
+    {
+      title: 'Installations PWA',
+      value: stats?.pwaInstalls || 0,
+      icon: Smartphone,
+      color: 'text-emerald-600',
+      bgColor: 'bg-emerald-50',
+    },
+  ];
+
+  const pageVisitCards = [
+    {
+      title: 'Visites page d\'accueil',
+      value: stats?.homePageVisits || 0,
+      icon: Eye,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50',
+    },
+    {
+      title: 'Visites page parties',
+      value: stats?.partiesPageVisits || 0,
+      icon: Eye,
+      color: 'text-green-600',
+      bgColor: 'bg-green-50',
+    },
+    {
+      title: 'Visites page boîte à outils',
+      value: stats?.toolboxPageVisits || 0,
+      icon: Eye,
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-50',
+    },
+    {
+      title: 'Visites page admin',
+      value: stats?.adminPageVisits || 0,
+      icon: Eye,
+      color: 'text-red-600',
+      bgColor: 'bg-red-50',
+    },
   ];
 
   return (
@@ -151,6 +207,36 @@ const StatisticsTab: React.FC = () => {
         })}
       </div>
 
+      {/* Page Visit Statistics */}
+      <Card className="border-0 shadow-md">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Eye className="h-5 w-5 text-blue-600" />
+            Statistiques de visite des pages
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {pageVisitCards.map((stat, index) => {
+              const Icon = stat.icon;
+              return (
+                <div key={index} className={`p-4 rounded-lg ${stat.bgColor}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <Icon className={`h-5 w-5 ${stat.color}`} />
+                    <span className={`text-2xl font-bold ${stat.color}`}>
+                      {stat.value.toLocaleString()}
+                    </span>
+                  </div>
+                  <p className={`text-sm font-medium ${stat.color}`}>
+                    {stat.title}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Additional Info */}
       <Card className="border-0 shadow-md">
         <CardHeader>
@@ -160,7 +246,7 @@ const StatisticsTab: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 bg-blue-50 rounded-lg">
               <h4 className="font-semibold text-blue-800 mb-2">Taux de vérification</h4>
               <p className="text-2xl font-bold text-blue-600">
@@ -180,12 +266,23 @@ const StatisticsTab: React.FC = () => {
                 {stats?.upcomingGames} parties à venir sur {stats?.totalGames} total
               </p>
             </div>
+
+            <div className="p-4 bg-purple-50 rounded-lg">
+              <h4 className="font-semibold text-purple-800 mb-2">Adoption du bot Discord</h4>
+              <p className="text-2xl font-bold text-purple-600">
+                {((stats?.discordBotDownloads || 0) + (stats?.discordBotInvites || 0)).toLocaleString()}
+              </p>
+              <p className="text-sm text-purple-600">
+                Total téléchargements + invitations
+              </p>
+            </div>
           </div>
           
           <div className="border-t pt-4">
             <p className="text-sm text-gray-500">
               <strong>Note :</strong> Les statistiques sont actualisées automatiquement toutes les 30 secondes. 
               Les utilisateurs en ligne sont ceux ayant eu une activité dans les 5 dernières minutes.
+              Les statistiques de téléchargement et de visite sont mises à jour en temps réel.
             </p>
           </div>
         </CardContent>

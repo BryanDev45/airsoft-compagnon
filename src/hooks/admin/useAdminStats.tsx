@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -13,6 +12,13 @@ interface AdminStats {
   totalConversations: number;
   verifiedUsers: number;
   bannedUsers: number;
+  discordBotDownloads: number;
+  discordBotInvites: number;
+  pwaInstalls: number;
+  homePageVisits: number;
+  partiesPageVisits: number;
+  toolboxPageVisits: number;
+  adminPageVisits: number;
 }
 
 export const useAdminStats = () => {
@@ -79,6 +85,24 @@ export const useAdminStats = () => {
         .select('*', { count: 'exact', head: true })
         .eq('Ban', true);
 
+      // Récupérer les statistiques du bot Discord
+      const { data: discordStats } = await supabase
+        .from('discord_bot_stats')
+        .select('download_count, invite_count')
+        .single();
+
+      // Récupérer les statistiques PWA
+      const { data: pwaStats } = await supabase
+        .from('pwa_stats')
+        .select('install_count')
+        .single();
+
+      // Récupérer les statistiques de visite des pages
+      const { data: pageStats } = await supabase
+        .from('page_visit_stats')
+        .select('page_path, visit_count')
+        .in('page_path', ['/', '/parties', '/toolbox', '/admin']);
+
       console.log('Admin statistics fetched successfully');
 
       return {
@@ -92,6 +116,13 @@ export const useAdminStats = () => {
         totalConversations: totalConversations || 0,
         verifiedUsers: verifiedUsers || 0,
         bannedUsers: bannedUsers || 0,
+        discordBotDownloads: discordStats?.download_count || 0,
+        discordBotInvites: discordStats?.invite_count || 0,
+        pwaInstalls: pwaStats?.install_count || 0,
+        homePageVisits: pageStats?.find(p => p.page_path === '/')?.visit_count || 0,
+        partiesPageVisits: pageStats?.find(p => p.page_path === '/parties')?.visit_count || 0,
+        toolboxPageVisits: pageStats?.find(p => p.page_path === '/toolbox')?.visit_count || 0,
+        adminPageVisits: pageStats?.find(p => p.page_path === '/admin')?.visit_count || 0,
       };
     },
     staleTime: 30000, // 30 secondes

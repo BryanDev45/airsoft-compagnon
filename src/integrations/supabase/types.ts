@@ -235,6 +235,30 @@ export type Database = {
           },
         ]
       }
+      discord_bot_stats: {
+        Row: {
+          created_at: string | null
+          download_count: number | null
+          id: string
+          invite_count: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          download_count?: number | null
+          id?: string
+          invite_count?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          download_count?: number | null
+          id?: string
+          invite_count?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       equipment: {
         Row: {
           brand: string | null
@@ -537,6 +561,33 @@ export type Database = {
         }
         Relationships: []
       }
+      page_visit_stats: {
+        Row: {
+          created_at: string | null
+          id: string
+          page_path: string
+          unique_visitors: number | null
+          updated_at: string | null
+          visit_count: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          page_path: string
+          unique_visitors?: number | null
+          updated_at?: string | null
+          visit_count?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          page_path?: string
+          unique_visitors?: number | null
+          updated_at?: string | null
+          visit_count?: number | null
+        }
+        Relationships: []
+      }
       partners: {
         Row: {
           category: string
@@ -670,6 +721,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      pwa_stats: {
+        Row: {
+          created_at: string | null
+          id: string
+          install_count: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          install_count?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          install_count?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       scenarios: {
         Row: {

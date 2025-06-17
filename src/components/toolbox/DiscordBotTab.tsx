@@ -4,9 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Download, Bot, Shield, Bell, Server, ExternalLink } from 'lucide-react';
+import { incrementDiscordBotDownloads, incrementDiscordBotInvites } from '@/utils/analyticsUtils';
 
 const DiscordBotTab = () => {
-  const handleDownloadBot = () => {
+  const handleDownloadBot = async () => {
+    // Incrémenter les statistiques avant de déclencher le téléchargement
+    await incrementDiscordBotDownloads();
+    
     // Créer un lien de téléchargement vers le fichier du bot
     const link = document.createElement('a');
     link.href = '/bot-discord.zip'; // Le fichier sera placé dans le dossier public
@@ -16,7 +20,10 @@ const DiscordBotTab = () => {
     document.body.removeChild(link);
   };
 
-  const handleInviteBot = () => {
+  const handleInviteBot = async () => {
+    // Incrémenter les statistiques avant d'ouvrir le lien
+    await incrementDiscordBotInvites();
+    
     // Ouvrir le lien d'invitation du bot (à remplacer par le vrai lien)
     window.open('https://discord.com/oauth2/authorize?client_id=YOUR_BOT_ID&permissions=2048&scope=bot', '_blank');
   };
