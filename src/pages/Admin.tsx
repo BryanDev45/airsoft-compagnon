@@ -3,13 +3,14 @@ import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Shield, AlertTriangle, UserCheck, MessageSquare, ArrowLeft, Badge, Gavel } from 'lucide-react';
+import { Shield, AlertTriangle, UserCheck, MessageSquare, ArrowLeft, Badge, Gavel, BarChart3 } from 'lucide-react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import UserReportsTab from '@/components/admin/UserReportsTab';
 import MessageReportsTab from '@/components/admin/MessageReportsTab';
 import VerificationRequestsTab from '@/components/admin/VerificationRequestsTab';
 import BadgesManagementTab from '@/components/admin/BadgesManagementTab';
 import ModerationTab from '@/components/admin/ModerationTab';
+import StatisticsTab from '@/components/admin/StatisticsTab';
 
 const Admin = () => {
   const { user, initialLoading } = useAuth();
@@ -67,8 +68,19 @@ const Admin = () => {
         </div>
 
         {/* Tabs section - mobile responsive */}
-        <Tabs defaultValue="user-reports" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1 h-auto p-1">
+        <Tabs defaultValue="statistics" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1 h-auto p-1">
+            <TabsTrigger 
+              value="statistics" 
+              className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 p-3 text-xs sm:text-sm min-h-[60px] sm:min-h-[40px]"
+            >
+              <BarChart3 className="h-4 w-4 flex-shrink-0" />
+              <span className="text-center leading-tight">
+                <span className="block sm:hidden">Statistiques</span>
+                <span className="hidden sm:block">Statistiques</span>
+              </span>
+            </TabsTrigger>
+
             <TabsTrigger 
               value="user-reports" 
               className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 p-3 text-xs sm:text-sm min-h-[60px] sm:min-h-[40px]"
@@ -124,6 +136,10 @@ const Admin = () => {
               </span>
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="statistics">
+            <StatisticsTab />
+          </TabsContent>
 
           <TabsContent value="user-reports">
             <UserReportsTab />
