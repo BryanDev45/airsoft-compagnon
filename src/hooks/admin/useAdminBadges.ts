@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge as BadgeType } from '@/hooks/badges/useAllBadges';
@@ -118,6 +119,42 @@ export const useUpdateBadge = () => {
     },
     onError: (error) => {
       toast({ variant: 'destructive', title: 'Erreur', description: `Impossible de mettre à jour le badge: ${error.message}` });
+    },
+  });
+};
+
+// Toggle badge visibility
+const toggleBadgeVisibility = async (badgeId: string, isHidden: boolean) => {
+  const { data, error } = await supabase
+    .from('badges')
+    .update({ is_hidden: !isHidden })
+    .eq('id', badgeId)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return data;
+};
+
+export const useToggleBadgeVisibility = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ badgeId, isHidden }: { badgeId: string; isHidden: boolean }) => 
+      toggleBadgeVisibility(badgeId, isHidden),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['adminBadges'] });
+      queryClient.invalidateQueries({ queryKey: ['allBadges'] });
+      toast({ 
+        title: 'Succès', 
+        description: `Badge ${data.is_hidden ? 'masqué' : 'rendu visible'} avec succès.` 
+      });
+    },
+    onError: (error) => {
+      toast({ 
+        variant: 'destructive', 
+        title: 'Erreur', 
+        description: `Impossible de modifier la visibilité du badge: ${error.message}` 
+      });
     },
   });
 };

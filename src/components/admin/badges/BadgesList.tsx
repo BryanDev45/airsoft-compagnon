@@ -2,7 +2,7 @@
 import React from 'react';
 import { Badge as BadgeType } from '@/hooks/badges/useAllBadges';
 import { Button } from '@/components/ui/button';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, Eye, EyeOff } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -12,14 +12,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 interface BadgesListProps {
   badges: BadgeType[];
   onEdit: (badge: BadgeType) => void;
   onDelete: (badge: BadgeType) => void;
+  onToggleVisibility: (badge: BadgeType) => void;
 }
 
-const BadgesList: React.FC<BadgesListProps> = ({ badges, onEdit, onDelete }) => {
+const BadgesList: React.FC<BadgesListProps> = ({ badges, onEdit, onDelete, onToggleVisibility }) => {
   if (badges.length === 0) {
     return <p className="text-center text-gray-500 py-8">Aucun badge trouvé.</p>;
   }
@@ -33,7 +35,8 @@ const BadgesList: React.FC<BadgesListProps> = ({ badges, onEdit, onDelete }) => 
             <TableHead>Nom</TableHead>
             <TableHead>Description</TableHead>
             <TableHead className="w-40">Couleurs</TableHead>
-            <TableHead className="text-right w-32">Actions</TableHead>
+            <TableHead className="w-24">Visibilité</TableHead>
+            <TableHead className="text-right w-40">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -57,13 +60,28 @@ const BadgesList: React.FC<BadgesListProps> = ({ badges, onEdit, onDelete }) => 
                   <div title={`Bordure: ${badge.border_color}`} className="w-5 h-5 rounded-full border" style={{ backgroundColor: badge.border_color }}></div>
                 </div>
               </TableCell>
+              <TableCell>
+                <Badge variant={badge.is_hidden ? "destructive" : "default"}>
+                  {badge.is_hidden ? "Caché" : "Visible"}
+                </Badge>
+              </TableCell>
               <TableCell className="text-right">
-                <Button variant="ghost" size="icon" onClick={() => onEdit(badge)}>
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600" onClick={() => onDelete(badge)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="flex justify-end gap-1">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => onToggleVisibility(badge)}
+                    title={badge.is_hidden ? "Rendre visible" : "Masquer"}
+                  >
+                    {badge.is_hidden ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => onEdit(badge)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600" onClick={() => onDelete(badge)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))}

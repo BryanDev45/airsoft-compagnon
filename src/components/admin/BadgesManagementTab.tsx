@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2, PlusCircle } from 'lucide-react';
-import { useAdminBadges, useCreateBadge, useUpdateBadge, useDeleteBadge } from '@/hooks/admin/useAdminBadges';
+import { useAdminBadges, useCreateBadge, useUpdateBadge, useDeleteBadge, useToggleBadgeVisibility } from '@/hooks/admin/useAdminBadges';
 import BadgesList from './badges/BadgesList';
 import BadgeFormDialog from './badges/BadgeFormDialog';
 import { Badge as BadgeType } from '@/hooks/badges/useAllBadges';
@@ -17,6 +17,7 @@ const BadgesManagementTab = () => {
   const { mutate: createBadge, isPending: isCreating } = useCreateBadge();
   const { mutate: updateBadge, isPending: isUpdating } = useUpdateBadge();
   const { mutate: deleteBadge, isPending: isDeleting } = useDeleteBadge();
+  const { mutate: toggleVisibility, isPending: isTogglingVisibility } = useToggleBadgeVisibility();
 
   const handleCreate = () => {
     setSelectedBadge(null);
@@ -31,6 +32,10 @@ const BadgesManagementTab = () => {
   const handleDeleteRequest = (badge: BadgeType) => {
     setSelectedBadge(badge);
     setIsDeleteOpen(true);
+  };
+
+  const handleToggleVisibility = (badge: BadgeType) => {
+    toggleVisibility({ badgeId: badge.id, isHidden: badge.is_hidden || false });
   };
 
   const onFormSubmit = (data: any) => {
@@ -63,12 +68,17 @@ const BadgesManagementTab = () => {
         </Button>
       </div>
 
-      {isLoadingBadges ? (
+      {isLoadingBadges || isTogglingVisibility ? (
         <div className="flex justify-center items-center h-64">
           <Loader2 className="h-8 w-8 animate-spin text-airsoft-red" />
         </div>
       ) : (
-        <BadgesList badges={badges || []} onEdit={handleEdit} onDelete={handleDeleteRequest} />
+        <BadgesList 
+          badges={badges || []} 
+          onEdit={handleEdit} 
+          onDelete={handleDeleteRequest} 
+          onToggleVisibility={handleToggleVisibility}
+        />
       )}
 
       <BadgeFormDialog

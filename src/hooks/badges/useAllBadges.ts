@@ -10,6 +10,7 @@ export interface Badge {
   locked_icon: string | null;
   background_color: string;
   border_color: string;
+  is_hidden: boolean | null;
   created_at: string;
 }
 
