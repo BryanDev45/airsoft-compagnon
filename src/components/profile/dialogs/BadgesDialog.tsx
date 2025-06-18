@@ -2,7 +2,7 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
-import { useAllBadges } from '@/hooks/badges/useAllBadges';
+import { useVisibleBadges } from '@/hooks/badges/useVisibleBadges';
 import { useUserBadges } from '@/hooks/user-profile/useUserBadges';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2 } from 'lucide-react';
@@ -16,18 +16,18 @@ interface BadgesDialogProps {
 
 const BadgesContent = ({ user }: { user: any }) => {
   const {
-    data: allBadges,
-    isLoading: isLoadingAll
-  } = useAllBadges();
+    data: visibleBadges,
+    isLoading: isLoadingVisible
+  } = useVisibleBadges();
   const {
     userBadges,
     loading: isLoadingUserBadges
   } = useUserBadges(user?.id);
-  const isLoading = isLoadingAll || isLoadingUserBadges;
+  const isLoading = isLoadingVisible || isLoadingUserBadges;
   const userBadgeIds = React.useMemo(() => userBadges.map(b => b.id), [userBadges]);
 
   const badgesToDisplay = React.useMemo(() => {
-    return allBadges?.map(badge => {
+    return visibleBadges?.map(badge => {
       const isUnlocked = userBadgeIds.includes(badge.id);
       const displayIcon = isUnlocked ? badge.icon : badge.locked_icon || badge.icon;
       const applyGrayscale = !isUnlocked && !badge.locked_icon;
@@ -38,7 +38,7 @@ const BadgesContent = ({ user }: { user: any }) => {
         applyGrayscale
       };
     });
-  }, [allBadges, userBadgeIds]);
+  }, [visibleBadges, userBadgeIds]);
 
   if (isLoading) {
     return (
