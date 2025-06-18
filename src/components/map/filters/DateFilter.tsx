@@ -11,17 +11,21 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 interface DateFilterProps {
   selectedDate: Date | undefined;
   setSelectedDate: (date: Date | undefined) => void;
+  showLabel?: boolean;
 }
 
 const DateFilter: React.FC<DateFilterProps> = ({
   selectedDate,
-  setSelectedDate
+  setSelectedDate,
+  showLabel = true
 }) => {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-300 mb-2">
-        Date
-      </label>
+      {showLabel && (
+        <label className="block text-sm font-medium text-gray-300 mb-2">
+          Date
+        </label>
+      )}
       <Popover>
         <PopoverTrigger asChild>
           <Button

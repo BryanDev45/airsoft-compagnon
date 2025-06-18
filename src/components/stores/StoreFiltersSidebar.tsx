@@ -190,7 +190,7 @@ const StoreFiltersSidebar: React.FC<StoreFiltersSidebarProps> = ({
     );
   }
 
-  // Mode desktop - garde l'affichage existant
+  // Mode desktop - utilise showLabel=false pour éviter la duplication
   return (
     <div className="bg-gray-800 border-r border-gray-700 w-full p-6">
       <div className="flex items-center gap-2 mb-6">
@@ -229,6 +229,7 @@ const StoreFiltersSidebar: React.FC<StoreFiltersSidebarProps> = ({
           <CountryFilter
             selectedCountry={selectedCountry}
             setSelectedCountry={setSelectedCountry}
+            showLabel={false}
           />
         </FilterSection>
 

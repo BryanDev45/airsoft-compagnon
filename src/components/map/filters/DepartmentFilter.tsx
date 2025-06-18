@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 interface DepartmentFilterProps {
   selectedDepartment: string;
   setSelectedDepartment: (department: string) => void;
+  showLabel?: boolean;
 }
 
 const departments = [
@@ -106,13 +107,16 @@ const departments = [
 
 const DepartmentFilter: React.FC<DepartmentFilterProps> = ({
   selectedDepartment,
-  setSelectedDepartment
+  setSelectedDepartment,
+  showLabel = true
 }) => {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-300 mb-2">
-        Département
-      </label>
+      {showLabel && (
+        <label className="block text-sm font-medium text-gray-300 mb-2">
+          Département
+        </label>
+      )}
       <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
         <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
           <SelectValue placeholder="Tous les départements" />

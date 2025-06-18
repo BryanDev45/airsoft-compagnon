@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -19,11 +20,13 @@ import {
 interface CountryFilterProps {
   selectedCountry: string;
   setSelectedCountry: (country: string) => void;
+  showLabel?: boolean;
 }
 
 const CountryFilter: React.FC<CountryFilterProps> = ({
   selectedCountry,
-  setSelectedCountry
+  setSelectedCountry,
+  showLabel = true
 }) => {
   const [open, setOpen] = useState(false);
 
@@ -139,9 +142,11 @@ const CountryFilter: React.FC<CountryFilterProps> = ({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-300 mb-2">
-        Pays
-      </label>
+      {showLabel && (
+        <label className="block text-sm font-medium text-gray-300 mb-2">
+          Pays
+        </label>
+      )}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button

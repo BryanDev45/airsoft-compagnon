@@ -5,17 +5,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 interface EventTypeFilterProps {
   selectedType: string;
   setSelectedType: (type: string) => void;
+  showLabel?: boolean;
 }
 
 const EventTypeFilter: React.FC<EventTypeFilterProps> = ({
   selectedType,
-  setSelectedType
+  setSelectedType,
+  showLabel = true
 }) => {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-300 mb-2">
-        Type
-      </label>
+      {showLabel && (
+        <label className="block text-sm font-medium text-gray-300 mb-2">
+          Type
+        </label>
+      )}
       <Select value={selectedType} onValueChange={setSelectedType}>
         <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
           <SelectValue placeholder="Tous les types" />
