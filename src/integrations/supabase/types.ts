@@ -143,6 +143,7 @@ export type Database = {
           description: string | null
           icon: string | null
           id: string
+          is_hidden: boolean | null
           locked_icon: string | null
           name: string
         }
@@ -153,6 +154,7 @@ export type Database = {
           description?: string | null
           icon?: string | null
           id?: string
+          is_hidden?: boolean | null
           locked_icon?: string | null
           name: string
         }
@@ -163,6 +165,7 @@ export type Database = {
           description?: string | null
           icon?: string | null
           id?: string
+          is_hidden?: boolean | null
           locked_icon?: string | null
           name?: string
         }
