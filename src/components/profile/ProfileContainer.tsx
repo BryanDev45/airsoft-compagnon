@@ -10,6 +10,7 @@ import ProfileFriends from './ProfileFriends';
 import ProfileHeader from './ProfileHeader';
 import ProfileSettingsDialog from './ProfileSettingsDialog';
 import ProfileEditBioDialog from './ProfileEditBioDialog';
+import ProfileAddEquipmentDialog from './ProfileAddEquipmentDialog';
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
@@ -54,6 +55,7 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
     setShowSettingsDialog,
     showEditBioDialog,
     setShowEditBioDialog,
+    showAddEquipmentDialog,
     setShowAddEquipmentDialog,
   } = dialogStates;
 
@@ -170,6 +172,14 @@ const ProfileContainer: React.FC<ProfileContainerProps> = ({
         onOpenChange={setShowEditBioDialog}
         currentBio={user?.bio || ''}
         currentUsername={user?.username || ''}
+      />
+
+      {/* Profile Add Equipment Dialog */}
+      <ProfileAddEquipmentDialog
+        open={showAddEquipmentDialog}
+        onOpenChange={setShowAddEquipmentDialog}
+        onAddEquipment={handleAddEquipment}
+        equipmentTypes={equipmentTypes}
       />
     </>
   );

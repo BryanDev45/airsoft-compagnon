@@ -1,76 +1,67 @@
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 
+/**
+ * Hook unifié pour gérer tous les états de dialogs du profil
+ */
 export const useUnifiedDialogs = () => {
-  // States pour les dialogs de profil
+  // États pour les dialogs de base
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [showEditBioDialog, setShowEditBioDialog] = useState(false);
   const [showAddEquipmentDialog, setShowAddEquipmentDialog] = useState(false);
-  const [showAllGamesDialog, setShowAllGamesDialog] = useState(false);
-  const [showBadgesDialog, setShowBadgesDialog] = useState(false);
   
-  // States pour les détails de jeu
-  const [selectedGame, setSelectedGame] = useState<any>(null);
+  // États pour les dialogs de jeux
   const [showGameDialog, setShowGameDialog] = useState(false);
+  const [showAllGamesDialog, setShowAllGamesDialog] = useState(false);
+  const [selectedGame, setSelectedGame] = useState(null);
 
-  const showGameDetails = useCallback((game: any) => {
-    if (!game) return;
+  // États pour les dialogs de badges
+  const [showBadgesDialog, setShowBadgesDialog] = useState(false);
 
-    const enrichedGame = {
-      ...game,
-      participantsCount: game.participants ?? game.participantsCount ?? 0,
-      max_players: game.maxParticipants ?? game.max_players,
-      address: game.location || (game.city && game.zip_code ? `${game.city}, ${game.zip_code}` : game.address) || 'Lieu non spécifié'
-    };
-    
-    setSelectedGame(enrichedGame);
+  // Fonctions utilitaires pour les jeux
+  const showGameDetails = (game: any) => {
+    setSelectedGame(game);
     setShowGameDialog(true);
-  }, []);
+  };
 
-  const closeGameDialog = useCallback(() => {
-    setShowGameDialog(false);
-    setSelectedGame(null);
-  }, []);
-
-  const closeAllGamesDialog = useCallback(() => {
-    setShowAllGamesDialog(false);
-  }, []);
-
-  const openAllGamesDialog = useCallback(() => {
+  const openAllGamesDialog = () => {
     setShowAllGamesDialog(true);
-  }, []);
+  };
 
-  const openBadgesDialog = useCallback(() => {
+  const openBadgesDialog = () => {
     setShowBadgesDialog(true);
-  }, []);
+  };
 
-  const handleGameClickInAllGamesDialog = useCallback((game: any) => {
+  const handleGameClickInAllGamesDialog = (game: any) => {
     setShowAllGamesDialog(false);
     showGameDetails(game);
-  }, [showGameDetails]);
+  };
 
   return {
-    // Profile dialogs
+    // États de base
     showSettingsDialog,
     setShowSettingsDialog,
     showEditBioDialog,
     setShowEditBioDialog,
     showAddEquipmentDialog,
     setShowAddEquipmentDialog,
-    showAllGamesDialog,
-    setShowAllGamesDialog,
-    showBadgesDialog,
-    setShowBadgesDialog,
     
-    // Game dialogs
-    selectedGame,
+    // États des jeux
     showGameDialog,
     setShowGameDialog,
+    showAllGamesDialog,
+    setShowAllGamesDialog,
+    selectedGame,
+    setSelectedGame,
+
+    // États des badges
+    showBadgesDialog,
+    setShowBadgesDialog,
+
+    // Fonctions utilitaires
     showGameDetails,
-    closeGameDialog,
-    closeAllGamesDialog,
     openAllGamesDialog,
     openBadgesDialog,
-    handleGameClickInAllGamesDialog
+    handleGameClickInAllGamesDialog,
   };
 };
