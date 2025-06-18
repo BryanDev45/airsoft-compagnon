@@ -15,13 +15,15 @@ DECLARE
     random_avatar_index INTEGER;
 BEGIN
     -- Récupération des données depuis les métadonnées ou depuis l'email
-    -- Support pour Google et Facebook
+    -- Support pour Google, Facebook et inscription par email
     first_name := COALESCE(
+        NEW.raw_user_meta_data->>'firstname',
         NEW.raw_user_meta_data->>'first_name', 
         NEW.raw_user_meta_data->>'given_name',
         NEW.raw_user_meta_data->>'name'
     );
     last_name := COALESCE(
+        NEW.raw_user_meta_data->>'lastname',
         NEW.raw_user_meta_data->>'last_name', 
         NEW.raw_user_meta_data->>'family_name'
     );
@@ -67,6 +69,10 @@ BEGIN
     ];
     random_avatar_index := floor(random() * array_length(default_avatars, 1) + 1)::INTEGER;
     avatar_url := default_avatars[random_avatar_index];
+    
+    -- Debug : Afficher les valeurs récupérées
+    RAISE NOTICE 'Création du profil pour utilisateur %: firstname=%, lastname=%, username=%', NEW.id, first_name, last_name, user_name;
+    RAISE NOTICE 'Métadonnées brutes: %', NEW.raw_user_meta_data;
     
     -- Créer le profil avec les valeurs par défaut
     INSERT INTO public.profiles (
@@ -115,4 +121,3 @@ BEGIN
     END IF;
 END
 $$;
-

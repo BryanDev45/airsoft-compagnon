@@ -26,16 +26,32 @@ export const useRegister = () => {
         throw new Error('Cette adresse email est déjà utilisée.');
       }
 
+      // Préparer les métadonnées utilisateur avec les bonnes clés
+      const userMetadata = {
+        username: userData.username,
+        firstname: userData.firstname,
+        lastname: userData.lastname,
+        birth_date: userData.birth_date,
+        // Ajout des clés alternatives pour compatibility
+        first_name: userData.firstname,
+        last_name: userData.lastname
+      };
+
+      console.log('Données d\'inscription envoyées:', userMetadata);
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: userData,
+          data: userMetadata,
         },
       });
 
       if (error) throw error;
       if (!data.user) throw new Error("Erreur lors de la création du compte");
+
+      console.log('Utilisateur créé:', data.user);
+      console.log('Métadonnées utilisateur:', data.user.user_metadata);
 
       toast({
         title: "Inscription réussie",
