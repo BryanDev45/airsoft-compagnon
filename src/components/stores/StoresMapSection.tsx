@@ -36,6 +36,10 @@ const StoresMapSection: React.FC = () => {
   const handleRetry = () => {
     window.location.reload();
   };
+
+  const handleCloseMobileFilters = () => {
+    setShowMobileFilters(false);
+  };
   
   return (
     <div className="py-12 md:py-0">
@@ -67,6 +71,7 @@ const StoresMapSection: React.FC = () => {
                     setSelectedCountry={setSelectedCountry}
                     setSearchRadius={setSearchRadius}
                     getCurrentPosition={getCurrentPosition}
+                    onCloseMobile={handleCloseMobileFilters}
                   />
                 </div>
               )}

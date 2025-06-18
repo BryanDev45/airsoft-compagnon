@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Filter, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Filter, Loader2, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { MapStore } from '@/hooks/useMapData';
 import LocationSearchFilter from './filters/LocationSearchFilter';
 import EventTypeFilter from './filters/EventTypeFilter';
@@ -10,6 +10,7 @@ import CountryFilter from './filters/CountryFilter';
 import RadiusFilter from './filters/RadiusFilter';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from '@/components/ui/button';
 
 interface FilterState {
   searchQuery: string;
@@ -33,6 +34,7 @@ interface SearchFiltersSidebarProps {
   setSelectedDate: (date: Date | undefined) => void;
   setSearchRadius: (radius: number[]) => void;
   getCurrentPosition: () => void;
+  onCloseMobile?: () => void;
 }
 
 const SearchFiltersSidebar: React.FC<SearchFiltersSidebarProps> = ({
@@ -45,7 +47,8 @@ const SearchFiltersSidebar: React.FC<SearchFiltersSidebarProps> = ({
   setSelectedCountry,
   setSelectedDate,
   setSearchRadius,
-  getCurrentPosition
+  getCurrentPosition,
+  onCloseMobile
 }) => {
   const {
     searchQuery,
@@ -115,19 +118,100 @@ const SearchFiltersSidebar: React.FC<SearchFiltersSidebarProps> = ({
     );
   };
 
+  // En mode mobile, affichage simplifié sans sections déployables
+  if (isMobile) {
+    return (
+      <div className="w-full p-4 h-full bg-gray-800">
+        {/* Header avec bouton de fermeture */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <Filter className="h-5 w-5 text-airsoft-red flex-shrink-0" />
+            <h2 className="text-lg font-semibold text-white">
+              Filtres de recherche
+            </h2>
+          </div>
+          {onCloseMobile && (
+            <Button
+              onClick={onCloseMobile}
+              variant="ghost"
+              size="sm"
+              className="text-white hover:bg-gray-700"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          )}
+        </div>
+
+        {/* Filtres directement affichés */}
+        <div className="space-y-6">
+          {/* Localisation */}
+          <LocationSearchFilter
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            getCurrentPosition={getCurrentPosition}
+          />
+
+          {/* Type de partie */}
+          <EventTypeFilter
+            selectedType={selectedType}
+            setSelectedType={setSelectedType}
+          />
+
+          {/* Département */}
+          <DepartmentFilter
+            selectedDepartment={selectedDepartment}
+            setSelectedDepartment={setSelectedDepartment}
+          />
+
+          {/* Date */}
+          <DateFilter
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+          />
+
+          {/* Pays */}
+          <CountryFilter
+            selectedCountry={selectedCountry}
+            setSelectedCountry={setSelectedCountry}
+          />
+
+          {/* Rayon de recherche */}
+          <RadiusFilter
+            searchRadius={searchRadius}
+            setSearchRadius={setSearchRadius}
+          />
+
+          {/* Résultats */}
+          <div className="pt-4 border-t border-gray-600 sticky bottom-0 bg-gray-800 pb-2">
+            <div className="text-sm text-gray-300">
+              {loading ? (
+                <div className="flex items-center gap-2 justify-center">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Recherche en cours...
+                </div>
+              ) : (
+                <p className="font-medium text-center">
+                  {filteredEventsCount} parties trouvées
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Mode desktop - garde l'affichage existant
   return (
-    <div className={`
-      bg-gray-800 border-r border-gray-700
-      ${isMobile ? 'w-full p-4 h-full' : 'w-full p-6'}
-    `}>
+    <div className="bg-gray-800 border-r border-gray-700 w-full p-6">
       <div className="flex items-center gap-2 mb-6">
         <Filter className="h-5 w-5 text-airsoft-red flex-shrink-0" />
-        <h2 className={`font-semibold text-white ${isMobile ? 'text-lg' : 'text-xl'}`}>
+        <h2 className="font-semibold text-white text-xl">
           Filtres de recherche
         </h2>
       </div>
 
-      <div className={`space-y-${isMobile ? '4' : '6'}`}>
+      <div className="space-y-6">
         <FilterSection id="location" title="Localisation" defaultOpen={true}>
           <LocationSearchFilter
             searchQuery={searchQuery}
@@ -171,7 +255,7 @@ const SearchFiltersSidebar: React.FC<SearchFiltersSidebarProps> = ({
           />
         </FilterSection>
 
-        <div className={`pt-4 border-t border-gray-600 ${isMobile ? 'sticky bottom-0 bg-gray-800 pb-2' : ''}`}>
+        <div className="pt-4 border-t border-gray-600">
           <div className="text-sm text-gray-300">
             {loading ? (
               <div className="flex items-center gap-2 justify-center">

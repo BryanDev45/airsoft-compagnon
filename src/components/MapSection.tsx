@@ -52,6 +52,10 @@ const MapSection: React.FC = () => {
   const handleRetry = () => {
     window.location.reload();
   };
+
+  const handleCloseMobileFilters = () => {
+    setShowMobileFilters(false);
+  };
   
   return (
     <div className="py-12 md:py-0">
@@ -92,6 +96,7 @@ const MapSection: React.FC = () => {
                     setSelectedDate={setSelectedDate}
                     setSearchRadius={setSearchRadius}
                     getCurrentPosition={getCurrentPosition}
+                    onCloseMobile={handleCloseMobileFilters}
                   />
                 </div>
               )}
