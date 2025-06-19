@@ -103,128 +103,135 @@ const ProfileAddEquipmentDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Ajouter un équipement</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="w-[95vw] max-w-[425px] sm:max-w-[500px] max-h-[95vh] overflow-hidden flex flex-col">
+        <DialogHeader className="flex-shrink-0 pb-2">
+          <DialogTitle className="text-lg sm:text-xl">Ajouter un équipement</DialogTitle>
+          <DialogDescription className="text-sm">
             Ajoutez une nouvelle pièce d'équipement à votre collection
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
-          <div className="space-y-2">
-            <Label htmlFor="type">Type d'équipement</Label>
-            <Select value={type} onValueChange={setType}>
-              <SelectTrigger>
-                <SelectValue placeholder="Sélectionnez un type" />
-              </SelectTrigger>
-              <SelectContent>
-                {equipmentTypes.map(equipType => (
-                  <SelectItem key={equipType} value={equipType}>{equipType}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="name">Nom</Label>
-            <Input
-              id="name"
-              placeholder="Nom de l'équipement"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="brand">Marque</Label>
-            <Input
-              id="brand"
-              placeholder="Marque de l'équipement"
-              value={brand}
-              onChange={(e) => setBrand(e.target.value)}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="power">Puissance</Label>
-            <Input
-              id="power"
-              placeholder="Ex: 350 FPS"
-              value={power}
-              onChange={(e) => setPower(e.target.value)}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              placeholder="Décrivez votre équipement..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={2}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label>Image</Label>
-            <div className="flex flex-col items-center">
-              <div className="mb-2 w-full h-32 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
-                {imagePreview ? (
-                  <img 
-                    src={imagePreview} 
-                    alt="Equipment preview" 
-                    className="w-full h-full object-contain"
-                  />
-                ) : (
-                  <ImageIcon className="h-8 w-8 text-gray-400" />
-                )}
-              </div>
-              
-              <div className="flex gap-3 mb-1">
-                <Label 
-                  htmlFor="equipment-image" 
-                  className="flex items-center gap-1 bg-airsoft-red hover:bg-red-700 text-white px-3 py-2 rounded-md cursor-pointer text-sm"
-                >
-                  <Upload size={16} />
-                  Télécharger
-                </Label>
-                <input 
-                  id="equipment-image" 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={handleImageChange} 
-                  className="hidden" 
-                />
+        <div className="flex-1 overflow-y-auto px-1">
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="type" className="text-sm font-medium">Type d'équipement</Label>
+              <Select value={type} onValueChange={setType}>
+                <SelectTrigger className="h-10">
+                  <SelectValue placeholder="Sélectionnez un type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {equipmentTypes.map(equipType => (
+                    <SelectItem key={equipType} value={equipType}>{equipType}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-sm font-medium">Nom</Label>
+              <Input
+                id="name"
+                placeholder="Nom de l'équipement"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="h-10"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="brand" className="text-sm font-medium">Marque</Label>
+              <Input
+                id="brand"
+                placeholder="Marque de l'équipement"
+                value={brand}
+                onChange={(e) => setBrand(e.target.value)}
+                className="h-10"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="power" className="text-sm font-medium">Puissance</Label>
+              <Input
+                id="power"
+                placeholder="Ex: 350 FPS"
+                value={power}
+                onChange={(e) => setPower(e.target.value)}
+                className="h-10"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="description" className="text-sm font-medium">Description</Label>
+              <Textarea
+                id="description"
+                placeholder="Décrivez votre équipement..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={2}
+                className="resize-none"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Image</Label>
+              <div className="flex flex-col items-center space-y-3">
+                <div className="w-full h-24 sm:h-32 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
+                  {imagePreview ? (
+                    <img 
+                      src={imagePreview} 
+                      alt="Equipment preview" 
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <ImageIcon className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400" />
+                  )}
+                </div>
                 
-                {imagePreview && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setImagePreview(null)}
-                    className="flex items-center gap-1"
+                <div className="flex flex-col sm:flex-row gap-2 w-full">
+                  <Label 
+                    htmlFor="equipment-image" 
+                    className="flex items-center justify-center gap-2 bg-airsoft-red hover:bg-red-700 text-white px-3 py-2 rounded-md cursor-pointer text-sm flex-1"
                   >
-                    <RefreshCw size={16} />
-                    Réinitialiser
-                  </Button>
-                )}
+                    <Upload size={14} />
+                    Télécharger
+                  </Label>
+                  <input 
+                    id="equipment-image" 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleImageChange} 
+                    className="hidden" 
+                  />
+                  
+                  {imagePreview && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => setImagePreview(null)}
+                      className="flex items-center justify-center gap-2 flex-1 sm:flex-initial"
+                    >
+                      <RefreshCw size={14} />
+                      Réinitialiser
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <DialogFooter className="mt-2">
+        <DialogFooter className="flex-shrink-0 pt-4 flex flex-col sm:flex-row gap-2">
           <Button 
             variant="outline" 
             onClick={handleClose} 
             disabled={loading}
+            className="w-full sm:w-auto order-2 sm:order-1"
           >
             Annuler
           </Button>
           <Button 
             onClick={handleSave} 
-            className="bg-airsoft-red hover:bg-red-700"
+            className="bg-airsoft-red hover:bg-red-700 w-full sm:w-auto order-1 sm:order-2"
             disabled={loading}
           >
             {loading ? "Enregistrement..." : "Ajouter"}
