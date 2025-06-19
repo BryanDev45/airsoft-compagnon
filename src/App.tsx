@@ -45,8 +45,8 @@ const PageTracker = () => {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router>
+      <Router>
+        <AuthProvider>
           <PageTracker />
           <GlobalServices />
           <div className="min-h-screen bg-gray-50">
@@ -115,8 +115,8 @@ function App() {
             </Routes>
           </div>
           <Toaster />
-        </Router>
-      </AuthProvider>
+        </AuthProvider>
+      </Router>
     </QueryClientProvider>
   );
 }
