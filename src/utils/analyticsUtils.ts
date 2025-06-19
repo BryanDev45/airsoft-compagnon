@@ -96,6 +96,8 @@ export const incrementPwaInstalls = async () => {
  */
 export const incrementPageVisit = async (pagePath: string) => {
   try {
+    console.log(`Tracking page visit for: ${pagePath}`);
+    
     // Vérifier si la page existe déjà
     const { data: existingPage } = await supabase
       .from('page_visit_stats')
@@ -115,6 +117,8 @@ export const incrementPageVisit = async (pagePath: string) => {
 
       if (error) {
         console.error('Erreur lors de l\'incrémentation des visites de page:', error);
+      } else {
+        console.log(`Page visit incremented for ${pagePath}: ${existingPage.visit_count + 1}`);
       }
     } else {
       // Créer une nouvelle entrée pour cette page
@@ -128,6 +132,8 @@ export const incrementPageVisit = async (pagePath: string) => {
 
       if (error) {
         console.error('Erreur lors de la création des statistiques de page:', error);
+      } else {
+        console.log(`New page visit entry created for: ${pagePath}`);
       }
     }
 

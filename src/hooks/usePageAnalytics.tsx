@@ -14,12 +14,24 @@ export const usePageAnalytics = () => {
     const currentPath = location.pathname;
     
     // Seulement tracker certaines pages importantes
-    const trackedPages = ['/', '/parties', '/toolbox', '/admin'];
+    const trackedPages = [
+      '/', 
+      '/parties', 
+      '/toolbox', 
+      '/admin',
+      '/profile',
+      '/team'
+    ];
     
-    if (trackedPages.includes(currentPath)) {
+    // Vérifier aussi les sous-pages de toolbox
+    const isToolboxSubPage = currentPath.startsWith('/toolbox/');
+    
+    if (trackedPages.includes(currentPath) || isToolboxSubPage) {
       // Délai de 1 seconde pour éviter de compter les redirections rapides
       const timeout = setTimeout(() => {
-        incrementPageVisit(currentPath);
+        // Pour les sous-pages de toolbox, utiliser le chemin complet
+        const pathToTrack = isToolboxSubPage ? currentPath : currentPath;
+        incrementPageVisit(pathToTrack);
       }, 1000);
 
       return () => clearTimeout(timeout);
