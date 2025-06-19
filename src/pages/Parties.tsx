@@ -15,6 +15,7 @@ import TeamSearchResults from '../components/search/TeamSearchResults';
 import { useAuth } from '../hooks/useAuth';
 import AddStoreDialog from '../components/stores/AddStoreDialog';
 import { supabase } from '@/integrations/supabase/client';
+import { useTabAnalytics } from '../hooks/usePageAnalytics';
 
 // This component will automatically scroll to top on mount
 const ScrollToTop = () => {
@@ -34,6 +35,9 @@ const Recherche = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddStoreDialogOpen, setIsAddStoreDialogOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+
+  // Tracker les visites des onglets de recherche
+  useTabAnalytics(activeTab, '/parties');
 
   // Vérifier si l'utilisateur est admin
   useEffect(() => {

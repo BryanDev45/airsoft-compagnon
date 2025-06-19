@@ -18,7 +18,6 @@ export const usePageAnalytics = () => {
       '/', 
       '/parties', 
       '/toolbox', 
-      '/admin',
       '/profile',
       '/team'
     ];
@@ -37,4 +36,21 @@ export const usePageAnalytics = () => {
       return () => clearTimeout(timeout);
     }
   }, [location.pathname]);
+};
+
+/**
+ * Hook pour tracker les visites d'onglets spécifiques
+ */
+export const useTabAnalytics = (tabValue: string, basePage: string) => {
+  useEffect(() => {
+    if (tabValue) {
+      // Délai de 1 seconde pour éviter de compter les changements d'onglets rapides
+      const timeout = setTimeout(() => {
+        const pathToTrack = `${basePage}/${tabValue}`;
+        incrementPageVisit(pathToTrack);
+      }, 1000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [tabValue, basePage]);
 };
