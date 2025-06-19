@@ -26,6 +26,10 @@ interface AdminStats {
   toolboxScenariosVisits: number;
   toolboxTroubleshootingVisits: number;
   toolboxGuidesVisits: number;
+  partiesTabVisits: number;
+  joueursTabVisits: number;
+  equipesTabVisits: number;
+  magasinsTabVisits: number;
   gamesPerMonth: Array<{ month: string; count: number }>;
   registrationsPerMonth: Array<{ month: string; count: number }>;
 }
@@ -121,7 +125,11 @@ export const useAdminStats = () => {
           '/toolbox/glossary',
           '/toolbox/scenarios',
           '/toolbox/troubleshooting',
-          '/toolbox/guides'
+          '/toolbox/guides',
+          '/parties/parties',
+          '/parties/joueurs',
+          '/parties/equipes',
+          '/parties/magasins'
         ]);
 
       // Récupérer les données pour le graphique des parties par mois (12 derniers mois)
@@ -201,6 +209,10 @@ export const useAdminStats = () => {
         toolboxScenariosVisits: pageStats?.find(p => p.page_path === '/toolbox/scenarios')?.visit_count || 0,
         toolboxTroubleshootingVisits: pageStats?.find(p => p.page_path === '/toolbox/troubleshooting')?.visit_count || 0,
         toolboxGuidesVisits: pageStats?.find(p => p.page_path === '/toolbox/guides')?.visit_count || 0,
+        partiesTabVisits: pageStats?.find(p => p.page_path === '/parties/parties')?.visit_count || 0,
+        joueursTabVisits: pageStats?.find(p => p.page_path === '/parties/joueurs')?.visit_count || 0,
+        equipesTabVisits: pageStats?.find(p => p.page_path === '/parties/equipes')?.visit_count || 0,
+        magasinsTabVisits: pageStats?.find(p => p.page_path === '/parties/magasins')?.visit_count || 0,
         gamesPerMonth,
         registrationsPerMonth,
       };

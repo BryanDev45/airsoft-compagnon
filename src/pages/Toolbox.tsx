@@ -1,5 +1,6 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,8 +15,22 @@ import GearRatioCalculator from '../components/toolbox/GearRatioCalculator';
 import ElectricalCompatibilityCalculator from '../components/toolbox/ElectricalCompatibilityCalculator';
 import GuidesTab from '../components/toolbox/GuidesTab';
 import DiscordBotTab from '../components/toolbox/DiscordBotTab';
+import { useTabAnalytics } from '../hooks/usePageAnalytics';
 
 const Toolbox = () => {
+  const { activeTab: urlActiveTab } = useParams();
+  const [activeTab, setActiveTab] = useState(urlActiveTab || "calculators");
+
+  // Tracker les visites des onglets de la boîte à outils
+  useTabAnalytics(activeTab, '/toolbox');
+
+  // Mettre à jour l'onglet actif si l'URL change
+  useEffect(() => {
+    if (urlActiveTab) {
+      setActiveTab(urlActiveTab);
+    }
+  }, [urlActiveTab]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -23,7 +38,7 @@ const Toolbox = () => {
         <div className="max-w-6xl mx-auto px-4">
           <ToolboxHeader />
 
-          <Tabs defaultValue="calculators" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="mb-6 w-full justify-start overflow-x-auto">
               <TabsTrigger value="calculators" className="flex items-center gap-1">
                 <Calculator className="h-4 w-4" /> Calculateurs
