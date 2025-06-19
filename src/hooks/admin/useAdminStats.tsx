@@ -32,6 +32,8 @@ interface AdminStats {
   magasinsTabVisits: number;
   gamesPerMonth: Array<{ month: string; count: number }>;
   registrationsPerMonth: Array<{ month: string; count: number }>;
+  playersByCountry: Array<{ country: string; count: number }>;
+  gamesByCountry: Array<{ country: string; count: number }>;
 }
 
 export const useAdminStats = () => {
@@ -146,6 +148,18 @@ export const useAdminStats = () => {
         .gte('join_date', new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
         .order('join_date', { ascending: true });
 
+      // Nouvelles requêtes pour les statistiques par pays
+      // Récupérer les joueurs par pays en analysant leur localisation
+      const { data: playersLocationData } = await supabase
+        .from('profiles')
+        .select('location')
+        .not('location', 'is', null);
+
+      // Récupérer les parties par pays (toutes les parties sont en France pour le moment)
+      const { data: gamesLocationData } = await supabase
+        .from('airsoft_games')
+        .select('city, zip_code');
+
       // Traiter les données pour les graphiques
       const processMonthlyData = (data: any[], dateField: string) => {
         const monthCounts: { [key: string]: number } = {};
@@ -179,8 +193,62 @@ export const useAdminStats = () => {
         });
       };
 
+      // Traiter les données des joueurs par pays
+      const processPlayersByCountry = (data: any[]) => {
+        const countryCounts: { [key: string]: number } = {};
+        
+        data?.forEach(item => {
+          if (item.location) {
+            // Extraire le pays de la localisation (généralement à la fin)
+            const locationParts = item.location.split(',').map((part: string) => part.trim());
+            const country = locationParts[locationParts.length - 1] || 'Inconnu';
+            
+            // Normaliser certains noms de pays
+            let normalizedCountry = country;
+            if (country.toLowerCase().includes('france') || country.toLowerCase().includes('français')) {
+              normalizedCountry = 'France';
+            } else if (country.toLowerCase().includes('belgique') || country.toLowerCase().includes('belge')) {
+              normalizedCountry = 'Belgique';
+            } else if (country.toLowerCase().includes('suisse') || country.toLowerCase().includes('swiss')) {
+              normalizedCountry = 'Suisse';
+            } else if (country.toLowerCase().includes('canada') || country.toLowerCase().includes('canadien')) {
+              normalizedCountry = 'Canada';
+            }
+            
+            countryCounts[normalizedCountry] = (countryCounts[normalizedCountry] || 0) + 1;
+          }
+        });
+
+        return Object.entries(countryCounts)
+          .map(([country, count]) => ({ country, count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 10); // Top 10 pays
+      };
+
+      // Traiter les données des parties par pays
+      const processGamesByCountry = (data: any[]) => {
+        const countryCounts: { [key: string]: number } = {};
+        
+        data?.forEach(item => {
+          // Pour le moment, toutes les parties sont en France
+          // Mais on peut analyser les codes postaux pour déterminer les régions/départements
+          let country = 'France';
+          
+          // On pourrait ajouter une logique pour identifier d'autres pays
+          // basée sur les codes postaux ou villes spécifiques
+          
+          countryCounts[country] = (countryCounts[country] || 0) + 1;
+        });
+
+        return Object.entries(countryCounts)
+          .map(([country, count]) => ({ country, count }))
+          .sort((a, b) => b.count - a.count);
+      };
+
       const gamesPerMonth = processMonthlyData(gamesData || [], 'date');
       const registrationsPerMonth = processMonthlyData(registrationsData || [], 'join_date');
+      const playersByCountry = processPlayersByCountry(playersLocationData || []);
+      const gamesByCountry = processGamesByCountry(gamesLocationData || []);
 
       console.log('Admin statistics fetched successfully');
 
@@ -215,6 +283,8 @@ export const useAdminStats = () => {
         magasinsTabVisits: pageStats?.find(p => p.page_path === '/parties/magasins')?.visit_count || 0,
         gamesPerMonth,
         registrationsPerMonth,
+        playersByCountry,
+        gamesByCountry,
       };
     },
     staleTime: 30000, // 30 secondes
