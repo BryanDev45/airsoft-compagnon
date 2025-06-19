@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAdminStats } from '@/hooks/admin/useAdminStats';
@@ -19,14 +20,16 @@ import {
   Eye,
   BarChart3,
   UserPlus,
-  Search
+  Search,
+  Globe,
+  MapPin
 } from 'lucide-react';
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const StatisticsTab: React.FC = () => {
   const { data: stats, isLoading, error } = useAdminStats();
@@ -56,6 +59,12 @@ const StatisticsTab: React.FC = () => {
       color: "#2563eb",
     },
   };
+
+  // Colors for pie charts
+  const COLORS = [
+    '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', 
+    '#82CA9D', '#FFC658', '#FF7C7C', '#8DD1E1', '#D084D0'
+  ];
 
   const statisticsCards = [
     {
@@ -357,6 +366,79 @@ const StatisticsTab: React.FC = () => {
         </Card>
       </div>
 
+      {/* Countries Statistics Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* Players by Country Chart */}
+        <Card className="border-0 shadow-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Globe className="h-5 w-5 text-green-600" />
+              Joueurs par pays
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig} className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={stats?.playersByCountry || []}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ country, count, percent }) => 
+                      `${country}: ${count} (${(percent * 100).toFixed(1)}%)`
+                    }
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="count"
+                  >
+                    {(stats?.playersByCountry || []).map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                </PieChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+
+        {/* Games by Country Chart */}
+        <Card className="border-0 shadow-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-red-600" />
+              Parties par pays
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig} className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={stats?.gamesByCountry || []}>
+                  <XAxis 
+                    dataKey="country" 
+                    tick={{ fontSize: 12, fill: '#6b7280' }}
+                    axisLine={{ stroke: '#e5e7eb' }}
+                    tickLine={{ stroke: '#e5e7eb' }}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 12, fill: '#6b7280' }} 
+                    axisLine={{ stroke: '#e5e7eb' }}
+                    tickLine={{ stroke: '#e5e7eb' }}
+                  />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar 
+                    dataKey="count" 
+                    fill="#dc2626" 
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Statistics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {statisticsCards.map((stat, index) => {
@@ -521,6 +603,7 @@ const StatisticsTab: React.FC = () => {
               Les utilisateurs en ligne sont ceux ayant eu une activité dans les 5 dernières minutes.
               Les statistiques de téléchargement et de visite sont mises à jour en temps réel.
               Les graphiques montrent les données des 12 derniers mois.
+              Les statistiques par pays sont basées sur les informations de localisation des profils utilisateurs.
             </p>
           </div>
         </CardContent>
