@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, PlusCircle } from 'lucide-react';
 import { useAdminBadges, useCreateBadge, useUpdateBadge, useDeleteBadge, useToggleBadgeVisibility } from '@/hooks/admin/useAdminBadges';
 import BadgesList from './badges/BadgesList';
-import ResponsiveBadgeFormDialog from './badges/ResponsiveBadgeFormDialog';
+import BadgeFormDialog from './badges/BadgeFormDialog';
 import { Badge as BadgeType } from '@/hooks/badges/useAllBadges';
 import DeleteBadgeDialog from './badges/DeleteBadgeDialog';
 
@@ -59,22 +59,18 @@ const BadgesManagementTab = () => {
   };
 
   return (
-    <div className="p-2 sm:p-4 bg-white rounded-lg shadow">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0 mb-4 sm:mb-6">
-        <h2 className="text-lg sm:text-2xl font-bold">Gestion des Badges</h2>
-        <Button onClick={handleCreate} size="sm" className="w-full sm:w-auto">
+    <div className="p-4 bg-white rounded-lg shadow">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Gestion des Badges</h2>
+        <Button onClick={handleCreate}>
           <PlusCircle className="mr-2 h-4 w-4" />
-          <span className="sm:hidden">Créer</span>
-          <span className="hidden sm:inline">Créer un badge</span>
+          Créer un badge
         </Button>
       </div>
 
       {isLoadingBadges || isTogglingVisibility ? (
-        <div className="flex justify-center items-center h-32 sm:h-64">
-          <div className="text-center">
-            <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-airsoft-red mx-auto mb-2 sm:mb-4" />
-            <p className="text-sm text-gray-500">Chargement...</p>
-          </div>
+        <div className="flex justify-center items-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-airsoft-red" />
         </div>
       ) : (
         <BadgesList 
@@ -85,7 +81,7 @@ const BadgesManagementTab = () => {
         />
       )}
 
-      <ResponsiveBadgeFormDialog
+      <BadgeFormDialog
         isOpen={isFormOpen}
         onOpenChange={setIsFormOpen}
         onSubmit={onFormSubmit}

@@ -17,10 +17,10 @@ const StatisticsTab: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-4 sm:p-8">
+      <div className="flex items-center justify-center p-8">
         <div className="text-center">
-          <div className="h-8 w-8 sm:h-12 sm:w-12 border-4 border-airsoft-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-sm sm:text-base text-gray-500">Chargement des statistiques...</p>
+          <div className="h-12 w-12 border-4 border-airsoft-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-500">Chargement des statistiques...</p>
         </div>
       </div>
     );
@@ -28,8 +28,8 @@ const StatisticsTab: React.FC = () => {
 
   if (error) {
     return (
-      <div className="p-4 sm:p-8 text-center">
-        <p className="text-red-500 text-sm sm:text-base">Erreur lors du chargement des statistiques</p>
+      <div className="p-8 text-center">
+        <p className="text-red-500">Erreur lors du chargement des statistiques</p>
       </div>
     );
   }
@@ -39,7 +39,7 @@ const StatisticsTab: React.FC = () => {
   const toolboxVisitCards = createToolboxVisitCards(stats);
 
   return (
-    <div className="space-y-4 sm:space-y-6 p-2 sm:p-0">
+    <div className="space-y-6">
       <StatisticsHeader />
 
       <StatsChartsSection
@@ -53,25 +53,25 @@ const StatisticsTab: React.FC = () => {
 
       {/* Page Visit Statistics */}
       <Card className="border-0 shadow-md">
-        <CardHeader className="pb-2 sm:pb-4">
-          <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-            <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
-            <span className="truncate">Statistiques de visite des pages</span>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Eye className="h-5 w-5 text-blue-600" />
+            Statistiques de visite des pages
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {pageVisitCards.map((stat, index) => {
               const Icon = stat.icon;
               return (
-                <div key={index} className={`p-2 sm:p-4 rounded-lg ${stat.bgColor} text-center`}>
-                  <div className="flex items-center justify-center mb-1 sm:mb-3">
-                    <Icon className={`h-4 w-4 sm:h-6 sm:w-6 ${stat.color}`} />
+                <div key={index} className={`p-4 rounded-lg ${stat.bgColor} text-center`}>
+                  <div className="flex items-center justify-center mb-3">
+                    <Icon className={`h-6 w-6 ${stat.color}`} />
                   </div>
-                  <div className={`text-lg sm:text-2xl font-bold ${stat.color} mb-1 sm:mb-2`}>
+                  <div className={`text-2xl font-bold ${stat.color} mb-2`}>
                     {stat.value.toLocaleString()}
                   </div>
-                  <p className={`text-xs sm:text-sm font-medium ${stat.color} leading-tight`}>
+                  <p className={`text-sm font-medium ${stat.color}`}>
                     {stat.title}
                   </p>
                 </div>
@@ -83,25 +83,25 @@ const StatisticsTab: React.FC = () => {
 
       {/* Search Page Tabs Visit Statistics */}
       <Card className="border-0 shadow-md">
-        <CardHeader className="pb-2 sm:pb-4">
-          <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-            <Search className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
-            <span className="truncate">Statistiques des onglets de recherche</span>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Search className="h-5 w-5 text-green-600" />
+            Statistiques des onglets de la page de recherche
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {searchTabVisitCards.map((stat, index) => {
               const Icon = stat.icon;
               return (
-                <div key={index} className={`p-2 sm:p-4 rounded-lg ${stat.bgColor} text-center`}>
-                  <div className="flex items-center justify-center mb-1 sm:mb-3">
-                    <Icon className={`h-4 w-4 sm:h-6 sm:w-6 ${stat.color}`} />
+                <div key={index} className={`p-4 rounded-lg ${stat.bgColor} text-center`}>
+                  <div className="flex items-center justify-center mb-3">
+                    <Icon className={`h-6 w-6 ${stat.color}`} />
                   </div>
-                  <div className={`text-lg sm:text-2xl font-bold ${stat.color} mb-1 sm:mb-2`}>
+                  <div className={`text-2xl font-bold ${stat.color} mb-2`}>
                     {stat.value.toLocaleString()}
                   </div>
-                  <p className={`text-xs sm:text-sm font-medium ${stat.color} leading-tight`}>
+                  <p className={`text-sm font-medium ${stat.color}`}>
                     {stat.title}
                   </p>
                 </div>
@@ -113,25 +113,25 @@ const StatisticsTab: React.FC = () => {
 
       {/* Toolbox Visit Statistics */}
       <Card className="border-0 shadow-md">
-        <CardHeader className="pb-2 sm:pb-4">
-          <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-            <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
-            <span className="truncate">Statistiques de la boîte à outils</span>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Eye className="h-5 w-5 text-orange-600" />
+            Statistiques des onglets de la boîte à outils
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
             {toolboxVisitCards.map((stat, index) => {
               const Icon = stat.icon;
               return (
-                <div key={index} className={`p-2 sm:p-4 rounded-lg ${stat.bgColor} text-center`}>
-                  <div className="flex items-center justify-center mb-1 sm:mb-3">
-                    <Icon className={`h-4 w-4 sm:h-6 sm:w-6 ${stat.color}`} />
+                <div key={index} className={`p-4 rounded-lg ${stat.bgColor} text-center`}>
+                  <div className="flex items-center justify-center mb-3">
+                    <Icon className={`h-6 w-6 ${stat.color}`} />
                   </div>
-                  <div className={`text-lg sm:text-2xl font-bold ${stat.color} mb-1 sm:mb-2`}>
+                  <div className={`text-2xl font-bold ${stat.color} mb-2`}>
                     {stat.value.toLocaleString()}
                   </div>
-                  <p className={`text-xs sm:text-sm font-medium ${stat.color} leading-tight`}>
+                  <p className={`text-sm font-medium ${stat.color}`}>
                     {stat.title}
                   </p>
                 </div>
@@ -143,47 +143,47 @@ const StatisticsTab: React.FC = () => {
 
       {/* Additional Info */}
       <Card className="border-0 shadow-md">
-        <CardHeader className="pb-2 sm:pb-4">
-          <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-blue-600" />
             Informations complémentaires
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3 sm:space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-            <div className="p-3 sm:p-4 bg-blue-50 rounded-lg">
-              <h4 className="font-semibold text-blue-800 mb-2 text-sm sm:text-base">Taux de vérification</h4>
-              <p className="text-xl sm:text-2xl font-bold text-blue-600">
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 bg-blue-50 rounded-lg">
+              <h4 className="font-semibold text-blue-800 mb-2">Taux de vérification</h4>
+              <p className="text-2xl font-bold text-blue-600">
                 {stats?.totalUsers ? Math.round((stats.verifiedUsers / stats.totalUsers) * 100) : 0}%
               </p>
-              <p className="text-xs sm:text-sm text-blue-600">
+              <p className="text-sm text-blue-600">
                 {stats?.verifiedUsers} sur {stats?.totalUsers} utilisateurs
               </p>
             </div>
             
-            <div className="p-3 sm:p-4 bg-green-50 rounded-lg">
-              <h4 className="font-semibold text-green-800 mb-2 text-sm sm:text-base">Parties actives</h4>
-              <p className="text-xl sm:text-2xl font-bold text-green-600">
+            <div className="p-4 bg-green-50 rounded-lg">
+              <h4 className="font-semibold text-green-800 mb-2">Parties actives</h4>
+              <p className="text-2xl font-bold text-green-600">
                 {stats?.totalGames ? Math.round((stats.upcomingGames / stats.totalGames) * 100) : 0}%
               </p>
-              <p className="text-xs sm:text-sm text-green-600">
+              <p className="text-sm text-green-600">
                 {stats?.upcomingGames} parties à venir sur {stats?.totalGames} total
               </p>
             </div>
 
-            <div className="p-3 sm:p-4 bg-purple-50 rounded-lg">
-              <h4 className="font-semibold text-purple-800 mb-2 text-sm sm:text-base">Adoption du bot Discord</h4>
-              <p className="text-xl sm:text-2xl font-bold text-purple-600">
+            <div className="p-4 bg-purple-50 rounded-lg">
+              <h4 className="font-semibold text-purple-800 mb-2">Adoption du bot Discord</h4>
+              <p className="text-2xl font-bold text-purple-600">
                 {((stats?.discordBotDownloads || 0) + (stats?.discordBotInvites || 0)).toLocaleString()}
               </p>
-              <p className="text-xs sm:text-sm text-purple-600">
+              <p className="text-sm text-purple-600">
                 Total téléchargements + invitations
               </p>
             </div>
           </div>
           
-          <div className="border-t pt-3 sm:pt-4">
-            <p className="text-xs sm:text-sm text-gray-500">
+          <div className="border-t pt-4">
+            <p className="text-sm text-gray-500">
               <strong>Note :</strong> Les statistiques sont actualisées automatiquement toutes les 30 secondes. 
               Les utilisateurs en ligne sont ceux ayant eu une activité dans les 5 dernières minutes.
               Les statistiques de téléchargement et de visite sont mises à jour en temps réel.
