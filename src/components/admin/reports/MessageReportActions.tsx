@@ -25,11 +25,11 @@ const MessageReportActions: React.FC<MessageReportActionsProps> = ({
   }
 
   return (
-    <div className="flex gap-2">
+    <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
       <Button
         onClick={() => onResolveClick(report.id)}
         size="sm"
-        className="bg-green-600 hover:bg-green-700"
+        className="bg-green-600 hover:bg-green-700 w-full sm:w-auto text-xs sm:text-sm"
         disabled={isLoading}
       >
         Résoudre
@@ -38,6 +38,7 @@ const MessageReportActions: React.FC<MessageReportActionsProps> = ({
         onClick={() => onDismiss(report.id)}
         variant="outline"
         size="sm"
+        className="w-full sm:w-auto text-xs sm:text-sm"
         disabled={isLoading}
       >
         Rejeter

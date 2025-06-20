@@ -24,21 +24,21 @@ const UserReportActions: React.FC<UserReportActionsProps> = ({
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
       <Button
         onClick={() => onWarnClick(report)}
         size="sm"
         variant="outline"
-        className="border-orange-500 text-orange-500 hover:bg-orange-50"
+        className="border-orange-500 text-orange-500 hover:bg-orange-50 w-full sm:w-auto text-xs sm:text-sm"
         disabled={isLoading}
       >
-        <AlertTriangle className="mr-2 h-4 w-4" />
+        <AlertTriangle className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
         Avertir
       </Button>
       <Button
         onClick={() => onResolveClick(report.id)}
         size="sm"
-        className="bg-green-600 hover:bg-green-700"
+        className="bg-green-600 hover:bg-green-700 w-full sm:w-auto text-xs sm:text-sm"
         disabled={isLoading}
       >
         Résoudre
@@ -47,6 +47,7 @@ const UserReportActions: React.FC<UserReportActionsProps> = ({
         onClick={() => onDismiss(report.id)}
         variant="outline"
         size="sm"
+        className="w-full sm:w-auto text-xs sm:text-sm"
         disabled={isLoading}
       >
         Rejeter
