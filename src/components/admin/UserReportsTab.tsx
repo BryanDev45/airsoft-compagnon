@@ -40,7 +40,7 @@ const UserReportsTab = () => {
           onResolveClick={handleResolveClick}
           onDismiss={handleDismiss}
           onViewProfile={handleViewProfile}
-          isLoading={updateReportMutation.isP}
+          isLoading={updateReportMutation.isPending}
         />
       ))}
       

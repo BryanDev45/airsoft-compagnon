@@ -2,7 +2,21 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
-import { UserReport } from '@/components/admin/UserReportsTab';
+
+interface UserReport {
+  id: string;
+  reason: string;
+  details?: string;
+  status: string;
+  created_at: string;
+  admin_notes?: string;
+  reporter_profile: {
+    username: string;
+  } | null;
+  reported_profile: {
+    username: string;
+  } | null;
+}
 
 interface UserReportActionsProps {
   report: UserReport;
