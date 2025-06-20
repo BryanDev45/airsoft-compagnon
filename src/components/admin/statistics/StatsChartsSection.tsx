@@ -36,37 +36,40 @@ const StatsChartsSection: React.FC<StatsChartsSectionProps> = ({
 
   return (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      {/* Graphiques en barres - Stack vertical sur mobile */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
         <Card className="border-0 shadow-md">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-orange-600" />
-              Parties créées par mois
+          <CardHeader className="pb-2 sm:pb-6">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+              <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
+              <span className="truncate">Parties créées par mois</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="h-[300px]">
+          <CardContent className="pt-0">
+            <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={gamesPerMonth}>
+                <BarChart data={gamesPerMonth} margin={{ top: 5, right: 5, left: 5, bottom: 30 }}>
                   <XAxis 
                     dataKey="month" 
-                    tick={{ fontSize: 12, fill: '#6b7280' }}
+                    tick={{ fontSize: 10, fill: '#6b7280' }}
                     angle={-45}
                     textAnchor="end"
-                    height={60}
+                    height={50}
                     axisLine={{ stroke: '#e5e7eb' }}
                     tickLine={{ stroke: '#e5e7eb' }}
+                    interval={0}
                   />
                   <YAxis 
-                    tick={{ fontSize: 12, fill: '#6b7280' }} 
+                    tick={{ fontSize: 10, fill: '#6b7280' }} 
                     axisLine={{ stroke: '#e5e7eb' }}
                     tickLine={{ stroke: '#e5e7eb' }}
+                    width={30}
                   />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Bar 
                     dataKey="count" 
                     fill="#ea580c" 
-                    radius={[4, 4, 0, 0]}
+                    radius={[2, 2, 0, 0]}
                   />
                 </BarChart>
               </ResponsiveContainer>
@@ -75,35 +78,37 @@ const StatsChartsSection: React.FC<StatsChartsSectionProps> = ({
         </Card>
 
         <Card className="border-0 shadow-md">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserPlus className="h-5 w-5 text-blue-600" />
-              Inscriptions par mois
+          <CardHeader className="pb-2 sm:pb-6">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+              <UserPlus className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+              <span className="truncate">Inscriptions par mois</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="h-[300px]">
+          <CardContent className="pt-0">
+            <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={registrationsPerMonth}>
+                <BarChart data={registrationsPerMonth} margin={{ top: 5, right: 5, left: 5, bottom: 30 }}>
                   <XAxis 
                     dataKey="month" 
-                    tick={{ fontSize: 12, fill: '#6b7280' }}
+                    tick={{ fontSize: 10, fill: '#6b7280' }}
                     angle={-45}
                     textAnchor="end"
-                    height={60}
+                    height={50}
                     axisLine={{ stroke: '#e5e7eb' }}
                     tickLine={{ stroke: '#e5e7eb' }}
+                    interval={0}
                   />
                   <YAxis 
-                    tick={{ fontSize: 12, fill: '#6b7280' }} 
+                    tick={{ fontSize: 10, fill: '#6b7280' }} 
                     axisLine={{ stroke: '#e5e7eb' }}
                     tickLine={{ stroke: '#e5e7eb' }}
+                    width={30}
                   />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Bar 
                     dataKey="count" 
                     fill="#2563eb" 
-                    radius={[4, 4, 0, 0]}
+                    radius={[2, 2, 0, 0]}
                   />
                 </BarChart>
               </ResponsiveContainer>
@@ -112,16 +117,17 @@ const StatsChartsSection: React.FC<StatsChartsSectionProps> = ({
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      {/* Graphiques circulaires et par pays - Stack vertical sur mobile */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
         <Card className="border-0 shadow-md">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Globe className="h-5 w-5 text-green-600" />
-              Joueurs par pays
+          <CardHeader className="pb-2 sm:pb-6">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+              <Globe className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+              <span className="truncate">Joueurs par pays</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="h-[300px]">
+          <CardContent className="pt-0">
+            <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -129,10 +135,12 @@ const StatsChartsSection: React.FC<StatsChartsSectionProps> = ({
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ country, count, percent }) => 
-                      `${country}: ${count} (${(percent * 100).toFixed(1)}%)`
-                    }
-                    outerRadius={80}
+                    label={({ country, count, percent }) => {
+                      // Afficher les labels seulement sur desktop
+                      if (window.innerWidth < 640) return '';
+                      return `${country}: ${count} (${(percent * 100).toFixed(1)}%)`;
+                    }}
+                    outerRadius={window.innerWidth < 640 ? 60 : 80}
                     fill="#8884d8"
                     dataKey="count"
                   >
@@ -148,32 +156,36 @@ const StatsChartsSection: React.FC<StatsChartsSectionProps> = ({
         </Card>
 
         <Card className="border-0 shadow-md">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-red-600" />
-              Parties par pays
+          <CardHeader className="pb-2 sm:pb-6">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+              <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
+              <span className="truncate">Parties par pays</span>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="h-[300px]">
+          <CardContent className="pt-0">
+            <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={gamesByCountry}>
+                <BarChart data={gamesByCountry} margin={{ top: 5, right: 5, left: 5, bottom: 30 }}>
                   <XAxis 
                     dataKey="country" 
-                    tick={{ fontSize: 12, fill: '#6b7280' }}
+                    tick={{ fontSize: 10, fill: '#6b7280' }}
                     axisLine={{ stroke: '#e5e7eb' }}
                     tickLine={{ stroke: '#e5e7eb' }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={50}
                   />
                   <YAxis 
-                    tick={{ fontSize: 12, fill: '#6b7280' }} 
+                    tick={{ fontSize: 10, fill: '#6b7280' }} 
                     axisLine={{ stroke: '#e5e7eb' }}
                     tickLine={{ stroke: '#e5e7eb' }}
+                    width={30}
                   />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Bar 
                     dataKey="count" 
                     fill="#dc2626" 
-                    radius={[4, 4, 0, 0]}
+                    radius={[2, 2, 0, 0]}
                   />
                 </BarChart>
               </ResponsiveContainer>
