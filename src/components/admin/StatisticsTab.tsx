@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useAdminStats } from '@/hooks/admin/useAdminStats';
 import StatisticsHeader from './statistics/StatisticsHeader';
@@ -5,33 +6,11 @@ import StatsChartsSection from './statistics/StatsChartsSection';
 import StatsCardsGrid from './statistics/StatsCardsGrid';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
-  Users, 
-  UsersRound, 
-  Calendar, 
-  CalendarCheck, 
-  CalendarClock,
-  Wifi,
-  MessageSquare,
-  MessageCircle,
-  ShieldCheck,
-  UserX,
-  TrendingUp,
-  Bot,
-  Download,
-  Smartphone,
   Eye,
-  BarChart3,
-  UserPlus,
   Search,
-  Globe,
-  MapPin
+  TrendingUp,
 } from 'lucide-react';
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { createPageVisitCards, createSearchTabVisitCards, createToolboxVisitCards } from './statistics/StatsPageVisitCards';
 
 const StatisticsTab: React.FC = () => {
   const { data: stats, isLoading, error } = useAdminStats();
@@ -54,6 +33,10 @@ const StatisticsTab: React.FC = () => {
       </div>
     );
   }
+
+  const pageVisitCards = createPageVisitCards(stats);
+  const searchTabVisitCards = createSearchTabVisitCards(stats);
+  const toolboxVisitCards = createToolboxVisitCards(stats);
 
   return (
     <div className="space-y-6">

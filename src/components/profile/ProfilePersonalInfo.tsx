@@ -3,7 +3,7 @@ import React from 'react';
 import PersonalInfoHeader from './personal/PersonalInfoHeader';
 import PersonalInfoFields from './personal/PersonalInfoFields';
 import VerificationNotice from './personal/VerificationNotice';
-import PersonalInfoActions from './personal/PersonalInfoActions';
+import { usePersonalInfoActions } from '@/hooks/profile/usePersonalInfoActions';
 
 interface ProfilePersonalInfoProps {
   profileData: any;
@@ -17,7 +17,7 @@ const ProfilePersonalInfo: React.FC<ProfilePersonalInfoProps> = ({
   isOwnProfile
 }) => {
   const isVerified = profileData?.is_verified === true;
-  const actions = PersonalInfoActions({ user });
+  const actions = usePersonalInfoActions({ user });
 
   return (
     <div className="space-y-6">

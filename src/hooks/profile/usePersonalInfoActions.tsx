@@ -1,13 +1,12 @@
 
-import React from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
 
-interface PersonalInfoActionsProps {
+interface UsePersonalInfoActionsProps {
   user: any;
 }
 
-const PersonalInfoActions: React.FC<PersonalInfoActionsProps> = ({ user }) => {
+export const usePersonalInfoActions = ({ user }: UsePersonalInfoActionsProps) => {
   const updateFirstName = async (firstName: string) => {
     try {
       console.log('Updating first name:', firstName, 'for user:', user?.id);
@@ -135,5 +134,3 @@ const PersonalInfoActions: React.FC<PersonalInfoActionsProps> = ({ user }) => {
     updateSpokenLanguage
   };
 };
-
-export default PersonalInfoActions;
