@@ -141,7 +141,7 @@ export const useGameDataQueries = (id: string | undefined) => {
     enabled: !!id,
     staleTime: 30000,
     gcTime: 300000,
-    retry: 1,
+    retry: 2, // Augmenter les tentatives
     refetchOnWindowFocus: false,
     refetchInterval: false,
     meta: {
@@ -161,10 +161,10 @@ export const useGameDataQueries = (id: string | undefined) => {
   const participantsQuery = useQuery({
     queryKey: ['gameParticipants', id],
     queryFn: () => fetchParticipants(id!),
-    enabled: !!id,
+    enabled: !!id && !!gameQuery.data, // Attendre que les données de jeu soient chargées
     staleTime: 15000,
     gcTime: 300000,
-    retry: 1,
+    retry: 2,
     refetchOnWindowFocus: false,
     refetchInterval: 30000,
     meta: {
@@ -193,11 +193,15 @@ export const useGameDataQueries = (id: string | undefined) => {
 
   console.log('useGameDataQueries state:', {
     gameLoading: gameQuery.isLoading,
+    gameIsPending: gameQuery.isPending,
     participantsLoading: participantsQuery.isLoading,
     gameError: gameQuery.error,
     participantsError: participantsQuery.error,
     gameData: !!gameQuery.data,
-    participants: participantsQuery.data?.length || 0
+    gameDataNull: gameQuery.data === null,
+    gameDataUndefined: gameQuery.data === undefined,
+    participants: participantsQuery.data?.length || 0,
+    queryEnabled: !!id
   });
 
   return {

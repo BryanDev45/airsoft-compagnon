@@ -111,16 +111,20 @@ export const useGameData = (id: string | undefined) => {
     }
   }, [gameData]);
 
-  const loading = gameLoading || participantsLoading;
+  // Améliorer la logique de chargement - considérer que les données sont chargées seulement si on a une réponse définitive
+  const loading = gameLoading || (participantsLoading && gameData !== null);
   const error = gameError || participantsError;
 
   console.log('useGameData final state:', {
     gameData: !!gameData,
+    gameDataValue: gameData,
     participants: participants.length,
     loading,
     error,
     isRegistered,
-    creatorRating
+    creatorRating,
+    gameLoading,
+    participantsLoading
   });
 
   return {

@@ -78,7 +78,7 @@ function App() {
               } />
               <Route path="/user/:userId" element={<UserProfile />} />
               
-              {/* Routes pour les équipes - correction ici */}
+              {/* Routes pour les équipes */}
               <Route path="/team/:id" element={<Team />} />
               <Route path="/create-team" element={
                 <AuthGuard>
@@ -96,7 +96,8 @@ function App() {
                   <EditGame />
                 </AuthGuard>
               } />
-              <Route path="/game/:gameId" element={<GameDetails />} />
+              {/* Correction de la route pour les détails de partie - utiliser 'id' au lieu de 'gameId' */}
+              <Route path="/game/:id" element={<GameDetails />} />
               <Route path="/messages" element={
                 <AuthGuard>
                   <Messages />

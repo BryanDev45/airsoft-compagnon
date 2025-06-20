@@ -76,7 +76,7 @@ const GameDetails = () => {
     navigate(`/edit-game/${id}`);
   };
 
-  // Affichage du chargement
+  // Améliorer la logique d'affichage : afficher le chargement seulement si on charge vraiment
   if (loading) {
     console.log('GameDetails: Showing loading state');
     return (
@@ -93,9 +93,9 @@ const GameDetails = () => {
     );
   }
 
-  // Vérification si les données de la partie existent
-  if (!gameData) {
-    console.log('GameDetails: No game data available');
+  // Vérification si les données de la partie existent - seulement après que le chargement soit terminé
+  if (!loading && !gameData) {
+    console.log('GameDetails: No game data available after loading completed');
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
@@ -109,6 +109,23 @@ const GameDetails = () => {
             >
               Retour aux parties
             </button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Ne pas afficher le contenu principal si on n'a pas les données de jeu
+  if (!gameData) {
+    console.log('GameDetails: Waiting for game data...');
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-grow flex items-center justify-center">
+          <div className="animate-pulse flex flex-col items-center">
+            <div className="h-12 w-12 bg-airsoft-red rounded-full animate-spin"></div>
+            <p className="mt-4 text-gray-600">Chargement des données de la partie...</p>
           </div>
         </main>
         <Footer />
