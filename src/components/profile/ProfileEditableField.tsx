@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Edit, Save, X } from 'lucide-react';
+import { Edit, Check, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 interface ProfileEditableFieldProps {
   icon: React.ReactNode;
@@ -29,66 +29,79 @@ const ProfileEditableField: React.FC<ProfileEditableFieldProps> = ({
   isOwnProfile,
   inputType = "text"
 }) => {
-  const [editValue, setEditValue] = useState(value);
+  const [tempValue, setTempValue] = useState(value);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
-    const success = await onSave(editValue);
-    if (!success) {
-      setEditValue(value); // Reset on failure
-    }
+    setIsSaving(true);
+    const success = await onSave(tempValue);
+    setIsSaving(false);
   };
 
   const handleCancel = () => {
-    setEditValue(value);
+    setTempValue(value);
     onCancel();
   };
 
-  React.useEffect(() => {
-    setEditValue(value);
-  }, [value]);
+  if (isEditing) {
+    return (
+      <div className="flex items-start space-x-3">
+        <div className="flex-shrink-0 mt-0.5">
+          {icon}
+        </div>
+        <div className="flex-1 space-y-2">
+          <span className="text-sm text-gray-500 block">{label}</span>
+          <div className="flex items-center space-x-2">
+            <Input
+              type={inputType}
+              value={tempValue}
+              onChange={(e) => setTempValue(e.target.value)}
+              placeholder={placeholder}
+              className="flex-1"
+            />
+            <Button
+              size="sm"
+              onClick={handleSave}
+              disabled={isSaving}
+              className="px-2"
+            >
+              <Check className="h-4 w-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleCancel}
+              disabled={isSaving}
+              className="px-2"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-start">
-      <div className="h-5 w-5 text-gray-500 mr-3 mt-1">{icon}</div>
+      <div className="flex-shrink-0 text-gray-500 mr-3 mt-0.5">
+        {icon}
+      </div>
       <div className="flex-1">
-        <span className="text-sm text-gray-500">{label}</span>
-        {isOwnProfile && isEditing ? (
-          <div className="mt-1 space-y-2">
-            <Input
-              type={inputType}
-              value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
-              placeholder={placeholder}
-              className="w-full"
-            />
-            <div className="flex space-x-2">
-              <Button variant="outline" size="sm" onClick={handleSave}>
-                <Save className="h-4 w-4 mr-2" />
-                Sauvegarder
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleCancel}>
-                <X className="h-4 w-4 mr-2" />
-                Annuler
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="flex items-center justify-between">
-            <p className="font-medium">
-              {value || 'Non spécifié'}
-            </p>
-            {isOwnProfile && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onEdit}
-                className="h-8 px-2"
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-        )}
+        <span className="text-sm text-gray-500 block">{label}</span>
+        <div className="flex items-center justify-between">
+          <p className="font-medium">{value || 'Non spécifié'}</p>
+          {isOwnProfile && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={onEdit}
+              className="ml-2 p-1"
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -206,10 +206,10 @@ const ProfilePersonalInfo: React.FC<ProfilePersonalInfoProps> = ({
             isOwnProfile={isOwnProfile}
           />
         ) : (
-          <div className="flex items-center">
-            <User className="h-5 w-5 text-gray-500 mr-3" />
-            <div>
-              <span className="text-sm text-gray-500">Prénom</span>
+          <div className="flex items-start">
+            <User className="h-5 w-5 text-gray-500 mr-3 mt-0.5" />
+            <div className="flex-1">
+              <span className="text-sm text-gray-500 block">Prénom</span>
               <p className="font-medium">{currentFirstName || 'Non spécifié'}</p>
             </div>
           </div>
@@ -233,28 +233,28 @@ const ProfilePersonalInfo: React.FC<ProfilePersonalInfoProps> = ({
             isOwnProfile={isOwnProfile}
           />
         ) : (
-          <div className="flex items-center">
-            <User className="h-5 w-5 text-gray-500 mr-3" />
-            <div>
-              <span className="text-sm text-gray-500">Nom</span>
+          <div className="flex items-start">
+            <User className="h-5 w-5 text-gray-500 mr-3 mt-0.5" />
+            <div className="flex-1">
+              <span className="text-sm text-gray-500 block">Nom</span>
               <p className="font-medium">{currentLastName || 'Non spécifié'}</p>
             </div>
           </div>
         )}
         
-        <div className="flex items-center">
-          <Calendar className="h-5 w-5 text-gray-500 mr-3" />
-          <div>
-            <span className="text-sm text-gray-500">Membre depuis</span>
+        <div className="flex items-start">
+          <Calendar className="h-5 w-5 text-gray-500 mr-3 mt-0.5" />
+          <div className="flex-1">
+            <span className="text-sm text-gray-500 block">Membre depuis</span>
             <p className="font-medium">{formatDate(profileData?.join_date)}</p>
           </div>
         </div>
         
         {profileData?.age && (
-          <div className="flex items-center">
-            <User className="h-5 w-5 text-gray-500 mr-3" />
-            <div>
-              <span className="text-sm text-gray-500">Âge</span>
+          <div className="flex items-start">
+            <User className="h-5 w-5 text-gray-500 mr-3 mt-0.5" />
+            <div className="flex-1">
+              <span className="text-sm text-gray-500 block">Âge</span>
               <p className="font-medium">{profileData.age} ans</p>
             </div>
           </div>
