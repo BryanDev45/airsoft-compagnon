@@ -38,7 +38,7 @@ const ProfileTeamInfo: React.FC<ProfileTeamInfoProps> = ({
             <Award className="h-5 w-5 text-gray-500 flex-shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
               <span className="text-sm text-gray-500 block mb-1 text-left">Statut d'équipe</span>
-              <p className="font-medium">Chef d'équipe</p>
+              <p className="font-medium text-left">Chef d'équipe</p>
             </div>
           </div>}
         

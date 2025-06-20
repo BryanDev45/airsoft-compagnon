@@ -196,7 +196,7 @@ const ProfilePersonalInfo: React.FC<ProfilePersonalInfoProps> = ({
           <Calendar className="h-5 w-5 text-gray-500 flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
             <span className="text-sm text-gray-500 block mb-1 text-left">Membre depuis</span>
-            <p className="font-medium">{formatDate(profileData?.join_date)}</p>
+            <p className="font-medium text-left">{formatDate(profileData?.join_date)}</p>
           </div>
         </div>
         
@@ -204,7 +204,7 @@ const ProfilePersonalInfo: React.FC<ProfilePersonalInfoProps> = ({
             <User className="h-5 w-5 text-gray-500 flex-shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
               <span className="text-sm text-gray-500 block mb-1 text-left">Âge</span>
-              <p className="font-medium">{profileData.age} ans</p>
+              <p className="font-medium text-left">{profileData.age} ans</p>
             </div>
           </div>}
 
