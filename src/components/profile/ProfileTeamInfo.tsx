@@ -19,11 +19,11 @@ const ProfileTeamInfo: React.FC<ProfileTeamInfoProps> = ({
     <div className="space-y-6">
       <h2 className="text-xl font-semibold mb-4">Équipe</h2>
       
-      <div className="space-y-3">
-        <div className="flex items-start">
-          <Users className="h-5 w-5 text-gray-500 mr-3 mt-1" />
-          <div className="flex-grow">
-            <span className="text-sm text-gray-500">Équipe</span>
+      <div className="space-y-4">
+        <div className="flex items-start space-x-3">
+          <Users className="h-5 w-5 text-gray-500 flex-shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <span className="text-sm text-gray-500 block mb-1">Équipe</span>
             {profileData?.team ? (
               <div className="flex items-center justify-between">
                 {profileData?.team_id ? (
@@ -58,20 +58,20 @@ const ProfileTeamInfo: React.FC<ProfileTeamInfoProps> = ({
         </div>
         
         {profileData?.is_team_leader && (
-          <div className="flex items-center">
-            <Award className="h-5 w-5 text-gray-500 mr-3" />
-            <div>
-              <span className="text-sm text-gray-500">Statut d'équipe</span>
+          <div className="flex items-start space-x-3">
+            <Award className="h-5 w-5 text-gray-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <span className="text-sm text-gray-500 block mb-1">Statut d'équipe</span>
               <p className="font-medium">Chef d'équipe</p>
             </div>
           </div>
         )}
         
         {profileData?.association && (
-          <div className="flex items-center">
-            <Building2 className="h-5 w-5 text-gray-500 mr-3" />
-            <div>
-              <span className="text-sm text-gray-500">Association</span>
+          <div className="flex items-start space-x-3">
+            <Building2 className="h-5 w-5 text-gray-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <span className="text-sm text-gray-500 block mb-1">Association</span>
               <p className="font-medium">{profileData.association}</p>
             </div>
           </div>

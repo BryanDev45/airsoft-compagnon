@@ -187,7 +187,7 @@ const ProfilePersonalInfo: React.FC<ProfilePersonalInfoProps> = ({
     <div className="space-y-6">
       <h2 className="text-xl font-semibold mb-4">Informations personnelles</h2>
       
-      <div className="space-y-3">
+      <div className="space-y-4">
         {/* Prénom - Modifiable si non vérifié */}
         {isOwnProfile && !isVerified ? (
           <ProfileEditableField
@@ -206,10 +206,10 @@ const ProfilePersonalInfo: React.FC<ProfilePersonalInfoProps> = ({
             isOwnProfile={isOwnProfile}
           />
         ) : (
-          <div className="flex items-start">
-            <User className="h-5 w-5 text-gray-500 mr-3 mt-0.5" />
-            <div className="flex-1">
-              <span className="text-sm text-gray-500 block">Prénom</span>
+          <div className="flex items-start space-x-3">
+            <User className="h-5 w-5 text-gray-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <span className="text-sm text-gray-500 block mb-1">Prénom</span>
               <p className="font-medium">{currentFirstName || 'Non spécifié'}</p>
             </div>
           </div>
@@ -233,28 +233,28 @@ const ProfilePersonalInfo: React.FC<ProfilePersonalInfoProps> = ({
             isOwnProfile={isOwnProfile}
           />
         ) : (
-          <div className="flex items-start">
-            <User className="h-5 w-5 text-gray-500 mr-3 mt-0.5" />
-            <div className="flex-1">
-              <span className="text-sm text-gray-500 block">Nom</span>
+          <div className="flex items-start space-x-3">
+            <User className="h-5 w-5 text-gray-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <span className="text-sm text-gray-500 block mb-1">Nom</span>
               <p className="font-medium">{currentLastName || 'Non spécifié'}</p>
             </div>
           </div>
         )}
         
-        <div className="flex items-start">
-          <Calendar className="h-5 w-5 text-gray-500 mr-3 mt-0.5" />
-          <div className="flex-1">
-            <span className="text-sm text-gray-500 block">Membre depuis</span>
+        <div className="flex items-start space-x-3">
+          <Calendar className="h-5 w-5 text-gray-500 flex-shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <span className="text-sm text-gray-500 block mb-1">Membre depuis</span>
             <p className="font-medium">{formatDate(profileData?.join_date)}</p>
           </div>
         </div>
         
         {profileData?.age && (
-          <div className="flex items-start">
-            <User className="h-5 w-5 text-gray-500 mr-3 mt-0.5" />
-            <div className="flex-1">
-              <span className="text-sm text-gray-500 block">Âge</span>
+          <div className="flex items-start space-x-3">
+            <User className="h-5 w-5 text-gray-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <span className="text-sm text-gray-500 block mb-1">Âge</span>
               <p className="font-medium">{profileData.age} ans</p>
             </div>
           </div>

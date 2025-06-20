@@ -46,11 +46,11 @@ const ProfileEditableField: React.FC<ProfileEditableFieldProps> = ({
   if (isEditing) {
     return (
       <div className="flex items-start space-x-3">
-        <div className="flex-shrink-0 mt-0.5">
+        <div className="flex-shrink-0 mt-0.5 text-gray-500">
           {icon}
         </div>
-        <div className="flex-1 space-y-2">
-          <span className="text-sm text-gray-500 block">{label}</span>
+        <div className="flex-1 min-w-0 space-y-2">
+          <span className="text-sm text-gray-500 block mb-1">{label}</span>
           <div className="flex items-center space-x-2">
             <Input
               type={inputType}
@@ -83,12 +83,12 @@ const ProfileEditableField: React.FC<ProfileEditableFieldProps> = ({
   }
 
   return (
-    <div className="flex items-start">
-      <div className="flex-shrink-0 text-gray-500 mr-3 mt-0.5">
+    <div className="flex items-start space-x-3">
+      <div className="flex-shrink-0 text-gray-500 mt-0.5">
         {icon}
       </div>
-      <div className="flex-1">
-        <span className="text-sm text-gray-500 block">{label}</span>
+      <div className="flex-1 min-w-0">
+        <span className="text-sm text-gray-500 block mb-1">{label}</span>
         <div className="flex items-center justify-between">
           <p className="font-medium">{value || 'Non spécifié'}</p>
           {isOwnProfile && (
@@ -96,7 +96,7 @@ const ProfileEditableField: React.FC<ProfileEditableFieldProps> = ({
               size="sm"
               variant="ghost"
               onClick={onEdit}
-              className="ml-2 p-1"
+              className="ml-2 p-1 flex-shrink-0"
             >
               <Edit className="h-4 w-4" />
             </Button>
