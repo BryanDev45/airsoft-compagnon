@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Header from '../components/Header';
@@ -16,9 +17,10 @@ import TeamField from '../components/team/TeamField';
 import TeamNews from '../components/team/TeamNews';
 
 const Team = () => {
-  const {
-    id
-  } = useParams();
+  const { id } = useParams<{ id: string }>();
+  
+  console.log('Team page loaded with ID:', id);
+  
   const {
     team,
     loading,
@@ -27,6 +29,7 @@ const Team = () => {
     currentUserId,
     fetchTeamData
   } = useTeamData(id);
+  
   const {
     selectedMember,
     setSelectedMember,
@@ -51,6 +54,7 @@ const Team = () => {
     handleShareVia,
     handleFieldEdit
   } = useTeamView(team, fetchTeamData);
+  
   const [activeTab, setActiveTab] = useState('members');
 
   const currentUserMember = team?.members?.find((m: any) => m.id === currentUserId);
@@ -60,8 +64,12 @@ const Team = () => {
   const handleTeamUpdate = () => {
     fetchTeamData();
   };
+
+  console.log('Team page state:', { team, loading, error, id });
+
   if (loading && !team) {
-    return <div className="min-h-screen flex flex-col">
+    return (
+      <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-grow bg-gray-50 py-12 flex items-center justify-center">
           <div className="animate-pulse flex flex-col items-center">
@@ -71,10 +79,14 @@ const Team = () => {
           </div>
         </main>
         <Footer />
-      </div>;
+      </div>
+    );
   }
+
   if (error) {
-    return <div className="min-h-screen flex flex-col">
+    console.error('Team page error:', error);
+    return (
+      <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-grow bg-gray-50 py-12 flex items-center justify-center">
           <Card>
@@ -93,10 +105,14 @@ const Team = () => {
           </Card>
         </main>
         <Footer />
-      </div>;
+      </div>
+    );
   }
+
   if (!team) {
-    return <div className="min-h-screen flex flex-col">
+    console.warn('No team data available');
+    return (
+      <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-grow bg-gray-50 py-12 flex items-center justify-center">
           <Card>
@@ -112,9 +128,12 @@ const Team = () => {
           </Card>
         </main>
         <Footer />
-      </div>;
+      </div>
+    );
   }
-  return <div className="min-h-screen flex flex-col">
+
+  return (
+    <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow bg-gray-50">
         <TeamBanner team={team} isTeamMember={isTeamMember} onTeamUpdate={handleTeamUpdate} />
@@ -122,7 +141,14 @@ const Team = () => {
         <div className="max-w-6xl mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row md:items-start gap-8">
             <div className="md:w-1/3 space-y-6">
-              <TeamAbout team={team} handleContactTeam={handleContactTeam} handleShare={handleShare} isTeamMember={isTeamMember} currentUserId={currentUserId} onTeamUpdate={handleTeamUpdate} />
+              <TeamAbout 
+                team={team} 
+                handleContactTeam={handleContactTeam} 
+                handleShare={handleShare} 
+                isTeamMember={isTeamMember} 
+                currentUserId={currentUserId} 
+                onTeamUpdate={handleTeamUpdate} 
+              />
             </div>
 
             <div className="md:w-2/3">
@@ -170,7 +196,24 @@ const Team = () => {
       </main>
       <Footer />
 
-      <TeamDialogs team={team} selectedMember={selectedMember} showMemberDialog={showMemberDialog} setShowMemberDialog={setShowMemberDialog} showContactDialog={showContactDialog} setShowContactDialog={setShowContactDialog} showShareDialog={showShareDialog} setShowShareDialog={setShowShareDialog} contactMessage={contactMessage} setContactMessage={setContactMessage} contactSubject={contactSubject} setContactSubject={setContactSubject} handleSendMessage={handleSendMessage} handleShareVia={handleShareVia} />
-    </div>;
+      <TeamDialogs 
+        team={team} 
+        selectedMember={selectedMember} 
+        showMemberDialog={showMemberDialog} 
+        setShowMemberDialog={setShowMemberDialog} 
+        showContactDialog={showContactDialog} 
+        setShowContactDialog={setShowContactDialog} 
+        showShareDialog={showShareDialog} 
+        setShowShareDialog={setShowShareDialog} 
+        contactMessage={contactMessage} 
+        setContactMessage={setContactMessage} 
+        contactSubject={contactSubject} 
+        setContactSubject={setContactSubject} 
+        handleSendMessage={handleSendMessage} 
+        handleShareVia={handleShareVia} 
+      />
+    </div>
+  );
 };
+
 export default Team;

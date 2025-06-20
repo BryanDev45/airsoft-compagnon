@@ -77,17 +77,15 @@ function App() {
                 </AuthGuard>
               } />
               <Route path="/user/:userId" element={<UserProfile />} />
-              <Route path="/team" element={
-                <AuthGuard>
-                  <Team />
-                </AuthGuard>
-              } />
-              <Route path="/team/:teamId" element={<Team />} />
+              
+              {/* Routes pour les équipes - correction ici */}
+              <Route path="/team/:id" element={<Team />} />
               <Route path="/create-team" element={
                 <AuthGuard>
                   <CreateTeam />
                 </AuthGuard>
               } />
+              
               <Route path="/create-party" element={
                 <AuthGuard>
                   <CreateParty />

@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNetworkRequest } from './useNetworkRequest';
@@ -17,7 +18,12 @@ export const useTeamData = (teamId: string | undefined) => {
 
   // Function to fetch team data
   const fetchTeamData = useCallback(async () => {
-    if (!teamId) return;
+    if (!teamId) {
+      console.error('No teamId provided to fetchTeamData');
+      return;
+    }
+    
+    console.log('Fetching team data for teamId:', teamId);
     
     return executeRequest(async () => {
       // Fetch team data with separate queries to avoid relationship issues
@@ -25,11 +31,17 @@ export const useTeamData = (teamId: string | undefined) => {
         .from('teams')
         .select('*, team_fields(*)')
         .eq('id', teamId)
-        .single();
+        .maybeSingle();
 
-      if (teamError) throw teamError;
+      console.log('Team query result:', { teamData, teamError });
+
+      if (teamError) {
+        console.error('Error fetching team:', teamError);
+        throw teamError;
+      }
 
       if (!teamData) {
+        console.warn('No team found for ID:', teamId);
         toast({
           title: "Équipe non trouvée",
           description: "Cette équipe n'existe pas ou a été supprimée",
@@ -39,6 +51,8 @@ export const useTeamData = (teamId: string | undefined) => {
         return null;
       }
 
+      console.log('Team data found:', teamData);
+
       // Get team members
       const { data: teamMembers, error: membersError } = await supabase
         .from('team_members')
@@ -46,7 +60,12 @@ export const useTeamData = (teamId: string | undefined) => {
         .eq('team_id', teamData.id)
         .eq('status', 'confirmed');
 
-      if (membersError) throw membersError;
+      if (membersError) {
+        console.error('Error fetching team members:', membersError);
+        throw membersError;
+      }
+
+      console.log('Team members found:', teamMembers);
 
       // Get profiles for team members
       let formattedMembers: any[] = [];
@@ -62,7 +81,10 @@ export const useTeamData = (teamId: string | undefined) => {
             .select('id, username, avatar, join_date, is_verified')
             .in('id', userIds);
 
-          if (profilesError) throw profilesError;
+          if (profilesError) {
+            console.error('Error fetching profiles:', profilesError);
+            throw profilesError;
+          }
 
           // Match profiles with team members and format the data
           formattedMembers = teamMembers.map(member => {
@@ -149,13 +171,19 @@ export const useTeamData = (teamId: string | undefined) => {
 
       // Check if the current user is a member of this team
       const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        console.error('Error getting current user:', userError);
+      }
+      
       const currentUserId = userData?.user?.id;
+      console.log('Current user ID:', currentUserId);
       setCurrentUserId(currentUserId);
       
       const isCurrentUserMember = currentUserId ? 
         formattedMembers.some(member => member.id === currentUserId) : 
         false;
         
+      console.log('Is current user member:', isCurrentUserMember);
       setIsTeamMember(isCurrentUserMember);
 
       const teamDataFormatted = {
@@ -174,6 +202,7 @@ export const useTeamData = (teamId: string | undefined) => {
         }
       };
 
+      console.log('Final formatted team data:', teamDataFormatted);
       setTeam(teamDataFormatted);
       return teamDataFormatted;
     }, {
@@ -182,6 +211,7 @@ export const useTeamData = (teamId: string | undefined) => {
   }, [teamId, navigate, executeRequest]);
 
   useEffect(() => {
+    console.log('useEffect triggered with teamId:', teamId);
     if (teamId) {
       fetchTeamData();
     }
