@@ -11,6 +11,8 @@ export const useGameData = (id: string | undefined) => {
   const [creatorProfile, setCreatorProfile] = useState<Profile | null>(null);
   const [userProfile, setUserProfile] = useState<Profile | null>(null);
 
+  console.log('useGameData hook called with ID:', id);
+
   const {
     gameData,
     participants,
@@ -22,10 +24,13 @@ export const useGameData = (id: string | undefined) => {
     refetchParticipants
   } = useGameDataQueries(id);
 
+  console.log('useGameData: Raw data from queries:', { gameData, participants, gameLoading, participantsLoading, gameError, participantsError });
+
   // Charger le profil de l'utilisateur connecté
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (user?.id) {
+        console.log('Fetching user profile for:', user.id);
         const { data: profile } = await supabase
           .from('profiles')
           .select('*')
@@ -33,6 +38,7 @@ export const useGameData = (id: string | undefined) => {
           .single();
         
         if (profile) {
+          console.log('User profile loaded:', profile);
           // Construire le profil avec toutes les propriétés requises par le type Profile
           const completeProfile: Profile = {
             id: profile.id,
@@ -50,7 +56,7 @@ export const useGameData = (id: string | undefined) => {
             phone_number: profile.phone_number,
             team: profile.team,
             team_id: profile.team_id,
-            team_logo: null, // Initialisé à null, sera mis à jour si l'utilisateur a une équipe
+            team_logo: null,
             is_team_leader: profile.is_team_leader,
             is_verified: profile.is_verified,
             newsletter_subscribed: profile.newsletter_subscribed ?? null,
@@ -87,9 +93,10 @@ export const useGameData = (id: string | undefined) => {
 
   // Vérifier si l'utilisateur est inscrit
   useEffect(() => {
+    console.log('Checking user registration status:', { user: user?.id, participantsLength: participants.length });
     if (user && participants.length >= 0) {
       const isUserRegistered = participants.some(p => p.user_id === user.id);
-      console.log('Checking user registration:', user.id, 'in participants:', participants.map(p => p.user_id), 'result:', isUserRegistered);
+      console.log('User registration check result:', isUserRegistered);
       setIsRegistered(isUserRegistered);
     } else if (!user) {
       setIsRegistered(false);
@@ -99,12 +106,22 @@ export const useGameData = (id: string | undefined) => {
   // Définir le profil du créateur
   useEffect(() => {
     if (gameData?.creator) {
+      console.log('Setting creator profile:', gameData.creator);
       setCreatorProfile(gameData.creator);
     }
   }, [gameData]);
 
   const loading = gameLoading || participantsLoading;
   const error = gameError || participantsError;
+
+  console.log('useGameData final state:', {
+    gameData: !!gameData,
+    participants: participants.length,
+    loading,
+    error,
+    isRegistered,
+    creatorRating
+  });
 
   return {
     gameData,

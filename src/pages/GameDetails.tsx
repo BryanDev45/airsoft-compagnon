@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from "@/components/ui/use-toast";
@@ -22,6 +23,8 @@ const GameDetails = () => {
   const [selectedTab, setSelectedTab] = useState('details');
   const [isAdmin, setIsAdmin] = useState(false);
 
+  console.log('GameDetails component rendered with ID:', id);
+
   const {
     gameData,
     participants,
@@ -32,6 +35,8 @@ const GameDetails = () => {
     userProfile,
     loadParticipants
   } = useGameData(id);
+
+  console.log('GameDetails data:', { gameData, participants, loading, isRegistered });
 
   const {
     loadingRegistration,
@@ -71,7 +76,9 @@ const GameDetails = () => {
     navigate(`/edit-game/${id}`);
   };
 
+  // Affichage du chargement
   if (loading) {
+    console.log('GameDetails: Showing loading state');
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
@@ -86,80 +93,104 @@ const GameDetails = () => {
     );
   }
 
-  const isPastGame = gameData ? new Date(gameData.date) < new Date() : false;
+  // Vérification si les données de la partie existent
+  if (!gameData) {
+    console.log('GameDetails: No game data available');
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-grow flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Partie non trouvée</h2>
+            <p className="text-gray-600 mb-6">Cette partie n'existe pas ou a été supprimée.</p>
+            <button 
+              onClick={() => navigate('/parties')}
+              className="bg-airsoft-red text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors"
+            >
+              Retour aux parties
+            </button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  console.log('GameDetails: Rendering full game details');
+
+  const isPastGame = new Date(gameData.date) < new Date();
   const isCreator = user && gameData ? user.id === gameData.created_by : false;
   const canEditOrDelete = (isCreator || isAdmin) && !isPastGame;
 
-  const gameImages = gameData ? [
+  const gameImages = [
     gameData.Picture1,
     gameData.Picture2,
     gameData.Picture3,
     gameData.Picture4,
     gameData.Picture5
-  ].filter(Boolean) : [];
+  ].filter(Boolean);
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow bg-gray-50 py-6">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {gameData && (
-            <>
-              <GameHeader 
-                title={gameData.title}
-                gameType={gameData.game_type}
-                date={gameData.date}
-                endDate={gameData.end_date}
-                startTime={gameData.start_time}
-                endTime={gameData.end_time}
-                address={gameData.address}
-                zipCode={gameData.zip_code}
-                city={gameData.city}
-                participantsCount={participants.length}
-                maxPlayers={gameData.max_players}
-                price={gameData.price || null}
-                isRegistered={isRegistered}
-                loadingRegistration={loadingRegistration}
-                onRegister={() => handleRegistration(isRegistered)}
-                onShare={handleShareGame}
-                isCreator={isCreator}
-                isPastGame={isPastGame}
-                isAdmin={isAdmin}
-                onEdit={canEditOrDelete ? handleEditGame : undefined}
-                onDelete={canEditOrDelete ? handleDeleteGame : undefined}
-              />
-              
-              <div className="my-6">
-                <GameImages images={gameImages} title={gameData.title} />
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="md:col-span-2">
-                  <GameTabs selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
-                  <GameDetailsContainer
-                    selectedTab={selectedTab}
-                    gameData={gameData}
-                    participants={participants}
-                    creatorRating={creatorRating}
-                    navigateToCreatorProfile={navigateToCreatorProfile}
-                    isCreator={isCreator}
-                  />
-                </div>
-                <GameSidebar
-                  gameData={gameData}
-                  participantsCount={participants.length}
-                  isRegistered={isRegistered}
-                  loadingRegistration={loadingRegistration}
-                  onRegister={() => handleRegistration(isRegistered)}
-                  userProfile={userProfile}
-                  user={user}
-                />
-              </div>
-            </>
+          <GameHeader 
+            title={gameData.title}
+            gameType={gameData.game_type}
+            date={gameData.date}
+            endDate={gameData.end_date}
+            startTime={gameData.start_time}
+            endTime={gameData.end_time}
+            address={gameData.address}
+            zipCode={gameData.zip_code}
+            city={gameData.city}
+            participantsCount={participants.length}
+            maxPlayers={gameData.max_players}
+            price={gameData.price || null}
+            isRegistered={isRegistered}
+            loadingRegistration={loadingRegistration}
+            onRegister={() => handleRegistration(isRegistered)}
+            onShare={handleShareGame}
+            isCreator={isCreator}
+            isPastGame={isPastGame}
+            isAdmin={isAdmin}
+            onEdit={canEditOrDelete ? handleEditGame : undefined}
+            onDelete={canEditOrDelete ? handleDeleteGame : undefined}
+          />
+          
+          {gameImages.length > 0 && (
+            <div className="my-6">
+              <GameImages images={gameImages} title={gameData.title} />
+            </div>
           )}
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-2">
+              <GameTabs selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
+              <GameDetailsContainer
+                selectedTab={selectedTab}
+                gameData={gameData}
+                participants={participants}
+                creatorRating={creatorRating}
+                navigateToCreatorProfile={navigateToCreatorProfile}
+                isCreator={isCreator}
+              />
+            </div>
+            <GameSidebar
+              gameData={gameData}
+              participantsCount={participants.length}
+              isRegistered={isRegistered}
+              loadingRegistration={loadingRegistration}
+              onRegister={() => handleRegistration(isRegistered)}
+              userProfile={userProfile}
+              user={user}
+            />
+          </div>
         </div>
       </main>
       <Footer />
+      
       {showShareDialog && (
         <ShareDialog 
           open={showShareDialog} 
@@ -173,6 +204,7 @@ const GameDetails = () => {
           }}
         />
       )}
+      
       {showRegistrationDialog && gameData && (
         <RegistrationDialog
           open={showRegistrationDialog}

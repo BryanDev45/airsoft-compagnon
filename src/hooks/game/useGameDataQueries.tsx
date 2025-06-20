@@ -7,18 +7,25 @@ import { Profile } from '@/types/profile';
 import { getStorageWithExpiry, setStorageWithExpiry, CACHE_DURATIONS } from '@/utils/cacheUtils';
 
 const fetchGameData = async (id: string): Promise<GameData | null> => {
-  console.log('Fetching fresh game data for game:', id);
+  console.log('Fetching game data for ID:', id);
   
   const { data: gameData, error: gameError } = await supabase
     .from('airsoft_games')
     .select('*')
     .eq('id', id)
-    .single();
+    .maybeSingle();
 
   if (gameError) {
     console.error('Error fetching game data:', gameError);
     throw gameError;
   }
+  
+  if (!gameData) {
+    console.warn('No game found for ID:', id);
+    return null;
+  }
+
+  console.log('Game data fetched successfully:', gameData);
   
   let creator: Profile | null = null;
   if (gameData.created_by) {
@@ -27,17 +34,18 @@ const fetchGameData = async (id: string): Promise<GameData | null> => {
         .from('profiles')
         .select('*')
         .eq('id', gameData.created_by)
-        .single();
+        .maybeSingle();
         
       if (creatorError) {
         console.warn("Could not fetch creator profile:", creatorError);
-      } else {
+      } else if (creatorData) {
         const creatorDataAny = creatorData as any;
         creator = {
           ...creatorDataAny,
           newsletter_subscribed: creatorDataAny?.newsletter_subscribed ?? null,
           team_logo: creatorDataAny?.team_logo ?? null
         } as Profile;
+        console.log('Creator profile loaded:', creator);
       }
     } catch (error) {
       console.warn("Error fetching creator profile:", error);
@@ -49,11 +57,12 @@ const fetchGameData = async (id: string): Promise<GameData | null> => {
     creator
   };
   
+  console.log('Final game data with creator:', gameWithCreator);
   return gameWithCreator;
 };
 
 const fetchParticipants = async (gameId: string): Promise<GameParticipant[]> => {
-  console.log('Fetching fresh participants data for game:', gameId);
+  console.log('Fetching participants for game:', gameId);
   
   const { data: participants, error } = await supabase
     .from('game_participants')
@@ -65,6 +74,8 @@ const fetchParticipants = async (gameId: string): Promise<GameParticipant[]> => 
     throw error;
   }
 
+  console.log('Participants fetched:', participants?.length || 0);
+
   const participantsWithProfiles = await Promise.all(
     (participants || []).map(async (participant) => {
       try {
@@ -72,9 +83,9 @@ const fetchParticipants = async (gameId: string): Promise<GameParticipant[]> => 
           .from('profiles')
           .select('*')
           .eq('id', participant.user_id)
-          .single();
+          .maybeSingle();
 
-        const profile = profileError ? null : {
+        const profile = profileError || !profileData ? null : {
           ...(profileData as any),
           newsletter_subscribed: profileData?.newsletter_subscribed ?? null
         } as Profile;
@@ -93,6 +104,7 @@ const fetchParticipants = async (gameId: string): Promise<GameParticipant[]> => 
     })
   );
 
+  console.log('Participants with profiles loaded:', participantsWithProfiles.length);
   return participantsWithProfiles;
 };
 
@@ -121,17 +133,20 @@ const fetchCreatorRating = async (creatorId: string): Promise<number | null> => 
 };
 
 export const useGameDataQueries = (id: string | undefined) => {
+  console.log('useGameDataQueries called with ID:', id);
+
   const gameQuery = useQuery({
     queryKey: ['gameData', id],
     queryFn: () => fetchGameData(id!),
     enabled: !!id,
-    staleTime: 30000, // Increased from 1s to 30s
-    gcTime: 300000, // 5 minutes
+    staleTime: 30000,
+    gcTime: 300000,
     retry: 1,
-    refetchOnWindowFocus: false, // Disabled to reduce requests
-    refetchInterval: false, // Disabled automatic polling
+    refetchOnWindowFocus: false,
+    refetchInterval: false,
     meta: {
       errorHandler: (error: any) => {
+        console.error('Game query error:', error);
         if (error.message !== "Failed to fetch") {
           toast({
             variant: "destructive",
@@ -147,13 +162,14 @@ export const useGameDataQueries = (id: string | undefined) => {
     queryKey: ['gameParticipants', id],
     queryFn: () => fetchParticipants(id!),
     enabled: !!id,
-    staleTime: 15000, // Increased from 1s to 15s
-    gcTime: 300000, // 5 minutes
+    staleTime: 15000,
+    gcTime: 300000,
     retry: 1,
-    refetchOnWindowFocus: false, // Disabled to reduce requests
-    refetchInterval: 30000, // Reduced from 5s to 30s
+    refetchOnWindowFocus: false,
+    refetchInterval: 30000,
     meta: {
       errorHandler: (error: any) => {
+        console.error('Participants query error:', error);
         if (error.message !== "Failed to fetch") {
           toast({
             variant: "destructive",
@@ -173,6 +189,15 @@ export const useGameDataQueries = (id: string | undefined) => {
     gcTime: CACHE_DURATIONS.LONG,
     retry: 1,
     refetchOnWindowFocus: false
+  });
+
+  console.log('useGameDataQueries state:', {
+    gameLoading: gameQuery.isLoading,
+    participantsLoading: participantsQuery.isLoading,
+    gameError: gameQuery.error,
+    participantsError: participantsQuery.error,
+    gameData: !!gameQuery.data,
+    participants: participantsQuery.data?.length || 0
   });
 
   return {
