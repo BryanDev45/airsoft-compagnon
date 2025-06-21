@@ -48,9 +48,7 @@ export const useOptimizedUserSearch = (searchQuery: string) => {
     console.log('useOptimizedUserSearch: Starting search with query:', searchQuery);
     
     try {
-      // Use direct query instead of RPC to ensure it works
-      console.log('Using direct query for user search...');
-      
+      // First, get the users with basic profile information
       let queryBuilder = supabase
         .from('profiles')
         .select(`
@@ -63,12 +61,7 @@ export const useOptimizedUserSearch = (searchQuery: string) => {
           reputation, 
           Ban,
           is_verified,
-          team_id,
-          teams(
-            id,
-            name,
-            logo
-          )
+          team_id
         `);
       
       // Filter banned users unless admin
@@ -92,10 +85,32 @@ export const useOptimizedUserSearch = (searchQuery: string) => {
 
       console.log('User search returned:', userData?.length || 0, 'users');
 
+      if (!userData || userData.length === 0) {
+        return [];
+      }
+
+      // Get unique team IDs from users who have teams
+      const teamIds = [...new Set(userData.map(user => user.team_id).filter(Boolean))];
+      
+      // Fetch team information if there are any teams to fetch
+      let teamsData: any[] = [];
+      if (teamIds.length > 0) {
+        const { data: teams, error: teamsError } = await supabase
+          .from('teams')
+          .select('id, name, logo')
+          .in('id', teamIds);
+        
+        if (!teamsError && teams) {
+          teamsData = teams;
+        }
+      }
+
+      // Create a map for quick team lookup
+      const teamsMap = new Map(teamsData.map(team => [team.id, team]));
+
       // Transform data to match expected interface
-      return (userData || []).map(user => {
-        // Handle teams array - get the first team if it exists
-        const teamData = Array.isArray(user.teams) && user.teams.length > 0 ? user.teams[0] : null;
+      return userData.map(user => {
+        const teamData = user.team_id ? teamsMap.get(user.team_id) : null;
         
         return {
           id: user.id,
