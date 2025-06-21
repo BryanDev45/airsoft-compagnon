@@ -1,4 +1,5 @@
 
+
 -- Supprimer l'ancienne fonction qui pose problème
 DROP FUNCTION IF EXISTS public.get_game_with_participants(uuid);
 
@@ -30,8 +31,8 @@ BEGIN
   END IF;
   
   -- Récupérer les participants avec leurs profils
-  SELECT COALESCE(json_agg(
-    json_build_object(
+  SELECT COALESCE(jsonb_agg(
+    jsonb_build_object(
       'id', gp.id,
       'user_id', gp.user_id,
       'game_id', gp.game_id,
@@ -39,7 +40,7 @@ BEGIN
       'role', gp.role,
       'created_at', gp.created_at,
       'profile', CASE 
-        WHEN p.id IS NOT NULL THEN json_build_object(
+        WHEN p.id IS NOT NULL THEN jsonb_build_object(
           'id', p.id,
           'username', p.username,
           'firstname', p.firstname,
@@ -51,7 +52,7 @@ BEGIN
         ELSE null
       END
     )
-  ), '[]'::jsonb)::jsonb INTO participants_array
+  ), '[]'::jsonb) INTO participants_array
   FROM game_participants gp
   LEFT JOIN profiles p ON p.id = gp.user_id
   WHERE gp.game_id = p_game_id;
@@ -68,3 +69,4 @@ BEGIN
     creator_data as creator_profile;
 END;
 $$;
+
