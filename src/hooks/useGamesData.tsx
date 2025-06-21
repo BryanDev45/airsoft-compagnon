@@ -51,11 +51,12 @@ export const useGamesData = (userId?: string) => {
         .from('airsoft_games')
         .select('*');
       
+      // Always get public games, add private ones only if user is authenticated
       if (userId) {
-        // Si l'utilisateur est connecté, récupérer toutes les parties publiques + ses parties privées
+        // If user is connected, get public games + their private games
         query = query.or(`is_private.eq.false,and(is_private.eq.true,created_by.eq.${userId})`);
       } else {
-        // Si pas connecté, récupérer seulement les parties publiques
+        // If not connected, get only public games
         query = query.eq('is_private', false);
       }
       
@@ -66,14 +67,19 @@ export const useGamesData = (userId?: string) => {
         throw error;
       }
       
-      console.log(`Fetched ${games?.length || 0} games`);
+      console.log(`Fetched ${games?.length || 0} games from database`);
       
-      // Traiter chaque partie pour s'assurer que les coordonnées sont valides
+      if (!games || games.length === 0) {
+        console.log('No games found in database');
+        return [];
+      }
+      
+      // Process each game to ensure coordinates are valid
       const processedGames = await Promise.all(
-        (games || []).map(async (game) => {
+        games.map(async (game) => {
           console.log(`Processing game "${game.title}": Address="${game.address}", City="${game.city}", Stored coords=(${game.latitude}, ${game.longitude})`);
           
-          // Utiliser la fonction getValidCoordinates pour obtenir des coordonnées valides
+          // Use getValidCoordinates function to get valid coordinates
           const validCoordinates = await getValidCoordinates(
             game.latitude,
             game.longitude,
@@ -89,9 +95,9 @@ export const useGamesData = (userId?: string) => {
           return {
             id: game.id,
             title: game.title,
-            // Stocker la date brute pour les calculs
+            // Store raw date for calculations
             date: game.date, // Format ISO YYYY-MM-DD
-            endDate: game.end_date, // Ajouter la date de fin
+            endDate: game.end_date,
             location: `${game.city}`,
             department: game.zip_code ? game.zip_code.substring(0, 2) : '',
             type: game.game_type,
@@ -100,7 +106,7 @@ export const useGamesData = (userId?: string) => {
             lng: validCoordinates.longitude,
             maxPlayers: game.max_players,
             price: game.price,
-            // Ajouter les heures de début et fin pour les calculs
+            // Add start and end times for calculations
             startTime: game.start_time,
             endTime: game.end_time,
             images: [
@@ -114,7 +120,7 @@ export const useGamesData = (userId?: string) => {
         })
       );
 
-      // Filtrer les parties avec des coordonnées valides avant de les retourner
+      // Filter games with valid coordinates before returning
       const validGames = processedGames.filter(game => {
         const isValid = game.lat !== 0 && game.lng !== 0 && 
                        !isNaN(game.lat) && !isNaN(game.lng) &&

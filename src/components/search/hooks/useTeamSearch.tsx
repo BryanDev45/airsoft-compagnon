@@ -19,6 +19,8 @@ export const useTeamSearch = (searchQuery: string) => {
   return useQuery({
     queryKey: ['teams', searchQuery],
     queryFn: async (): Promise<Team[]> => {
+      console.log('useTeamSearch: Starting search with query:', searchQuery);
+      
       let query = supabase
         .from('teams')
         .select('*');
@@ -35,10 +37,14 @@ export const useTeamSearch = (searchQuery: string) => {
         throw error;
       }
 
+      console.log('Team search returned:', teamsData?.length || 0, 'teams');
+
       if (!teamsData) return [];
 
       // Get actual member counts for each team
       const teamIds = teamsData.map(team => team.id);
+      
+      if (teamIds.length === 0) return [];
       
       const { data: memberCounts, error: memberError } = await supabase
         .from('team_members')
@@ -67,8 +73,8 @@ export const useTeamSearch = (searchQuery: string) => {
         rating: team.rating || 0
       }));
     },
-    // Always enable the query now, even with empty search
+    // Always enable the query
     enabled: true,
-    staleTime: 0,
+    staleTime: 60000, // 1 minute
   });
 };

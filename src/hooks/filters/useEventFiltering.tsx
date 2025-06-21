@@ -14,6 +14,8 @@ interface FilterParams {
 
 export function useEventFiltering() {
   const filterEvents = (events: MapEvent[], filters: FilterParams): MapEvent[] => {
+    console.log(`Filtering ${events.length} events with filters:`, filters);
+    
     const {
       searchQuery,
       selectedType,
@@ -24,28 +26,29 @@ export function useEventFiltering() {
       searchCenter
     } = filters;
 
-    return events.filter(event => {
+    const filtered = events.filter(event => {
+      // Search query filter
       const matchesSearch = !searchQuery || 
                           event.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           event.location.toLowerCase().includes(searchQuery.toLowerCase());
       
+      // Type filter
       const matchesType = selectedType === 'all' || 
                           (selectedType === 'dominicale' && event.type === 'dominicale') ||
                           (selectedType === 'operation' && event.type === 'operation');
       
+      // Department filter
       const matchesDepartment = selectedDepartment === 'all' || event.department === selectedDepartment;
       
-      // Filtrage simplifié par date : on compare seulement avec la date de début
+      // Date filter - simplified: only compare with start date
       let matchesDate = true;
       if (selectedDate) {
         const selectedDateStr = selectedDate.toISOString().split('T')[0];
         const gameStartDate = event.date; // Format ISO YYYY-MM-DD
-        
-        // On vérifie simplement si la date sélectionnée correspond à la date de début de la partie
         matchesDate = selectedDateStr === gameStartDate;
       }
       
-      // Correction du filtrage par pays - normalisation des noms de pays
+      // Country filter - normalized comparison
       let matchesCountry = true;
       if (selectedCountry !== 'all') {
         const normalizedEventCountry = event.country.toLowerCase();
@@ -53,13 +56,14 @@ export function useEventFiltering() {
         matchesCountry = normalizedEventCountry === normalizedSelectedCountry;
       }
       
-      // Filtrage par défaut : ne montrer que les parties futures (pas celles qui commencent aujourd'hui)
+      // Future date filter - only show future games by default
       let matchesFutureDate = true;
       if (!selectedDate) {
         const today = new Date().toISOString().split('T')[0];
-        matchesFutureDate = event.date > today; // Changé de >= à > pour exclure aujourd'hui
+        matchesFutureDate = event.date > today; // Exclude today and past dates
       }
       
+      // Radius filter
       if (searchRadius[0] === 0) {
         return matchesSearch && matchesType && matchesDepartment && matchesDate && 
                matchesCountry && matchesFutureDate;
@@ -80,6 +84,9 @@ export function useEventFiltering() {
       return matchesSearch && matchesType && matchesDepartment && matchesDate && 
              matchesCountry && matchesFutureDate;
     });
+
+    console.log(`Filtered ${filtered.length} events out of ${events.length}`);
+    return filtered;
   };
 
   return { filterEvents };

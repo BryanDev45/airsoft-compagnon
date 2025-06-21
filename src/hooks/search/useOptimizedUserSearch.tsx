@@ -48,39 +48,8 @@ export const useOptimizedUserSearch = (searchQuery: string) => {
     console.log('useOptimizedUserSearch: Starting search with query:', searchQuery);
     
     try {
-      // Essayer d'abord l'appel RPC optimisé
-      const { data, error } = await supabase.rpc('search_users_optimized', {
-        p_query: searchQuery || '',
-        p_limit: 20,
-        p_is_admin: isAdmin
-      });
-
-      if (error) {
-        console.error('Error in optimized user search:', error);
-      } else if (data && data.length > 0) {
-        console.log('RPC search returned:', data.length, 'users');
-        
-        // Transform to match the expected interface
-        return data.map((user: any) => ({
-          id: user.id,
-          username: user.username,
-          firstname: user.firstname,
-          lastname: user.lastname,
-          avatar: user.avatar,
-          location: user.location,
-          reputation: user.reputation,
-          Ban: user.ban,
-          ban: user.ban,
-          is_verified: user.is_verified,
-          team_id: user.team_info?.id || null,
-          team_name: user.team_info?.name || null,
-          team_logo: user.team_info?.logo || null,
-          team_info: user.team_info
-        }));
-      }
-
-      // Fallback to direct query if RPC fails or returns no results
-      console.log('Falling back to direct query...');
+      // Use direct query instead of RPC to ensure it works
+      console.log('Using direct query for user search...');
       
       let queryBuilder = supabase
         .from('profiles')
@@ -102,29 +71,29 @@ export const useOptimizedUserSearch = (searchQuery: string) => {
           )
         `);
       
-      // Filtrer les utilisateurs bannis sauf pour les admins
+      // Filter banned users unless admin
       if (!isAdmin) {
         queryBuilder = queryBuilder.eq('Ban', false);
       }
       
-      // Ajouter le filtre de recherche seulement si on a une query
+      // Add search filter if we have a query
       if (searchQuery && searchQuery.trim().length > 0) {
         queryBuilder = queryBuilder.or(`username.ilike.%${searchQuery}%,firstname.ilike.%${searchQuery}%,lastname.ilike.%${searchQuery}%`);
       }
       
       queryBuilder = queryBuilder.limit(20).order('reputation', { ascending: false, nullsFirst: false });
       
-      const { data: fallbackData, error: fallbackError } = await queryBuilder;
+      const { data: userData, error } = await queryBuilder;
       
-      if (fallbackError) {
-        console.error('Error in fallback user search:', fallbackError);
+      if (error) {
+        console.error('Error in user search:', error);
         return [];
       }
 
-      console.log('Fallback search returned:', fallbackData?.length || 0, 'users');
+      console.log('User search returned:', userData?.length || 0, 'users');
 
-      // Transform fallback data to match expected interface
-      return (fallbackData || []).map(user => {
+      // Transform data to match expected interface
+      return (userData || []).map(user => {
         // Handle teams array - get the first team if it exists
         const teamData = Array.isArray(user.teams) && user.teams.length > 0 ? user.teams[0] : null;
         
@@ -162,7 +131,7 @@ export const useOptimizedUserSearch = (searchQuery: string) => {
   } = useQuery({
     queryKey: ['optimized-user-search', searchQuery, isAdmin],
     queryFn,
-    enabled: true, // Toujours activer la requête
+    enabled: true, // Always enable the query
     staleTime: 60000, // 1 minute
     gcTime: 300000, // 5 minutes
   });
