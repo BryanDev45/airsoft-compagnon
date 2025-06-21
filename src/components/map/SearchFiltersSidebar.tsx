@@ -121,9 +121,9 @@ const SearchFiltersSidebar: React.FC<SearchFiltersSidebarProps> = ({
   // En mode mobile, affichage simplifié sans sections déployables
   if (isMobile) {
     return (
-      <div className="w-full p-4 h-full bg-gray-800">
+      <div className="w-full h-full bg-gray-800 flex flex-col">
         {/* Header avec bouton de fermeture */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between p-4 flex-shrink-0">
           <div className="flex items-center gap-2">
             <Filter className="h-5 w-5 text-airsoft-red flex-shrink-0" />
             <h2 className="text-lg font-semibold text-white">
@@ -142,59 +142,61 @@ const SearchFiltersSidebar: React.FC<SearchFiltersSidebarProps> = ({
           )}
         </div>
 
-        {/* Filtres directement affichés */}
-        <div className="space-y-6">
-          {/* Localisation */}
-          <LocationSearchFilter
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            getCurrentPosition={getCurrentPosition}
-          />
+        {/* Contenu défilable */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-4 pt-0 space-y-6 min-h-full">
+            {/* Localisation */}
+            <LocationSearchFilter
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              getCurrentPosition={getCurrentPosition}
+            />
 
-          {/* Type de partie */}
-          <EventTypeFilter
-            selectedType={selectedType}
-            setSelectedType={setSelectedType}
-          />
+            {/* Type de partie */}
+            <EventTypeFilter
+              selectedType={selectedType}
+              setSelectedType={setSelectedType}
+            />
 
-          {/* Département */}
-          <DepartmentFilter
-            selectedDepartment={selectedDepartment}
-            setSelectedDepartment={setSelectedDepartment}
-          />
+            {/* Département */}
+            <DepartmentFilter
+              selectedDepartment={selectedDepartment}
+              setSelectedDepartment={setSelectedDepartment}
+            />
 
-          {/* Date */}
-          <DateFilter
-            selectedDate={selectedDate}
-            setSelectedDate={setSelectedDate}
-          />
+            {/* Date */}
+            <DateFilter
+              selectedDate={selectedDate}
+              setSelectedDate={setSelectedDate}
+            />
 
-          {/* Pays */}
-          <CountryFilter
-            selectedCountry={selectedCountry}
-            setSelectedCountry={setSelectedCountry}
-          />
+            {/* Pays */}
+            <CountryFilter
+              selectedCountry={selectedCountry}
+              setSelectedCountry={setSelectedCountry}
+            />
 
-          {/* Rayon de recherche */}
-          <RadiusFilter
-            searchRadius={searchRadius}
-            setSearchRadius={setSearchRadius}
-          />
+            {/* Rayon de recherche */}
+            <RadiusFilter
+              searchRadius={searchRadius}
+              setSearchRadius={setSearchRadius}
+            />
+          </div>
+        </div>
 
-          {/* Résultats */}
-          <div className="pt-4 border-t border-gray-600 sticky bottom-0 bg-gray-800 pb-2">
-            <div className="text-sm text-gray-300">
-              {loading ? (
-                <div className="flex items-center gap-2 justify-center">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Recherche en cours...
-                </div>
-              ) : (
-                <p className="font-medium text-center">
-                  {filteredEventsCount} parties trouvées
-                </p>
-              )}
-            </div>
+        {/* Footer avec résultats - fixé en bas */}
+        <div className="p-4 border-t border-gray-600 bg-gray-800 flex-shrink-0">
+          <div className="text-sm text-gray-300">
+            {loading ? (
+              <div className="flex items-center gap-2 justify-center">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Recherche en cours...
+              </div>
+            ) : (
+              <p className="font-medium text-center">
+                {filteredEventsCount} parties trouvées
+              </p>
+            )}
           </div>
         </div>
       </div>
