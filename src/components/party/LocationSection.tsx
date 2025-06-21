@@ -15,6 +15,7 @@ const LocationSection: React.FC<LocationSectionProps> = ({ updateFormData, initi
   const form = useFormContext();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'address' | 'coordinates' | 'team-field'>('address');
+  const [selectedFieldId, setSelectedFieldId] = useState<string>('');
   
   useEffect(() => {
     if (initialData && updateFormData) {
@@ -29,6 +30,9 @@ const LocationSection: React.FC<LocationSectionProps> = ({ updateFormData, initi
   }, [initialData, updateFormData]);
 
   const handleTeamFieldSelect = (field: any) => {
+    // Mettre à jour l'état de sélection
+    setSelectedFieldId(field.id);
+    
     // Remplir les champs du formulaire avec les données du terrain
     form.setValue('address', field.address || '');
     form.setValue('city', field.address ? field.address.split(',').pop()?.trim() || '' : '');
@@ -43,6 +47,16 @@ const LocationSection: React.FC<LocationSectionProps> = ({ updateFormData, initi
     form.setValue('zipCode', '');
     form.setValue('latitude', '');
     form.setValue('longitude', '');
+    // Réinitialiser aussi la sélection du terrain
+    setSelectedFieldId('');
+  };
+
+  // Réinitialiser la sélection quand on change d'onglet
+  const handleTabChange = (value: string) => {
+    setActiveTab(value as any);
+    if (value !== 'team-field') {
+      setSelectedFieldId('');
+    }
   };
 
   const hasTeam = user?.team_id;
@@ -59,7 +73,7 @@ const LocationSection: React.FC<LocationSectionProps> = ({ updateFormData, initi
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
+        <Tabs value={activeTab} onValueChange={handleTabChange}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="address" className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />
@@ -135,7 +149,7 @@ const LocationSection: React.FC<LocationSectionProps> = ({ updateFormData, initi
               <TeamFieldSelector 
                 teamId={user.team_id}
                 onFieldSelect={handleTeamFieldSelect}
-                selectedFieldId=""
+                selectedFieldId={selectedFieldId}
               />
               <div className="text-xs text-gray-500">
                 Les informations du terrain sélectionné seront automatiquement remplies
