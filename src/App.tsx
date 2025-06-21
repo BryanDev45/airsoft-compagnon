@@ -76,7 +76,6 @@ function App() {
                   <Profile />
                 </AuthGuard>
               } />
-              {/* Correction: la route doit utiliser :username au lieu de :userId */}
               <Route path="/user/:username" element={<UserProfile />} />
               
               {/* Routes pour les équipes */}
@@ -87,18 +86,19 @@ function App() {
                 </AuthGuard>
               } />
               
+              {/* Routes pour les parties - Correction des paramètres */}
               <Route path="/create-party" element={
                 <AuthGuard>
                   <CreateParty />
                 </AuthGuard>
               } />
-              <Route path="/edit-game/:gameId" element={
+              <Route path="/edit-game/:id" element={
                 <AuthGuard>
                   <EditGame />
                 </AuthGuard>
               } />
-              {/* Correction de la route pour les détails de partie - utiliser 'id' au lieu de 'gameId' */}
               <Route path="/game/:id" element={<GameDetails />} />
+              
               <Route path="/messages" element={
                 <AuthGuard>
                   <Messages />
