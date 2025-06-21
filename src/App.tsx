@@ -86,8 +86,13 @@ function App() {
                 </AuthGuard>
               } />
               
-              {/* Routes pour les parties - Correction des paramètres */}
+              {/* Routes pour les parties - Support des deux URLs */}
               <Route path="/create-party" element={
+                <AuthGuard>
+                  <CreateParty />
+                </AuthGuard>
+              } />
+              <Route path="/parties/create" element={
                 <AuthGuard>
                   <CreateParty />
                 </AuthGuard>
