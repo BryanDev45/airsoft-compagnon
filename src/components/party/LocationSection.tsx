@@ -13,7 +13,7 @@ import CoordinatesInput from './CoordinatesInput';
 
 const LocationSection: React.FC<LocationSectionProps> = ({ updateFormData, initialData }) => {
   const form = useFormContext();
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'address' | 'coordinates' | 'team-field'>('address');
   
   useEffect(() => {
@@ -45,7 +45,7 @@ const LocationSection: React.FC<LocationSectionProps> = ({ updateFormData, initi
     form.setValue('longitude', '');
   };
 
-  const hasTeam = profile?.team_id;
+  const hasTeam = user?.team_id;
   
   return (
     <Card>
@@ -133,7 +133,7 @@ const LocationSection: React.FC<LocationSectionProps> = ({ updateFormData, initi
           {hasTeam && (
             <TabsContent value="team-field" className="space-y-4 mt-4">
               <TeamFieldSelector 
-                teamId={profile.team_id}
+                teamId={user.team_id}
                 onFieldSelect={handleTeamFieldSelect}
                 selectedFieldId=""
               />

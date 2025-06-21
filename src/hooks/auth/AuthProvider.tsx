@@ -10,6 +10,7 @@ import { useSessionManager } from './state/useSessionManager';
 interface AuthContextType {
   user: any;
   session: any;
+  profile: any;
   loading: boolean;
   initialLoading: boolean;
   login: (email: string, password: string, rememberMe?: boolean) => Promise<any>;
@@ -63,6 +64,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const contextValue: AuthContextType = {
     user: enhancedUser,
     session,
+    profile: enhancedUser,
     loading,
     initialLoading,
     login,
