@@ -5,12 +5,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, MoreVertical, Users, Flag } from 'lucide-react';
+import { ArrowLeft, MoreVertical, Users, Flag, User } from 'lucide-react';
 import { ConversationDetails } from '@/types/messaging';
 import { useAuth } from '@/hooks/useAuth';
 import { useIsUserOnline } from '@/hooks/messaging/useUserPresence';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface ChatHeaderProps {
   conversation?: ConversationDetails;
@@ -20,6 +21,7 @@ interface ChatHeaderProps {
 const ChatHeader: React.FC<ChatHeaderProps> = ({ conversation, onBack }) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [reportReason, setReportReason] = useState('');
 
@@ -82,6 +84,15 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ conversation, onBack }) => {
 
     setShowReportDialog(false);
     setReportReason('');
+  };
+
+  const handleViewProfile = () => {
+    if (conversation?.type === 'direct') {
+      const otherParticipant = conversation.participants?.find(p => p.id !== user?.id);
+      if (otherParticipant) {
+        navigate(`/user/${otherParticipant.id}`);
+      }
+    }
   };
 
   const getConversationTitle = () => {
@@ -211,6 +222,12 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ conversation, onBack }) => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              {conversation?.type === 'direct' && (
+                <DropdownMenuItem onClick={handleViewProfile}>
+                  <User className="mr-2 h-4 w-4" />
+                  Voir le profil
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={() => setShowReportDialog(true)}>
                 <Flag className="mr-2 h-4 w-4" />
                 Signaler cette conversation
