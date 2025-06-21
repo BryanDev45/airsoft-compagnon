@@ -198,6 +198,13 @@ export type Database = {
             foreignKeyName: "conversation_participants_conversation_id_fkey"
             columns: ["conversation_id"]
             isOneToOne: false
+            referencedRelation: "conversation_details"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_participants_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
             referencedRelation: "conversations"
             referencedColumns: ["id"]
           },
@@ -519,6 +526,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_details"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "messages_conversation_id_fkey"
             columns: ["conversation_id"]
@@ -1323,7 +1337,47 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      conversation_details: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          last_message: Json | null
+          name: string | null
+          participant_count: number | null
+          team_id: string | null
+          type: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          last_message?: never
+          name?: string | null
+          participant_count?: never
+          team_id?: string | null
+          type?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          last_message?: never
+          name?: string | null
+          participant_count?: never
+          team_id?: string | null
+          type?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       check_and_ban_low_reputation_user: {
@@ -1356,6 +1410,14 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: number
       }
+      get_game_with_participants: {
+        Args: { p_game_id: string }
+        Returns: {
+          game_data: Json
+          participants: Json
+          creator_profile: Json
+        }[]
+      }
       get_user_conversations: {
         Args: { user_uuid: string }
         Returns: {
@@ -1366,6 +1428,29 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: {
           conversation_id: string
+        }[]
+      }
+      get_user_conversations_with_details: {
+        Args: { p_user_id: string }
+        Returns: {
+          conversation_id: string
+          conversation_type: string
+          conversation_name: string
+          created_at: string
+          updated_at: string
+          team_id: string
+          last_message: Json
+          participant_count: number
+          other_participants: Json
+          unread_count: number
+        }[]
+      }
+      get_user_notification_summary: {
+        Args: { p_user_id: string }
+        Returns: {
+          unread_count: number
+          total_count: number
+          recent_notifications: Json
         }[]
       }
       get_user_rating: {
@@ -1407,6 +1492,21 @@ export type Database = {
       mark_message_as_read: {
         Args: { p_message_id: string; p_user_id: string }
         Returns: undefined
+      }
+      search_users_optimized: {
+        Args: { p_query?: string; p_limit?: number; p_is_admin?: boolean }
+        Returns: {
+          id: string
+          username: string
+          firstname: string
+          lastname: string
+          avatar: string
+          location: string
+          reputation: number
+          ban: boolean
+          is_verified: boolean
+          team_info: Json
+        }[]
       }
       update_user_games_stats_securely: {
         Args: { p_user_id: string }

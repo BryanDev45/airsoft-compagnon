@@ -1,131 +1,74 @@
 
-import { useState, useEffect } from 'react';
-import { Profile } from '@/types/profile';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useGameDataQueries } from './useGameDataQueries';
+import { useOptimizedGameData } from './useOptimizedGameData';
+import { Profile } from '@/types/profile';
 import { supabase } from '@/integrations/supabase/client';
 
-export const useGameData = (id: string | undefined) => {
+export const useGameData = (gameId: string | undefined) => {
   const { user } = useAuth();
-  const [isRegistered, setIsRegistered] = useState(false);
-  const [creatorProfile, setCreatorProfile] = useState<Profile | null>(null);
   const [userProfile, setUserProfile] = useState<Profile | null>(null);
-
-  console.log('useGameData hook called with ID:', id);
-
+  
   const {
-    gameData,
-    participants,
-    creatorRating,
-    gameLoading,
-    participantsLoading,
-    gameError,
-    participantsError,
-    refetchParticipants
-  } = useGameDataQueries(id);
+    data: optimizedData,
+    isLoading: loading,
+    error,
+    refetch
+  } = useOptimizedGameData(gameId);
 
-  console.log('useGameData: Raw data from queries:', { gameData, participants, gameLoading, participantsLoading, gameError, participantsError });
+  const gameData = optimizedData?.gameData || null;
+  const participants = optimizedData?.participants || [];
+  const creatorProfile = optimizedData?.creatorProfile || null;
 
-  // Charger le profil de l'utilisateur connecté
+  // Check if current user is registered
+  const isRegistered = participants.some(p => p.user_id === user?.id);
+
+  // Get creator rating (simplified - could be optimized further if needed)
+  const [creatorRating, setCreatorRating] = useState<number | null>(null);
+
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      if (user?.id) {
-        console.log('Fetching user profile for:', user.id);
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-        
-        if (profile) {
-          console.log('User profile loaded:', profile);
-          // Construire le profil avec toutes les propriétés requises par le type Profile
-          const completeProfile: Profile = {
-            id: profile.id,
-            username: profile.username,
-            email: profile.email,
-            firstname: profile.firstname,
-            lastname: profile.lastname,
-            birth_date: profile.birth_date,
-            age: profile.age,
-            join_date: profile.join_date,
-            avatar: profile.avatar,
-            banner: profile.banner,
-            bio: profile.bio,
-            location: profile.location,
-            phone_number: profile.phone_number,
-            team: profile.team,
-            team_id: profile.team_id,
-            team_logo: null,
-            is_team_leader: profile.is_team_leader,
-            is_verified: profile.is_verified,
-            newsletter_subscribed: profile.newsletter_subscribed ?? null,
-            Admin: profile.Admin,
-            Ban: profile.Ban,
-            ban_date: profile.ban_date,
-            ban_reason: profile.ban_reason,
-            banned_by: profile.banned_by,
-            reputation: profile.reputation,
-            friends_list_public: profile.friends_list_public,
-            spoken_language: profile.spoken_language
-          };
-
-          // Si l'utilisateur a une équipe, charger le logo de l'équipe
-          if (profile.team_id) {
-            const { data: teamData } = await supabase
-              .from('teams')
-              .select('logo')
-              .eq('id', profile.team_id)
-              .single();
-            
-            if (teamData?.logo) {
-              completeProfile.team_logo = teamData.logo;
-            }
-          }
-
-          setUserProfile(completeProfile);
+    const fetchCreatorRating = async () => {
+      if (gameData?.created_by) {
+        try {
+          const { data: ratingData } = await supabase
+            .rpc('get_average_rating', { p_user_id: gameData.created_by });
+          setCreatorRating(ratingData || 0);
+        } catch (error) {
+          console.error('Error fetching creator rating:', error);
+          setCreatorRating(0);
         }
       }
     };
 
-    fetchUserProfile();
-  }, [user?.id]);
+    fetchCreatorRating();
+  }, [gameData?.created_by]);
 
-  // Vérifier si l'utilisateur est inscrit
+  // Load user profile if needed
   useEffect(() => {
-    console.log('Checking user registration status:', { user: user?.id, participantsLength: participants.length });
-    if (user && participants.length >= 0) {
-      const isUserRegistered = participants.some(p => p.user_id === user.id);
-      console.log('User registration check result:', isUserRegistered);
-      setIsRegistered(isUserRegistered);
-    } else if (!user) {
-      setIsRegistered(false);
-    }
-  }, [user, participants]);
+    const loadUserProfile = async () => {
+      if (user?.id && !userProfile) {
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+          
+          if (profile) {
+            setUserProfile(profile as Profile);
+          }
+        } catch (error) {
+          console.error('Error loading user profile:', error);
+        }
+      }
+    };
 
-  // Définir le profil du créateur
-  useEffect(() => {
-    if (gameData?.creator) {
-      console.log('Setting creator profile:', gameData.creator);
-      setCreatorProfile(gameData.creator);
-    }
-  }, [gameData]);
+    loadUserProfile();
+  }, [user?.id, userProfile]);
 
-  // Améliorer la logique de chargement - considérer que les données sont chargées seulement si on a une réponse définitive
-  const loading = gameLoading || (participantsLoading && gameData !== null);
-  const error = gameError || participantsError;
-
-  console.log('useGameData final state:', {
-    gameData: !!gameData,
-    gameDataValue: gameData,
-    participants: participants.length,
-    loading,
-    error,
-    isRegistered,
-    creatorRating,
-    gameLoading,
-    participantsLoading
-  });
+  const loadParticipants = useCallback(async () => {
+    await refetch();
+  }, [refetch]);
 
   return {
     gameData,
@@ -135,6 +78,6 @@ export const useGameData = (id: string | undefined) => {
     creatorRating,
     creatorProfile,
     userProfile,
-    loadParticipants: refetchParticipants
+    loadParticipants
   };
 };
