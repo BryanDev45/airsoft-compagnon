@@ -1,6 +1,6 @@
 
-import { useEffect } from 'react';
-import { MapEvent } from './useMapData';
+import { useMemo } from 'react';
+import { MapEvent } from './useGamesData';
 import { useFilterState } from './filters/useFilterState';
 import { useEventFilters } from './filters/useEventFilters';
 import { useCountryCoordinates } from './filters/useCountryCoordinates';
@@ -40,20 +40,34 @@ export function useMapFiltering(events: MapEvent[]) {
   const { countryCoordinates, updateSearchCenterForCountry } = useCountryCoordinates();
   const { filterEvents } = useEventFiltering();
 
-  // Effect to update search center when country changes
-  useEffect(() => {
+  // Memoize filtered events to prevent unnecessary recalculations
+  const filteredEvents = useMemo(() => {
+    console.log('Recalculating filtered events...');
+    
+    // Update search center when country changes
     updateSearchCenterForCountry(selectedCountry, setSearchCenter);
-  }, [selectedCountry]);
-
-  const filteredEvents = filterEvents(events, {
-    searchQuery,
-    selectedType,
-    selectedDepartment,
-    selectedDate,
-    selectedCountry,
-    searchRadius,
-    searchCenter
-  });
+    
+    return filterEvents(events, {
+      searchQuery,
+      selectedType,
+      selectedDepartment,
+      selectedDate,
+      selectedCountry,
+      searchRadius,
+      searchCenter
+    });
+  }, [
+    events, 
+    searchQuery, 
+    selectedType, 
+    selectedDepartment, 
+    selectedDate, 
+    selectedCountry, 
+    searchRadius, 
+    searchCenter,
+    filterEvents,
+    updateSearchCenterForCountry
+  ]);
 
   return {
     searchQuery,

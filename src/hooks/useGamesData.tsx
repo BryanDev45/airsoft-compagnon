@@ -60,6 +60,10 @@ export const useGamesData = (userId?: string) => {
         query = query.eq('is_private', false);
       }
       
+      // Only get future games to reduce data size
+      const today = new Date().toISOString().split('T')[0];
+      query = query.gte('date', today);
+      
       const { data: games, error } = await query.order('date', { ascending: true });
       
       if (error) {
@@ -74,69 +78,52 @@ export const useGamesData = (userId?: string) => {
         return [];
       }
       
-      // Process each game to ensure coordinates are valid
-      const processedGames = await Promise.all(
-        games.map(async (game) => {
-          console.log(`Processing game "${game.title}": Address="${game.address}", City="${game.city}", Stored coords=(${game.latitude}, ${game.longitude})`);
-          
-          // Use getValidCoordinates function to get valid coordinates
-          const validCoordinates = await getValidCoordinates(
-            game.latitude,
-            game.longitude,
-            game.address || '',
-            game.zip_code || '',
-            game.city || '',
-            'France',
-            game
-          );
-
-          console.log(`Game "${game.title}": Final coordinates (${validCoordinates.latitude}, ${validCoordinates.longitude})`);
-
-          return {
-            id: game.id,
-            title: game.title,
-            // Store raw date for calculations
-            date: game.date, // Format ISO YYYY-MM-DD
-            endDate: game.end_date,
-            location: `${game.city}`,
-            department: game.zip_code ? game.zip_code.substring(0, 2) : '',
-            type: game.game_type,
-            country: 'France',
-            lat: validCoordinates.latitude,
-            lng: validCoordinates.longitude,
-            maxPlayers: game.max_players,
-            price: game.price,
-            // Add start and end times for calculations
-            startTime: game.start_time,
-            endTime: game.end_time,
-            images: [
-              game.Picture1,
-              game.Picture2,
-              game.Picture3,
-              game.Picture4,
-              game.Picture5
-            ].filter(Boolean)
-          };
-        })
-      );
-
-      // Filter games with valid coordinates before returning
-      const validGames = processedGames.filter(game => {
-        const isValid = game.lat !== 0 && game.lng !== 0 && 
-                       !isNaN(game.lat) && !isNaN(game.lng) &&
-                       Math.abs(game.lat) > 0.1 && Math.abs(game.lng) > 0.1;
+      // Process games with optimized coordinate handling
+      const processedGames = games.map((game) => {
+        console.log(`Processing game "${game.title}": Stored coords=(${game.latitude}, ${game.longitude})`);
         
-        if (!isValid) {
-          console.warn(`Filtering out game "${game.title}" with invalid coordinates: (${game.lat}, ${game.lng})`);
+        // Use stored coordinates if valid, otherwise use default France coordinates
+        let lat = 46.603354; // Default France center
+        let lng = 1.8883335;
+        
+        if (game.latitude && game.longitude && 
+            !isNaN(game.latitude) && !isNaN(game.longitude) &&
+            Math.abs(game.latitude) > 0.1 && Math.abs(game.longitude) > 0.1) {
+          lat = Number(game.latitude);
+          lng = Number(game.longitude);
         }
-        
-        return isValid;
+
+        return {
+          id: game.id,
+          title: game.title,
+          date: game.date, // Format ISO YYYY-MM-DD
+          endDate: game.end_date,
+          location: `${game.city}`,
+          department: game.zip_code ? game.zip_code.substring(0, 2) : '',
+          type: game.game_type,
+          country: 'France',
+          lat,
+          lng,
+          maxPlayers: game.max_players,
+          price: game.price,
+          startTime: game.start_time,
+          endTime: game.end_time,
+          images: [
+            game.Picture1,
+            game.Picture2,
+            game.Picture3,
+            game.Picture4,
+            game.Picture5
+          ].filter(Boolean)
+        };
       });
 
-      console.log(`Returning ${validGames.length} games with valid coordinates out of ${processedGames.length} total games`);
-      return validGames;
+      console.log(`Returning ${processedGames.length} processed games`);
+      return processedGames;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
+    retry: 1, // Reduce retry attempts
   });
 };

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MapEvent, MapStore } from '@/hooks/useMapData';
+import { MapEvent, MapStore } from '@/hooks/useGamesData';
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from '@/integrations/supabase/client';
 import GameCard from './GameCard';
@@ -22,24 +22,29 @@ const MapResultsDisplay: React.FC<MapResultsDisplayProps> = ({
   stores = [],
   handleRetry
 }) => {
-  // Récupérer le nombre de participants pour chaque partie
+  // Optimized participant count query - only run when we have events
+  const eventIds = filteredEvents.map(e => e.id);
+  
   const { data: participantCounts = {} } = useQuery({
-    queryKey: ['participant-counts', filteredEvents.map(e => e.id)],
+    queryKey: ['participant-counts', eventIds],
     queryFn: async () => {
-      if (filteredEvents.length === 0) return {};
+      if (eventIds.length === 0) return {};
       
-      const gameIds = filteredEvents.map(event => event.id);
+      // Use a more efficient query
       const { data, error } = await supabase
         .from('game_participants')
         .select('game_id')
-        .in('game_id', gameIds)
+        .in('game_id', eventIds)
         .eq('status', 'Confirmé');
       
-      if (error) throw error;
+      if (error) {
+        console.warn('Error fetching participant counts:', error);
+        return {}; // Return empty object instead of throwing
+      }
       
-      // Compter les participants par partie
+      // Count participants by game
       const counts: Record<string, number> = {};
-      gameIds.forEach(id => counts[id] = 0);
+      eventIds.forEach(id => counts[id] = 0);
       
       data?.forEach(participant => {
         counts[participant.game_id] = (counts[participant.game_id] || 0) + 1;
@@ -47,7 +52,9 @@ const MapResultsDisplay: React.FC<MapResultsDisplayProps> = ({
       
       return counts;
     },
-    enabled: filteredEvents.length > 0,
+    enabled: eventIds.length > 0,
+    staleTime: 60 * 1000, // 1 minute
+    retry: 1,
   });
 
   if (loading) {
