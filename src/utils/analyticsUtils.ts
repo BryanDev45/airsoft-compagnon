@@ -103,7 +103,7 @@ export const incrementPageVisit = async (pagePath: string) => {
       .from('page_visit_stats')
       .select('visit_count')
       .eq('page_path', pagePath)
-      .single();
+      .maybeSingle(); // Utiliser maybeSingle au lieu de single pour éviter les erreurs
 
     if (existingPage) {
       // Incrémenter le compteur de la page existante
