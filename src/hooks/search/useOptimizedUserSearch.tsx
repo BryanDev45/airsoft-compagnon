@@ -100,26 +100,31 @@ export const useOptimizedUserSearch = (searchQuery: string) => {
         console.log('Fallback search returned:', fallbackData?.length || 0, 'users');
 
         // Transform fallback data to match expected interface
-        return (fallbackData || []).map(user => ({
-          id: user.id,
-          username: user.username,
-          firstname: user.firstname,
-          lastname: user.lastname,
-          avatar: user.avatar,
-          location: user.location,
-          reputation: user.reputation,
-          Ban: user.Ban,
-          ban: user.Ban, // Add both for compatibility
-          is_verified: user.is_verified,
-          team_id: user.team_id,
-          team_name: user.teams?.name || null,
-          team_logo: user.teams?.logo || null,
-          team_info: user.teams ? {
-            id: user.teams.id,
-            name: user.teams.name,
-            logo: user.teams.logo
-          } : null
-        }));
+        return (fallbackData || []).map(user => {
+          // Handle teams array - get the first team if it exists
+          const teamData = Array.isArray(user.teams) && user.teams.length > 0 ? user.teams[0] : null;
+          
+          return {
+            id: user.id,
+            username: user.username,
+            firstname: user.firstname,
+            lastname: user.lastname,
+            avatar: user.avatar,
+            location: user.location,
+            reputation: user.reputation,
+            Ban: user.Ban,
+            ban: user.Ban, // Add both for compatibility
+            is_verified: user.is_verified,
+            team_id: user.team_id,
+            team_name: teamData?.name || null,
+            team_logo: teamData?.logo || null,
+            team_info: teamData ? {
+              id: teamData.id,
+              name: teamData.name,
+              logo: teamData.logo
+            } : null
+          };
+        });
       }
 
       console.log('RPC search returned:', data?.length || 0, 'users');
