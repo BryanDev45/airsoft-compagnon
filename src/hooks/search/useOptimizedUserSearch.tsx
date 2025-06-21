@@ -48,95 +48,107 @@ export const useOptimizedUserSearch = (searchQuery: string) => {
     console.log('useOptimizedUserSearch: Starting search with query:', searchQuery);
     
     try {
+      // Essayer d'abord l'appel RPC optimisé
       const { data, error } = await supabase.rpc('search_users_optimized', {
-        p_query: searchQuery,
+        p_query: searchQuery || '',
         p_limit: 20,
         p_is_admin: isAdmin
       });
 
       if (error) {
         console.error('Error in optimized user search:', error);
-        // Fallback to direct query if RPC fails
-        console.log('Falling back to direct query...');
+      } else if (data && data.length > 0) {
+        console.log('RPC search returned:', data.length, 'users');
         
-        let queryBuilder = supabase
-          .from('profiles')
-          .select(`
-            id, 
-            username, 
-            firstname, 
-            lastname, 
-            avatar, 
-            location, 
-            reputation, 
-            Ban,
-            is_verified,
-            team_id,
-            teams(
-              id,
-              name,
-              logo
-            )
-          `)
-          .limit(20);
-        
-        // Filtrer les utilisateurs bannis sauf pour les admins
-        if (!isAdmin) {
-          queryBuilder = queryBuilder.eq('Ban', false);
-        }
-        
-        // Ajouter le filtre de recherche
-        if (searchQuery && searchQuery.length > 0) {
-          queryBuilder = queryBuilder.or(`username.ilike.%${searchQuery}%,firstname.ilike.%${searchQuery}%,lastname.ilike.%${searchQuery}%`);
-        }
-        
-        const { data: fallbackData, error: fallbackError } = await queryBuilder;
-        
-        if (fallbackError) {
-          console.error('Error in fallback user search:', fallbackError);
-          return [];
-        }
-
-        console.log('Fallback search returned:', fallbackData?.length || 0, 'users');
-
-        // Transform fallback data to match expected interface
-        return (fallbackData || []).map(user => {
-          // Handle teams array - get the first team if it exists
-          const teamData = Array.isArray(user.teams) && user.teams.length > 0 ? user.teams[0] : null;
-          
-          return {
-            id: user.id,
-            username: user.username,
-            firstname: user.firstname,
-            lastname: user.lastname,
-            avatar: user.avatar,
-            location: user.location,
-            reputation: user.reputation,
-            Ban: user.Ban,
-            ban: user.Ban, // Add both for compatibility
-            is_verified: user.is_verified,
-            team_id: user.team_id,
-            team_name: teamData?.name || null,
-            team_logo: teamData?.logo || null,
-            team_info: teamData ? {
-              id: teamData.id,
-              name: teamData.name,
-              logo: teamData.logo
-            } : null
-          };
-        });
+        // Transform to match the expected interface
+        return data.map((user: any) => ({
+          id: user.id,
+          username: user.username,
+          firstname: user.firstname,
+          lastname: user.lastname,
+          avatar: user.avatar,
+          location: user.location,
+          reputation: user.reputation,
+          Ban: user.ban,
+          ban: user.ban,
+          is_verified: user.is_verified,
+          team_id: user.team_info?.id || null,
+          team_name: user.team_info?.name || null,
+          team_logo: user.team_info?.logo || null,
+          team_info: user.team_info
+        }));
       }
 
-      console.log('RPC search returned:', data?.length || 0, 'users');
+      // Fallback to direct query if RPC fails or returns no results
+      console.log('Falling back to direct query...');
+      
+      let queryBuilder = supabase
+        .from('profiles')
+        .select(`
+          id, 
+          username, 
+          firstname, 
+          lastname, 
+          avatar, 
+          location, 
+          reputation, 
+          Ban,
+          is_verified,
+          team_id,
+          teams(
+            id,
+            name,
+            logo
+          )
+        `);
+      
+      // Filtrer les utilisateurs bannis sauf pour les admins
+      if (!isAdmin) {
+        queryBuilder = queryBuilder.eq('Ban', false);
+      }
+      
+      // Ajouter le filtre de recherche seulement si on a une query
+      if (searchQuery && searchQuery.trim().length > 0) {
+        queryBuilder = queryBuilder.or(`username.ilike.%${searchQuery}%,firstname.ilike.%${searchQuery}%,lastname.ilike.%${searchQuery}%`);
+      }
+      
+      queryBuilder = queryBuilder.limit(20).order('reputation', { ascending: false, nullsFirst: false });
+      
+      const { data: fallbackData, error: fallbackError } = await queryBuilder;
+      
+      if (fallbackError) {
+        console.error('Error in fallback user search:', fallbackError);
+        return [];
+      }
 
-      // Transform to match the expected interface
-      return (data as OptimizedUserResult[]).map(user => ({
-        ...user,
-        Ban: user.ban,
-        team_id: user.team_info?.id || null,
-        team_name: user.team_info?.name || null,
-        team_logo: user.team_info?.logo || null
-      }));
+      console.log('Fallback search returned:', fallbackData?.length || 0, 'users');
+
+      // Transform fallback data to match expected interface
+      return (fallbackData || []).map(user => {
+        // Handle teams array - get the first team if it exists
+        const teamData = Array.isArray(user.teams) && user.teams.length > 0 ? user.teams[0] : null;
+        
+        return {
+          id: user.id,
+          username: user.username,
+          firstname: user.firstname,
+          lastname: user.lastname,
+          avatar: user.avatar,
+          location: user.location,
+          reputation: user.reputation,
+          Ban: user.Ban,
+          ban: user.Ban, // Add both for compatibility
+          is_verified: user.is_verified,
+          team_id: user.team_id,
+          team_name: teamData?.name || null,
+          team_logo: teamData?.logo || null,
+          team_info: teamData ? {
+            id: teamData.id,
+            name: teamData.name,
+            logo: teamData.logo
+          } : null
+        };
+      });
     } catch (error) {
       console.error('Unexpected error in user search:', error);
       return [];
@@ -150,7 +162,7 @@ export const useOptimizedUserSearch = (searchQuery: string) => {
   } = useQuery({
     queryKey: ['optimized-user-search', searchQuery, isAdmin],
     queryFn,
-    enabled: !!user, // Only run when user is logged in
+    enabled: true, // Toujours activer la requête
     staleTime: 60000, // 1 minute
     gcTime: 300000, // 5 minutes
   });

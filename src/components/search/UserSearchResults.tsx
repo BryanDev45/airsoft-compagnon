@@ -44,16 +44,20 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) =>
     );
   }
 
+  // Afficher un message si aucun résultat n'est trouvé
   if (!users || users.length === 0) {
     console.log('UserSearchResults - No users found');
     return (
       <div className="text-center py-8">
         <p className="text-gray-500 text-lg">
-          {searchQuery ? 'Aucun joueur trouvé pour cette recherche' : 'Commencez à taper pour rechercher des joueurs'}
+          {searchQuery && searchQuery.trim().length > 0 
+            ? `Aucun joueur trouvé pour "${searchQuery}"` 
+            : 'Tapez dans la barre de recherche pour trouver des joueurs'
+          }
         </p>
-        {!searchQuery && (
+        {searchQuery && searchQuery.trim().length > 0 && (
           <p className="text-gray-400 text-sm mt-2">
-            Tapez au moins un caractère pour lancer la recherche
+            Essayez avec un autre terme de recherche
           </p>
         )}
       </div>
