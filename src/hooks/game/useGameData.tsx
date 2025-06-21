@@ -55,12 +55,37 @@ export const useGameData = (gameId: string | undefined) => {
             .single();
           
           if (profile) {
-            // Ensure all required Profile properties are present
-            setUserProfile({
-              ...profile,
-              team_logo: profile.team_logo || null,
-              newsletter_subscribed: profile.newsletter_subscribed ?? null
-            } as Profile);
+            // Safely cast profile data and ensure all required properties exist
+            const profileData: Profile = {
+              id: profile.id,
+              username: profile.username,
+              email: profile.email,
+              firstname: profile.firstname,
+              lastname: profile.lastname,
+              birth_date: profile.birth_date,
+              age: profile.age,
+              join_date: profile.join_date,
+              avatar: profile.avatar,
+              banner: profile.banner,
+              bio: profile.bio,
+              location: profile.location,
+              phone_number: profile.phone_number,
+              team: profile.team,
+              team_id: profile.team_id,
+              team_logo: null, // This field doesn't exist in profiles table
+              is_team_leader: profile.is_team_leader,
+              is_verified: profile.is_verified,
+              newsletter_subscribed: profile.newsletter_subscribed ?? null,
+              Admin: profile.Admin,
+              Ban: profile.Ban,
+              ban_date: profile.ban_date,
+              ban_reason: profile.ban_reason,
+              banned_by: profile.banned_by,
+              reputation: profile.reputation,
+              friends_list_public: profile.friends_list_public,
+              spoken_language: profile.spoken_language
+            };
+            setUserProfile(profileData);
           }
         } catch (error) {
           console.error('Error loading user profile:', error);
