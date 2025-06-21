@@ -1,3 +1,4 @@
+
 import { Coordinates } from './types';
 import { detectCountryFromStore, getMappedCountryName, getCountryCode } from './countryDetection';
 import { areCoordinatesValid } from './coordinatesValidation';
@@ -8,6 +9,28 @@ const normalizeForGeocoding = (text: string): string => {
     .trim()
     .replace(/,\s*$/, '') // Remove trailing commas
     .replace(/\s+/g, ' '); // Normalize whitespace
+};
+
+// Enhanced French character normalization for geocoding
+const normalizeFrenchCharacters = (text: string): string => {
+  return text
+    .replace(/à/g, 'a').replace(/À/g, 'A')
+    .replace(/â/g, 'a').replace(/Â/g, 'A')
+    .replace(/ä/g, 'a').replace(/Ä/g, 'A')
+    .replace(/é/g, 'e').replace(/É/g, 'E')
+    .replace(/è/g, 'e').replace(/È/g, 'E')
+    .replace(/ê/g, 'e').replace(/Ê/g, 'E')
+    .replace(/ë/g, 'e').replace(/Ë/g, 'E')
+    .replace(/î/g, 'i').replace(/Î/g, 'I')
+    .replace(/ï/g, 'i').replace(/Ï/g, 'I')
+    .replace(/ô/g, 'o').replace(/Ô/g, 'O')
+    .replace(/ö/g, 'o').replace(/Ö/g, 'O')
+    .replace(/ù/g, 'u').replace(/Ù/g, 'U')
+    .replace(/û/g, 'u').replace(/Û/g, 'U')
+    .replace(/ü/g, 'u').replace(/Ü/g, 'U')
+    .replace(/ÿ/g, 'y').replace(/Ÿ/g, 'Y')
+    .replace(/ç/g, 'c').replace(/Ç/g, 'C')
+    .replace(/ñ/g, 'n').replace(/Ñ/g, 'N');
 };
 
 // Enhanced Polish character normalization for geocoding
@@ -70,9 +93,10 @@ export const geocodeAddress = async (
 ): Promise<Coordinates | null> => {
   try {
     const isTaiwangun = storeData?.name?.toLowerCase().includes('taiwangun');
+    const isGameLocation = storeData?.type === 'game_location';
     
     // First, check if we have hardcoded coordinates for this store
-    if (storeData?.name) {
+    if (storeData?.name && !isGameLocation) {
       const knownCoords = getKnownStoreCoordinates(storeData.name);
       if (knownCoords) {
         console.log(`🔍 Using hardcoded coordinates for ${storeData.name}:`, knownCoords);
@@ -82,7 +106,7 @@ export const geocodeAddress = async (
     
     // Detect actual country if not provided or if it's generic
     let detectedCountry = country;
-    if (storeData && (country.toLowerCase() === 'france' || !country)) {
+    if (storeData && !isGameLocation && (country.toLowerCase() === 'france' || !country)) {
       detectedCountry = detectCountryFromStore(storeData);
     }
 
@@ -94,8 +118,8 @@ export const geocodeAddress = async (
     const mappedCountry = getMappedCountryName(detectedCountry);
     const countryCode = getCountryCode(mappedCountry);
     
-    if (isTaiwangun) {
-      console.log(`🔍 TAIWANGUN GEOCODING - Starting geocoding process:`, {
+    if (isTaiwangun || isGameLocation) {
+      console.log(`🔍 ${isGameLocation ? 'GAME LOCATION' : 'TAIWANGUN'} GEOCODING - Starting geocoding process:`, {
         originalAddress: address,
         originalCity: city,
         originalZip: zipCode,
@@ -110,15 +134,48 @@ export const geocodeAddress = async (
 
     console.log(`Geocoding address: "${cleanAddress}", City: "${cleanCity}", ZIP: "${cleanZipCode}", Country: "${mappedCountry}", Code: "${countryCode}"`);
 
-    // Create normalized versions for Polish addresses
-    const normalizedAddress = normalizePolishCharacters(cleanAddress);
-    const normalizedCity = normalizePolishCharacters(cleanCity);
+    // Create normalized versions for international addresses
+    const normalizedAddress = mappedCountry.toLowerCase() === 'poland' 
+      ? normalizePolishCharacters(cleanAddress) 
+      : normalizeFrenchCharacters(cleanAddress);
+    const normalizedCity = mappedCountry.toLowerCase() === 'poland' 
+      ? normalizePolishCharacters(cleanCity) 
+      : normalizeFrenchCharacters(cleanCity);
 
-    // Enhanced search strategies specifically for Polish addresses
+    // Enhanced search strategies with priority for French game locations
     const searchQueries = [];
 
-    // For Polish addresses, try both original and normalized versions with more specific strategies
-    if (mappedCountry.toLowerCase() === 'poland') {
+    if (isGameLocation && mappedCountry.toLowerCase() === 'france') {
+      // Priority queries for French game locations
+      console.log(`Using French game location-specific geocoding for: "${cleanAddress}, ${cleanCity}"`);
+      
+      searchQueries.push(
+        // Most specific with French postal format
+        `${cleanAddress}, ${cleanZipCode} ${cleanCity}, France`,
+        `${normalizedAddress}, ${cleanZipCode} ${normalizedCity}, France`,
+        
+        // Address with city variations
+        `${cleanAddress}, ${cleanCity}, ${cleanZipCode}, France`,
+        `${normalizedAddress}, ${normalizedCity}, ${cleanZipCode}, France`,
+        
+        // City and postal code focus for better precision
+        `${cleanZipCode} ${cleanCity}, France`,
+        `${cleanZipCode} ${normalizedCity}, France`,
+        
+        // Just address and city
+        `${cleanAddress}, ${cleanCity}, France`,
+        `${normalizedAddress}, ${normalizedCity}, France`,
+        
+        // City-first approach for French addresses
+        `${cleanCity}, ${cleanAddress}, France`,
+        `${normalizedCity}, ${normalizedAddress}, France`,
+        
+        // City only as fallback
+        `${cleanCity}, France`,
+        `${normalizedCity}, France`
+      );
+    } else if (mappedCountry.toLowerCase() === 'poland') {
+      // Enhanced search strategies specifically for Polish addresses
       console.log(`Using Polish-specific geocoding for: "${cleanAddress}, ${cleanCity}"`);
       
       // Special handling for Taiwangun - very specific queries first
@@ -189,12 +246,15 @@ export const geocodeAddress = async (
       searchQueries.push(
         // Most specific first with all components
         `${cleanAddress}, ${cleanZipCode} ${cleanCity}, ${mappedCountry}`,
+        `${normalizedAddress}, ${cleanZipCode} ${normalizedCity}, ${mappedCountry}`,
         // Without zip code for international addresses
         `${cleanAddress}, ${cleanCity}, ${mappedCountry}`,
+        `${normalizedAddress}, ${normalizedCity}, ${mappedCountry}`,
         // Just city and country as fallback
         `${cleanCity}, ${mappedCountry}`,
+        `${normalizedCity}, ${mappedCountry}`,
         // Store name + city + country for better recognition
-        ...(storeData?.name ? [`${storeData.name}, ${cleanCity}, ${mappedCountry}`] : []),
+        ...(storeData?.name && !isGameLocation ? [`${storeData.name}, ${cleanCity}, ${mappedCountry}`] : []),
         // City with zip code
         ...(cleanZipCode ? [`${cleanZipCode} ${cleanCity}, ${mappedCountry}`] : []),
         // Just zip code and country for very specific locations
@@ -202,16 +262,16 @@ export const geocodeAddress = async (
       );
     }
 
-    if (isTaiwangun) {
-      console.log(`🔍 TAIWANGUN GEOCODING - Search queries (${searchQueries.length} total):`, searchQueries);
+    if (isTaiwangun || isGameLocation) {
+      console.log(`🔍 ${isGameLocation ? 'GAME LOCATION' : 'TAIWANGUN'} GEOCODING - Search queries (${searchQueries.length} total):`, searchQueries);
     }
 
     for (let i = 0; i < searchQueries.length; i++) {
       const query = searchQueries[i];
       console.log(`Geocoding attempt ${i + 1}/${searchQueries.length} with query: "${query}"`);
       
-      if (isTaiwangun) {
-        console.log(`🔍 TAIWANGUN GEOCODING - Attempt ${i + 1}: "${query}"`);
+      if (isTaiwangun || isGameLocation) {
+        console.log(`🔍 ${isGameLocation ? 'GAME LOCATION' : 'TAIWANGUN'} GEOCODING - Attempt ${i + 1}: "${query}"`);
       }
       
       // Enhanced URL with better parameters for international support
@@ -222,10 +282,10 @@ export const geocodeAddress = async (
       geocodingUrl.searchParams.set('addressdetails', '1');
       geocodingUrl.searchParams.set('extratags', '1');
       geocodingUrl.searchParams.set('namedetails', '1');
-      geocodingUrl.searchParams.set('accept-language', 'en,pl,local');
+      geocodingUrl.searchParams.set('accept-language', 'fr,en,pl,local');
       
       // Add country code filter if available for more precise results
-      if (countryCode && mappedCountry.toLowerCase() === 'poland') {
+      if (countryCode) {
         geocodingUrl.searchParams.set('countrycodes', countryCode);
       }
       
@@ -238,16 +298,16 @@ export const geocodeAddress = async (
         
         if (!response.ok) {
           console.warn(`Geocoding API error for query "${query}": ${response.status}`);
-          if (isTaiwangun) {
-            console.log(`🔍 TAIWANGUN GEOCODING - API error: ${response.status}`);
+          if (isTaiwangun || isGameLocation) {
+            console.log(`🔍 ${isGameLocation ? 'GAME LOCATION' : 'TAIWANGUN'} GEOCODING - API error: ${response.status}`);
           }
           continue;
         }
         
         const data = await response.json();
         
-        if (isTaiwangun) {
-          console.log(`🔍 TAIWANGUN GEOCODING - Raw API response for "${query}":`, {
+        if (isTaiwangun || isGameLocation) {
+          console.log(`🔍 ${isGameLocation ? 'GAME LOCATION' : 'TAIWANGUN'} GEOCODING - Raw API response for "${query}":`, {
             query,
             resultsCount: data?.length || 0,
             url: geocodingUrl.toString(),
@@ -258,8 +318,8 @@ export const geocodeAddress = async (
         if (data && data.length > 0) {
           console.log(`Geocoding API returned ${data.length} results for query: "${query}"`);
           
-          if (isTaiwangun) {
-            console.log(`🔍 TAIWANGUN GEOCODING - Results for "${query}":`, data.map(r => ({
+          if (isTaiwangun || isGameLocation) {
+            console.log(`🔍 ${isGameLocation ? 'GAME LOCATION' : 'TAIWANGUN'} GEOCODING - Results for "${query}":`, data.map(r => ({
               display_name: r.display_name,
               lat: r.lat,
               lon: r.lon,
@@ -281,8 +341,8 @@ export const geocodeAddress = async (
             
             console.log(`Evaluating result: lat=${lat}, lon=${lon}, country="${resultAddress?.country}", city="${resultAddress?.city || resultAddress?.town || resultAddress?.village}"`);
             
-            if (isTaiwangun) {
-              console.log(`🔍 TAIWANGUN GEOCODING - Evaluating result:`, {
+            if (isTaiwangun || isGameLocation) {
+              console.log(`🔍 ${isGameLocation ? 'GAME LOCATION' : 'TAIWANGUN'} GEOCODING - Evaluating result:`, {
                 coordinates: { lat, lon },
                 country: resultAddress?.country,
                 city: resultAddress?.city || resultAddress?.town || resultAddress?.village,
@@ -302,15 +362,16 @@ export const geocodeAddress = async (
               const resultCountry = (resultAddress?.country || '').toLowerCase();
               const expectedCountry = mappedCountry.toLowerCase();
               
-              // Enhanced country validation for Poland
+              // Enhanced country validation
               const isCountryMatch = 
                 resultCountry.includes(expectedCountry) || 
                 expectedCountry.includes(resultCountry) ||
                 (expectedCountry === 'poland' && (resultCountry.includes('polska') || resultCountry.includes('poland'))) ||
+                (expectedCountry === 'france' && (resultCountry.includes('france') || resultCountry.includes('république française'))) ||
                 !countryCode || // If no country code, be more lenient
                 i >= searchQueries.length - 3; // For last resort queries, be more lenient
               
-              // Enhanced city validation with Polish variations
+              // Enhanced city validation with international variations
               const resultCity = (
                 resultAddress?.city || 
                 resultAddress?.town || 
@@ -326,19 +387,22 @@ export const geocodeAddress = async (
                 normalizedCity.toLowerCase().includes(resultCity) ||
                 // Special case for Kraków/Krakow
                 (cleanCity.toLowerCase().includes('krakow') && resultCity.includes('krak')) ||
+                // French city variations
+                (mappedCountry.toLowerCase() === 'france' && resultCity.length > 3 && cleanCity.toLowerCase().includes(resultCity)) ||
                 i >= searchQueries.length - 2; // Be more lenient for fallback queries
               
-              // Enhanced scoring system
+              // Enhanced scoring system with country/location specific bonuses
               let score = importance;
-              if (isCountryMatch) score += 0.3;
-              if (isCityMatch) score += 0.3;
-              if (resultAddress?.postcode === cleanZipCode) score += 0.2;
-              if (i < 2) score += 0.1; // Bonus for most specific queries
+              if (isCountryMatch) score += 0.4;
+              if (isCityMatch) score += 0.4;
+              if (resultAddress?.postcode === cleanZipCode) score += 0.3;
+              if (i < 2) score += 0.2; // Bonus for most specific queries
+              if (isGameLocation && mappedCountry.toLowerCase() === 'france') score += 0.1; // Bonus for French game locations
               
               console.log(`Geocoding result: Query="${query}", Score=${score.toFixed(2)}, Country="${resultAddress?.country}", City="${resultCity}", Coords=(${coordinates.latitude}, ${coordinates.longitude})`);
               
-              if (isTaiwangun) {
-                console.log(`🔍 TAIWANGUN GEOCODING - Score analysis:`, {
+              if (isTaiwangun || isGameLocation) {
+                console.log(`🔍 ${isGameLocation ? 'GAME LOCATION' : 'TAIWANGUN'} GEOCODING - Score analysis:`, {
                   query,
                   score: score.toFixed(2),
                   isCountryMatch,
@@ -348,19 +412,23 @@ export const geocodeAddress = async (
                   expectedCountry,
                   resultCity,
                   cleanCity: cleanCity.toLowerCase(),
-                  willAccept: (isCountryMatch && isCityMatch) || score > 0.3 || i >= 3
+                  willAccept: (isCountryMatch && isCityMatch) || score > 0.4 || i >= 3
                 });
               }
               
-              // For Polish addresses, be more strict about country matching initially
-              const minScore = mappedCountry.toLowerCase() === 'poland' && i < 3 ? 0.5 : 0.3;
+              // More lenient acceptance criteria for French game locations
+              const minScore = isGameLocation && mappedCountry.toLowerCase() === 'france' 
+                ? 0.3 
+                : mappedCountry.toLowerCase() === 'poland' && i < 3 
+                ? 0.5 
+                : 0.4;
               
               // Accept result if it meets minimum criteria
               if ((isCountryMatch && isCityMatch) || score > minScore || i >= 3) {
                 console.log(`✓ Geocoding successful with query: "${query}"`);
                 
-                if (isTaiwangun) {
-                  console.log(`🔍 TAIWANGUN GEOCODING - ✓ SUCCESS! Final coordinates:`, {
+                if (isTaiwangun || isGameLocation) {
+                  console.log(`🔍 ${isGameLocation ? 'GAME LOCATION' : 'TAIWANGUN'} GEOCODING - ✓ SUCCESS! Final coordinates:`, {
                     query,
                     coordinates,
                     score: score.toFixed(2),
@@ -372,32 +440,32 @@ export const geocodeAddress = async (
                 
                 return coordinates;
               } else {
-                if (isTaiwangun) {
-                  console.log(`🔍 TAIWANGUN GEOCODING - Result rejected, score too low or criteria not met`);
+                if (isTaiwangun || isGameLocation) {
+                  console.log(`🔍 ${isGameLocation ? 'GAME LOCATION' : 'TAIWANGUN'} GEOCODING - Result rejected, score too low or criteria not met`);
                 }
               }
             } else {
-              if (isTaiwangun) {
-                console.log(`🔍 TAIWANGUN GEOCODING - Invalid coordinates:`, coordinates);
+              if (isTaiwangun || isGameLocation) {
+                console.log(`🔍 ${isGameLocation ? 'GAME LOCATION' : 'TAIWANGUN'} GEOCODING - Invalid coordinates:`, coordinates);
               }
             }
           }
         } else {
           console.log(`No results returned for query: "${query}"`);
-          if (isTaiwangun) {
-            console.log(`🔍 TAIWANGUN GEOCODING - No results for: "${query}"`);
+          if (isTaiwangun || isGameLocation) {
+            console.log(`🔍 ${isGameLocation ? 'GAME LOCATION' : 'TAIWANGUN'} GEOCODING - No results for: "${query}"`);
           }
         }
       } catch (fetchError) {
         console.warn(`Network error for geocoding query "${query}":`, fetchError);
-        if (isTaiwangun) {
-          console.log(`🔍 TAIWANGUN GEOCODING - Network error:`, fetchError);
+        if (isTaiwangun || isGameLocation) {
+          console.log(`🔍 ${isGameLocation ? 'GAME LOCATION' : 'TAIWANGUN'} GEOCODING - Network error:`, fetchError);
         }
       }
       
       // Add delay between requests to respect rate limits
       if (i < searchQueries.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 750)); // Increased delay further
+        await new Promise(resolve => setTimeout(resolve, 500)); // Reasonable delay for better performance
       }
     }
     
@@ -411,6 +479,10 @@ export const geocodeAddress = async (
       return fallbackCoords;
     }
     
+    if (isGameLocation) {
+      console.log(`🔍 GAME LOCATION GEOCODING - ❌ FAILED - No valid results found. This may affect map accuracy.`);
+    }
+    
     return null;
   } catch (error) {
     console.error('Error geocoding address:', error);
@@ -421,6 +493,10 @@ export const geocodeAddress = async (
       const fallbackCoords = { latitude: 50.0647, longitude: 19.9450 };
       console.log(`🔍 TAIWANGUN GEOCODING - Using fallback Krakow coordinates after error:`, fallbackCoords);
       return fallbackCoords;
+    }
+    
+    if (storeData?.type === 'game_location') {
+      console.log(`🔍 GAME LOCATION GEOCODING - ❌ ERROR:`, error);
     }
     
     return null;

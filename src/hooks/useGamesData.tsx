@@ -84,19 +84,21 @@ export const useGamesData = (userId?: string) => {
         console.log(`🎮 PROCESSING GAME - "${game.title}": Stored coords=(${game.latitude}, ${game.longitude}), Address="${gameAddress}"`);
         
         // Use the enhanced geocoding utility to get valid coordinates
-        // Pass the game data for better address analysis
+        // Pass the game data for better address analysis - with proper country detection
         const coordinates = await getValidCoordinates(
           game.latitude,
           game.longitude,
           game.address || '',
           game.zip_code || '',
           game.city || '',
-          'France',
+          'France', // Most games are in France, but geocoding will auto-detect if different
           {
             name: game.title,
             address: game.address,
             city: game.city,
-            zip_code: game.zip_code
+            zip_code: game.zip_code,
+            // Add game-specific context for better geocoding
+            type: 'game_location'
           }
         );
         
