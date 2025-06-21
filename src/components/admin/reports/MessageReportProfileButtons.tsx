@@ -29,16 +29,16 @@ const MessageReportProfileButtons: React.FC<MessageReportProfileButtonsProps> = 
   onViewConversation
 }) => {
   return (
-    <div className="flex items-center gap-2 pt-2 border-t">
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2 border-t">
       {report.reporter_profile?.username && (
         <Button
           onClick={() => onViewProfile(report.reporter_profile?.username || '')}
           variant="outline"
           size="sm"
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 w-full sm:w-auto text-xs sm:text-sm"
         >
-          <User className="h-4 w-4" />
-          Profil du rapporteur
+          <User className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+          <span className="truncate">Profil du rapporteur</span>
         </Button>
       )}
       {report.message?.sender_profile?.username && (
@@ -46,10 +46,10 @@ const MessageReportProfileButtons: React.FC<MessageReportProfileButtonsProps> = 
           onClick={() => onViewProfile(report.message.sender_profile?.username || '')}
           variant="outline"
           size="sm"
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 w-full sm:w-auto text-xs sm:text-sm"
         >
-          <User className="h-4 w-4" />
-          Profil de l'auteur du message
+          <User className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+          <span className="truncate">Profil de l'auteur du message</span>
         </Button>
       )}
       {report.message?.conversation_id && report.status === 'pending' && (
@@ -57,10 +57,10 @@ const MessageReportProfileButtons: React.FC<MessageReportProfileButtonsProps> = 
           onClick={() => onViewConversation(report.message.conversation_id)}
           variant="outline"
           size="sm"
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 w-full sm:w-auto text-xs sm:text-sm"
         >
-          <MessageSquare className="h-4 w-4" />
-          Voir la conversation
+          <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+          <span className="truncate">Voir la conversation</span>
         </Button>
       )}
     </div>
