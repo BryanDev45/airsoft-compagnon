@@ -1,4 +1,3 @@
-
 import { Coordinates } from './types';
 import { detectCountryFromStore, getMappedCountryName, getCountryCode } from './countryDetection';
 import { areCoordinatesValid } from './coordinatesValidation';

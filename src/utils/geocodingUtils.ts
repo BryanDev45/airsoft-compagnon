@@ -19,23 +19,29 @@ export const getValidCoordinates = async (
   country: string = 'France',
   storeData?: any
 ): Promise<Coordinates> => {
+  console.log(`🔍 GET VALID COORDS - Starting for: "${address}, ${zipCode} ${city}", Stored: (${storedLat}, ${storedLng})`);
+  
   // First, try to use stored coordinates if they are valid
   if (areCoordinatesValid(storedLat, storedLng)) {
+    console.log(`✅ GET VALID COORDS - Using stored coordinates: (${storedLat}, ${storedLng})`);
     return {
       longitude: storedLng!,
       latitude: storedLat!
     };
   }
   
+  console.log(`🔍 GET VALID COORDS - Invalid stored coordinates, attempting geocoding...`);
+  
   // If stored coordinates are invalid, try geocoding with store data for better country detection
   const geocodedCoords = await geocodeAddress(address, zipCode, city, country, storeData);
   if (geocodedCoords && areCoordinatesValid(geocodedCoords.latitude, geocodedCoords.longitude)) {
+    console.log(`✅ GET VALID COORDS - Geocoding successful: (${geocodedCoords.latitude}, ${geocodedCoords.longitude})`);
     return geocodedCoords;
   }
   
   // Fallback to country-specific default coordinates based on detected country
   const detectedCountry = storeData ? detectCountryFromStore(storeData) : country;
   const defaultCoords = getDefaultCoordinatesByCountry(detectedCountry);
-  console.log('Using default coordinates for country:', detectedCountry, 'Coords:', defaultCoords, 'Location:', { address, zipCode, city });
+  console.log(`⚠️ GET VALID COORDS - Using default coordinates for country: ${detectedCountry}, Coords: (${defaultCoords.latitude}, ${defaultCoords.longitude}), Location: ${address}, ${zipCode} ${city}`);
   return defaultCoords;
 };

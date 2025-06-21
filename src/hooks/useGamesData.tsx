@@ -45,7 +45,7 @@ export const useGamesData = (userId?: string) => {
   return useQuery({
     queryKey: ['games', userId],
     queryFn: async (): Promise<MapEvent[]> => {
-      console.log('Fetching games data for user:', userId || 'anonymous');
+      console.log('🎮 GAMES DATA - Fetching games data for user:', userId || 'anonymous');
       
       let query = supabase
         .from('airsoft_games')
@@ -67,32 +67,40 @@ export const useGamesData = (userId?: string) => {
       const { data: games, error } = await query.order('date', { ascending: true });
       
       if (error) {
-        console.error('Error fetching games:', error);
+        console.error('🎮 GAMES DATA - Error fetching games:', error);
         throw error;
       }
       
-      console.log(`Fetched ${games?.length || 0} games from database`);
+      console.log(`🎮 GAMES DATA - Fetched ${games?.length || 0} games from database`);
       
       if (!games || games.length === 0) {
-        console.log('No games found in database');
+        console.log('🎮 GAMES DATA - No games found in database');
         return [];
       }
       
       // Process games with enhanced coordinate handling using geocoding
       const processedGames = await Promise.all(games.map(async (game) => {
-        console.log(`Processing game "${game.title}": Stored coords=(${game.latitude}, ${game.longitude}), Address="${game.address}, ${game.zip_code} ${game.city}"`);
+        const gameAddress = `${game.address || ''}, ${game.zip_code || ''} ${game.city || ''}`.trim();
+        console.log(`🎮 PROCESSING GAME - "${game.title}": Stored coords=(${game.latitude}, ${game.longitude}), Address="${gameAddress}"`);
         
         // Use the enhanced geocoding utility to get valid coordinates
+        // Pass the game data for better address analysis
         const coordinates = await getValidCoordinates(
           game.latitude,
           game.longitude,
           game.address || '',
           game.zip_code || '',
           game.city || '',
-          'France'
+          'France',
+          {
+            name: game.title,
+            address: game.address,
+            city: game.city,
+            zip_code: game.zip_code
+          }
         );
         
-        console.log(`Final coordinates for "${game.title}": (${coordinates.latitude}, ${coordinates.longitude})`);
+        console.log(`🎮 FINAL COORDS - "${game.title}": (${coordinates.latitude}, ${coordinates.longitude})`);
 
         return {
           id: game.id,
@@ -119,12 +127,12 @@ export const useGamesData = (userId?: string) => {
         };
       }));
 
-      console.log(`Returning ${processedGames.length} processed games with geocoded coordinates`);
+      console.log(`🎮 GAMES DATA - Returning ${processedGames.length} processed games with geocoded coordinates`);
       return processedGames;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes - increased due to geocoding
-    gcTime: 10 * 60 * 1000, // 10 minutes - increased cache time
+    staleTime: 5 * 60 * 1000, // 5 minutes - keep reasonable cache
+    gcTime: 10 * 60 * 1000, // 10 minutes cache time
     refetchOnWindowFocus: false,
-    retry: 1, // Reduce retry attempts due to geocoding API calls
+    retry: 1,
   });
 };
