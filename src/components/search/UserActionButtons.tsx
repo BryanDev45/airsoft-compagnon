@@ -11,9 +11,13 @@ interface UserActionButtonsProps {
   user: {
     id: string;
     username: string;
-    firstname: string | null;
-    lastname: string | null;
-    team_id: string | null;
+    firstname?: string | null;
+    lastname?: string | null;
+    team_info?: {
+      id: string;
+      name: string;
+      logo: string | null;
+    } | null;
   };
   friendshipStatus?: string;
   isCurrentUserTeamAdmin?: boolean;
@@ -43,7 +47,7 @@ const UserActionButtons: React.FC<UserActionButtonsProps> = ({
     console.log('Inviter en équipe:', user.username);
   };
 
-  const canInviteToTeam = isCurrentUserTeamAdmin && !user.team_id;
+  const canInviteToTeam = isCurrentUserTeamAdmin && !user.team_info?.id;
   const canAddFriend = !friendshipStatus || friendshipStatus === 'none';
   const isPendingFriend = friendshipStatus === 'pending';
   const isFriend = friendshipStatus === 'accepted';
