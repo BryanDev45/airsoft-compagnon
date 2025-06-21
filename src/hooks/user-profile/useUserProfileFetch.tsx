@@ -8,28 +8,29 @@ import { useQuery } from '@tanstack/react-query';
 
 const fetchFullUserProfile = async (username: string | undefined): Promise<{ profile: Profile; stats: any } | null> => {
   if (!username) {
+    console.log('useUserProfileFetch: No username provided');
     return null;
   }
 
-  console.log('Fetching profile for username:', username);
+  console.log('useUserProfileFetch: Fetching profile for username:', username);
 
   const { data: userProfile, error: profileError } = await supabase
     .from('profiles')
-    .select('*, spoken_language')
+    .select('*')
     .eq('username', username)
     .maybeSingle();
 
   if (profileError) {
-    console.error('Profile fetch error:', profileError);
+    console.error('useUserProfileFetch: Profile fetch error:', profileError);
     throw profileError;
   }
   
   if (!userProfile) {
-    console.log('No profile found for username:', username);
+    console.log('useUserProfileFetch: No profile found for username:', username);
     return null;
   }
 
-  console.log('Profile found:', userProfile);
+  console.log('useUserProfileFetch: Profile found:', userProfile);
 
   const completeProfile: Profile = {
     id: userProfile.id,
@@ -63,7 +64,7 @@ const fetchFullUserProfile = async (username: string | undefined): Promise<{ pro
 
   // Fetch team logo if user has a team
   if (userProfile.team_id) {
-    console.log('Fetching team data for team_id:', userProfile.team_id);
+    console.log('useUserProfileFetch: Fetching team data for team_id:', userProfile.team_id);
     const { data: teamData } = await supabase
       .from('teams')
       .select('logo')
@@ -83,7 +84,7 @@ const fetchFullUserProfile = async (username: string | undefined): Promise<{ pro
     .maybeSingle();
 
   if (statsError && statsError.code !== 'PGRST116') {
-    console.error('Stats fetch error:', statsError);
+    console.error('useUserProfileFetch: Stats fetch error:', statsError);
     throw statsError;
   }
 
@@ -103,7 +104,7 @@ const fetchFullUserProfile = async (username: string | undefined): Promise<{ pro
     tactical_awareness: 'À évaluer'
   };
 
-  console.log('Returning complete profile data');
+  console.log('useUserProfileFetch: Returning complete profile data');
   return { profile: completeProfile, stats: stats || defaultStats };
 };
 
@@ -147,7 +148,7 @@ export const useUserProfileFetch = (username: string | undefined) => {
 
   useEffect(() => {
     if (isSuccess && data === null && username) {
-      console.log('User not found, showing toast and redirecting');
+      console.log('useUserProfileFetch: User not found, showing toast and redirecting');
       toast({
         title: "Utilisateur non trouvé",
         description: "Ce profil n'existe pas",
@@ -156,7 +157,7 @@ export const useUserProfileFetch = (username: string | undefined) => {
       navigate('/');
     }
     if (isError) {
-      console.error('Error loading user profile:', error);
+      console.error('useUserProfileFetch: Error loading user profile:', error);
       toast({
         title: "Erreur",
         description: "Impossible de charger les données de l'utilisateur",
@@ -168,6 +169,15 @@ export const useUserProfileFetch = (username: string | undefined) => {
   const profileData = data?.profile ?? null;
   const userStats = data?.stats ?? null;
   const userData = profileData ? { id: profileData.id, ...profileData } : null;
+
+  console.log('useUserProfileFetch: Final return data:', {
+    loading: isLoading,
+    userData,
+    profileData,
+    userStats,
+    currentUserId,
+    isCurrentUserAdmin,
+  });
 
   return {
     loading: isLoading,

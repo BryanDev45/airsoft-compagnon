@@ -76,7 +76,8 @@ function App() {
                   <Profile />
                 </AuthGuard>
               } />
-              <Route path="/user/:userId" element={<UserProfile />} />
+              {/* Correction: la route doit utiliser :username au lieu de :userId */}
+              <Route path="/user/:username" element={<UserProfile />} />
               
               {/* Routes pour les équipes */}
               <Route path="/team/:id" element={<Team />} />

@@ -19,6 +19,8 @@ import ProfileDialogs from '../components/profile/ProfileDialogs';
 const UserProfile = () => {
   const { username } = useParams();
   
+  console.log('UserProfile component: username from params:', username);
+  
   const {
     loading,
     userData,
@@ -41,6 +43,15 @@ const UserProfile = () => {
     fetchProfileData
   } = useUserProfile(username);
 
+  console.log('UserProfile component: hook data:', {
+    loading,
+    userData,
+    profileData,
+    userStats,
+    currentUserId,
+    isCurrentUserAdmin,
+  });
+
   const { mutate: deleteWarning, isPending: isDeletingWarning } = useDeleteUserWarning();
 
   // Hook unifié pour tous les dialogs
@@ -51,6 +62,7 @@ const UserProfile = () => {
   };
 
   if (loading) {
+    console.log('UserProfile component: Showing loading state');
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
@@ -65,7 +77,25 @@ const UserProfile = () => {
     );
   }
 
+  if (!userData && !loading) {
+    console.log('UserProfile component: No user data found');
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-grow flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">Utilisateur non trouvé</h1>
+            <p className="text-gray-600">Ce profil n'existe pas ou a été supprimé.</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   const isOwnProfile = currentUserId === userData?.id;
+
+  console.log('UserProfile component: Rendering profile for user:', userData?.username);
 
   return (
     <div className="min-h-screen flex flex-col">
