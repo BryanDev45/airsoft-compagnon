@@ -3,8 +3,10 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Star, Shield } from "lucide-react";
+import { Star, Shield, MapPin } from "lucide-react";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
+import UserActionButtons from './UserActionButtons';
+import { useAuth } from '@/hooks/useAuth';
 
 interface UserCardProps {
   user: {
@@ -23,12 +25,20 @@ interface UserCardProps {
       logo: string | null;
     } | null;
   };
+  friendshipStatus?: string;
+  onFriendAction: (userId: string, action: 'add' | 'remove') => void;
 }
 
-const UserCard: React.FC<UserCardProps> = ({ user }) => {
+const UserCard: React.FC<UserCardProps> = ({ user, friendshipStatus, onFriendAction }) => {
   const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
 
-  const handleCardClick = () => {
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Éviter la navigation si on clique sur les boutons d'action
+    if ((e.target as HTMLElement).closest('button')) {
+      return;
+    }
+    
     if (user.username) {
       console.log('Navigating to user profile:', user.username);
       navigate(`/user/${user.username}`);
@@ -48,42 +58,53 @@ const UserCard: React.FC<UserCardProps> = ({ user }) => {
     return user.username;
   };
 
+  const isCurrentUser = currentUser?.id === user.id;
+
   return (
     <div 
-      className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow"
+      className={`bg-white rounded-lg shadow-md p-4 cursor-pointer hover:shadow-lg transition-shadow ${user.ban ? 'opacity-60' : ''}`}
       onClick={handleCardClick}
     >
-      <div className="flex items-center space-x-4">
-        <div className="relative">
-          <Avatar className="h-16 w-16">
-            <AvatarImage src={user.avatar || ""} alt={user.username} />
-            <AvatarFallback>{getInitials(user.username)}</AvatarFallback>
-          </Avatar>
-          
-          {user.team_info?.logo && (
-            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-white rounded-full border-2 border-white overflow-hidden">
-              <img 
-                src={user.team_info.logo} 
-                alt={user.team_info.name} 
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
-        </div>
-        
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-lg font-semibold truncate">{getDisplayName()}</h3>
-            {user.is_verified && <VerifiedBadge size={18} />}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4 flex-1 min-w-0">
+          <div className="relative flex-shrink-0">
+            <Avatar className="h-16 w-16">
+              <AvatarImage src={user.avatar || ""} alt={user.username} />
+              <AvatarFallback>{getInitials(user.username)}</AvatarFallback>
+            </Avatar>
+            
+            {user.team_info?.logo && (
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-white rounded-full border-2 border-white overflow-hidden">
+                <img 
+                  src={user.team_info.logo} 
+                  alt={user.team_info.name} 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
           </div>
           
-          <p className="text-sm text-gray-600 mb-2">@{user.username}</p>
-          
-          {user.location && (
-            <p className="text-sm text-gray-500 mb-2">{user.location}</p>
-          )}
-          
-          <div className="flex items-center justify-between">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="text-lg font-semibold truncate">{getDisplayName()}</h3>
+              {user.is_verified && <VerifiedBadge size={18} />}
+              {user.ban && (
+                <Badge variant="destructive" className="text-xs">
+                  <Shield className="h-3 w-3 mr-1" />
+                  Banni
+                </Badge>
+              )}
+            </div>
+            
+            <p className="text-sm text-gray-600 mb-2">@{user.username}</p>
+            
+            {user.location && (
+              <div className="flex items-center gap-1 text-sm text-gray-500 mb-2">
+                <MapPin className="h-3 w-3" />
+                <span className="truncate">{user.location}</span>
+              </div>
+            )}
+            
             <div className="flex items-center gap-4">
               {user.reputation !== null && user.reputation > 0 ? (
                 <div className="flex items-center gap-1">
@@ -100,15 +121,19 @@ const UserCard: React.FC<UserCardProps> = ({ user }) => {
                 </Badge>
               )}
             </div>
-            
-            {user.ban && (
-              <Badge variant="destructive" className="text-xs">
-                <Shield className="h-3 w-3 mr-1" />
-                Banni
-              </Badge>
-            )}
           </div>
         </div>
+        
+        {/* Boutons d'action */}
+        {!isCurrentUser && !user.ban && (
+          <div className="flex-shrink-0 ml-4">
+            <UserActionButtons
+              user={user}
+              friendshipStatus={friendshipStatus}
+              onFriendAction={onFriendAction}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

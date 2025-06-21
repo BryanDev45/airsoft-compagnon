@@ -12,11 +12,17 @@ interface UserResult {
   avatar: string | null;
   location: string | null;
   reputation: number | null;
-  Ban: boolean;
+  Ban?: boolean;
+  ban?: boolean;
   is_verified: boolean | null;
-  team_id: string | null;
+  team_id?: string | null;
   team_name?: string | null;
   team_logo?: string | null;
+  team_info?: {
+    id: string;
+    name: string;
+    logo: string | null;
+  } | null;
 }
 
 export const useFriendshipActions = (users: UserResult[]) => {
@@ -26,7 +32,7 @@ export const useFriendshipActions = (users: UserResult[]) => {
 
   // Récupérer le statut d'amitié pour chaque utilisateur affiché
   useEffect(() => {
-    if (!user) return;
+    if (!user || !users || users.length === 0) return;
     
     const fetchFriendshipStatus = async () => {
       try {
@@ -43,6 +49,8 @@ export const useFriendshipActions = (users: UserResult[]) => {
           
           if (!error && data) {
             statusMap[userData.id] = data;
+          } else {
+            statusMap[userData.id] = 'none';
           }
         }
         
@@ -52,9 +60,7 @@ export const useFriendshipActions = (users: UserResult[]) => {
       }
     };
     
-    if (users.length > 0) {
-      fetchFriendshipStatus();
-    }
+    fetchFriendshipStatus();
   }, [user, users]);
 
   // Gérer l'ajout ou la suppression d'un ami
@@ -79,7 +85,15 @@ export const useFriendshipActions = (users: UserResult[]) => {
             status: 'pending'
           });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Erreur lors de l\'ajout d\'ami:', error);
+          toast({
+            title: "Erreur",
+            description: "Impossible d'envoyer la demande d'ami",
+            variant: "destructive"
+          });
+          return;
+        }
         
         // Mettre à jour l'état local
         setFriendships(prev => ({
@@ -96,10 +110,17 @@ export const useFriendshipActions = (users: UserResult[]) => {
         const { error } = await supabase
           .from('friendships')
           .delete()
-          .or(`user_id.eq.${user.id},user_id.eq.${targetUserId}`)
-          .or(`friend_id.eq.${user.id},friend_id.eq.${targetUserId}`);
+          .or(`and(user_id.eq.${user.id},friend_id.eq.${targetUserId}),and(user_id.eq.${targetUserId},friend_id.eq.${user.id})`);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Erreur lors de la suppression d\'ami:', error);
+          toast({
+            title: "Erreur",
+            description: "Impossible de supprimer l'ami",
+            variant: "destructive"
+          });
+          return;
+        }
         
         // Mettre à jour l'état local
         setFriendships(prev => {
