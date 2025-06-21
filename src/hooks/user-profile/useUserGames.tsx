@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { FormattedGame, fetchParticipantCounts, formatParticipatedGame, formatCreatedGame, updateUserGamesStats } from './gameFormatters';
+import { FormattedGame, fetchParticipantCounts, formatParticipatedGame, formatCreatedGame } from './gameFormatters';
 
 /**
  * Hook pour récupérer et mettre à jour les parties d'un utilisateur avec des fonctionnalités supplémentaires
@@ -104,8 +104,8 @@ export const useUserGames = (userId: string | undefined) => {
         created: formattedGames.filter(g => g.isCreator).length
       });
       
-      // Mettre à jour les statistiques avec la nouvelle fonction corrigée
-      await updateUserGamesStats(userId, formattedGames);
+      // SUPPRESSION DE L'APPEL AUTOMATIQUE updateUserGamesStats pour éviter la boucle infinie
+      // La mise à jour des stats est maintenant gérée dans useUserProfileFetch
       
       setUserGames(formattedGames);
       
