@@ -24,16 +24,16 @@ const UserReportProfileButtons: React.FC<UserReportProfileButtonsProps> = ({
   onViewProfile
 }) => {
   return (
-    <div className="flex items-center gap-2 pt-2 border-t">
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2 border-t">
       {report.reporter_profile?.username && (
         <Button
           onClick={() => onViewProfile(report.reporter_profile?.username || '')}
           variant="outline"
           size="sm"
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 w-full sm:w-auto text-xs sm:text-sm"
         >
-          <User className="h-4 w-4" />
-          Profil du rapporteur
+          <User className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+          <span className="truncate">Profil du rapporteur</span>
         </Button>
       )}
       {report.reported_profile?.username && (
@@ -41,10 +41,10 @@ const UserReportProfileButtons: React.FC<UserReportProfileButtonsProps> = ({
           onClick={() => onViewProfile(report.reported_profile?.username || '')}
           variant="outline"
           size="sm"
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 w-full sm:w-auto text-xs sm:text-sm"
         >
-          <User className="h-4 w-4" />
-          Profil de l'utilisateur signalé
+          <User className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+          <span className="truncate">Profil de l'utilisateur signalé</span>
         </Button>
       )}
     </div>
