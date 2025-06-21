@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useOptimizedUserSearch } from '@/hooks/search/useOptimizedUserSearch';
 import { Card, CardContent } from "@/components/ui/card";
@@ -39,7 +38,7 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) =>
     enabled: !!currentUser?.id,
   });
 
-  const isCurrentUserTeamAdmin = currentUserTeamInfo?.isTeamLeader && currentUserTeamInfo?.teamId;
+  const isCurrentUserTeamAdmin = Boolean(currentUserTeamInfo?.isTeamLeader && currentUserTeamInfo?.teamId);
 
   console.log('UserSearchResults - searchQuery:', searchQuery);
   console.log('UserSearchResults - users:', users);
