@@ -75,10 +75,14 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) =>
                     }
                   </h3>
                   {user.is_verified && (
-                    <Shield className="h-4 w-4 text-blue-500" title="Compte vérifié" />
+                    <div title="Compte vérifié">
+                      <Shield className="h-4 w-4 text-blue-500" />
+                    </div>
                   )}
                   {user.Ban && (
-                    <Ban className="h-4 w-4 text-red-500" title="Utilisateur banni" />
+                    <div title="Utilisateur banni">
+                      <Ban className="h-4 w-4 text-red-500" />
+                    </div>
                   )}
                 </div>
                 

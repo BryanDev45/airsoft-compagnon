@@ -12,8 +12,11 @@ import NewConversationDialog from './NewConversationDialog';
 const MessagingIcon: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
-  const { conversations, unreadCount } = useMessaging();
+  const { conversations } = useMessaging();
   const navigate = useNavigate();
+
+  // Calculate unread count from conversations
+  const unreadCount = conversations.reduce((total, conv) => total + (conv.unread_count || 0), 0);
 
   const handleViewAllMessages = () => {
     setIsOpen(false);

@@ -55,7 +55,12 @@ export const useGameData = (gameId: string | undefined) => {
             .single();
           
           if (profile) {
-            setUserProfile(profile as Profile);
+            // Ensure all required Profile properties are present
+            setUserProfile({
+              ...profile,
+              team_logo: profile.team_logo || null,
+              newsletter_subscribed: profile.newsletter_subscribed ?? null
+            } as Profile);
           }
         } catch (error) {
           console.error('Error loading user profile:', error);

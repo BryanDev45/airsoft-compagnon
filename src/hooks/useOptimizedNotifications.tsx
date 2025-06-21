@@ -34,7 +34,16 @@ export const useOptimizedNotifications = () => {
       throw error;
     }
 
-    return data?.[0] || { unread_count: 0, total_count: 0, recent_notifications: null };
+    const result = data?.[0];
+    if (!result) {
+      return { unread_count: 0, total_count: 0, recent_notifications: null };
+    }
+
+    return {
+      unread_count: result.unread_count || 0,
+      total_count: result.total_count || 0,
+      recent_notifications: result.recent_notifications as any[] || null
+    };
   };
 
   return useQuery<NotificationSummary, Error>({
