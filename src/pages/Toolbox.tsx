@@ -39,23 +39,23 @@ const Toolbox = () => {
           <ToolboxHeader />
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="mb-6 w-full justify-start overflow-x-auto">
-              <TabsTrigger value="calculators" className="flex items-center gap-1">
+            <TabsList className="mb-6 w-full justify-start h-auto min-h-[48px] p-1 bg-white border border-gray-200 rounded-lg shadow-sm overflow-x-auto scrollbar-thin">
+              <TabsTrigger value="calculators" className="flex items-center gap-1 px-3 py-2 whitespace-nowrap">
                 <Calculator className="h-4 w-4" /> Calculateurs
               </TabsTrigger>
-              <TabsTrigger value="discord-bot" className="flex items-center gap-1">
+              <TabsTrigger value="discord-bot" className="flex items-center gap-1 px-3 py-2 whitespace-nowrap">
                 <Bot className="h-4 w-4" /> Bot Discord
               </TabsTrigger>
-              <TabsTrigger value="glossary" className="flex items-center gap-1">
+              <TabsTrigger value="glossary" className="flex items-center gap-1 px-3 py-2 whitespace-nowrap">
                 <Book className="h-4 w-4" /> Glossaire
               </TabsTrigger>
-              <TabsTrigger value="scenarios" className="flex items-center gap-1">
+              <TabsTrigger value="scenarios" className="flex items-center gap-1 px-3 py-2 whitespace-nowrap">
                 <Target className="h-4 w-4" /> Scénarios
               </TabsTrigger>
-              <TabsTrigger value="troubleshooting" className="flex items-center gap-1">
+              <TabsTrigger value="troubleshooting" className="flex items-center gap-1 px-3 py-2 whitespace-nowrap">
                 <Settings className="h-4 w-4" /> Dépannage
               </TabsTrigger>
-              <TabsTrigger value="guides" className="flex items-center gap-1">
+              <TabsTrigger value="guides" className="flex items-center gap-1 px-3 py-2 whitespace-nowrap">
                 <Info className="h-4 w-4" /> Guides
               </TabsTrigger>
             </TabsList>
