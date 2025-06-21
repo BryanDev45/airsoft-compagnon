@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
@@ -113,11 +113,14 @@ const fetchFullUserProfile = async (username: string | undefined): Promise<{ pro
  */
 export const useUserProfileFetch = (username: string | undefined) => {
   const navigate = useNavigate();
+  const fetchTriggered = useRef(false);
   
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isCurrentUserAdmin, setIsCurrentUserAdmin] = useState<boolean>(false);
   
   useEffect(() => {
+    if (fetchTriggered.current) return;
+    
     const fetchCurrentUser = async () => {
       const { data } = await supabase.auth.getSession();
       if (data.session?.user?.id) {
@@ -133,6 +136,7 @@ export const useUserProfileFetch = (username: string | undefined) => {
           setIsCurrentUserAdmin(currentUserProfile.Admin === true);
         }
       }
+      fetchTriggered.current = true;
     };
     
     fetchCurrentUser();
@@ -144,6 +148,8 @@ export const useUserProfileFetch = (username: string | undefined) => {
     enabled: !!username,
     retry: 1,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false, // Éviter les requêtes répétées
+    refetchOnMount: false, // Éviter les requêtes répétées au montage
   });
 
   useEffect(() => {
