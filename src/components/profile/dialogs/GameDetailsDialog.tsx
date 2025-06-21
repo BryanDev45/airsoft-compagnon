@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -48,17 +47,33 @@ const GameDetailsDialog: React.FC<GameDetailsDialogProps> = ({
   };
 
   const handleViewGameDetails = () => {
+    console.log('🎮 GAME DIALOG - Full game object received:', selectedGame);
+    console.log('🎮 GAME DIALOG - Object keys available:', Object.keys(selectedGame || {}));
+    console.log('🎮 GAME DIALOG - Current route:', window.location.pathname);
+    
     // Check multiple possible ID fields to handle different data structures
-    const gameId = selectedGame?.id || selectedGame?.game_id || selectedGame?.party_id;
+    const gameId = selectedGame?.id || selectedGame?.game_id || selectedGame?.party_id || selectedGame?.gameId;
+    
+    console.log('🎮 GAME DIALOG - ID check results:', {
+      'selectedGame.id': selectedGame?.id,
+      'selectedGame.game_id': selectedGame?.game_id,
+      'selectedGame.party_id': selectedGame?.party_id,
+      'selectedGame.gameId': selectedGame?.gameId,
+      'final gameId': gameId
+    });
     
     if (!gameId) {
-      console.error('No game ID available for navigation. Available fields:', Object.keys(selectedGame || {}));
-      console.error('Selected game object:', selectedGame);
+      console.error('🚨 GAME DIALOG - No game ID available for navigation');
+      console.error('🚨 GAME DIALOG - Available fields:', Object.keys(selectedGame || {}));
+      console.error('🚨 GAME DIALOG - Full selected game object:', selectedGame);
+      
+      // Show a more helpful error to the user
+      alert('Erreur: Impossible de trouver l\'ID de la partie. Veuillez rafraîchir la page et réessayer.');
       return;
     }
     
-    console.log('Navigating to game details with ID:', gameId);
-    console.log('Full selected game object:', selectedGame);
+    console.log('✅ GAME DIALOG - Navigating to game details with ID:', gameId);
+    console.log('✅ GAME DIALOG - Navigation URL will be:', `/game/${gameId}`);
     
     // Fermer la dialog d'abord
     setShowGameDialog(false);
@@ -67,7 +82,7 @@ const GameDetailsDialog: React.FC<GameDetailsDialogProps> = ({
     navigate(`/game/${gameId}`);
   };
 
-  console.log("Selected game in dialog:", selectedGame);
+  console.log("🎮 GAME DIALOG - Selected game in dialog:", selectedGame);
 
   if (!selectedGame) {
     return null;

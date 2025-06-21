@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatGameDate } from '@/utils/dateUtils';
+
 interface Game {
   id: string;
   title: string;
@@ -25,11 +26,13 @@ interface Game {
   zip_code?: string;
   end_date?: string;
 }
+
 interface ProfileGamesProps {
   games: Game[];
   handleViewGameDetails: (game: Game) => void;
   handleViewAllGames: () => void;
 }
+
 const ProfileGames = ({
   games,
   handleViewGameDetails,
@@ -52,8 +55,22 @@ const ProfileGames = ({
 
   // Limiter à 10 parties pour l'affichage principal
   const displayedGames = sortedGames.slice(0, 10);
+
+  const handleGameDetailsClick = (game: Game) => {
+    console.log('🎮 PROFILE GAMES - Button clicked for game:', game);
+    console.log('🎮 PROFILE GAMES - Game object keys:', Object.keys(game || {}));
+    console.log('🎮 PROFILE GAMES - Current route:', window.location.pathname);
+    console.log('🎮 PROFILE GAMES - Game ID check:', {
+      'game.id': game.id,
+      'game.game_id': (game as any).game_id,
+      'game.party_id': (game as any).party_id,
+    });
+    
+    handleViewGameDetails(game);
+  };
   
-  return <Card>
+  return (
+    <Card>
       <CardHeader>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
@@ -72,9 +89,13 @@ const ProfileGames = ({
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {displayedGames && displayedGames.length === 0 ? <p className="text-center text-gray-500 py-6">
+          {displayedGames && displayedGames.length === 0 ? (
+            <p className="text-center text-gray-500 py-6">
               Vous n'avez pas encore participé à des parties.
-            </p> : displayedGames && displayedGames.map(game => <div key={game.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            </p>
+          ) : (
+            displayedGames && displayedGames.map(game => (
+              <div key={game.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                   <h3 className="font-semibold text-left">{game.title}</h3>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-gray-600">
@@ -90,19 +111,31 @@ const ProfileGames = ({
                   <Badge className={game.status === "À venir" ? "bg-blue-500" : game.status === "Terminé" ? "bg-gray-500" : "bg-green-500"}>
                     {game.status}
                   </Badge>
-                  <Button variant="outline" size="sm" className="border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white" onClick={() => handleViewGameDetails(game)}>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white" 
+                    onClick={() => handleGameDetailsClick(game)}
+                  >
                     Détails
                   </Button>
                 </div>
-              </div>)}
+              </div>
+            ))
+          )}
         </div>
       </CardContent>
       <CardFooter>
-        <Button className="bg-airsoft-red hover:bg-red-700 w-full sm:w-auto" onClick={handleViewAllGames} disabled={games.length === 0}>
+        <Button 
+          className="bg-airsoft-red hover:bg-red-700 w-full sm:w-auto" 
+          onClick={handleViewAllGames} 
+          disabled={games.length === 0}
+        >
           Voir toutes mes parties {games.length > 0 && `(${games.length})`}
         </Button>
       </CardFooter>
-    </Card>;
+    </Card>
+  );
 };
-export default ProfileGames;
 
+export default ProfileGames;
