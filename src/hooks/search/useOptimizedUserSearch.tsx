@@ -72,7 +72,7 @@ export const useOptimizedUserSearch = (searchQuery: string) => {
             Ban,
             is_verified,
             team_id,
-            teams!inner(
+            teams(
               id,
               name,
               logo
