@@ -78,20 +78,21 @@ export const useGamesData = (userId?: string) => {
         return [];
       }
       
-      // Process games with optimized coordinate handling
-      const processedGames = games.map((game) => {
-        console.log(`Processing game "${game.title}": Stored coords=(${game.latitude}, ${game.longitude})`);
+      // Process games with enhanced coordinate handling using geocoding
+      const processedGames = await Promise.all(games.map(async (game) => {
+        console.log(`Processing game "${game.title}": Stored coords=(${game.latitude}, ${game.longitude}), Address="${game.address}, ${game.zip_code} ${game.city}"`);
         
-        // Use stored coordinates if valid, otherwise use default France coordinates
-        let lat = 46.603354; // Default France center
-        let lng = 1.8883335;
+        // Use the enhanced geocoding utility to get valid coordinates
+        const coordinates = await getValidCoordinates(
+          game.latitude,
+          game.longitude,
+          game.address || '',
+          game.zip_code || '',
+          game.city || '',
+          'France'
+        );
         
-        if (game.latitude && game.longitude && 
-            !isNaN(game.latitude) && !isNaN(game.longitude) &&
-            Math.abs(game.latitude) > 0.1 && Math.abs(game.longitude) > 0.1) {
-          lat = Number(game.latitude);
-          lng = Number(game.longitude);
-        }
+        console.log(`Final coordinates for "${game.title}": (${coordinates.latitude}, ${coordinates.longitude})`);
 
         return {
           id: game.id,
@@ -102,8 +103,8 @@ export const useGamesData = (userId?: string) => {
           department: game.zip_code ? game.zip_code.substring(0, 2) : '',
           type: game.game_type,
           country: 'France',
-          lat,
-          lng,
+          lat: coordinates.latitude,
+          lng: coordinates.longitude,
           maxPlayers: game.max_players,
           price: game.price,
           startTime: game.start_time,
@@ -116,14 +117,14 @@ export const useGamesData = (userId?: string) => {
             game.Picture5
           ].filter(Boolean)
         };
-      });
+      }));
 
-      console.log(`Returning ${processedGames.length} processed games`);
+      console.log(`Returning ${processedGames.length} processed games with geocoded coordinates`);
       return processedGames;
     },
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes - increased due to geocoding
+    gcTime: 10 * 60 * 1000, // 10 minutes - increased cache time
     refetchOnWindowFocus: false,
-    retry: 1, // Reduce retry attempts
+    retry: 1, // Reduce retry attempts due to geocoding API calls
   });
 };
