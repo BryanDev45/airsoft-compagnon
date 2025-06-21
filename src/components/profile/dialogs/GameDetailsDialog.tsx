@@ -48,18 +48,23 @@ const GameDetailsDialog: React.FC<GameDetailsDialogProps> = ({
   };
 
   const handleViewGameDetails = () => {
-    if (!selectedGame?.id) {
-      console.error('No game ID available for navigation');
+    // Check multiple possible ID fields to handle different data structures
+    const gameId = selectedGame?.id || selectedGame?.game_id || selectedGame?.party_id;
+    
+    if (!gameId) {
+      console.error('No game ID available for navigation. Available fields:', Object.keys(selectedGame || {}));
+      console.error('Selected game object:', selectedGame);
       return;
     }
     
-    console.log('Navigating to game details with ID:', selectedGame.id);
+    console.log('Navigating to game details with ID:', gameId);
+    console.log('Full selected game object:', selectedGame);
     
     // Fermer la dialog d'abord
     setShowGameDialog(false);
     
     // Naviguer vers la page de détails de la partie
-    navigate(`/game/${selectedGame.id}`);
+    navigate(`/game/${gameId}`);
   };
 
   console.log("Selected game in dialog:", selectedGame);
