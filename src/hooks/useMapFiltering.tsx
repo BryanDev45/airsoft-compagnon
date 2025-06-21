@@ -1,5 +1,5 @@
 
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useRef } from 'react';
 import { MapEvent } from './useGamesData';
 import { useFilterState } from './filters/useFilterState';
 import { useEventFilters } from './filters/useEventFilters';
@@ -39,11 +39,24 @@ export function useMapFiltering(events: MapEvent[]) {
 
   const { countryCoordinates, updateSearchCenterForCountry } = useCountryCoordinates();
   const { filterEvents } = useEventFiltering();
+  
+  // Track if this is the initial load to prevent unnecessary recentering
+  const initialLoadComplete = useRef(false);
+  const lastCountry = useRef(selectedCountry);
 
-  // Handle search center updates when country changes - separate from filtering
+  // Handle search center updates when country changes - only on significant changes
   useEffect(() => {
-    console.log('Country changed, updating search center...');
-    updateSearchCenterForCountry(selectedCountry, setSearchCenter);
+    // Only update search center if country actually changed and it's not the initial load
+    if (initialLoadComplete.current && lastCountry.current !== selectedCountry) {
+      console.log('Country changed from', lastCountry.current, 'to', selectedCountry, '- updating search center...');
+      updateSearchCenterForCountry(selectedCountry, setSearchCenter);
+    }
+    
+    lastCountry.current = selectedCountry;
+    
+    if (!initialLoadComplete.current) {
+      initialLoadComplete.current = true;
+    }
   }, [selectedCountry, updateSearchCenterForCountry]);
 
   // Memoize filtered events to prevent unnecessary recalculations

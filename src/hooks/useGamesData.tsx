@@ -1,7 +1,8 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { getValidCoordinates } from "@/utils/geocodingUtils";
+import { geocodeAddress } from "@/utils/geocoding/geocodingService";
+import { areCoordinatesValid, getDefaultCoordinatesByCountry } from "@/utils/geocodingUtils";
 
 // Export the types that are used throughout the application
 export interface MapEvent {
@@ -78,31 +79,47 @@ export const useGamesData = (userId?: string) => {
         return [];
       }
       
-      // Process games with enhanced coordinate handling using geocoding
+      // Process games with enhanced coordinate handling using the same geocoding as stores
       const processedGames = await Promise.all(games.map(async (game) => {
-        const gameAddress = `${game.address || ''}, ${game.zip_code || ''} ${game.city || ''}`.trim();
-        console.log(`🎮 PROCESSING GAME - "${game.title}": Stored coords=(${game.latitude}, ${game.longitude}), Address="${gameAddress}"`);
+        console.log(`🎮 PROCESSING GAME - "${game.title}": Stored coords=(${game.latitude}, ${game.longitude}), Address="${game.address || ''}, ${game.zip_code || ''} ${game.city || ''}"`);
         
-        // Use the enhanced geocoding utility to get valid coordinates
-        // Pass the game data for better address analysis - with proper country detection
-        const coordinates = await getValidCoordinates(
-          game.latitude,
-          game.longitude,
-          game.address || '',
-          game.zip_code || '',
-          game.city || '',
-          'France', // Most games are in France, but geocoding will auto-detect if different
-          {
-            name: game.title,
-            address: game.address,
-            city: game.city,
-            zip_code: game.zip_code,
-            // Add game-specific context for better geocoding
-            type: 'game_location'
+        let finalLat = game.latitude;
+        let finalLng = game.longitude;
+
+        // If stored coordinates are invalid, use geocoding service (same as stores)
+        if (!areCoordinatesValid(game.latitude, game.longitude)) {
+          console.log(`🎮 GEOCODING GAME - "${game.title}": Invalid stored coordinates, attempting geocoding...`);
+          
+          const geocodedCoords = await geocodeAddress(
+            game.address || '',
+            game.zip_code || '',
+            game.city || '',
+            'France',
+            {
+              name: game.title,
+              address: game.address,
+              city: game.city,
+              zip_code: game.zip_code,
+              type: 'game_location'
+            }
+          );
+
+          if (geocodedCoords && areCoordinatesValid(geocodedCoords.latitude, geocodedCoords.longitude)) {
+            finalLat = geocodedCoords.latitude;
+            finalLng = geocodedCoords.longitude;
+            console.log(`🎮 GEOCODING GAME - "${game.title}": Geocoding successful: (${finalLat}, ${finalLng})`);
+          } else {
+            // Use default France coordinates as fallback
+            const defaultCoords = getDefaultCoordinatesByCountry('France');
+            finalLat = defaultCoords.latitude;
+            finalLng = defaultCoords.longitude;
+            console.log(`🎮 GEOCODING GAME - "${game.title}": Using default France coordinates: (${finalLat}, ${finalLng})`);
           }
-        );
+        } else {
+          console.log(`🎮 PROCESSING GAME - "${game.title}": Using stored coordinates: (${finalLat}, ${finalLng})`);
+        }
         
-        console.log(`🎮 FINAL COORDS - "${game.title}": (${coordinates.latitude}, ${coordinates.longitude})`);
+        console.log(`🎮 FINAL COORDS - "${game.title}": (${finalLat}, ${finalLng})`);
 
         return {
           id: game.id,
@@ -113,8 +130,8 @@ export const useGamesData = (userId?: string) => {
           department: game.zip_code ? game.zip_code.substring(0, 2) : '',
           type: game.game_type,
           country: 'France',
-          lat: coordinates.latitude,
-          lng: coordinates.longitude,
+          lat: finalLat,
+          lng: finalLng,
           maxPlayers: game.max_players,
           price: game.price,
           startTime: game.start_time,
@@ -129,7 +146,7 @@ export const useGamesData = (userId?: string) => {
         };
       }));
 
-      console.log(`🎮 GAMES DATA - Returning ${processedGames.length} processed games with geocoded coordinates`);
+      console.log(`🎮 GAMES DATA - Returning ${processedGames.length} processed games with consistent geocoding`);
       return processedGames;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes - keep reasonable cache
