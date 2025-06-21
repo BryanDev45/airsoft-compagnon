@@ -11,6 +11,8 @@ const fetchFullUserProfile = async (username: string | undefined): Promise<{ pro
     return null;
   }
 
+  console.log('Fetching profile for username:', username);
+
   const { data: userProfile, error: profileError } = await supabase
     .from('profiles')
     .select('*, spoken_language')
@@ -23,8 +25,11 @@ const fetchFullUserProfile = async (username: string | undefined): Promise<{ pro
   }
   
   if (!userProfile) {
+    console.log('No profile found for username:', username);
     return null;
   }
+
+  console.log('Profile found:', userProfile);
 
   const completeProfile: Profile = {
     id: userProfile.id,
@@ -56,7 +61,9 @@ const fetchFullUserProfile = async (username: string | undefined): Promise<{ pro
     spoken_language: userProfile.spoken_language
   };
 
+  // Fetch team logo if user has a team
   if (userProfile.team_id) {
+    console.log('Fetching team data for team_id:', userProfile.team_id);
     const { data: teamData } = await supabase
       .from('teams')
       .select('logo')
@@ -68,6 +75,7 @@ const fetchFullUserProfile = async (username: string | undefined): Promise<{ pro
     }
   }
 
+  // Fetch user stats
   const { data: stats, error: statsError } = await supabase
     .from('user_stats')
     .select('*')
@@ -75,6 +83,7 @@ const fetchFullUserProfile = async (username: string | undefined): Promise<{ pro
     .maybeSingle();
 
   if (statsError && statsError.code !== 'PGRST116') {
+    console.error('Stats fetch error:', statsError);
     throw statsError;
   }
 
@@ -94,9 +103,9 @@ const fetchFullUserProfile = async (username: string | undefined): Promise<{ pro
     tactical_awareness: 'À évaluer'
   };
 
+  console.log('Returning complete profile data');
   return { profile: completeProfile, stats: stats || defaultStats };
 };
-
 
 /**
  * Hook for fetching basic user profile data by username, now using React Query
@@ -128,14 +137,17 @@ export const useUserProfileFetch = (username: string | undefined) => {
     fetchCurrentUser();
   }, []);
   
-  const { data, isLoading, isError, isSuccess } = useQuery({
+  const { data, isLoading, isError, isSuccess, error } = useQuery({
     queryKey: ['userProfileData', username],
     queryFn: () => fetchFullUserProfile(username),
     enabled: !!username,
+    retry: 1,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   useEffect(() => {
-    if (isSuccess && data === null) {
+    if (isSuccess && data === null && username) {
+      console.log('User not found, showing toast and redirecting');
       toast({
         title: "Utilisateur non trouvé",
         description: "Ce profil n'existe pas",
@@ -144,13 +156,14 @@ export const useUserProfileFetch = (username: string | undefined) => {
       navigate('/');
     }
     if (isError) {
+      console.error('Error loading user profile:', error);
       toast({
         title: "Erreur",
         description: "Impossible de charger les données de l'utilisateur",
         variant: "destructive",
       });
     }
-  }, [isSuccess, isError, data, navigate]);
+  }, [isSuccess, isError, data, navigate, username, error]);
   
   const profileData = data?.profile ?? null;
   const userStats = data?.stats ?? null;
