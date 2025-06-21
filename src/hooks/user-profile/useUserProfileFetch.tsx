@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
 import { Profile } from '@/types/profile';
 import { useQuery } from '@tanstack/react-query';
+import { triggerUserStatsUpdate } from '@/utils/supabaseHelpers';
 
 const fetchFullUserProfile = async (username: string | undefined): Promise<{ profile: Profile; stats: any } | null> => {
   if (!username) {
@@ -114,6 +115,7 @@ const fetchFullUserProfile = async (username: string | undefined): Promise<{ pro
 export const useUserProfileFetch = (username: string | undefined) => {
   const navigate = useNavigate();
   const fetchTriggered = useRef(false);
+  const statsUpdateTriggered = useRef(false);
   
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isCurrentUserAdmin, setIsCurrentUserAdmin] = useState<boolean>(false);
@@ -151,6 +153,24 @@ export const useUserProfileFetch = (username: string | undefined) => {
     refetchOnWindowFocus: false, // Éviter les requêtes répétées
     refetchOnMount: false, // Éviter les requêtes répétées au montage
   });
+
+  // Mise à jour unique des statistiques lors du premier chargement réussi
+  useEffect(() => {
+    if (isSuccess && data?.profile && !statsUpdateTriggered.current) {
+      console.log(`Déclenchement UNIQUE de la mise à jour des statistiques pour: ${data.profile.id}`);
+      statsUpdateTriggered.current = true;
+      
+      triggerUserStatsUpdate(data.profile.id)
+        .catch(error => {
+          console.error('Erreur lors de la mise à jour des stats:', error);
+        });
+    }
+  }, [isSuccess, data?.profile]);
+
+  // Réinitialiser le flag quand le username change
+  useEffect(() => {
+    statsUpdateTriggered.current = false;
+  }, [username]);
 
   useEffect(() => {
     if (isSuccess && data === null && username) {

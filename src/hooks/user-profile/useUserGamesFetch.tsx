@@ -1,16 +1,12 @@
 
-import { useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { FormattedGame, fetchParticipantCounts, formatParticipatedGame, formatCreatedGame } from './gameFormatters';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { triggerUserStatsUpdate } from '@/utils/supabaseHelpers';
 
 /**
  * Hook optimisé pour récupérer les parties d'un utilisateur avec mise en cache
  */
 export const useUserGamesFetch = (userId: string | undefined, username: string | undefined, currentUserId?: string | null) => {
-  const queryClient = useQueryClient();
-  const statsUpdateTriggered = useRef(false);
   
   // Force la re-exécution de la requête quand l'userId change
   const { data: userGames = [], isLoading: loading, refetch, isSuccess } = useQuery({
@@ -23,35 +19,6 @@ export const useUserGamesFetch = (userId: string | undefined, username: string |
     refetchOnMount: true,
     retry: 1,
   });
-
-  // Force la mise à jour des statistiques quand les parties changent - UNE SEULE FOIS
-  useEffect(() => {
-    // Ne déclencher la mise à jour des stats que si :
-    // 1. Les données sont disponibles pour la première fois
-    // 2. On n'a pas déjà déclenché la mise à jour pour cet utilisateur
-    // 3. Il y a effectivement des parties
-    if (isSuccess && userId && username && userGames.length > 0 && !statsUpdateTriggered.current) {
-      console.log(`Déclenchement UNIQUE de la mise à jour des statistiques pour: ${userId}`);
-      statsUpdateTriggered.current = true;
-      
-      triggerUserStatsUpdate(userId)
-        .then(({ error }) => {
-          if (!error) {
-            // Invalider le cache de userProfileData pour forcer le rechargement avec les nouvelles stats
-            console.log(`Invalidation du cache userProfileData pour: ${username}`);
-            queryClient.invalidateQueries({ queryKey: ['userProfileData', username] });
-          }
-        })
-        .catch(error => {
-          console.error('Erreur lors de la mise à jour des stats:', error);
-        });
-    }
-  }, [isSuccess, userId, username, userGames.length, queryClient]);
-
-  // Réinitialiser le flag quand l'userId change
-  useEffect(() => {
-    statsUpdateTriggered.current = false;
-  }, [userId]);
 
   return {
     userGames,
