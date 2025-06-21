@@ -76,7 +76,7 @@ const GameDetails = () => {
     navigate(`/edit-game/${id}`);
   };
 
-  // Améliorer la logique d'affichage : afficher le chargement seulement si on charge vraiment
+  // Afficher le chargement seulement si on charge vraiment et qu'on n'a pas encore essayé de charger
   if (loading) {
     console.log('GameDetails: Showing loading state');
     return (
@@ -94,7 +94,8 @@ const GameDetails = () => {
   }
 
   // Vérification si les données de la partie existent - seulement après que le chargement soit terminé
-  if (!loading && !gameData) {
+  // Ajout d'une vérification supplémentaire pour s'assurer qu'on a vraiment fini de charger
+  if (!loading && !gameData && id) {
     console.log('GameDetails: No game data available after loading completed');
     return (
       <div className="min-h-screen flex flex-col">
@@ -116,9 +117,15 @@ const GameDetails = () => {
     );
   }
 
-  // Ne pas afficher le contenu principal si on n'a pas les données de jeu
+  // Si on n'a pas d'ID, rediriger
+  if (!id) {
+    navigate('/parties');
+    return null;
+  }
+
+  // Si on est encore en train de charger les données, afficher le loader
   if (!gameData) {
-    console.log('GameDetails: Waiting for game data...');
+    console.log('GameDetails: Still loading game data...');
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
