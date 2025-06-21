@@ -3,6 +3,9 @@ import React from 'react';
 import { useOptimizedUserSearch } from '@/hooks/search/useOptimizedUserSearch';
 import { Card, CardContent } from "@/components/ui/card";
 import { useFriendshipActions } from './hooks/useFriendshipActions';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
 import UserCard from './UserCard';
 
 interface UserSearchResultsProps {
@@ -12,10 +15,36 @@ interface UserSearchResultsProps {
 const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) => {
   const { users, isLoading } = useOptimizedUserSearch(searchQuery);
   const { friendships, handleFriendAction } = useFriendshipActions(users);
+  const { user: currentUser } = useAuth();
+
+  // Récupérer le statut d'admin d'équipe de l'utilisateur actuel
+  const { data: currentUserTeamInfo } = useQuery({
+    queryKey: ['currentUserTeamInfo', currentUser?.id],
+    queryFn: async () => {
+      if (!currentUser?.id) return null;
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('team_id, is_team_leader')
+        .eq('id', currentUser.id)
+        .single();
+      
+      if (error || !data) return null;
+      
+      return {
+        teamId: data.team_id,
+        isTeamLeader: data.is_team_leader
+      };
+    },
+    enabled: !!currentUser?.id,
+  });
+
+  const isCurrentUserTeamAdmin = currentUserTeamInfo?.isTeamLeader && currentUserTeamInfo?.teamId;
 
   console.log('UserSearchResults - searchQuery:', searchQuery);
   console.log('UserSearchResults - users:', users);
   console.log('UserSearchResults - isLoading:', isLoading);
+  console.log('UserSearchResults - isCurrentUserTeamAdmin:', isCurrentUserTeamAdmin);
 
   if (isLoading) {
     console.log('UserSearchResults - Showing loading state');
@@ -67,6 +96,7 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) =>
           key={user.id}
           user={user}
           friendshipStatus={friendships[user.id]}
+          isCurrentUserTeamAdmin={isCurrentUserTeamAdmin}
           onFriendAction={handleFriendAction}
         />
       ))}

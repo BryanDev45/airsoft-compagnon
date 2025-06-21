@@ -47,13 +47,23 @@ const UserActionButtons: React.FC<UserActionButtonsProps> = ({
     console.log('Inviter en équipe:', user.username);
   };
 
+  // L'utilisateur peut inviter si :
+  // 1. Il est chef d'équipe (isCurrentUserTeamAdmin = true)
+  // 2. L'utilisateur cible n'a pas d'équipe (!user.team_info?.id)
   const canInviteToTeam = isCurrentUserTeamAdmin && !user.team_info?.id;
   const canAddFriend = !friendshipStatus || friendshipStatus === 'none';
   const isPendingFriend = friendshipStatus === 'pending';
   const isFriend = friendshipStatus === 'accepted';
 
+  console.log('UserActionButtons - Debug:', {
+    username: user.username,
+    isCurrentUserTeamAdmin,
+    userHasTeam: !!user.team_info?.id,
+    canInviteToTeam
+  });
+
   return (
-    <div className="flex gap-1">
+    <div className="flex gap-1 flex-wrap justify-center sm:justify-start">
       {/* Bouton d'amitié */}
       {canAddFriend && (
         <Button
@@ -79,7 +89,7 @@ const UserActionButtons: React.FC<UserActionButtonsProps> = ({
         </Button>
       )}
 
-      {/* Invitation d'équipe */}
+      {/* Invitation d'équipe - Maintenant correctement affiché */}
       {canInviteToTeam && (
         <Button
           variant="outline"
