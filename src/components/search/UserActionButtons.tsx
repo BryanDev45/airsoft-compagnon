@@ -59,7 +59,7 @@ const UserActionButtons: React.FC<UserActionButtonsProps> = ({
         <Button
           variant="outline"
           size="sm"
-          className="h-8 w-8 p-0 text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white"
+          className="h-9 w-9 p-0 text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white"
           onClick={() => onFriendAction(user.id, 'add')}
           title="Ajouter comme ami"
         >
@@ -71,7 +71,7 @@ const UserActionButtons: React.FC<UserActionButtonsProps> = ({
         <Button
           variant="outline"
           size="sm"
-          className="h-8 w-8 p-0 text-orange-500 border-orange-500"
+          className="h-9 w-9 p-0 text-orange-500 border-orange-500"
           disabled
           title="Demande d'ami en attente"
         >
@@ -84,7 +84,7 @@ const UserActionButtons: React.FC<UserActionButtonsProps> = ({
         <Button
           variant="outline"
           size="sm"
-          className="h-8 w-8 p-0 text-green-500 border-green-500 hover:bg-green-500 hover:text-white"
+          className="h-9 w-9 p-0 text-green-500 border-green-500 hover:bg-green-500 hover:text-white"
           onClick={handleTeamInvite}
           title="Inviter dans l'équipe"
         >
@@ -96,19 +96,21 @@ const UserActionButtons: React.FC<UserActionButtonsProps> = ({
       <Button
         variant="outline"
         size="sm"
-        className="h-8 w-8 p-0 text-purple-500 border-purple-500 hover:bg-purple-500 hover:text-white"
+        className="h-9 w-9 p-0 text-purple-500 border-purple-500 hover:bg-purple-500 hover:text-white"
         onClick={handleSendMessage}
         title="Envoyer un message"
       >
         <Mail className="h-4 w-4" />
       </Button>
 
-      {/* Signalement */}
-      <ReportUserButton
-        username={user.username}
-        reportedUserId={user.id}
-        asIcon={true}
-      />
+      {/* Signalement - Utilise un div wrapper pour maintenir la taille */}
+      <div className="h-9 w-9">
+        <ReportUserButton
+          username={user.username}
+          reportedUserId={user.id}
+          asIcon={true}
+        />
+      </div>
     </div>
   );
 };
