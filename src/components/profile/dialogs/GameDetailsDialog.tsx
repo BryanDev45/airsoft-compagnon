@@ -47,22 +47,19 @@ const GameDetailsDialog: React.FC<GameDetailsDialogProps> = ({
     }
   };
 
-  const handleViewGameDetails = (gameId: string, event?: React.MouseEvent) => {
-    console.log('Navigating to game details with ID:', gameId);
-    
-    // Empêcher la propagation de l'événement pour éviter que la dialog se ferme
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
+  const handleViewGameDetails = () => {
+    if (!selectedGame?.id) {
+      console.error('No game ID available for navigation');
+      return;
     }
+    
+    console.log('Navigating to game details with ID:', selectedGame.id);
     
     // Fermer la dialog d'abord
     setShowGameDialog(false);
     
-    // Naviguer vers la page de détails de la partie après un petit délai
-    setTimeout(() => {
-      navigate(`/game/${gameId}`);
-    }, 100);
+    // Naviguer vers la page de détails de la partie
+    navigate(`/game/${selectedGame.id}`);
   };
 
   console.log("Selected game in dialog:", selectedGame);
@@ -72,7 +69,7 @@ const GameDetailsDialog: React.FC<GameDetailsDialogProps> = ({
   }
 
   const DetailsContent = () => (
-    <div className="space-y-4" onClick={(e) => e.stopPropagation()}>
+    <div className="space-y-4">
       <div className="grid grid-cols-1 gap-4">
         <div className="flex items-center gap-2 text-gray-700">
           <Calendar className="text-airsoft-red flex-shrink-0" size={18} />
@@ -138,10 +135,10 @@ const GameDetailsDialog: React.FC<GameDetailsDialogProps> = ({
         </div>
       </div>
       
-      <div className="flex justify-end mt-6" onClick={(e) => e.stopPropagation()}>
+      <div className="flex justify-end mt-6">
         <Button 
-          onClick={(e) => handleViewGameDetails(selectedGame.id, e)}
-          className="bg-airsoft-red hover:bg-red-700 w-full sm:w-auto pointer-events-auto"
+          onClick={handleViewGameDetails}
+          className="bg-airsoft-red hover:bg-red-700 w-full sm:w-auto"
           type="button"
         >
           Voir la partie
@@ -153,7 +150,7 @@ const GameDetailsDialog: React.FC<GameDetailsDialogProps> = ({
   if (isMobile) {
     return (
       <Drawer open={showGameDialog} onOpenChange={setShowGameDialog}>
-        <DrawerContent className="p-4" onClick={(e) => e.stopPropagation()}>
+        <DrawerContent className="p-4">
           <DrawerHeader className="p-0 text-left mb-4">
             <DrawerTitle className="text-xl font-bold text-airsoft-dark">{selectedGame.title}</DrawerTitle>
             <DrawerDescription className="text-gray-600">
@@ -168,7 +165,7 @@ const GameDetailsDialog: React.FC<GameDetailsDialogProps> = ({
 
   return (
     <Dialog open={showGameDialog} onOpenChange={setShowGameDialog}>
-      <DialogContent className="sm:max-w-md" onClick={(e) => e.stopPropagation()}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-airsoft-dark">{selectedGame.title}</DialogTitle>
           <DialogDescription className="text-gray-600">
