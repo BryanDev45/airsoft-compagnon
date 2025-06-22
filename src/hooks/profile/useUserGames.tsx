@@ -1,9 +1,15 @@
 
-import { useUserGames as useUserGamesManual } from '../user-profile/useUserGames';
+import { useUserGamesFetch } from '../user-profile/useUserGamesFetch';
 
 /**
- * Hook principal pour les parties utilisateur - utilise la version manuelle qui inclut fetchUserGames
+ * Hook principal pour les parties utilisateur - utilise la version TanStack Query optimisée
  */
 export const useUserGames = (userId: string | undefined) => {
-  return useUserGamesManual(userId);
+  const { userGames, loading, refetch } = useUserGamesFetch(userId, undefined, undefined);
+  
+  return {
+    userGames,
+    loading,
+    fetchUserGames: refetch // Exposer refetch comme fetchUserGames pour la compatibilité
+  };
 };

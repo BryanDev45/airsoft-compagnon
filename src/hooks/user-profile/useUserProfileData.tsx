@@ -21,7 +21,7 @@ export const useUserProfileData = (username: string | undefined) => {
   const { equipment } = useUserEquipment(userData?.id);
   const { userBadges } = useUserBadges(userData?.id);
   
-  // Utiliser le hook optimisé avec TanStack Query pour éviter les boucles
+  // Utiliser UNIQUEMENT le hook optimisé avec TanStack Query
   const { userGames, loading: gamesLoading } = useUserGamesFetch(userData?.id, username, currentUserId);
   
   const { updateLocation, updateUserStats, fetchProfileData } = useUserProfileUtils();

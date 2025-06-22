@@ -8,15 +8,14 @@ import { FormattedGame, fetchParticipantCounts, formatParticipatedGame, formatCr
  */
 export const useUserGamesFetch = (userId: string | undefined, username: string | undefined, currentUserId?: string | null) => {
   
-  // Force la re-exécution de la requête quand l'userId change
-  const { data: userGames = [], isLoading: loading, refetch, isSuccess } = useQuery({
+  const { data: userGames = [], isLoading: loading, refetch } = useQuery({
     queryKey: ['userGames', userId],
     queryFn: () => fetchUserGames(userId),
     enabled: !!userId,
-    staleTime: 60000, // 1 minute
-    gcTime: 300000, // 5 minutes
+    staleTime: 300000, // 5 minutes
+    gcTime: 600000, // 10 minutes
     refetchOnWindowFocus: false,
-    refetchOnMount: false, // Éviter les re-fetch automatiques
+    refetchOnMount: false,
     retry: 1,
   });
 
@@ -33,6 +32,8 @@ export const useUserGamesFetch = (userId: string | undefined, username: string |
 async function fetchUserGames(userId: string | undefined): Promise<FormattedGame[]> {
   if (!userId) return [];
   
+  console.log(`📊 Fetching games for user: ${userId}`);
+  
   try {
     // Exécute les requêtes en parallèle pour de meilleures performances
     const [participantsResult, createdGamesResult] = await Promise.all([
@@ -45,6 +46,8 @@ async function fetchUserGames(userId: string | undefined): Promise<FormattedGame
 
     const gameParticipants = participantsResult.data || [];
     const createdGames = createdGamesResult.data || [];
+    
+    console.log(`📊 Found ${gameParticipants.length} participations and ${createdGames.length} created games`);
     
     // Traiter les jeux participés
     let formattedGames: FormattedGame[] = [];
@@ -113,6 +116,7 @@ async function fetchUserGames(userId: string | undefined): Promise<FormattedGame
       return new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime();
     });
     
+    console.log(`📊 Successfully formatted ${formattedGames.length} games`);
     return formattedGames;
     
   } catch (error) {
