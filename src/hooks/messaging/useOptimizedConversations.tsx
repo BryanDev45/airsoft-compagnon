@@ -32,6 +32,8 @@ export const useOptimizedConversations = () => {
     if (!user?.id) return [];
 
     try {
+      console.log('Fetching conversations for user:', user.id);
+      
       const { data, error } = await supabase.rpc('get_user_conversations_with_details', {
         p_user_id: user.id
       });
@@ -41,7 +43,10 @@ export const useOptimizedConversations = () => {
         throw error;
       }
 
-      if (!data) return [];
+      if (!data) {
+        console.log('No conversation data returned');
+        return [];
+      }
 
       console.log('Raw conversation data:', data);
 
@@ -56,6 +61,7 @@ export const useOptimizedConversations = () => {
           };
         }
 
+        // Handle participants - ensure we always have an array
         const participants = Array.isArray(conv.other_participants) 
           ? conv.other_participants.map(p => ({
               id: p.id,
@@ -76,7 +82,7 @@ export const useOptimizedConversations = () => {
           name: conv.conversation_name || undefined,
           participants,
           lastMessage,
-          unread_count: conv.unread_count
+          unread_count: conv.unread_count || 0
         };
       });
 

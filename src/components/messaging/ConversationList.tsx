@@ -14,6 +14,8 @@ const ConversationList: React.FC<ConversationListProps> = ({
   conversations,
   onSelectConversation
 }) => {
+  console.log('ConversationList rendering with:', conversations.length, 'conversations');
+
   return (
     <div className="w-full h-full">
       <ScrollArea className="h-full">
@@ -21,13 +23,16 @@ const ConversationList: React.FC<ConversationListProps> = ({
           {conversations.length === 0 ? (
             <EmptyConversations />
           ) : (
-            conversations.map((conversation) => (
-              <ConversationItem
-                key={conversation.id}
-                conversation={conversation}
-                onSelect={onSelectConversation}
-              />
-            ))
+            conversations.map((conversation) => {
+              console.log('Rendering conversation:', conversation.id, conversation);
+              return (
+                <ConversationItem
+                  key={conversation.id}
+                  conversation={conversation}
+                  onSelect={onSelectConversation}
+                />
+              );
+            })
           )}
         </div>
       </ScrollArea>

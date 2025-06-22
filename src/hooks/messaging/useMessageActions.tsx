@@ -14,6 +14,10 @@ export const useMessageActions = (conversationId: string) => {
       throw new Error('Utilisateur ou conversation non trouvé');
     }
 
+    if (!content.trim()) {
+      throw new Error('Le message ne peut pas être vide');
+    }
+
     console.log('Sending message:', { content, conversationId, senderId: user.id });
 
     try {
@@ -65,11 +69,6 @@ export const useMessageActions = (conversationId: string) => {
       queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
       queryClient.invalidateQueries({ queryKey: ['optimized-conversations'] });
-
-      toast({
-        title: "Message envoyé",
-        description: "Votre message a été envoyé avec succès",
-      });
 
     } catch (error) {
       console.error('Error in sendMessage:', error);

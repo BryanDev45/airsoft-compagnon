@@ -49,8 +49,18 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, onBack }) => {
   };
   const typingText = getTypingText();
 
+  if (!conversation) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center text-gray-500">
+          <p>Chargement de la conversation...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="h-full flex flex-col overflow-hidden">
+    <div className="h-full flex flex-col">
       {/* Header fixe */}
       <div className="flex-shrink-0 border-b shadow-sm bg-white z-10">
         <ChatHeader conversation={conversation} onBack={onBack} />
@@ -64,11 +74,11 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, onBack }) => {
       )}
 
       {/* Zone de messages scrollable */}
-      <div className="flex-1 min-h-0 overflow-hidden">
+      <div className="flex-1 overflow-hidden">
         <ScrollArea className="h-full">
-          <div className="px-4 sm:px-8 py-8 space-y-8 min-h-full">
+          <div className="px-4 sm:px-8 py-8 space-y-8">
             {messages.length === 0 ? (
-              <div className="flex items-center justify-center h-full">
+              <div className="flex items-center justify-center h-full min-h-[300px]">
                 <div className="text-center text-gray-500">
                   <p>Aucun message pour le moment</p>
                   <p className="text-sm">Commencez la conversation !</p>
@@ -79,7 +89,7 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, onBack }) => {
                 <MessageItem key={message.id} message={message} />
               ))
             )}
-            <div ref={messagesEndRef} className="h-4" />
+            <div ref={messagesEndRef} className="h-1" />
           </div>
         </ScrollArea>
       </div>
