@@ -43,6 +43,8 @@ export const useOptimizedConversations = () => {
 
       if (!data) return [];
 
+      console.log('Raw conversation data:', data);
+
       // Transform the data to match our Conversation interface
       const conversations: Conversation[] = data.map((conv: ConversationData) => {
         let lastMessage = undefined;
@@ -54,20 +56,31 @@ export const useOptimizedConversations = () => {
           };
         }
 
+        const participants = Array.isArray(conv.other_participants) 
+          ? conv.other_participants.map(p => ({
+              id: p.id,
+              username: p.username,
+              avatar: p.avatar
+            })) 
+          : [];
+
+        console.log(`Conversation ${conv.conversation_id}:`, {
+          participants,
+          lastMessage,
+          unread_count: conv.unread_count
+        });
+
         return {
           id: conv.conversation_id,
           type: conv.conversation_type,
           name: conv.conversation_name || undefined,
-          participants: conv.other_participants?.map(p => ({
-            id: p.id,
-            username: p.username,
-            avatar: p.avatar
-          })) || [],
+          participants,
           lastMessage,
           unread_count: conv.unread_count
         };
       });
 
+      console.log('Transformed conversations:', conversations);
       return conversations;
     } catch (error) {
       console.error('Error in optimized conversations query:', error);
