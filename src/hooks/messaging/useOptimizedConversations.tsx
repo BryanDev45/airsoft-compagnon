@@ -14,14 +14,13 @@ interface ConversationData {
   last_message: {
     content: string;
     created_at: string;
-    sender_id: string;
+    sender_name: string;
   } | null;
   participant_count: number;
   other_participants: Array<{
-    user_id: string;
+    id: string;
     username: string;
     avatar: string | null;
-    last_read_at: string | null;
   }> | null;
   unread_count: number;
 }
@@ -48,13 +47,10 @@ export const useOptimizedConversations = () => {
       const conversations: Conversation[] = data.map((conv: ConversationData) => {
         let lastMessage = undefined;
         if (conv.last_message) {
-          // Get sender username from participants or set default
-          const senderName = conv.other_participants?.find(p => p.user_id === conv.last_message?.sender_id)?.username || 'Utilisateur';
-          
           lastMessage = {
             content: conv.last_message.content,
             created_at: conv.last_message.created_at,
-            sender_name: senderName
+            sender_name: conv.last_message.sender_name
           };
         }
 
@@ -63,7 +59,7 @@ export const useOptimizedConversations = () => {
           type: conv.conversation_type,
           name: conv.conversation_name || undefined,
           participants: conv.other_participants?.map(p => ({
-            id: p.user_id,
+            id: p.id,
             username: p.username,
             avatar: p.avatar
           })) || [],
@@ -85,7 +81,7 @@ export const useOptimizedConversations = () => {
     enabled: !!user?.id,
     staleTime: 30000, // 30 seconds
     gcTime: 300000, // 5 minutes
-    refetchInterval: 60000, // Refetch every minute instead of 30 seconds
+    refetchInterval: 60000, // Refetch every minute
     refetchOnWindowFocus: false,
   });
 };
