@@ -43,7 +43,7 @@ export const useOptimizedConversations = () => {
         throw error;
       }
 
-      if (!data) {
+      if (!data || data.length === 0) {
         console.log('No conversation data returned');
         return [];
       }
@@ -90,7 +90,7 @@ export const useOptimizedConversations = () => {
       return conversations;
     } catch (error) {
       console.error('Error in optimized conversations query:', error);
-      return [];
+      throw error; // Re-throw to let React Query handle the error state
     }
   };
 
@@ -102,5 +102,13 @@ export const useOptimizedConversations = () => {
     gcTime: 300000, // 5 minutes
     refetchInterval: 60000, // Refetch every minute
     refetchOnWindowFocus: false,
+    retry: (failureCount, error) => {
+      // Don't retry on permission errors or if user is not authenticated
+      if (error?.message?.includes('permission') || !user?.id) {
+        return false;
+      }
+      // Retry up to 2 times for other errors
+      return failureCount < 2;
+    },
   });
 };

@@ -7,14 +7,19 @@ import ConversationList from '@/components/messaging/ConversationList';
 import ChatView from '@/components/messaging/ChatView';
 import NewConversationDialog from '@/components/messaging/NewConversationDialog';
 import { Card } from '@/components/ui/card';
-import { MessageSquare, Users, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { MessageSquare, Users, Sparkles, RefreshCw, AlertCircle } from 'lucide-react';
 
 const Messages: React.FC = () => {
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
-  const { conversations, isLoading } = useMessaging();
+  const { conversations, isLoading, error, refetch } = useMessaging();
   
   const handleNewConversationCreated = (conversationId: string) => {
     setSelectedConversationId(conversationId);
+  };
+
+  const handleRetry = () => {
+    refetch();
   };
 
   return (
@@ -115,6 +120,27 @@ const Messages: React.FC = () => {
                         <p className="text-gray-500 font-medium">Chargement des conversations...</p>
                       </div>
                     </div>
+                  ) : error ? (
+                    <div className="flex items-center justify-center h-full p-6">
+                      <div className="text-center">
+                        <div className="p-3 bg-red-100 rounded-full w-fit mx-auto mb-4">
+                          <AlertCircle className="h-8 w-8 text-red-600" />
+                        </div>
+                        <h3 className="font-semibold text-gray-900 mb-2">Erreur de chargement</h3>
+                        <p className="text-gray-600 text-sm mb-4">
+                          Impossible de charger vos conversations
+                        </p>
+                        <Button 
+                          onClick={handleRetry}
+                          variant="outline"
+                          size="sm"
+                          className="gap-2"
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                          Réessayer
+                        </Button>
+                      </div>
+                    </div>
                   ) : (
                     <ConversationList 
                       conversations={conversations}
@@ -150,7 +176,7 @@ const Messages: React.FC = () => {
                       </p>
                     </div>
                     
-                    {conversations.length === 0 && !isLoading && (
+                    {conversations.length === 0 && !isLoading && !error && (
                       <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100/60 shadow-sm">
                         <div className="flex items-center justify-center gap-2 text-blue-700 mb-3">
                           <div className="p-1.5 bg-blue-100 rounded-lg">
