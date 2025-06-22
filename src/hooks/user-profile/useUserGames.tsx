@@ -4,20 +4,18 @@ import { supabase } from '@/integrations/supabase/client';
 import { FormattedGame, fetchParticipantCounts, formatParticipatedGame, formatCreatedGame } from './gameFormatters';
 
 /**
- * Hook pour récupérer et mettre à jour les parties d'un utilisateur avec des fonctionnalités supplémentaires
+ * Hook pour récupérer et mettre à jour les parties d'un utilisateur - VERSION SIMPLIFIÉE
  */
 export const useUserGames = (userId: string | undefined) => {
   const [userGames, setUserGames] = useState<FormattedGame[]>([]);
 
   /**
-   * Récupérer les parties d'un utilisateur avec possibilité de rafraîchir manuellement - VERSION CORRIGÉE
+   * Récupérer les parties d'un utilisateur manuellement (à utiliser avec parcimonie)
    */
   const fetchUserGames = async () => {
     if (!userId) return;
     
     try {
-      console.log(`Récupération manuelle des parties pour l'utilisateur: ${userId}`);
-      
       // Récupérer les données en parallèle pour de meilleures performances
       const [participantsResponse, createdGamesResponse] = await Promise.all([
         supabase.from('game_participants').select('*').eq('user_id', userId),
@@ -99,18 +97,10 @@ export const useUserGames = (userId: string | undefined) => {
         return new Date(b.rawDate).getTime() - new Date(a.rawDate).getTime();
       });
       
-      console.log(`Parties formatées (manuel): ${formattedGames.length}`, {
-        participated: formattedGames.filter(g => !g.isCreator).length,
-        created: formattedGames.filter(g => g.isCreator).length
-      });
-      
-      // SUPPRESSION DE L'APPEL AUTOMATIQUE updateUserGamesStats pour éviter la boucle infinie
-      // La mise à jour des stats est maintenant gérée dans useUserProfileFetch
-      
       setUserGames(formattedGames);
       
     } catch (error) {
-      console.error("Erreur lors de la récupération des parties:", error);
+      console.error("Erreur lors de la récupération des parties (manuel):", error);
     }
   };
 

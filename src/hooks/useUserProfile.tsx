@@ -3,6 +3,7 @@ import { useUserProfileData } from './user-profile/useUserProfileData';
 import { useUserSocial } from './user-profile/useUserSocial';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useMemo } from 'react';
 
 export interface UserWarning {
     id: string;
@@ -41,6 +42,12 @@ export const useUserProfile = (username: string | undefined) => {
     handleFollowUser,
     handleRatingChange
   } = useUserSocial(userData, currentUserId);
+
+  // Mémoriser la requête des avertissements pour éviter les re-renders
+  const shouldFetchWarnings = useMemo(() => 
+    !!userData?.id && isCurrentUserAdmin, 
+    [userData?.id, isCurrentUserAdmin]
+  );
 
   const { data: userWarnings, isLoading: isLoadingWarnings } = useQuery<UserWarning[]>({
     queryKey: ['user-warnings', userData?.id],
@@ -89,11 +96,14 @@ export const useUserProfile = (username: string | undefined) => {
             };
         });
     },
-    enabled: !!userData?.id && isCurrentUserAdmin,
+    enabled: shouldFetchWarnings,
+    staleTime: 300000, // 5 minutes
+    gcTime: 600000, // 10 minutes
+    refetchOnWindowFocus: false,
   });
 
   return {
-    loading: loading || (isCurrentUserAdmin && isLoadingWarnings),
+    loading: loading || (shouldFetchWarnings && isLoadingWarnings),
     userData,
     profileData,
     userStats,

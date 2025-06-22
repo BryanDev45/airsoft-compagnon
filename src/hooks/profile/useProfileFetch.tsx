@@ -3,7 +3,7 @@ import { useProfileCore } from './useProfileCore';
 import { useUserStatsProfile } from './useUserStatsProfile';
 
 /**
- * Hook principal pour récupérer les données de profil - VERSION REFACTORISÉE
+ * Hook principal pour récupérer les données de profil - VERSION OPTIMISÉE
  */
 export const useProfileFetch = (userId: string | undefined) => {
   const {
