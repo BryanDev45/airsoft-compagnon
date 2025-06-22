@@ -1,22 +1,38 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { FormattedGame, fetchParticipantCounts, formatParticipatedGame, formatCreatedGame } from './gameFormatters';
+import { useMemo } from 'react';
 
 /**
  * Hook optimisé pour récupérer les parties d'un utilisateur avec mise en cache
  */
 export const useUserGamesFetch = (userId: string | undefined, username: string | undefined, currentUserId?: string | null) => {
   
+  // Stabiliser les paramètres pour éviter les re-renders inutiles
+  const stableUserId = useMemo(() => userId, [userId]);
+  
+  console.log('🔄 useUserGamesFetch called with:', { 
+    userId: stableUserId, 
+    username, 
+    currentUserId,
+    timestamp: new Date().toISOString()
+  });
+  
   const { data: userGames = [], isLoading: loading, refetch } = useQuery({
-    queryKey: ['userGames', userId],
-    queryFn: () => fetchUserGames(userId),
-    enabled: !!userId,
+    queryKey: ['userGames', stableUserId],
+    queryFn: () => fetchUserGames(stableUserId),
+    enabled: !!stableUserId,
     staleTime: 300000, // 5 minutes
     gcTime: 600000, // 10 minutes
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     retry: 1,
+  });
+
+  console.log('🎯 useUserGamesFetch result:', { 
+    gamesCount: userGames.length, 
+    loading, 
+    userId: stableUserId 
   });
 
   return {
