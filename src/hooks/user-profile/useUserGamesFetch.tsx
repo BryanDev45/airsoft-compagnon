@@ -1,15 +1,29 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { FormattedGame, fetchParticipantCounts, formatParticipatedGame, formatCreatedGame } from './gameFormatters';
-import { useMemo } from 'react';
+import { useMemo, useRef, useCallback } from 'react';
 
 /**
  * Hook optimisé pour récupérer les parties d'un utilisateur avec mise en cache
  */
 export const useUserGamesFetch = (userId: string | undefined, username: string | undefined, currentUserId?: string | null) => {
   
-  // Stabiliser les paramètres pour éviter les re-renders inutiles
-  const stableUserId = useMemo(() => userId, [userId]);
+  // Créer une référence stable pour éviter les re-renders
+  const stableUserIdRef = useRef<string | undefined>();
+  
+  // Seulement mettre à jour la référence si l'userId change réellement
+  if (stableUserIdRef.current !== userId) {
+    stableUserIdRef.current = userId;
+  }
+  
+  const stableUserId = stableUserIdRef.current;
+  
+  // Fonction de fetch mémorisée pour éviter les recréations
+  const fetchUserGamesCallback = useCallback(
+    () => fetchUserGames(stableUserId),
+    [stableUserId]
+  );
   
   console.log('🔄 useUserGamesFetch called with:', { 
     userId: stableUserId, 
@@ -20,12 +34,13 @@ export const useUserGamesFetch = (userId: string | undefined, username: string |
   
   const { data: userGames = [], isLoading: loading, refetch } = useQuery({
     queryKey: ['userGames', stableUserId],
-    queryFn: () => fetchUserGames(stableUserId),
+    queryFn: fetchUserGamesCallback,
     enabled: !!stableUserId,
     staleTime: 300000, // 5 minutes
     gcTime: 600000, // 10 minutes
     refetchOnWindowFocus: false,
     refetchOnMount: false,
+    refetchOnReconnect: false,
     retry: 1,
   });
 
