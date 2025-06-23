@@ -1,5 +1,4 @@
-
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import MapSection from '../components/MapSection';
@@ -17,6 +16,8 @@ import { useAuth } from '../hooks/useAuth';
 import AddStoreDialog from '../components/stores/AddStoreDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useTabAnalytics } from '../hooks/usePageAnalytics';
+import UserSearchInput from '../components/search/UserSearchInput';
+import TeamSearchInput from '../components/search/TeamSearchInput';
 
 // This component will automatically scroll to top on mount
 const ScrollToTop = () => {
@@ -74,6 +75,11 @@ const Recherche = () => {
       navigate('/login');
     }
   };
+
+  // Mémoriser la fonction de changement de recherche
+  const handleSearchChange = useCallback((query: string) => {
+    setSearchQuery(query);
+  }, []);
 
   // Composant pour les onglets nécessitant une connexion
   const AuthRequiredContent = ({ children, tabName }: { children: React.ReactNode, tabName: string }) => {
@@ -153,12 +159,10 @@ const Recherche = () => {
                 <AuthRequiredContent tabName="joueurs">
                   <Card>
                     <CardContent className="pt-6">
-                      <div className="flex items-center border rounded-md overflow-hidden mb-6">
-                        <Input placeholder="Rechercher un joueur par nom, localisation..." className="border-0 focus-visible:ring-0 flex-1" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
-                        <Button variant="ghost" className="rounded-l-none">
-                          <Search className="h-5 w-5" />
-                        </Button>
-                      </div>
+                      <UserSearchInput 
+                        searchQuery={searchQuery}
+                        onSearchChange={handleSearchChange}
+                      />
                       
                       <UserSearchResults searchQuery={searchQuery} />
                     </CardContent>
@@ -171,12 +175,10 @@ const Recherche = () => {
                   <Card>
                     <CardContent className="pt-6">
                       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-                        <div className="flex items-center border rounded-md overflow-hidden w-full max-w-md">
-                          <Input placeholder="Rechercher une équipe par nom, région..." className="border-0 focus-visible:ring-0 flex-1" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
-                          <Button variant="ghost" className="rounded-l-none">
-                            <Search className="h-5 w-5" />
-                          </Button>
-                        </div>
+                        <TeamSearchInput 
+                          searchQuery={searchQuery}
+                          onSearchChange={handleSearchChange}
+                        />
                         
                         {!user?.team_id && !initialLoading && <Button onClick={handleCreateTeam} className="bg-airsoft-red hover:bg-red-700 text-white w-full sm:w-auto">
                             <Plus className="h-4 w-4 mr-2" /> Créer une équipe

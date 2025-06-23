@@ -35,6 +35,12 @@ export const ComboboxDemo = React.memo(({ defaultValue = "", onSelect }: CityCom
     setSearchTerm(value || "");
   }, [setSearchTerm]);
 
+  // Stabiliser les props du Command
+  const commandProps = React.useMemo(() => ({
+    shouldFilter: false,
+    className: "overflow-hidden rounded-md bg-white"
+  }), []);
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -50,7 +56,7 @@ export const ComboboxDemo = React.memo(({ defaultValue = "", onSelect }: CityCom
         </Button>
       </PopoverTrigger>
       <PopoverContent className="p-0 w-[300px] z-50 bg-white border" align="start">
-        <Command shouldFilter={false} className="overflow-hidden rounded-md bg-white">
+        <Command {...commandProps}>
           <CommandInput 
             ref={inputRef}
             placeholder="Rechercher une ville..." 
