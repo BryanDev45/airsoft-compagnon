@@ -21,11 +21,13 @@ const NotificationTab = ({ user, isActive }: NotificationTabProps) => {
   const queryClient = useQueryClient();
   const { handleMarkAllAsRead, handleDeleteAllRead } = useNotificationActions();
   
+  // Synchroniser l'état avec les données utilisateur
   useEffect(() => {
+    console.log("User data changed:", user);
     if (user && user.newsletter_subscribed !== undefined) {
       setIsSubscribed(!!user.newsletter_subscribed);
     }
-  }, [user]);
+  }, [user, user?.newsletter_subscribed]);
 
   // Rafraîchir les notifications quand l'onglet devient actif
   useEffect(() => {
@@ -54,6 +56,7 @@ const NotificationTab = ({ user, isActive }: NotificationTabProps) => {
       return;
     }
     
+    console.log("Newsletter change requested:", { checked, currentState: isSubscribed, userId: user.id });
     setIsUpdating(true);
     
     try {
@@ -63,10 +66,17 @@ const NotificationTab = ({ user, isActive }: NotificationTabProps) => {
         .eq('id', user.id);
       
       if (error) {
+        console.error("Supabase error:", error);
         throw error;
       }
       
+      // Mettre à jour l'état local immédiatement
       setIsSubscribed(checked);
+      
+      // Mettre à jour le cache des données utilisateur si disponible
+      if (user.updateNewsletterSubscription) {
+        await user.updateNewsletterSubscription(checked);
+      }
       
       toast({
         title: checked ? "Inscription réussie" : "Désinscription réussie",
@@ -74,6 +84,8 @@ const NotificationTab = ({ user, isActive }: NotificationTabProps) => {
           ? "Vous êtes maintenant inscrit à la newsletter" 
           : "Vous êtes maintenant désinscrit de la newsletter",
       });
+
+      console.log("Newsletter subscription updated successfully:", checked);
     } catch (error: any) {
       console.error("Error updating newsletter subscription:", error);
       toast({
@@ -81,6 +93,8 @@ const NotificationTab = ({ user, isActive }: NotificationTabProps) => {
         description: "Impossible de mettre à jour vos préférences de newsletter",
         variant: "destructive",
       });
+      // Remettre l'état local à sa valeur précédente en cas d'erreur
+      setIsSubscribed(!checked);
     } finally {
       setIsUpdating(false);
     }
