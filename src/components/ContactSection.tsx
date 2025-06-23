@@ -1,10 +1,59 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Facebook, Instagram, Mail, MessageSquare, Download, Users } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
+import { toast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '../hooks/useAuth';
 
 const ContactSection = () => {
+  const { user } = useAuth();
+  const [isSubscribing, setIsSubscribing] = useState(false);
+
+  const handleInstallPWA = () => {
+    toast({
+      title: "Installation PWA",
+      description: "Pour installer l'application, utilisez le menu de votre navigateur et sélectionnez 'Ajouter à l'écran d'accueil'",
+    });
+  };
+
+  const handleNewsletterSubscription = async () => {
+    if (!user) {
+      toast({
+        title: "Connexion requise",
+        description: "Vous devez être connecté pour vous inscrire à la newsletter",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsSubscribing(true);
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({ newsletter_subscribed: true })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Inscription réussie",
+        description: "Vous êtes maintenant inscrit à la newsletter",
+      });
+    } catch (error: any) {
+      console.error("Error subscribing to newsletter:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de vous inscrire à la newsletter",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 mb-16">
       <div className="bg-airsoft-dark text-white p-6 md:p-10 rounded-lg relative overflow-hidden shadow-xl transform hover:scale-[1.02] transition-transform">
@@ -30,11 +79,21 @@ const ContactSection = () => {
           
           <div className="flex flex-wrap gap-4 justify-center">
             <Button 
+              onClick={handleInstallPWA}
               variant="outline" 
               className="bg-airsoft-red hover:bg-red-700 text-white border-white hover:bg-white hover:text-airsoft-red transition-colors flex items-center gap-2"
             >
               <Download size={20} />
               Installer l'application (PWA)
+            </Button>
+            <Button 
+              onClick={handleNewsletterSubscription}
+              disabled={isSubscribing}
+              variant="outline" 
+              className="bg-blue-600 hover:bg-blue-700 text-white border-white hover:bg-blue-800 transition-colors flex items-center gap-2"
+            >
+              <Mail size={20} />
+              {isSubscribing ? "Inscription..." : "S'inscrire à la newsletter"}
             </Button>
             <a href="#" className="bg-airsoft-dark text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-gray-800 transition-colors border border-white/20">
               <Facebook size={20} />
