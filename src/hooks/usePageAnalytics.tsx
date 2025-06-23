@@ -46,7 +46,8 @@ export const useTabAnalytics = (tabValue: string, basePage: string) => {
     if (tabValue) {
       // Délai de 1 seconde pour éviter de compter les changements d'onglets rapides
       const timeout = setTimeout(() => {
-        const pathToTrack = `${basePage}/${tabValue}`;
+        const pathToTrack = `${basePage}/tab/${tabValue}`;
+        console.log(`Tracking tab visit: ${pathToTrack}`);
         incrementPageVisit(pathToTrack);
       }, 1000);
 
