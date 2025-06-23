@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Conversation } from '@/types/messaging';
+import { useState, useRef } from 'react';
 
 interface ConversationData {
   conversation_id: string;
@@ -27,28 +28,44 @@ interface ConversationData {
 
 export const useOptimizedConversations = () => {
   const { user } = useAuth();
+  const [retryCount, setRetryCount] = useState(0);
+  const lastErrorTime = useRef<number>(0);
 
   const queryFn = async (): Promise<Conversation[]> => {
-    if (!user?.id) return [];
+    if (!user?.id) {
+      console.log('[OptimizedConversations] No user ID available');
+      return [];
+    }
+
+    // Circuit breaker: if too many retries in short time, fail fast
+    const now = Date.now();
+    if (retryCount > 3 && (now - lastErrorTime.current) < 30000) {
+      throw new Error('Trop de tentatives de chargement. Veuillez actualiser la page.');
+    }
 
     try {
-      console.log('Fetching conversations for user:', user.id);
+      console.log('[OptimizedConversations] Fetching conversations for user:', user.id);
       
       const { data, error } = await supabase.rpc('get_user_conversations_with_details', {
         p_user_id: user.id
       });
 
       if (error) {
-        console.error('Error fetching optimized conversations:', error);
+        console.error('[OptimizedConversations] Error fetching conversations:', error);
+        setRetryCount(prev => prev + 1);
+        lastErrorTime.current = now;
         throw error;
       }
 
+      // Reset retry count on success
+      setRetryCount(0);
+
       if (!data || data.length === 0) {
-        console.log('No conversation data returned');
+        console.log('[OptimizedConversations] No conversation data returned');
         return [];
       }
 
-      console.log('Raw conversation data:', data);
+      console.log('[OptimizedConversations] Raw conversation data:', data);
 
       // Transform the data to match our Conversation interface
       const conversations: Conversation[] = data.map((conv: ConversationData) => {
@@ -70,12 +87,6 @@ export const useOptimizedConversations = () => {
             })) 
           : [];
 
-        console.log(`Conversation ${conv.conversation_id}:`, {
-          participants,
-          lastMessage,
-          unread_count: conv.unread_count
-        });
-
         return {
           id: conv.conversation_id,
           type: conv.conversation_type,
@@ -86,11 +97,13 @@ export const useOptimizedConversations = () => {
         };
       });
 
-      console.log('Transformed conversations:', conversations);
+      console.log('[OptimizedConversations] Transformed conversations:', conversations);
       return conversations;
     } catch (error) {
-      console.error('Error in optimized conversations query:', error);
-      throw error; // Re-throw to let React Query handle the error state
+      console.error('[OptimizedConversations] Error in query:', error);
+      setRetryCount(prev => prev + 1);
+      lastErrorTime.current = now;
+      throw error;
     }
   };
 
@@ -98,13 +111,15 @@ export const useOptimizedConversations = () => {
     queryKey: ['optimized-conversations', user?.id],
     queryFn,
     enabled: !!user?.id,
-    staleTime: 30000, // 30 seconds
+    staleTime: 60000, // 1 minute
     gcTime: 300000, // 5 minutes
-    refetchInterval: 60000, // Refetch every minute
+    refetchInterval: false, // Disable auto-refetch to prevent loops
     refetchOnWindowFocus: false,
     retry: (failureCount, error) => {
       // Don't retry on permission errors or if user is not authenticated
-      if (error?.message?.includes('permission') || !user?.id) {
+      if (error?.message?.includes('permission') || 
+          error?.message?.includes('Trop de tentatives') || 
+          !user?.id) {
         return false;
       }
       // Retry up to 2 times for other errors

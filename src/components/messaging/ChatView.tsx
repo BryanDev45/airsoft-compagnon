@@ -1,6 +1,8 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, AlertCircle, RefreshCw } from 'lucide-react';
 import { useChatMessages } from '@/hooks/useChatMessages';
 import ChatHeader from './ChatHeader';
 import MessageItem from './MessageItem';
@@ -13,33 +15,40 @@ interface ChatViewProps {
 }
 
 const ChatView: React.FC<ChatViewProps> = ({ conversationId, onBack }) => {
-  const { messages, conversation, sendMessage, markAsRead } = useChatMessages(conversationId);
+  const { messages, conversation, sendMessage, markAsRead, isLoading, error } = useChatMessages(conversationId);
   const { typingUsers, trackTyping } = useTypingStatus(conversationId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [hasInitialized, setHasInitialized] = useState(false);
+
+  console.log('[ChatView] Rendering with:', {
+    conversationId,
+    hasConversation: !!conversation,
+    messagesCount: messages?.length || 0,
+    isLoading,
+    error: error?.message
+  });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  useEffect(() => {
-    if (conversationId) {
-      markAsRead();
+    if (messages && messages.length > 0 && !hasInitialized) {
+      setTimeout(scrollToBottom, 100);
+      setHasInitialized(true);
+    } else if (messages && messages.length > 0) {
+      scrollToBottom();
     }
-  }, [conversationId, markAsRead]);
+  }, [messages, hasInitialized]);
 
   useEffect(() => {
-    if (messages.length > 0) {
+    if (conversation && !isLoading) {
       const timeoutId = setTimeout(() => {
         markAsRead();
       }, 1000);
-
       return () => clearTimeout(timeoutId);
     }
-  }, [messages.length, markAsRead]);
+  }, [conversation, isLoading, markAsRead]);
 
   const getTypingText = () => {
     if (typingUsers.length === 0) return null;
@@ -49,11 +58,58 @@ const ChatView: React.FC<ChatViewProps> = ({ conversationId, onBack }) => {
   };
   const typingText = getTypingText();
 
-  if (!conversation) {
+  // Error state
+  if (error) {
     return (
-      <div className="h-full flex items-center justify-center">
-        <div className="text-center text-gray-500">
-          <p>Chargement de la conversation...</p>
+      <div className="h-full flex flex-col">
+        <div className="flex-shrink-0 p-4 border-b bg-white flex items-center gap-3">
+          <Button variant="ghost" size="sm" onClick={onBack} className="lg:hidden">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h2 className="font-semibold text-red-600">Erreur de chargement</h2>
+        </div>
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="text-center max-w-md">
+            <div className="p-3 bg-red-100 rounded-full w-fit mx-auto mb-4">
+              <AlertCircle className="h-8 w-8 text-red-600" />
+            </div>
+            <h3 className="font-semibold text-gray-900 mb-2">Impossible de charger la conversation</h3>
+            <p className="text-gray-600 text-sm mb-4">
+              {error.message || 'Une erreur est survenue lors du chargement.'}
+            </p>
+            <div className="flex gap-2 justify-center">
+              <Button onClick={onBack} variant="outline" size="sm">
+                Retour
+              </Button>
+              <Button onClick={() => window.location.reload()} variant="default" size="sm" className="gap-2">
+                <RefreshCw className="h-4 w-4" />
+                Actualiser
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Loading state
+  if (isLoading || !conversation) {
+    return (
+      <div className="h-full flex flex-col">
+        <div className="flex-shrink-0 p-4 border-b bg-white flex items-center gap-3">
+          <Button variant="ghost" size="sm" onClick={onBack} className="lg:hidden">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex items-center gap-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-2 border-airsoft-red border-t-transparent"></div>
+            <span className="text-gray-600">Chargement...</span>
+          </div>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-3 border-transparent border-t-airsoft-red mx-auto mb-4"></div>
+            <p className="text-gray-500">Chargement de la conversation...</p>
+          </div>
         </div>
       </div>
     );
