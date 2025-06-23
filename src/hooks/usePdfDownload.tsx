@@ -49,14 +49,26 @@ export const usePdfDownload = () => {
         }
         
         // Contact (priorité au téléphone, sinon email)
-        const contact = profile?.phone_number || profile?.email || 'Non renseigné';
+        let contact = 'Non renseigné';
+        // Vérifier si les valeurs ne sont pas des objets avec _type: "undefined"
+        const phoneValue = profile?.phone_number;
+        const emailValue = profile?.email;
+        
+        if (phoneValue && typeof phoneValue === 'string') {
+          contact = phoneValue;
+        } else if (emailValue && typeof emailValue === 'string') {
+          contact = emailValue;
+        }
         
         // Équipe - vérifier plusieurs sources
         let team = 'Aucune équipe';
-        if (profile?.team) {
-          team = profile.team;
-        } else if (profile?.team_id) {
-          team = `Équipe ID: ${profile.team_id}`;
+        const teamValue = profile?.team;
+        const teamIdValue = profile?.team_id;
+        
+        if (teamValue && typeof teamValue === 'string') {
+          team = teamValue;
+        } else if (teamIdValue && typeof teamIdValue === 'string') {
+          team = `Équipe ID: ${teamIdValue}`;
         }
         
         console.log('Participant processing result:', {
@@ -64,10 +76,10 @@ export const usePdfDownload = () => {
           username: profile?.username,
           firstname: profile?.firstname,
           lastname: profile?.lastname,
-          phone: profile?.phone_number,
-          email: profile?.email,
-          team_field: profile?.team,
-          team_id_field: profile?.team_id,
+          phone: phoneValue,
+          email: emailValue,
+          team_field: teamValue,
+          team_id_field: teamIdValue,
           final_displayName: displayName,
           final_contact: contact,
           final_team: team
@@ -83,30 +95,34 @@ export const usePdfDownload = () => {
         ];
       });
       
-      // Génération du tableau
+      // Génération du tableau avec largeurs ajustées
       autoTable(doc, {
         head: [['#', 'Pseudonyme', 'Contact', 'Équipe', 'Rôle', 'Statut']],
         body: tableData,
         startY: 70,
         styles: {
-          fontSize: 10,
-          cellPadding: 3
+          fontSize: 9,
+          cellPadding: 2
         },
         headStyles: {
           fillColor: [220, 38, 38], // Rouge airsoft
-          textColor: 255
+          textColor: 255,
+          fontSize: 10
         },
         alternateRowStyles: {
           fillColor: [245, 245, 245]
         },
         columnStyles: {
-          0: { halign: 'center', cellWidth: 15 }, // # 
-          1: { cellWidth: 40 }, // Pseudonyme
-          2: { cellWidth: 45 }, // Contact
-          3: { cellWidth: 35 }, // Équipe
+          0: { halign: 'center', cellWidth: 12 }, // # 
+          1: { cellWidth: 35 }, // Pseudonyme
+          2: { cellWidth: 50 }, // Contact
+          3: { cellWidth: 30 }, // Équipe
           4: { cellWidth: 25 }, // Rôle
           5: { cellWidth: 25 }  // Statut
-        }
+        },
+        // Options pour gérer le débordement
+        tableWidth: 'wrap',
+        margin: { left: 15, right: 15 }
       });
       
       // Ajout d'un pied de page
