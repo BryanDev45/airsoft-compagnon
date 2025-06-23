@@ -12,10 +12,7 @@ interface TeamField {
   address?: string;
   city?: string;
   zip_code?: string;
-  coordinates: {
-    lat: number;
-    lng: number;
-  };
+  coordinates: number[] | { lat: number; lng: number };
 }
 
 interface TeamFieldSelectorProps {
@@ -72,7 +69,7 @@ const TeamFieldSelector: React.FC<TeamFieldSelectorProps> = ({
           address: cleanAddress,
           city: parsedCity,
           zip_code: parsedZipCode,
-          coordinates: field.coordinates as { lat: number; lng: number }
+          coordinates: field.coordinates as number[] | { lat: number; lng: number }
         };
       });
     },

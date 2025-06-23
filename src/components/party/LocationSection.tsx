@@ -35,18 +35,31 @@ const LocationSection: React.FC<LocationSectionProps> = ({ updateFormData, initi
     // Mettre à jour l'état de sélection
     setSelectedFieldId(field.id);
     
+    // Vérifier si les coordonnées sont un tableau ou un objet
+    let lat, lng;
+    if (Array.isArray(field.coordinates)) {
+      [lng, lat] = field.coordinates; // Les coordonnées PostGIS sont souvent [longitude, latitude]
+    } else if (field.coordinates && typeof field.coordinates === 'object') {
+      lat = field.coordinates.lat;
+      lng = field.coordinates.lng;
+    } else {
+      console.error('Format de coordonnées non reconnu:', field.coordinates);
+      return;
+    }
+    
     // Remplir les champs du formulaire avec les données correctement parsées du terrain
     form.setValue('address', field.address || '');
     form.setValue('city', field.city || '');
     form.setValue('zipCode', field.zip_code || '');
-    form.setValue('latitude', field.coordinates.lat);
-    form.setValue('longitude', field.coordinates.lng);
+    form.setValue('latitude', lat.toString());
+    form.setValue('longitude', lng.toString());
     
     console.log('🏟️ FORM VALUES SET:', {
       address: field.address,
       city: field.city,
       zipCode: field.zip_code,
-      coordinates: field.coordinates
+      latitude: lat,
+      longitude: lng
     });
   };
 
