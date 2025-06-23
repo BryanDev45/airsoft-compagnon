@@ -1,8 +1,8 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { geocodeAddress } from "@/utils/geocoding/geocodingService";
-import { areCoordinatesValid, getDefaultCoordinatesByCountry } from "@/utils/geocodingUtils";
+import { processGame, RawGameData } from "./game/gameProcessor";
+import { isValidGame } from "./game/gameValidator";
 
 // Export the types that are used throughout the application
 export interface MapEvent {
@@ -79,75 +79,16 @@ export const useGamesData = (userId?: string) => {
         return [];
       }
       
-      // Process games with enhanced coordinate handling using the same geocoding as stores
-      const processedGames = await Promise.all(games.map(async (game) => {
-        console.log(`🎮 PROCESSING GAME - "${game.title}": Stored coords=(${game.latitude}, ${game.longitude}), Address="${game.address || ''}, ${game.zip_code || ''} ${game.city || ''}"`);
-        
-        let finalLat = game.latitude;
-        let finalLng = game.longitude;
-
-        // If stored coordinates are invalid, use geocoding service (same as stores)
-        if (!areCoordinatesValid(game.latitude, game.longitude)) {
-          console.log(`🎮 GEOCODING GAME - "${game.title}": Invalid stored coordinates, attempting geocoding...`);
-          
-          const geocodedCoords = await geocodeAddress(
-            game.address || '',
-            game.zip_code || '',
-            game.city || '',
-            'France',
-            {
-              name: game.title,
-              address: game.address,
-              city: game.city,
-              zip_code: game.zip_code,
-              type: 'game_location'
-            }
-          );
-
-          if (geocodedCoords && areCoordinatesValid(geocodedCoords.latitude, geocodedCoords.longitude)) {
-            finalLat = geocodedCoords.latitude;
-            finalLng = geocodedCoords.longitude;
-            console.log(`🎮 GEOCODING GAME - "${game.title}": Geocoding successful: (${finalLat}, ${finalLng})`);
-          } else {
-            // Use default France coordinates as fallback
-            const defaultCoords = getDefaultCoordinatesByCountry('France');
-            finalLat = defaultCoords.latitude;
-            finalLng = defaultCoords.longitude;
-            console.log(`🎮 GEOCODING GAME - "${game.title}": Using default France coordinates: (${finalLat}, ${finalLng})`);
-          }
-        } else {
-          console.log(`🎮 PROCESSING GAME - "${game.title}": Using stored coordinates: (${finalLat}, ${finalLng})`);
-        }
-        
-        console.log(`🎮 FINAL COORDS - "${game.title}": (${finalLat}, ${finalLng})`);
-
-        return {
-          id: game.id,
-          title: game.title,
-          date: game.date, // Format ISO YYYY-MM-DD
-          endDate: game.end_date,
-          location: `${game.city}`,
-          department: game.zip_code ? game.zip_code.substring(0, 2) : '',
-          type: game.game_type,
-          country: 'France',
-          lat: finalLat,
-          lng: finalLng,
-          maxPlayers: game.max_players,
-          price: game.price,
-          startTime: game.start_time,
-          endTime: game.end_time,
-          images: [
-            game.Picture1,
-            game.Picture2,
-            game.Picture3,
-            game.Picture4,
-            game.Picture5
-          ].filter(Boolean)
-        };
+      // Process games with the same geocoding system as stores
+      const processedGames = await Promise.all(games.map(async (game: RawGameData) => {
+        return await processGame(game);
       }));
 
-      console.log(`🎮 GAMES DATA - Returning ${processedGames.length} processed games with consistent geocoding`);
-      return processedGames;
+      // Filter games with valid coordinates using the same validation as stores
+      const validGames = processedGames.filter(isValidGame);
+
+      console.log(`🎮 GAMES DATA - Returning ${validGames.length} valid games with consistent geocoding out of ${processedGames.length} total games`);
+      return validGames;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes - keep reasonable cache
     gcTime: 10 * 60 * 1000, // 10 minutes cache time
