@@ -28,14 +28,30 @@ export const usePdfDownload = () => {
       doc.text(`Nombre de participants: ${participants.length}`, 20, 55);
       
       // Préparation des données pour le tableau
-      const tableData = participants.map((participant, index) => [
-        index + 1,
-        participant.profile?.username || 'Utilisateur inconnu',
-        participant.profile?.phone_number || participant.profile?.email || 'N/A',
-        participant.profile?.team || 'Aucune équipe',
-        participant.role || 'Participant',
-        participant.status || 'Confirmé'
-      ]);
+      const tableData = participants.map((participant, index) => {
+        const profile = participant.profile;
+        
+        // Nom d'utilisateur (priorité au username, sinon nom complet)
+        const displayName = profile?.username || 
+          (profile?.firstname && profile?.lastname 
+            ? `${profile.firstname} ${profile.lastname}` 
+            : 'Utilisateur inconnu');
+        
+        // Contact (priorité au téléphone, sinon email)
+        const contact = profile?.phone_number || profile?.email || 'N/A';
+        
+        // Équipe
+        const team = profile?.team || 'Aucune équipe';
+        
+        return [
+          index + 1,
+          displayName,
+          contact,
+          team,
+          participant.role || 'Participant',
+          participant.status || 'Confirmé'
+        ];
+      });
       
       // Génération du tableau
       autoTable(doc, {
