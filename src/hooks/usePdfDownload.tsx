@@ -31,17 +31,33 @@ export const usePdfDownload = () => {
       const tableData = participants.map((participant, index) => {
         const profile = participant.profile;
         
-        // Nom d'utilisateur (priorité au username, sinon nom complet)
-        const displayName = profile?.username || 
-          (profile?.firstname && profile?.lastname 
-            ? `${profile.firstname} ${profile.lastname}` 
-            : 'Utilisateur inconnu');
+        // Pseudonyme (username en priorité absolue)
+        let displayName = 'Utilisateur inconnu';
+        if (profile?.username) {
+          displayName = profile.username;
+        } else if (profile?.firstname || profile?.lastname) {
+          const firstName = profile.firstname || '';
+          const lastName = profile.lastname || '';
+          displayName = `${firstName} ${lastName}`.trim() || 'Utilisateur inconnu';
+        }
         
         // Contact (priorité au téléphone, sinon email)
-        const contact = profile?.phone_number || profile?.email || 'N/A';
+        const contact = profile?.phone_number || profile?.email || 'Non renseigné';
         
         // Équipe
         const team = profile?.team || 'Aucune équipe';
+        
+        console.log('Participant data:', {
+          username: profile?.username,
+          firstname: profile?.firstname,
+          lastname: profile?.lastname,
+          phone: profile?.phone_number,
+          email: profile?.email,
+          team: profile?.team,
+          displayName,
+          contact,
+          teamDisplay: team
+        });
         
         return [
           index + 1,
@@ -55,7 +71,7 @@ export const usePdfDownload = () => {
       
       // Génération du tableau
       autoTable(doc, {
-        head: [['#', 'Nom d\'utilisateur', 'Contact', 'Équipe', 'Rôle', 'Statut']],
+        head: [['#', 'Pseudonyme', 'Contact', 'Équipe', 'Rôle', 'Statut']],
         body: tableData,
         startY: 70,
         styles: {
@@ -68,6 +84,14 @@ export const usePdfDownload = () => {
         },
         alternateRowStyles: {
           fillColor: [245, 245, 245]
+        },
+        columnStyles: {
+          0: { halign: 'center', cellWidth: 15 }, // # 
+          1: { cellWidth: 40 }, // Pseudonyme
+          2: { cellWidth: 45 }, // Contact
+          3: { cellWidth: 35 }, // Équipe
+          4: { cellWidth: 25 }, // Rôle
+          5: { cellWidth: 25 }  // Statut
         }
       });
       
