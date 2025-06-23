@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,6 +20,7 @@ const loginSchema = z.object({
 
 const LoginForm = () => {
   const { login, loading } = useAuth();
+  const navigate = useNavigate();
   const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -38,23 +39,26 @@ const LoginForm = () => {
 
   const onSubmit = async (data) => {
     if (isSubmitting || loading) {
-      console.log("Form submission blocked - already submitting");
+      console.log("🚫 Form submission blocked - already submitting");
       return;
     }
     
     try {
       setIsSubmitting(true);
-      console.log("Form submitted, attempting login");
+      console.log("📝 Form submitted, attempting login");
       
       const success = await login(data.email, data.password, rememberMe);
       
-      if (!success) {
-        console.log("Login failed");
+      if (success) {
+        console.log("✅ Login successful, form will let auth system handle redirect");
+        // Let the auth system handle the redirect
+        // Don't set isSubmitting to false here as we're redirecting
+      } else {
+        console.log("❌ Login failed");
         setIsSubmitting(false);
       }
-      // If success is true, redirection is handled in the login function
     } catch (error) {
-      console.error("Login submission error:", error);
+      console.error("❌ Login submission error:", error);
       setIsSubmitting(false);
       toast({
         title: "Erreur de connexion",

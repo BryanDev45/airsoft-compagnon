@@ -31,7 +31,7 @@ export const useLogin = () => {
       // Clear any previous auth state first
       clearCacheByPrefix('auth_');
       
-      console.log("Attempting login with email:", email);
+      console.log("🔐 Attempting login with email:", email);
       
       const { data, error } = await supabase.auth.signInWithPassword({ 
         email, 
@@ -39,7 +39,7 @@ export const useLogin = () => {
       });
 
       if (error) {
-        console.error("Login error:", error);
+        console.error("❌ Login error:", error);
         toast({
           title: "Erreur de connexion",
           description: error.message || "Identifiants invalides",
@@ -48,8 +48,9 @@ export const useLogin = () => {
         return false;
       }
 
-      if (data && data.user) {
-        console.log("Login successful, user data received");
+      if (data && data.user && data.session) {
+        console.log("✅ Login successful, user data received:", data.user.id);
+        console.log("✅ Session received:", data.session.access_token ? "Yes" : "No");
         
         // Store remember me preference first
         localStorage.setItem(REMEMBER_ME_KEY, rememberMe.toString());
@@ -60,6 +61,7 @@ export const useLogin = () => {
           setStorageWithExpiry(USER_CACHE_KEY, data.user, ttl);
           setStorageWithExpiry(SESSION_CACHE_KEY, data.session, ttl);
           setStorageWithExpiry(AUTH_STATE_KEY, { isAuthenticated: true, value: true }, ttl);
+          console.log("💾 Auth state cached in localStorage with long TTL");
         } else {
           sessionStorage.setItem(USER_CACHE_KEY, JSON.stringify({
             data: data.user,
@@ -73,6 +75,7 @@ export const useLogin = () => {
             data: { isAuthenticated: true, value: true },
             expiry: Date.now() + CACHE_DURATIONS.LONG
           }));
+          console.log("💾 Auth state cached in sessionStorage");
         }
         
         toast({
@@ -80,10 +83,15 @@ export const useLogin = () => {
           description: "Bienvenue sur Airsoft Compagnon",
         });
         
-        navigate('/profile');
+        // Force immediate redirect without waiting for auth state changes
+        console.log("🔄 Redirecting to profile...");
+        setTimeout(() => {
+          navigate('/profile', { replace: true });
+        }, 100);
+        
         return true;
       } else {
-        console.error("No user data returned from login");
+        console.error("❌ No user data returned from login");
         toast({
           title: "Erreur de connexion",
           description: "Aucune donnée utilisateur retournée",
@@ -92,7 +100,7 @@ export const useLogin = () => {
         return false;
       }
     } catch (error: any) {
-      console.error("Login process error:", error);
+      console.error("❌ Login process error:", error);
       toast({
         title: "Erreur de connexion",
         description: error.message || "Une erreur est survenue lors de la connexion",
