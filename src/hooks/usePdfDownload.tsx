@@ -31,6 +31,13 @@ export const usePdfDownload = () => {
       const tableData = participants.map((participant, index) => {
         const profile = participant.profile;
         
+        // Debugging: log all participant data
+        console.log(`Participant ${index + 1} complete data:`, {
+          participant: participant,
+          profile: profile,
+          profileKeys: profile ? Object.keys(profile) : null
+        });
+        
         // Pseudonyme (username en priorité absolue)
         let displayName = 'Utilisateur inconnu';
         if (profile?.username) {
@@ -44,19 +51,26 @@ export const usePdfDownload = () => {
         // Contact (priorité au téléphone, sinon email)
         const contact = profile?.phone_number || profile?.email || 'Non renseigné';
         
-        // Équipe
-        const team = profile?.team || 'Aucune équipe';
+        // Équipe - vérifier plusieurs sources
+        let team = 'Aucune équipe';
+        if (profile?.team) {
+          team = profile.team;
+        } else if (profile?.team_id) {
+          team = `Équipe ID: ${profile.team_id}`;
+        }
         
-        console.log('Participant data:', {
+        console.log('Participant processing result:', {
+          index: index + 1,
           username: profile?.username,
           firstname: profile?.firstname,
           lastname: profile?.lastname,
           phone: profile?.phone_number,
           email: profile?.email,
-          team: profile?.team,
-          displayName,
-          contact,
-          teamDisplay: team
+          team_field: profile?.team,
+          team_id_field: profile?.team_id,
+          final_displayName: displayName,
+          final_contact: contact,
+          final_team: team
         });
         
         return [
