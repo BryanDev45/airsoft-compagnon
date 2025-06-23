@@ -30,15 +30,24 @@ const LocationSection: React.FC<LocationSectionProps> = ({ updateFormData, initi
   }, [initialData, updateFormData]);
 
   const handleTeamFieldSelect = (field: any) => {
+    console.log('🏟️ TEAM FIELD SELECTED:', field);
+    
     // Mettre à jour l'état de sélection
     setSelectedFieldId(field.id);
     
-    // Remplir les champs du formulaire avec les données du terrain
+    // Remplir les champs du formulaire avec les données correctement parsées du terrain
     form.setValue('address', field.address || '');
-    form.setValue('city', field.address ? field.address.split(',').pop()?.trim() || '' : '');
-    form.setValue('zipCode', '');
+    form.setValue('city', field.city || '');
+    form.setValue('zipCode', field.zip_code || '');
     form.setValue('latitude', field.coordinates.lat);
     form.setValue('longitude', field.coordinates.lng);
+    
+    console.log('🏟️ FORM VALUES SET:', {
+      address: field.address,
+      city: field.city,
+      zipCode: field.zip_code,
+      coordinates: field.coordinates
+    });
   };
 
   const clearLocationFields = () => {

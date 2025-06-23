@@ -10,6 +10,8 @@ interface TeamField {
   id: string;
   name: string;
   address?: string;
+  city?: string;
+  zip_code?: string;
   coordinates: {
     lat: number;
     lng: number;
@@ -36,7 +38,43 @@ const TeamFieldSelector: React.FC<TeamFieldSelectorProps> = ({
         .eq('team_id', teamId);
       
       if (error) throw error;
-      return data || [];
+      
+      // Parse the address to extract city and zip code if not already separated
+      return (data || []).map(field => {
+        let parsedCity = '';
+        let parsedZipCode = '';
+        let cleanAddress = field.address || '';
+        
+        if (field.address) {
+          // Try to extract city and zip code from address
+          // Look for patterns like "75001 Paris" or "Paris 75001"
+          const zipPattern = /\b(\d{5})\b/;
+          const zipMatch = field.address.match(zipPattern);
+          
+          if (zipMatch) {
+            parsedZipCode = zipMatch[1];
+            // Remove zip code from address and clean up
+            cleanAddress = field.address.replace(zipPattern, '').replace(/,\s*$/, '').trim();
+            
+            // The remaining part after removing zip code should be the city
+            const parts = cleanAddress.split(',').map(part => part.trim()).filter(Boolean);
+            if (parts.length > 0) {
+              // Take the last non-empty part as city
+              parsedCity = parts[parts.length - 1];
+              // Remove city from address
+              cleanAddress = parts.slice(0, -1).join(', ');
+            }
+          }
+        }
+        
+        return {
+          ...field,
+          address: cleanAddress,
+          city: parsedCity,
+          zip_code: parsedZipCode,
+          coordinates: field.coordinates as { lat: number; lng: number }
+        };
+      });
     },
     enabled: !!teamId
   });
@@ -56,12 +94,7 @@ const TeamFieldSelector: React.FC<TeamFieldSelectorProps> = ({
   const handleFieldSelect = (fieldId: string) => {
     const field = teamFields.find(f => f.id === fieldId);
     if (field) {
-      onFieldSelect({
-        id: field.id,
-        name: field.name,
-        address: field.address || '',
-        coordinates: field.coordinates as { lat: number; lng: number }
-      });
+      onFieldSelect(field);
     }
   };
 
@@ -82,7 +115,11 @@ const TeamFieldSelector: React.FC<TeamFieldSelectorProps> = ({
                 <div>
                   <div className="font-medium">{field.name}</div>
                   {field.address && (
-                    <div className="text-xs text-gray-500">{field.address}</div>
+                    <div className="text-xs text-gray-500">
+                      {field.address}
+                      {field.city && `, ${field.city}`}
+                      {field.zip_code && ` ${field.zip_code}`}
+                    </div>
                   )}
                 </div>
               </div>
