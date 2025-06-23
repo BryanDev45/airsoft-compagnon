@@ -29,6 +29,9 @@ export interface RawGameData {
 export const processGame = async (game: RawGameData): Promise<MapEvent> => {
   console.log(`🎮 PROCESSING GAME - "${game.title}": Address="${game.address || ''}, ${game.zip_code || ''} ${game.city || ''}", Stored coords=(${game.latitude}, ${game.longitude})`);
   
+  // Create address string for logging
+  const addressString = `${game.address || ''}, ${game.zip_code || ''} ${game.city || ''}`.trim();
+  
   // Use the same geocoding system as stores
   const validCoordinates = await getValidCoordinates(
     game.latitude || null,
@@ -46,7 +49,7 @@ export const processGame = async (game: RawGameData): Promise<MapEvent> => {
     }
   );
 
-  console.log(`🎮 FINAL COORDS - "${game.title}": (${validCoordinates.latitude}, ${validCoordinates.longitude})`);
+  console.log(`🎮 FINAL COORDS - "${game.title}" (${addressString}): (${validCoordinates.latitude}, ${validCoordinates.longitude})`);
 
   return {
     id: game.id,

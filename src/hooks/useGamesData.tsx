@@ -61,9 +61,13 @@ export const useGamesData = (userId?: string) => {
         query = query.eq('is_private', false);
       }
       
-      // Only get future games to reduce data size
-      const today = new Date().toISOString().split('T')[0];
-      query = query.gte('date', today);
+      // Only get future games (excluding today) to reduce data size
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrowString = tomorrow.toISOString().split('T')[0];
+      
+      console.log('🎮 GAMES DATA - Filtering games from:', tomorrowString);
+      query = query.gte('date', tomorrowString);
       
       const { data: games, error } = await query.order('date', { ascending: true });
       
@@ -81,11 +85,20 @@ export const useGamesData = (userId?: string) => {
       
       // Process games with the same geocoding system as stores
       const processedGames = await Promise.all(games.map(async (game: RawGameData) => {
-        return await processGame(game);
+        console.log(`🎮 PROCESSING - Starting processing for game: "${game.title}"`);
+        const processed = await processGame(game);
+        console.log(`🎮 PROCESSING - Finished processing game: "${game.title}", coords: (${processed.lat}, ${processed.lng})`);
+        return processed;
       }));
 
       // Filter games with valid coordinates using the same validation as stores
-      const validGames = processedGames.filter(isValidGame);
+      const validGames = processedGames.filter((game) => {
+        const isValid = isValidGame(game);
+        if (!isValid) {
+          console.warn(`🎮 GAMES DATA - Filtering out game "${game.title}" with invalid coordinates: (${game.lat}, ${game.lng})`);
+        }
+        return isValid;
+      });
 
       console.log(`🎮 GAMES DATA - Returning ${validGames.length} valid games with consistent geocoding out of ${processedGames.length} total games`);
       return validGames;
