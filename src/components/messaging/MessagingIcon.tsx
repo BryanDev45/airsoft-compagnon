@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { useMessaging } from '@/hooks/messaging/useMessaging';
+import { useOptimizedConversations } from '@/hooks/messaging/useOptimizedConversations';
 import { useNavigate } from 'react-router-dom';
 import ConversationList from './ConversationList';
 import ChatView from './ChatView';
@@ -12,7 +12,7 @@ import NewConversationDialog from './NewConversationDialog';
 const MessagingIcon: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
-  const { conversations } = useMessaging();
+  const { data: conversations = [], isLoading, error } = useOptimizedConversations();
   const navigate = useNavigate();
 
   // Calculate unread count from conversations
@@ -71,7 +71,10 @@ const MessagingIcon: React.FC = () => {
             <div className="flex-1 overflow-hidden">
               <ConversationList 
                 conversations={conversations}
+                selectedConversationId={selectedConversationId}
                 onSelectConversation={setSelectedConversationId}
+                isLoading={isLoading}
+                error={error}
               />
             </div>
           </>

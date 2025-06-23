@@ -1,122 +1,98 @@
 
 import React from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Conversation } from '@/types/messaging';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Conversation } from '@/types/messaging';
-import { Users, MessageCircle } from 'lucide-react';
 
 interface ConversationItemProps {
   conversation: Conversation;
-  onSelect: (conversationId: string) => void;
+  isSelected: boolean;
+  onClick: () => void;
 }
 
 const ConversationItem: React.FC<ConversationItemProps> = ({
   conversation,
-  onSelect
+  isSelected,
+  onClick
 }) => {
-  const handleClick = () => {
-    onSelect(conversation.id);
+  // Helper function to get display name
+  const getDisplayName = () => {
+    if (conversation.type === 'direct') {
+      const otherParticipant = conversation.participants[0];
+      return otherParticipant?.username || 'Conversation';
+    }
+    return conversation.name || 'Conversation d\'équipe';
   };
 
-  const getConversationTitle = () => {
-    if (conversation.name) {
-      return conversation.name;
-    }
-    
-    if (conversation.type === 'team') {
-      return 'Équipe';
-    }
-    
-    if (conversation.participants && conversation.participants.length > 0) {
-      return conversation.participants.map(p => p.username).join(', ');
-    }
-    
-    return 'Conversation';
-  };
-
-  const getInitials = (title: string) => {
-    return title.substring(0, 2).toUpperCase();
-  };
-
-  const getLastMessageTime = () => {
-    if (!conversation.lastMessage?.created_at) return '';
-    
-    try {
-      return formatDistanceToNow(new Date(conversation.lastMessage.created_at), {
-        addSuffix: true,
-        locale: fr
-      });
-    } catch (error) {
-      return '';
-    }
-  };
-
-  const getParticipantAvatar = () => {
-    if (conversation.participants && conversation.participants.length > 0) {
-      return conversation.participants[0].avatar;
+  // Helper function to get avatar
+  const getAvatar = () => {
+    if (conversation.type === 'direct') {
+      const otherParticipant = conversation.participants[0];
+      return otherParticipant?.avatar;
     }
     return null;
   };
 
+  // Helper function to get initials
+  const getInitials = (name: string): string => {
+    return name.substring(0, 2).toUpperCase();
+  };
+
+  // Format last message time
+  const formatMessageTime = (dateString: string) => {
+    try {
+      return formatDistanceToNow(new Date(dateString), {
+        addSuffix: true,
+        locale: fr
+      });
+    } catch {
+      return '';
+    }
+  };
+
   return (
-    <div 
-      className="group overflow-hidden transition-all duration-200 hover:shadow-md border-l-4 border-l-transparent hover:border-l-airsoft-red bg-gradient-to-r from-white to-gray-50/50 rounded-lg shadow-sm cursor-pointer p-4"
-      onClick={handleClick}
+    <div
+      className={`p-3 rounded-lg cursor-pointer transition-colors hover:bg-gray-100 ${
+        isSelected ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+      }`}
+      onClick={onClick}
     >
-      <div className="flex items-center space-x-3">
-        <div className="relative flex-shrink-0">
-          <Avatar className="h-12 w-12 ring-2 ring-white shadow-sm">
-            <AvatarImage 
-              src={getParticipantAvatar() || ""} 
-              alt={getConversationTitle()} 
-            />
-            <AvatarFallback className="bg-gradient-to-br from-airsoft-red to-red-600 text-white font-semibold">
-              {getInitials(getConversationTitle())}
+      <div className="flex items-center gap-3">
+        <div className="relative">
+          <Avatar className="h-12 w-12">
+            <AvatarImage src={getAvatar() || undefined} />
+            <AvatarFallback>
+              {getInitials(getDisplayName())}
             </AvatarFallback>
           </Avatar>
-          
-          {conversation.type === 'team' && (
-            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white rounded-full border-2 border-white overflow-hidden flex items-center justify-center">
-              <Users className="h-3 w-3 text-blue-600" />
-            </div>
-          )}
         </div>
         
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-1">
-            <h3 className="font-semibold truncate transition-colors duration-200 text-gray-900 group-hover:text-airsoft-red">
-              {getConversationTitle()}
+          <div className="flex items-center justify-between">
+            <h3 className="font-medium text-gray-900 truncate">
+              {getDisplayName()}
             </h3>
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center gap-2">
+              {conversation.lastMessage && (
+                <span className="text-xs text-gray-500">
+                  {formatMessageTime(conversation.lastMessage.created_at)}
+                </span>
+              )}
               {conversation.unread_count > 0 && (
-                <Badge className="bg-airsoft-red text-white text-xs min-w-[20px] h-5 flex items-center justify-center px-1.5">
+                <Badge className="bg-blue-600 text-white text-xs">
                   {conversation.unread_count}
                 </Badge>
-              )}
-              {getLastMessageTime() && (
-                <span className="text-xs text-gray-500">
-                  {getLastMessageTime()}
-                </span>
               )}
             </div>
           </div>
           
-          {conversation.lastMessage ? (
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-600 flex-shrink-0">
-                {conversation.lastMessage.sender_name}:
-              </span>
-              <p className="text-sm text-gray-600 truncate">
-                {conversation.lastMessage.content}
-              </p>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1 text-sm text-gray-500">
-              <MessageCircle className="h-3 w-3" />
-              <span>Nouvelle conversation</span>
-            </div>
+          {conversation.lastMessage && (
+            <p className="text-sm text-gray-600 truncate mt-1">
+              <span className="font-medium">{conversation.lastMessage.sender_name}:</span>{' '}
+              {conversation.lastMessage.content}
+            </p>
           )}
         </div>
       </div>

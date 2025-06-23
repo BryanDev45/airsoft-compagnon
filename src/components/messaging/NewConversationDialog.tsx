@@ -12,16 +12,28 @@ import { useDirectConversationCreation } from '@/hooks/messaging/useDirectConver
 
 interface NewConversationDialogProps {
   onConversationSelected?: (conversationId: string) => void;
+  onConversationCreated?: (conversationId: string) => void;
+  open?: boolean;
+  onClose?: () => void;
 }
 
 const NewConversationDialog: React.FC<NewConversationDialogProps> = ({
-  onConversationSelected
+  onConversationSelected,
+  onConversationCreated,
+  open,
+  onClose
 }) => {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const { user } = useAuth();
   const { friends, isLoading } = useFriendsList();
   const { createDirectConversation, isCreating } = useDirectConversationCreation();
+
+  // Use external open state if provided, otherwise use internal state
+  const isOpen = open !== undefined ? open : internalOpen;
+  const setIsOpen = open !== undefined ? (value: boolean) => {
+    if (!value && onClose) onClose();
+  } : setInternalOpen;
 
   const filteredFriends = friends.filter(friend =>
     friend.username.toLowerCase().includes(searchTerm.toLowerCase())
@@ -30,10 +42,15 @@ const NewConversationDialog: React.FC<NewConversationDialogProps> = ({
   const handleSelectFriend = async (friend: any) => {
     try {
       const conversationId = await createDirectConversation(friend.id, friend.username);
-      if (conversationId && onConversationSelected) {
-        onConversationSelected(conversationId);
+      if (conversationId) {
+        if (onConversationSelected) {
+          onConversationSelected(conversationId);
+        }
+        if (onConversationCreated) {
+          onConversationCreated(conversationId);
+        }
       }
-      setOpen(false);
+      setIsOpen(false);
       setSearchTerm('');
     } catch (error) {
       console.error('Erreur lors de la création/ouverture de la conversation:', error);
@@ -41,17 +58,19 @@ const NewConversationDialog: React.FC<NewConversationDialogProps> = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="sm"
-          className="flex items-center gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          Nouvelle conversation
-        </Button>
-      </DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      {open === undefined && (
+        <DialogTrigger asChild>
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Nouvelle conversation
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
