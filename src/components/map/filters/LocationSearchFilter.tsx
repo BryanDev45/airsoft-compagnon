@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { Search, MapPin } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ interface LocationSearchFilterProps {
   showLabel?: boolean;
 }
 
-const LocationSearchFilter: React.FC<LocationSearchFilterProps> = React.memo(({
+const LocationSearchFilter: React.FC<LocationSearchFilterProps> = ({
   searchQuery,
   setSearchQuery,
   getCurrentPosition,
@@ -52,8 +52,6 @@ const LocationSearchFilter: React.FC<LocationSearchFilterProps> = React.memo(({
       </Button>
     </div>
   );
-});
-
-LocationSearchFilter.displayName = 'LocationSearchFilter';
+};
 
 export default LocationSearchFilter;
