@@ -16,19 +16,24 @@ import { useCitySearch } from "@/hooks/useCitySearch";
 import { CitySearchResults } from "./CitySearchResults";
 import { CityComboboxProps, City } from "@/types/city";
 
-export function ComboboxDemo({ defaultValue = "", onSelect }: CityComboboxProps) {
+export const ComboboxDemo = React.memo(({ defaultValue = "", onSelect }: CityComboboxProps) => {
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState(defaultValue || "");
+  const inputRef = React.useRef<HTMLInputElement>(null);
   
   const { searchTerm, setSearchTerm, cities, isLoading, error } = useCitySearch();
 
-  const handleCitySelect = (selectedCity: City) => {
+  const handleCitySelect = React.useCallback((selectedCity: City) => {
     console.log('City selected in parent:', selectedCity.fullName);
     setValue(selectedCity.fullName);
     onSelect(selectedCity.fullName);
     setOpen(false);
     setSearchTerm("");
-  };
+  }, [onSelect, setSearchTerm]);
+
+  const handleInputChange = React.useCallback((value: string) => {
+    setSearchTerm(value || "");
+  }, [setSearchTerm]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -47,9 +52,10 @@ export function ComboboxDemo({ defaultValue = "", onSelect }: CityComboboxProps)
       <PopoverContent className="p-0 w-[300px] z-50 bg-white border" align="start">
         <Command shouldFilter={false} className="overflow-hidden rounded-md bg-white">
           <CommandInput 
+            ref={inputRef}
             placeholder="Rechercher une ville..." 
             value={searchTerm}
-            onValueChange={(value) => setSearchTerm(value || "")}
+            onValueChange={handleInputChange}
             className="h-9"
           />
           <CommandList className="max-h-[200px] overflow-y-auto bg-white">
@@ -66,4 +72,6 @@ export function ComboboxDemo({ defaultValue = "", onSelect }: CityComboboxProps)
       </PopoverContent>
     </Popover>
   );
-}
+});
+
+ComboboxDemo.displayName = 'ComboboxDemo';

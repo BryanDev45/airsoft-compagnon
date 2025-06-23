@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useDebounce } from '@/hooks/use-debounce';
 import { City } from '@/types/city';
 
@@ -10,6 +10,10 @@ export const useCitySearch = () => {
   const [error, setError] = useState<string | null>(null);
   
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
+  const setSearchTermCallback = useCallback((term: string) => {
+    setSearchTerm(term);
+  }, []);
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -163,7 +167,7 @@ export const useCitySearch = () => {
 
   return {
     searchTerm,
-    setSearchTerm,
+    setSearchTerm: setSearchTermCallback,
     cities,
     isLoading,
     error

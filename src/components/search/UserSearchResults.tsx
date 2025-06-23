@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useOptimizedUserSearch } from '@/hooks/search/useOptimizedUserSearch';
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,7 +12,7 @@ interface UserSearchResultsProps {
   searchQuery: string;
 }
 
-const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) => {
+const UserSearchResults: React.FC<UserSearchResultsProps> = React.memo(({ searchQuery }) => {
   const { users, isLoading } = useOptimizedUserSearch(searchQuery);
   const { friendships, handleFriendAction } = useFriendshipActions(users);
   const { user: currentUser } = useAuth();
@@ -101,6 +102,8 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchQuery }) =>
       ))}
     </div>
   );
-};
+});
+
+UserSearchResults.displayName = 'UserSearchResults';
 
 export default UserSearchResults;
