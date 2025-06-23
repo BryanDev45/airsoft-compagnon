@@ -68,13 +68,15 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
       </div>
       <p className="text-sm text-gray-600 mb-2">{notification.message}</p>
       
-      {notification.type === 'friend_request' && !notification.read && onAcceptFriend && onRejectFriend ? (
+      {/* Boutons pour les demandes d'ami */}
+      {notification.type === 'friend_request' && !notification.read && onAcceptFriend && onRejectFriend && (
         <div className="flex mt-2 space-x-2 justify-end">
           <Button 
             variant="default"
             size="sm"
-            className="bg-airsoft-red hover:bg-red-700"
+            className="bg-green-600 hover:bg-green-700 text-white"
             onClick={() => onAcceptFriend(notification)}
+            disabled={processingInvitation}
           >
             <UserCheck className="h-4 w-4 mr-1" />
             Accepter
@@ -83,12 +85,16 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
             variant="outline"
             size="sm"
             onClick={() => onRejectFriend(notification)}
+            disabled={processingInvitation}
           >
             <UserMinus className="h-4 w-4 mr-1" />
             Refuser
           </Button>
         </div>
-      ) : notification.type === 'team_invitation' && !notification.read && onAcceptTeam && onRejectTeam ? (
+      )}
+      
+      {/* Boutons pour les invitations d'équipe */}
+      {notification.type === 'team_invitation' && !notification.read && onAcceptTeam && onRejectTeam && (
         <div className="flex mt-2 space-x-2 justify-end">
           <Button 
             variant="default"
@@ -110,7 +116,10 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
             Refuser
           </Button>
         </div>
-      ) : notification.type === 'team_request' && !notification.read && onAcceptTeamRequest && onRejectTeamRequest ? (
+      )}
+      
+      {/* Boutons pour les demandes d'adhésion à une équipe */}
+      {notification.type === 'team_request' && !notification.read && onAcceptTeamRequest && onRejectTeamRequest && (
         <div className="flex mt-2 space-x-2 justify-end">
           <Button 
             variant="default"
@@ -132,7 +141,10 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
             Refuser
           </Button>
         </div>
-      ) : (
+      )}
+      
+      {/* Zone cliquable pour les autres types de notifications */}
+      {!['friend_request', 'team_invitation', 'team_request'].includes(notification.type) && (
         <div 
           className="cursor-pointer" 
           onClick={() => onNavigate?.(notification)}

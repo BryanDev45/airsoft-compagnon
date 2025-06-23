@@ -14,9 +14,19 @@ export const useFriendRequestActions = (handleMarkAsRead: (id: string) => Promis
   const [processingInvitation, setProcessingInvitation] = useState(false);
 
   const handleAcceptFriendRequest = async (notification: Notification) => {
+    if (!notification.related_id) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de traiter cette demande d'ami",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       setProcessingInvitation(true);
       
+      // Accepter la demande d'ami en mettant à jour le statut
       const { error } = await supabase
         .from('friendships')
         .update({ status: 'accepted' })
@@ -24,6 +34,7 @@ export const useFriendRequestActions = (handleMarkAsRead: (id: string) => Promis
 
       if (error) throw error;
       
+      // Marquer la notification comme lue
       await handleMarkAsRead(notification.id);
       
       toast({
@@ -31,7 +42,11 @@ export const useFriendRequestActions = (handleMarkAsRead: (id: string) => Promis
         description: "Vous êtes maintenant amis",
       });
       
+      // Invalider les caches pour actualiser les données
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['unreadNotifications'] });
+      queryClient.invalidateQueries({ queryKey: ['friendships'] });
+      
     } catch (error) {
       console.error('Error accepting friend request:', error);
       toast({
@@ -45,9 +60,19 @@ export const useFriendRequestActions = (handleMarkAsRead: (id: string) => Promis
   };
 
   const handleRejectFriendRequest = async (notification: Notification) => {
+    if (!notification.related_id) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de traiter cette demande d'ami",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       setProcessingInvitation(true);
       
+      // Rejeter la demande d'ami en mettant à jour le statut
       const { error } = await supabase
         .from('friendships')
         .update({ status: 'rejected' })
@@ -55,6 +80,7 @@ export const useFriendRequestActions = (handleMarkAsRead: (id: string) => Promis
 
       if (error) throw error;
       
+      // Marquer la notification comme lue
       await handleMarkAsRead(notification.id);
       
       toast({
@@ -62,7 +88,11 @@ export const useFriendRequestActions = (handleMarkAsRead: (id: string) => Promis
         description: "La demande d'ami a été rejetée",
       });
       
+      // Invalider les caches pour actualiser les données
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['unreadNotifications'] });
+      queryClient.invalidateQueries({ queryKey: ['friendships'] });
+      
     } catch (error) {
       console.error('Error rejecting friend request:', error);
       toast({
