@@ -14,23 +14,15 @@ export const useMessagesData = (conversationId: string) => {
       return [];
     }
 
+    if (!user?.id) {
+      console.warn('[MessagesData] No user ID available');
+      return [];
+    }
+
     console.log('[MessagesData] Fetching messages for conversation:', conversationId);
 
     try {
-      // Check user access first
-      const { data: participantCheck, error: participantError } = await supabase
-        .from('conversation_participants')
-        .select('id')
-        .eq('conversation_id', conversationId)
-        .eq('user_id', user?.id)
-        .single();
-
-      if (participantError || !participantCheck) {
-        console.error('[MessagesData] User not participant:', participantError);
-        throw new Error('Accès refusé aux messages');
-      }
-
-      // Fetch messages
+      // Fetch messages directly - RLS will handle access control
       const { data: messagesData, error } = await supabase
         .from('messages')
         .select(`
@@ -43,7 +35,7 @@ export const useMessagesData = (conversationId: string) => {
         .eq('conversation_id', conversationId)
         .eq('is_deleted', false)
         .order('created_at', { ascending: true })
-        .limit(100); // Limit to prevent excessive loading
+        .limit(100);
 
       if (error) {
         console.error('[MessagesData] Error fetching messages:', error);
@@ -91,12 +83,13 @@ export const useMessagesData = (conversationId: string) => {
     queryKey: ['messages', conversationId],
     queryFn,
     enabled: !!conversationId && !!user?.id,
-    staleTime: 30000, // 30 seconds
-    gcTime: 180000, // 3 minutes
-    refetchInterval: false, // Disable auto-refetch to prevent loops
+    staleTime: 30000,
+    gcTime: 180000,
+    refetchInterval: false,
     retry: (failureCount, error) => {
       // Don't retry permission errors
-      if (error?.message?.includes('Accès refusé')) {
+      if (error?.message?.includes('permission denied') || 
+          error?.message?.includes('row-level security')) {
         return false;
       }
       return failureCount < 2;

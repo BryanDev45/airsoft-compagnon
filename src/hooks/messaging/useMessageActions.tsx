@@ -21,24 +21,7 @@ export const useMessageActions = (conversationId: string) => {
     console.log('Sending message:', { content, conversationId, senderId: user.id });
 
     try {
-      // Vérifier que l'utilisateur est participant de la conversation
-      const { data: participantCheck, error: participantError } = await supabase
-        .from('conversation_participants')
-        .select('id')
-        .eq('conversation_id', conversationId)
-        .eq('user_id', user.id)
-        .single();
-
-      if (participantError || !participantCheck) {
-        console.error('User is not a participant of this conversation:', participantError);
-        toast({
-          title: "Erreur",
-          description: "Vous n'êtes pas autorisé à envoyer des messages dans cette conversation",
-          variant: "destructive"
-        });
-        throw new Error('Non autorisé');
-      }
-
+      // Send the message - RLS will handle access control
       const { error } = await supabase
         .from('messages')
         .insert({
@@ -49,23 +32,34 @@ export const useMessageActions = (conversationId: string) => {
 
       if (error) {
         console.error('Error sending message:', error);
-        toast({
-          title: "Erreur",
-          description: "Impossible d'envoyer le message",
-          variant: "destructive"
-        });
+        
+        // Show user-friendly error message
+        if (error.message.includes('permission denied') || 
+            error.message.includes('row-level security')) {
+          toast({
+            title: "Erreur",
+            description: "Vous n'êtes pas autorisé à envoyer des messages dans cette conversation",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Erreur",
+            description: "Impossible d'envoyer le message",
+            variant: "destructive"
+          });
+        }
         throw error;
       }
 
       console.log('Message sent successfully');
 
-      // Mettre à jour la dernière activité de la conversation
+      // Update conversation timestamp
       await supabase
         .from('conversations')
         .update({ updated_at: new Date().toISOString() })
         .eq('id', conversationId);
 
-      // Invalider et rafraîchir les caches
+      // Invalidate and refresh caches
       queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
       queryClient.invalidateQueries({ queryKey: ['optimized-conversations'] });
@@ -85,7 +79,7 @@ export const useMessageActions = (conversationId: string) => {
     console.log('Marking messages as read for conversation:', conversationId);
 
     try {
-      // Utiliser la fonction pour marquer tous les messages de la conversation comme lus
+      // Use the function to mark all messages in the conversation as read
       const { error } = await supabase.rpc('mark_conversation_messages_as_read', {
         p_conversation_id: conversationId,
         p_user_id: user.id
@@ -96,12 +90,12 @@ export const useMessageActions = (conversationId: string) => {
       } else {
         console.log('Successfully marked messages as read');
         
-        // Invalider immédiatement les requêtes pour forcer la mise à jour
+        // Invalidate queries to force update
         await queryClient.invalidateQueries({ queryKey: ['conversations'] });
         await queryClient.invalidateQueries({ queryKey: ['optimized-conversations'] });
         await queryClient.invalidateQueries({ queryKey: ['unreadNotifications', user.id] });
         
-        // Refetch les conversations pour mettre à jour les compteurs
+        // Refetch conversations to update counters
         await queryClient.refetchQueries({ queryKey: ['conversations', user.id] });
         await queryClient.refetchQueries({ queryKey: ['optimized-conversations', user.id] });
       }

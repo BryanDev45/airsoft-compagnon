@@ -11,27 +11,19 @@ export const useConversationDetails = (conversationId: string) => {
     queryKey: ['conversation', conversationId],
     queryFn: async (): Promise<ConversationDetails | null> => {
       if (!conversationId) {
-        console.warn('No conversation ID provided');
+        console.warn('[ConversationDetails] No conversation ID provided');
+        return null;
+      }
+
+      if (!user?.id) {
+        console.warn('[ConversationDetails] No user ID available');
         return null;
       }
 
       console.log('[ConversationDetails] Fetching conversation details for:', conversationId);
       
       try {
-        // First check if user has access to this conversation
-        const { data: participantCheck, error: participantError } = await supabase
-          .from('conversation_participants')
-          .select('id')
-          .eq('conversation_id', conversationId)
-          .eq('user_id', user?.id)
-          .single();
-
-        if (participantError || !participantCheck) {
-          console.error('[ConversationDetails] User not participant or access denied:', participantError);
-          throw new Error('Accès refusé à cette conversation');
-        }
-
-        // Fetch conversation data
+        // Fetch conversation data - RLS will handle access control
         const { data, error } = await supabase
           .from('conversations')
           .select('id, type, name')
@@ -40,7 +32,7 @@ export const useConversationDetails = (conversationId: string) => {
 
         if (error) {
           console.error('[ConversationDetails] Error fetching conversation:', error);
-          throw new Error('Conversation introuvable');
+          throw new Error('Conversation introuvable ou accès refusé');
         }
 
         if (!data) {
@@ -84,11 +76,13 @@ export const useConversationDetails = (conversationId: string) => {
       }
     },
     enabled: !!conversationId && !!user?.id,
-    staleTime: 60000, // 1 minute
-    gcTime: 300000, // 5 minutes
+    staleTime: 60000,
+    gcTime: 300000,
     retry: (failureCount, error) => {
       // Don't retry permission errors
-      if (error?.message?.includes('Accès refusé') || error?.message?.includes('introuvable')) {
+      if (error?.message?.includes('permission denied') || 
+          error?.message?.includes('row-level security') ||
+          error?.message?.includes('introuvable')) {
         return false;
       }
       return failureCount < 2;

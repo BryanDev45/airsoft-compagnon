@@ -111,13 +111,14 @@ export const useOptimizedConversations = () => {
     queryKey: ['optimized-conversations', user?.id],
     queryFn,
     enabled: !!user?.id,
-    staleTime: 60000, // 1 minute
-    gcTime: 300000, // 5 minutes
-    refetchInterval: false, // Disable auto-refetch to prevent loops
+    staleTime: 60000,
+    gcTime: 300000,
+    refetchInterval: false,
     refetchOnWindowFocus: false,
     retry: (failureCount, error) => {
       // Don't retry on permission errors or if user is not authenticated
-      if (error?.message?.includes('permission') || 
+      if (error?.message?.includes('permission denied') || 
+          error?.message?.includes('row-level security') ||
           error?.message?.includes('Trop de tentatives') || 
           !user?.id) {
         return false;
