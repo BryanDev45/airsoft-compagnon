@@ -13,34 +13,6 @@ interface GameParticipantsTabProps {
   isCreator?: boolean;
 }
 
-// Fonction utilitaire pour extraire une valeur propre (identique à celle des fetchers)
-const extractCleanValue = (field: any): string | null => {
-  if (field === null || field === undefined) {
-    return null;
-  }
-  
-  if (typeof field === 'object' && field._type !== undefined && field.value !== undefined) {
-    if (field.value === 'undefined' || field.value === null || field.value === undefined) {
-      return null;
-    }
-    return String(field.value);
-  }
-  
-  if (typeof field === 'string') {
-    if (field === 'undefined' || field === '' || field.trim() === '') {
-      return null;
-    }
-    return field;
-  }
-  
-  const stringValue = String(field);
-  if (stringValue === 'undefined' || stringValue === '' || stringValue === 'null') {
-    return null;
-  }
-  
-  return stringValue;
-};
-
 const GameParticipantsTab: React.FC<GameParticipantsTabProps> = ({ 
   participants, 
   gameTitle = '', 
@@ -73,7 +45,7 @@ const GameParticipantsTab: React.FC<GameParticipantsTabProps> = ({
     }
   };
 
-  // Logique améliorée pour l'affichage des équipes avec nettoyage des données
+  // Logique simplifiée pour l'affichage des équipes
   const getTeamDisplayName = (participant: GameParticipant): string => {
     const profile = participant.profile;
     if (!profile) {
@@ -84,29 +56,18 @@ const GameParticipantsTab: React.FC<GameParticipantsTabProps> = ({
     console.log('🏷️ TEAM DISPLAY - Profile data:', {
       username: profile.username,
       team: profile.team,
-      team_id: profile.team_id,
-      teamType: typeof profile.team,
-      teamIdType: typeof profile.team_id
+      team_id: profile.team_id
     });
     
-    // Nettoyer les valeurs d'équipe
-    const cleanTeamName = extractCleanValue(profile.team);
-    const cleanTeamId = extractCleanValue(profile.team_id);
-    
-    console.log('🏷️ TEAM DISPLAY - Cleaned values:', {
-      cleanTeamName,
-      cleanTeamId
-    });
-    
-    // Vérifier si on a un nom d'équipe valide nettoyé
-    if (cleanTeamName) {
-      console.log('🏷️ TEAM DISPLAY - Using clean team name:', cleanTeamName);
-      return cleanTeamName;
+    // Vérifier si on a un nom d'équipe
+    if (profile.team) {
+      console.log('🏷️ TEAM DISPLAY - Using team name:', profile.team);
+      return profile.team;
     }
     
-    // Si on a un team_id valide nettoyé mais pas de nom, afficher un message générique
-    if (cleanTeamId) {
-      console.log('🏷️ TEAM DISPLAY - Using fallback for clean team_id:', cleanTeamId);
+    // Si on a un team_id mais pas de nom, afficher un message générique
+    if (profile.team_id) {
+      console.log('🏷️ TEAM DISPLAY - Using fallback for team_id:', profile.team_id);
       return 'Équipe';
     }
     
