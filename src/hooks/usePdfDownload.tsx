@@ -5,6 +5,34 @@ import autoTable from 'jspdf-autotable';
 import { GameParticipant } from '@/types/game';
 import { toast } from '@/components/ui/use-toast';
 
+// Fonction utilitaire pour extraire une valeur propre (identique aux autres fichiers)
+const extractCleanValue = (field: any): string | null => {
+  if (field === null || field === undefined) {
+    return null;
+  }
+  
+  if (typeof field === 'object' && field._type !== undefined && field.value !== undefined) {
+    if (field.value === 'undefined' || field.value === null || field.value === undefined) {
+      return null;
+    }
+    return String(field.value);
+  }
+  
+  if (typeof field === 'string') {
+    if (field === 'undefined' || field === '' || field.trim() === '') {
+      return null;
+    }
+    return field;
+  }
+  
+  const stringValue = String(field);
+  if (stringValue === 'undefined' || stringValue === '' || stringValue === 'null') {
+    return null;
+  }
+  
+  return stringValue;
+};
+
 export const usePdfDownload = () => {
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -49,40 +77,35 @@ export const usePdfDownload = () => {
         
         // Contact (priorité au téléphone, sinon email)  
         let contact = 'Non renseigné';
-        const phoneValue = profile?.phone_number;
-        const emailValue = profile?.email;
+        const cleanPhoneValue = extractCleanValue(profile?.phone_number);
+        const cleanEmailValue = extractCleanValue(profile?.email);
         
-        if (phoneValue && typeof phoneValue === 'string' && phoneValue.trim() !== '') {
-          contact = phoneValue;
-        } else if (emailValue && typeof emailValue === 'string' && emailValue.trim() !== '') {
-          contact = emailValue;
+        if (cleanPhoneValue) {
+          contact = cleanPhoneValue;
+        } else if (cleanEmailValue) {
+          contact = cleanEmailValue;
         }
         
-        // Équipe - logique améliorée cohérente avec l'affichage
+        // Équipe - logique améliorée cohérente avec l'affichage, avec nettoyage des données
         let team = 'Aucune équipe';
         if (profile) {
-          console.log(`📄 PDF PARTICIPANT ${index + 1} - Team data:`, {
-            team: profile.team,
-            team_id: profile.team_id,
-            teamType: typeof profile.team,
-            teamIdType: typeof profile.team_id
+          const cleanTeamName = extractCleanValue(profile.team);
+          const cleanTeamId = extractCleanValue(profile.team_id);
+          
+          console.log(`📄 PDF PARTICIPANT ${index + 1} - Cleaned team data:`, {
+            originalTeam: profile.team,
+            originalTeamId: profile.team_id,
+            cleanTeamName,
+            cleanTeamId
           });
           
-          // Vérifier si on a un nom d'équipe valide
-          if (profile.team && 
-              typeof profile.team === 'string' && 
-              profile.team.trim() !== '' && 
-              profile.team !== 'undefined' &&
-              profile.team !== 'null') {
-            team = profile.team;
-            console.log(`📄 PDF PARTICIPANT ${index + 1} - Using team name:`, team);
-          } else if (profile.team_id && 
-                     typeof profile.team_id === 'string' && 
-                     profile.team_id.trim() !== '' && 
-                     profile.team_id !== 'undefined' &&
-                     profile.team_id !== 'null') {
+          // Vérifier si on a un nom d'équipe valide nettoyé
+          if (cleanTeamName) {
+            team = cleanTeamName;
+            console.log(`📄 PDF PARTICIPANT ${index + 1} - Using clean team name:`, team);
+          } else if (cleanTeamId) {
             team = 'Équipe';
-            console.log(`📄 PDF PARTICIPANT ${index + 1} - Using fallback for team_id`);
+            console.log(`📄 PDF PARTICIPANT ${index + 1} - Using fallback for clean team_id`);
           } else {
             console.log(`📄 PDF PARTICIPANT ${index + 1} - No team information available`);
           }
