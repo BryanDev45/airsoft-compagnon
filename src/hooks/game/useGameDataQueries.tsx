@@ -84,7 +84,7 @@ const fetchParticipants = async (gameId: string): Promise<GameParticipant[]> => 
           .from('profiles')
           .select(`
             *,
-            teams:team_id (
+            teams!profiles_team_id_fkey (
               id,
               name,
               logo
