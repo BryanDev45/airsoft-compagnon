@@ -58,19 +58,18 @@ export const usePdfDownload = () => {
           contact = emailValue;
         }
         
-        // Équipe - logique améliorée et cohérente avec l'affichage
+        // Équipe - logique cohérente avec l'affichage
         let team = 'Aucune équipe';
         if (profile) {
           console.log(`📄 PDF PARTICIPANT ${index + 1} - Team data:`, {
-            team_field: profile.team,
-            team_id: profile.team_id,
-            team_logo: profile.team_logo
+            team: profile.team,
+            team_id: profile.team_id
           });
           
-          // Utiliser la même logique que dans GameParticipantsTab
+          // Si on a un nom d'équipe, l'utiliser
           if (profile.team && typeof profile.team === 'string' && profile.team.trim() !== '') {
             team = profile.team;
-            console.log(`📄 PDF PARTICIPANT ${index + 1} - Using team field:`, team);
+            console.log(`📄 PDF PARTICIPANT ${index + 1} - Using team name:`, team);
           } else if (profile.team_id && typeof profile.team_id === 'string' && profile.team_id.trim() !== '') {
             team = 'Équipe';
             console.log(`📄 PDF PARTICIPANT ${index + 1} - Using fallback for team_id`);

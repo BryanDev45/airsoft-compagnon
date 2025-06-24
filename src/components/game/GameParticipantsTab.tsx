@@ -45,7 +45,7 @@ const GameParticipantsTab: React.FC<GameParticipantsTabProps> = ({
     }
   };
 
-  // Improved team display logic
+  // Logique simplifiée pour l'affichage des équipes
   const getTeamDisplayName = (participant: GameParticipant): string => {
     const profile = participant.profile;
     if (!profile) {
@@ -55,18 +55,17 @@ const GameParticipantsTab: React.FC<GameParticipantsTabProps> = ({
     
     console.log('🏷️ TEAM DISPLAY - Profile data:', {
       username: profile.username,
-      team_field: profile.team,
-      team_id: profile.team_id,
-      team_logo: profile.team_logo
+      team: profile.team,
+      team_id: profile.team_id
     });
     
-    // Primary: Use the team field (which should be populated from team relation or profile)
+    // Si on a un nom d'équipe, l'utiliser
     if (profile.team && typeof profile.team === 'string' && profile.team.trim() !== '') {
-      console.log('🏷️ TEAM DISPLAY - Using team field:', profile.team);
+      console.log('🏷️ TEAM DISPLAY - Using team name:', profile.team);
       return profile.team;
     }
     
-    // Secondary fallback: If we have a team_id but no team name, show generic text
+    // Si on a un team_id mais pas de nom, afficher un message générique
     if (profile.team_id && typeof profile.team_id === 'string' && profile.team_id.trim() !== '') {
       console.log('🏷️ TEAM DISPLAY - Using fallback for team_id:', profile.team_id);
       return 'Équipe';
