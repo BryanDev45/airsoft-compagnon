@@ -49,82 +49,46 @@ export const fetchParticipants = async (gameId: string): Promise<GameParticipant
 
   console.log('✅ PARTICIPANTS - Raw participants with profiles fetched:', participantsWithProfiles?.length || 0);
 
-  const participantsWithCompleteProfiles = await Promise.all(
-    (participantsWithProfiles || []).map(async (participant, index) => {
-      console.log(`🔍 PARTICIPANT ${index + 1} - Processing:`, {
-        id: participant.id,
-        user_id: participant.user_id,
-        profile: participant.profiles
-      });
-      
-      if (!participant.profiles) {
-        console.warn(`⚠️ PARTICIPANT ${index + 1} - No profile found for user_id:`, participant.user_id);
-        return {
-          ...participant,
-          profile: null
-        } as GameParticipant;
-      }
-
-      let profile = participant.profiles as any;
-      let teamName = null;
-
-      console.log(`🏢 PARTICIPANT ${index + 1} - Team data:`, {
-        originalTeam: profile.team,
-        originalTeamId: profile.team_id
-      });
-
-      // Utiliser le nom d'équipe s'il existe
-      if (profile.team) {
-        teamName = profile.team;
-        console.log(`✅ PARTICIPANT ${index + 1} - Using team name:`, teamName);
-      }
-      // Si pas de nom mais on a un team_id valide, récupérer depuis la table teams
-      else if (profile.team_id) {
-        console.log(`🔍 PARTICIPANT ${index + 1} - Fetching team name for team_id:`, profile.team_id);
-        
-        try {
-          const { data: teamData, error: teamError } = await supabase
-            .from('teams')
-            .select('name')
-            .eq('id', profile.team_id)
-            .maybeSingle();
-
-          if (teamError) {
-            console.warn(`⚠️ PARTICIPANT ${index + 1} - Error fetching team:`, teamError);
-          } else if (teamData && teamData.name) {
-            teamName = teamData.name;
-            console.log(`✅ PARTICIPANT ${index + 1} - Team name found:`, teamName);
-          } else {
-            console.log(`❌ PARTICIPANT ${index + 1} - No team found for team_id:`, profile.team_id);
-          }
-        } catch (error) {
-          console.warn(`❌ PARTICIPANT ${index + 1} - Unexpected error fetching team:`, error);
-        }
-      } else {
-        console.log(`ℹ️ PARTICIPANT ${index + 1} - No team information available`);
-      }
-
-      // Construire le profil complet
-      const completeProfile: Profile = {
-        ...profile,
-        newsletter_subscribed: profile?.newsletter_subscribed ?? null,
-        team: teamName, // Utiliser le nom d'équipe trouvé ou null
-        team_id: profile.team_id, // Utiliser l'ID d'équipe ou null
-        team_logo: null // Ce champ n'existe pas dans la table profiles
-      };
-
-      console.log(`🎯 PARTICIPANT ${index + 1} - Final profile built:`, {
-        username: completeProfile.username,
-        team: completeProfile.team,
-        team_id: completeProfile.team_id
-      });
-
+  const participantsWithCompleteProfiles = (participantsWithProfiles || []).map((participant, index) => {
+    console.log(`🔍 PARTICIPANT ${index + 1} - Processing:`, {
+      id: participant.id,
+      user_id: participant.user_id,
+      profile: participant.profiles
+    });
+    
+    if (!participant.profiles) {
+      console.warn(`⚠️ PARTICIPANT ${index + 1} - No profile found for user_id:`, participant.user_id);
       return {
         ...participant,
-        profile: completeProfile
+        profile: null
       } as GameParticipant;
-    })
-  );
+    }
+
+    let profile = participant.profiles as any;
+
+    console.log(`🏢 PARTICIPANT ${index + 1} - Team data:`, {
+      team: profile.team,
+      team_id: profile.team_id
+    });
+
+    // Construire le profil complet - les données sont maintenant propres
+    const completeProfile: Profile = {
+      ...profile,
+      newsletter_subscribed: profile?.newsletter_subscribed ?? null,
+      team_logo: null // Ce champ n'existe pas dans la table profiles
+    };
+
+    console.log(`🎯 PARTICIPANT ${index + 1} - Final profile built:`, {
+      username: completeProfile.username,
+      team: completeProfile.team,
+      team_id: completeProfile.team_id
+    });
+
+    return {
+      ...participant,
+      profile: completeProfile
+    } as GameParticipant;
+  });
 
   console.log('🏁 PARTICIPANTS - Final participants with complete profiles:', participantsWithCompleteProfiles.length);
   

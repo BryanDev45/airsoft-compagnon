@@ -55,24 +55,13 @@ export const usePdfDownload = () => {
           contact = profile.email;
         }
         
-        // Équipe - logique simplifiée
+        // Équipe - données maintenant propres
         let team = 'Aucune équipe';
-        if (profile) {
-          console.log(`📄 PDF PARTICIPANT ${index + 1} - Team data:`, {
-            team: profile.team,
-            team_id: profile.team_id
-          });
-          
-          // Vérifier si on a un nom d'équipe
-          if (profile.team) {
-            team = profile.team;
-            console.log(`📄 PDF PARTICIPANT ${index + 1} - Using team name:`, team);
-          } else if (profile.team_id) {
-            team = 'Équipe';
-            console.log(`📄 PDF PARTICIPANT ${index + 1} - Using fallback for team_id`);
-          } else {
-            console.log(`📄 PDF PARTICIPANT ${index + 1} - No team information available`);
-          }
+        if (profile?.team) {
+          team = profile.team;
+          console.log(`📄 PDF PARTICIPANT ${index + 1} - Using team name:`, team);
+        } else {
+          console.log(`📄 PDF PARTICIPANT ${index + 1} - No team information available`);
         }
         
         console.log(`📄 PDF PARTICIPANT ${index + 1} - Final data:`, {
