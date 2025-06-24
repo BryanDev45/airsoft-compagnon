@@ -60,15 +60,17 @@ export const usePdfDownload = () => {
           contact = emailValue;
         }
         
-        // Équipe - vérifier plusieurs sources
+        // Équipe - logique améliorée
         let team = 'Aucune équipe';
-        const teamValue = profile?.team;
-        const teamIdValue = profile?.team_id;
-        
-        if (teamValue && typeof teamValue === 'string') {
-          team = teamValue;
-        } else if (teamIdValue && typeof teamIdValue === 'string') {
-          team = `Équipe ID: ${teamIdValue}`;
+        if (profile) {
+          // Vérifier d'abord le champ team
+          if (profile.team && typeof profile.team === 'string' && profile.team.trim() !== '') {
+            team = profile.team;
+          }
+          // Si pas de team mais un team_id, afficher "Équipe"
+          else if (profile.team_id && typeof profile.team_id === 'string' && profile.team_id.trim() !== '') {
+            team = 'Équipe';
+          }
         }
         
         console.log('Participant processing result:', {
@@ -78,8 +80,8 @@ export const usePdfDownload = () => {
           lastname: profile?.lastname,
           phone: phoneValue,
           email: emailValue,
-          team_field: teamValue,
-          team_id_field: teamIdValue,
+          team_field: profile?.team,
+          team_id_field: profile?.team_id,
           final_displayName: displayName,
           final_contact: contact,
           final_team: team

@@ -45,6 +45,24 @@ const GameParticipantsTab: React.FC<GameParticipantsTabProps> = ({
     }
   };
 
+  // Helper function to get team display name
+  const getTeamDisplayName = (participant: GameParticipant): string => {
+    const profile = participant.profile;
+    if (!profile) return 'Aucune équipe';
+    
+    // Vérifier d'abord le champ team
+    if (profile.team && typeof profile.team === 'string' && profile.team.trim() !== '') {
+      return profile.team;
+    }
+    
+    // Si pas de team mais un team_id, afficher "Équipe"
+    if (profile.team_id && typeof profile.team_id === 'string' && profile.team_id.trim() !== '') {
+      return 'Équipe';
+    }
+    
+    return 'Aucune équipe';
+  };
+
   return (
     <>
       <div className="flex justify-between items-center mb-4">
@@ -64,28 +82,32 @@ const GameParticipantsTab: React.FC<GameParticipantsTabProps> = ({
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {participants.map((participant) => (
-            <div 
-              key={participant.id} 
-              className="bg-white p-4 rounded-md border flex items-center gap-3 cursor-pointer hover:bg-gray-50 transition-colors overflow-hidden"
-              onClick={() => handleProfileClick(participant.profile?.username)}
-            >
-              <Avatar className="h-12 w-12 flex-shrink-0">
-                <AvatarImage 
-                  src={participant.profile?.avatar || ""} 
-                  alt={participant.profile?.username || ""}
-                />
-                <AvatarFallback>{getInitials(participant.profile?.username)}</AvatarFallback>
-              </Avatar>
-              <div className="flex-grow min-w-0">
-                <div className="font-medium truncate">{participant.profile?.username || "Utilisateur"}</div>
-                <div className="text-sm text-gray-500 truncate">{participant.profile?.team || "Aucune équipe"}</div>
+          {participants.map((participant) => {
+            const teamDisplayName = getTeamDisplayName(participant);
+            
+            return (
+              <div 
+                key={participant.id} 
+                className="bg-white p-4 rounded-md border flex items-center gap-3 cursor-pointer hover:bg-gray-50 transition-colors overflow-hidden"
+                onClick={() => handleProfileClick(participant.profile?.username)}
+              >
+                <Avatar className="h-12 w-12 flex-shrink-0">
+                  <AvatarImage 
+                    src={participant.profile?.avatar || ""} 
+                    alt={participant.profile?.username || ""}
+                  />
+                  <AvatarFallback>{getInitials(participant.profile?.username)}</AvatarFallback>
+                </Avatar>
+                <div className="flex-grow min-w-0">
+                  <div className="font-medium truncate">{participant.profile?.username || "Utilisateur"}</div>
+                  <div className="text-sm text-gray-500 truncate">{teamDisplayName}</div>
+                </div>
+                <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap flex-shrink-0 ${getRoleColor(participant.role)}`}>
+                  {participant.role || "Participant"}
+                </span>
               </div>
-              <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap flex-shrink-0 ${getRoleColor(participant.role)}`}>
-                {participant.role || "Participant"}
-              </span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </>

@@ -79,16 +79,43 @@ const fetchParticipants = async (gameId: string): Promise<GameParticipant[]> => 
   const participantsWithProfiles = await Promise.all(
     (participants || []).map(async (participant) => {
       try {
+        // Récupérer le profil complet avec les informations d'équipe
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('*')
+          .select(`
+            *,
+            teams:team_id (
+              id,
+              name,
+              logo
+            )
+          `)
           .eq('id', participant.user_id)
           .maybeSingle();
 
-        const profile = profileError || !profileData ? null : {
+        if (profileError || !profileData) {
+          console.warn('Error fetching participant profile:', profileError);
+          return {
+            ...participant,
+            profile: null
+          } as GameParticipant;
+        }
+
+        // Construire le profil avec les informations d'équipe
+        const profile: Profile = {
           ...(profileData as any),
-          newsletter_subscribed: profileData?.newsletter_subscribed ?? null
-        } as Profile;
+          newsletter_subscribed: profileData?.newsletter_subscribed ?? null,
+          team_logo: profileData?.teams?.logo ?? null,
+          // S'assurer que le nom de l'équipe est correctement défini
+          team: profileData.team || (profileData as any).teams?.name || null
+        };
+
+        console.log('Participant profile with team info:', {
+          username: profile.username,
+          team_field: profile.team,
+          team_id: profile.team_id,
+          teams_relation: (profileData as any).teams
+        });
 
         return {
           ...participant,
