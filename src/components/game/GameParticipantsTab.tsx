@@ -45,7 +45,7 @@ const GameParticipantsTab: React.FC<GameParticipantsTabProps> = ({
     }
   };
 
-  // Logique simplifiée pour l'affichage des équipes
+  // Logique améliorée pour l'affichage des équipes
   const getTeamDisplayName = (participant: GameParticipant): string => {
     const profile = participant.profile;
     if (!profile) {
@@ -56,17 +56,27 @@ const GameParticipantsTab: React.FC<GameParticipantsTabProps> = ({
     console.log('🏷️ TEAM DISPLAY - Profile data:', {
       username: profile.username,
       team: profile.team,
-      team_id: profile.team_id
+      team_id: profile.team_id,
+      teamType: typeof profile.team,
+      teamIdType: typeof profile.team_id
     });
     
-    // Si on a un nom d'équipe, l'utiliser
-    if (profile.team && typeof profile.team === 'string' && profile.team.trim() !== '') {
+    // Vérifier si on a un nom d'équipe valide
+    if (profile.team && 
+        typeof profile.team === 'string' && 
+        profile.team.trim() !== '' && 
+        profile.team !== 'undefined' &&
+        profile.team !== 'null') {
       console.log('🏷️ TEAM DISPLAY - Using team name:', profile.team);
       return profile.team;
     }
     
-    // Si on a un team_id mais pas de nom, afficher un message générique
-    if (profile.team_id && typeof profile.team_id === 'string' && profile.team_id.trim() !== '') {
+    // Si on a un team_id valide mais pas de nom, afficher un message générique
+    if (profile.team_id && 
+        typeof profile.team_id === 'string' && 
+        profile.team_id.trim() !== '' && 
+        profile.team_id !== 'undefined' &&
+        profile.team_id !== 'null') {
       console.log('🏷️ TEAM DISPLAY - Using fallback for team_id:', profile.team_id);
       return 'Équipe';
     }

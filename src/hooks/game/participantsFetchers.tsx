@@ -66,37 +66,62 @@ export const fetchParticipants = async (gameId: string): Promise<GameParticipant
       }
 
       let profile = participant.profiles as any;
-      let teamName = profile.team;
+      let teamName = null;
 
-      // Si le profil a un team_id mais pas de nom d'équipe, essayer de récupérer le nom
-      if (profile.team_id && !teamName) {
-        console.log(`🏢 PARTICIPANT ${index + 1} - Fetching team name for team_id:`, profile.team_id);
+      // Nettoyer et vérifier les données d'équipe existantes
+      const existingTeam = profile.team;
+      const existingTeamId = profile.team_id;
+      
+      console.log(`🏢 PARTICIPANT ${index + 1} - Team data check:`, {
+        existingTeam,
+        existingTeamId,
+        teamType: typeof existingTeam,
+        teamIdType: typeof existingTeamId
+      });
+
+      // Vérifier si on a un nom d'équipe valide
+      if (existingTeam && 
+          typeof existingTeam === 'string' && 
+          existingTeam.trim() !== '' && 
+          existingTeam !== 'undefined') {
+        teamName = existingTeam;
+        console.log(`✅ PARTICIPANT ${index + 1} - Using existing team name:`, teamName);
+      }
+      // Si pas de nom mais on a un team_id valide, récupérer depuis la table teams
+      else if (existingTeamId && 
+               typeof existingTeamId === 'string' && 
+               existingTeamId.trim() !== '' && 
+               existingTeamId !== 'undefined') {
+        console.log(`🔍 PARTICIPANT ${index + 1} - Fetching team name for team_id:`, existingTeamId);
         
         try {
           const { data: teamData, error: teamError } = await supabase
             .from('teams')
             .select('name')
-            .eq('id', profile.team_id)
+            .eq('id', existingTeamId)
             .maybeSingle();
 
           if (teamError) {
             console.warn(`⚠️ PARTICIPANT ${index + 1} - Error fetching team:`, teamError);
-          } else if (teamData) {
+          } else if (teamData && teamData.name) {
             teamName = teamData.name;
             console.log(`✅ PARTICIPANT ${index + 1} - Team name found:`, teamName);
           } else {
-            console.log(`❌ PARTICIPANT ${index + 1} - No team found for team_id:`, profile.team_id);
+            console.log(`❌ PARTICIPANT ${index + 1} - No team found for team_id:`, existingTeamId);
           }
         } catch (error) {
           console.warn(`❌ PARTICIPANT ${index + 1} - Unexpected error fetching team:`, error);
         }
+      } else {
+        console.log(`ℹ️ PARTICIPANT ${index + 1} - No valid team information available`);
       }
 
-      // Construire le profil complet
+      // Construire le profil complet avec les données nettoyées
       const completeProfile: Profile = {
         ...profile,
         newsletter_subscribed: profile?.newsletter_subscribed ?? null,
-        team: teamName || null,
+        team: teamName, // Utiliser le nom d'équipe nettoyé ou null
+        team_id: (existingTeamId && existingTeamId !== 'undefined') ? existingTeamId : null,
         team_logo: null // Ce champ n'existe pas dans la table profiles
       };
 

@@ -58,19 +58,29 @@ export const usePdfDownload = () => {
           contact = emailValue;
         }
         
-        // Équipe - logique cohérente avec l'affichage
+        // Équipe - logique améliorée cohérente avec l'affichage
         let team = 'Aucune équipe';
         if (profile) {
           console.log(`📄 PDF PARTICIPANT ${index + 1} - Team data:`, {
             team: profile.team,
-            team_id: profile.team_id
+            team_id: profile.team_id,
+            teamType: typeof profile.team,
+            teamIdType: typeof profile.team_id
           });
           
-          // Si on a un nom d'équipe, l'utiliser
-          if (profile.team && typeof profile.team === 'string' && profile.team.trim() !== '') {
+          // Vérifier si on a un nom d'équipe valide
+          if (profile.team && 
+              typeof profile.team === 'string' && 
+              profile.team.trim() !== '' && 
+              profile.team !== 'undefined' &&
+              profile.team !== 'null') {
             team = profile.team;
             console.log(`📄 PDF PARTICIPANT ${index + 1} - Using team name:`, team);
-          } else if (profile.team_id && typeof profile.team_id === 'string' && profile.team_id.trim() !== '') {
+          } else if (profile.team_id && 
+                     typeof profile.team_id === 'string' && 
+                     profile.team_id.trim() !== '' && 
+                     profile.team_id !== 'undefined' &&
+                     profile.team_id !== 'null') {
             team = 'Équipe';
             console.log(`📄 PDF PARTICIPANT ${index + 1} - Using fallback for team_id`);
           } else {
