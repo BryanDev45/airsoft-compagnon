@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
@@ -105,16 +104,21 @@ const fetchParticipants = async (gameId: string): Promise<GameParticipant[]> => 
         const profile: Profile = {
           ...(profileData as any),
           newsletter_subscribed: profileData?.newsletter_subscribed ?? null,
-          team_logo: profileData?.teams?.logo ?? null,
+          team_logo: Array.isArray(profileData.teams) && profileData.teams.length > 0 
+            ? profileData.teams[0].logo 
+            : null,
           // S'assurer que le nom de l'équipe est correctement défini
-          team: profileData.team || (profileData as any).teams?.name || null
+          team: profileData.team || (Array.isArray(profileData.teams) && profileData.teams.length > 0 
+            ? profileData.teams[0].name 
+            : null)
         };
 
         console.log('Participant profile with team info:', {
           username: profile.username,
           team_field: profile.team,
           team_id: profile.team_id,
-          teams_relation: (profileData as any).teams
+          teams_relation: profileData.teams,
+          team_logo: profile.team_logo
         });
 
         return {
