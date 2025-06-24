@@ -45,21 +45,34 @@ const GameParticipantsTab: React.FC<GameParticipantsTabProps> = ({
     }
   };
 
-  // Helper function to get team display name
+  // Improved team display logic
   const getTeamDisplayName = (participant: GameParticipant): string => {
     const profile = participant.profile;
-    if (!profile) return 'Aucune équipe';
+    if (!profile) {
+      console.log('🏷️ TEAM DISPLAY - No profile for participant');
+      return 'Aucune équipe';
+    }
     
-    // Vérifier d'abord le champ team
+    console.log('🏷️ TEAM DISPLAY - Profile data:', {
+      username: profile.username,
+      team_field: profile.team,
+      team_id: profile.team_id,
+      team_logo: profile.team_logo
+    });
+    
+    // Primary: Use the team field (which should be populated from team relation or profile)
     if (profile.team && typeof profile.team === 'string' && profile.team.trim() !== '') {
+      console.log('🏷️ TEAM DISPLAY - Using team field:', profile.team);
       return profile.team;
     }
     
-    // Si pas de team mais un team_id, afficher "Équipe"
+    // Secondary fallback: If we have a team_id but no team name, show generic text
     if (profile.team_id && typeof profile.team_id === 'string' && profile.team_id.trim() !== '') {
+      console.log('🏷️ TEAM DISPLAY - Using fallback for team_id:', profile.team_id);
       return 'Équipe';
     }
     
+    console.log('🏷️ TEAM DISPLAY - No team information available');
     return 'Aucune équipe';
   };
 

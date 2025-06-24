@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "@/components/ui/use-toast";
@@ -61,7 +62,7 @@ const fetchGameData = async (id: string): Promise<GameData | null> => {
 };
 
 const fetchParticipants = async (gameId: string): Promise<GameParticipant[]> => {
-  console.log('Fetching participants for game:', gameId);
+  console.log('🔥 PARTICIPANTS - Starting fetch for game:', gameId);
   
   const { data: participants, error } = await supabase
     .from('game_participants')
@@ -69,56 +70,75 @@ const fetchParticipants = async (gameId: string): Promise<GameParticipant[]> => 
     .eq('game_id', gameId);
 
   if (error) {
-    console.error('Error fetching participants:', error);
+    console.error('❌ PARTICIPANTS - Error fetching participants:', error);
     throw error;
   }
 
-  console.log('Participants fetched:', participants?.length || 0);
+  console.log('✅ PARTICIPANTS - Raw participants fetched:', participants?.length || 0);
 
   const participantsWithProfiles = await Promise.all(
-    (participants || []).map(async (participant) => {
+    (participants || []).map(async (participant, index) => {
+      console.log(`🔍 PARTICIPANT ${index + 1} - Processing user_id:`, participant.user_id);
+      
       try {
-        // Récupérer le profil complet avec les informations d'équipe
-        const { data: profileData, error: profileError } = await supabase
+        // Step 1: Get basic profile data
+        const { data: basicProfile, error: basicProfileError } = await supabase
           .from('profiles')
-          .select(`
-            *,
-            teams!profiles_team_id_fkey (
-              id,
-              name,
-              logo
-            )
-          `)
+          .select('*')
           .eq('id', participant.user_id)
           .maybeSingle();
 
-        if (profileError || !profileData) {
-          console.warn('Error fetching participant profile:', profileError);
+        if (basicProfileError || !basicProfile) {
+          console.warn(`⚠️ PARTICIPANT ${index + 1} - Error fetching basic profile:`, basicProfileError);
           return {
             ...participant,
             profile: null
           } as GameParticipant;
         }
 
-        // Construire le profil avec les informations d'équipe
+        console.log(`📋 PARTICIPANT ${index + 1} - Basic profile:`, {
+          username: basicProfile.username,
+          team_field: basicProfile.team,
+          team_id: basicProfile.team_id
+        });
+
+        // Step 2: Get team data if team_id exists
+        let teamData = null;
+        if (basicProfile.team_id) {
+          console.log(`🏢 PARTICIPANT ${index + 1} - Fetching team data for team_id:`, basicProfile.team_id);
+          
+          const { data: team, error: teamError } = await supabase
+            .from('teams')
+            .select('id, name, logo')
+            .eq('id', basicProfile.team_id)
+            .maybeSingle();
+
+          if (teamError) {
+            console.warn(`⚠️ PARTICIPANT ${index + 1} - Error fetching team:`, teamError);
+          } else if (team) {
+            teamData = team;
+            console.log(`✅ PARTICIPANT ${index + 1} - Team data found:`, teamData);
+          } else {
+            console.log(`❌ PARTICIPANT ${index + 1} - No team found for team_id:`, basicProfile.team_id);
+          }
+        }
+
+        // Step 3: Build the complete profile with team information
         const profile: Profile = {
-          ...(profileData as any),
-          newsletter_subscribed: profileData?.newsletter_subscribed ?? null,
-          team_logo: Array.isArray(profileData.teams) && profileData.teams.length > 0 
-            ? profileData.teams[0].logo 
-            : null,
-          // S'assurer que le nom de l'équipe est correctement défini
-          team: profileData.team || (Array.isArray(profileData.teams) && profileData.teams.length > 0 
-            ? profileData.teams[0].name 
-            : null)
+          ...basicProfile,
+          newsletter_subscribed: basicProfile?.newsletter_subscribed ?? null,
+          // Prioritize team name from team relation, then from profile.team field
+          team: teamData?.name || basicProfile.team || null,
+          team_logo: teamData?.logo || null
         };
 
-        console.log('Participant profile with team info:', {
+        console.log(`🎯 PARTICIPANT ${index + 1} - Final profile built:`, {
           username: profile.username,
-          team_field: profile.team,
-          team_id: profile.team_id,
-          teams_relation: profileData.teams,
-          team_logo: profile.team_logo
+          team_from_relation: teamData?.name,
+          team_from_profile: basicProfile.team,
+          final_team: profile.team,
+          team_logo: profile.team_logo,
+          team_id: profile.team_id
         });
 
         return {
@@ -126,7 +146,7 @@ const fetchParticipants = async (gameId: string): Promise<GameParticipant[]> => 
           profile
         } as GameParticipant;
       } catch (error) {
-        console.warn('Error fetching participant profile:', error);
+        console.error(`❌ PARTICIPANT ${index + 1} - Unexpected error:`, error);
         return {
           ...participant,
           profile: null
@@ -135,7 +155,17 @@ const fetchParticipants = async (gameId: string): Promise<GameParticipant[]> => 
     })
   );
 
-  console.log('Participants with profiles loaded:', participantsWithProfiles.length);
+  console.log('🏁 PARTICIPANTS - Final participants with profiles:', participantsWithProfiles.length);
+  
+  // Log summary of team information
+  const teamSummary = participantsWithProfiles.map((p, i) => ({
+    participant: i + 1,
+    username: p.profile?.username,
+    team: p.profile?.team,
+    team_id: p.profile?.team_id
+  }));
+  console.log('📊 PARTICIPANTS - Team summary:', teamSummary);
+  
   return participantsWithProfiles;
 };
 
@@ -172,7 +202,7 @@ export const useGameDataQueries = (id: string | undefined) => {
     enabled: !!id,
     staleTime: 30000,
     gcTime: 300000,
-    retry: 2, // Augmenter les tentatives
+    retry: 2,
     refetchOnWindowFocus: false,
     refetchInterval: false,
     meta: {
@@ -192,7 +222,7 @@ export const useGameDataQueries = (id: string | undefined) => {
   const participantsQuery = useQuery({
     queryKey: ['gameParticipants', id],
     queryFn: () => fetchParticipants(id!),
-    enabled: !!id && !!gameQuery.data, // Attendre que les données de jeu soient chargées
+    enabled: !!id && !!gameQuery.data,
     staleTime: 15000,
     gcTime: 300000,
     retry: 2,

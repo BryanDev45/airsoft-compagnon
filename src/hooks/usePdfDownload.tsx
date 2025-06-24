@@ -31,8 +31,7 @@ export const usePdfDownload = () => {
       const tableData = participants.map((participant, index) => {
         const profile = participant.profile;
         
-        // Debugging: log all participant data
-        console.log(`Participant ${index + 1} complete data:`, {
+        console.log(`📄 PDF PARTICIPANT ${index + 1} - Processing:`, {
           participant: participant,
           profile: profile,
           profileKeys: profile ? Object.keys(profile) : null
@@ -48,43 +47,43 @@ export const usePdfDownload = () => {
           displayName = `${firstName} ${lastName}`.trim() || 'Utilisateur inconnu';
         }
         
-        // Contact (priorité au téléphone, sinon email)
+        // Contact (priorité au téléphone, sinon email)  
         let contact = 'Non renseigné';
-        // Vérifier si les valeurs ne sont pas des objets avec _type: "undefined"
         const phoneValue = profile?.phone_number;
         const emailValue = profile?.email;
         
-        if (phoneValue && typeof phoneValue === 'string') {
+        if (phoneValue && typeof phoneValue === 'string' && phoneValue.trim() !== '') {
           contact = phoneValue;
-        } else if (emailValue && typeof emailValue === 'string') {
+        } else if (emailValue && typeof emailValue === 'string' && emailValue.trim() !== '') {
           contact = emailValue;
         }
         
-        // Équipe - logique améliorée
+        // Équipe - logique améliorée et cohérente avec l'affichage
         let team = 'Aucune équipe';
         if (profile) {
-          // Vérifier d'abord le champ team
+          console.log(`📄 PDF PARTICIPANT ${index + 1} - Team data:`, {
+            team_field: profile.team,
+            team_id: profile.team_id,
+            team_logo: profile.team_logo
+          });
+          
+          // Utiliser la même logique que dans GameParticipantsTab
           if (profile.team && typeof profile.team === 'string' && profile.team.trim() !== '') {
             team = profile.team;
-          }
-          // Si pas de team mais un team_id, afficher "Équipe"
-          else if (profile.team_id && typeof profile.team_id === 'string' && profile.team_id.trim() !== '') {
+            console.log(`📄 PDF PARTICIPANT ${index + 1} - Using team field:`, team);
+          } else if (profile.team_id && typeof profile.team_id === 'string' && profile.team_id.trim() !== '') {
             team = 'Équipe';
+            console.log(`📄 PDF PARTICIPANT ${index + 1} - Using fallback for team_id`);
+          } else {
+            console.log(`📄 PDF PARTICIPANT ${index + 1} - No team information available`);
           }
         }
         
-        console.log('Participant processing result:', {
-          index: index + 1,
-          username: profile?.username,
-          firstname: profile?.firstname,
-          lastname: profile?.lastname,
-          phone: phoneValue,
-          email: emailValue,
-          team_field: profile?.team,
-          team_id_field: profile?.team_id,
-          final_displayName: displayName,
-          final_contact: contact,
-          final_team: team
+        console.log(`📄 PDF PARTICIPANT ${index + 1} - Final data:`, {
+          displayName,
+          contact,
+          team,
+          role: participant.role || 'Participant'
         });
         
         return [
