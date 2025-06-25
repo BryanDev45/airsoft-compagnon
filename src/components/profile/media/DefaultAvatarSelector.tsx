@@ -18,7 +18,10 @@ const DefaultAvatarSelector: React.FC<DefaultAvatarSelectorProps> = ({
     "/lovable-uploads/b4ffe288-3017-4672-a679-cb442d6f00e0.png",
     "/lovable-uploads/79637843-91ff-413e-80fc-ac24713183c3.png",
     "/lovable-uploads/52a37106-d8af-4a71-9d67-4d69bd884c8f.png",
-    "/lovable-uploads/49b5c95b-338d-461a-a797-2eef2ab61a57.png"
+    "/lovable-uploads/49b5c95b-338d-461a-a797-2eef2ab61a57.png",
+    "/lovable-uploads/ca9d4753-24b0-4adb-9da7-794e0fbcfaf1.png",
+    "/lovable-uploads/63ae8036-d898-401e-a762-336100a83548.png",
+    "/lovable-uploads/a4df09ac-5a49-4869-8fef-3e20a189c7cd.png"
   ];
 
   return (
