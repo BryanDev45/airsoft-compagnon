@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
@@ -18,6 +19,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTabAnalytics } from '../hooks/usePageAnalytics';
 import UserSearchInput from '../components/search/UserSearchInput';
 import TeamSearchInput from '../components/search/TeamSearchInput';
+import { useDebouncedUserSearch } from '../hooks/search/useDebouncedUserSearch';
+import { useDebouncedTeamSearch } from '../hooks/search/useDebouncedTeamSearch';
 
 // This component will automatically scroll to top on mount
 const ScrollToTop = () => {
@@ -34,9 +37,23 @@ const Recherche = () => {
     initialLoading
   } = useAuth();
   const [activeTab, setActiveTab] = useState("parties");
-  const [searchQuery, setSearchQuery] = useState("");
   const [isAddStoreDialogOpen, setIsAddStoreDialogOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+
+  // Separate search states for each tab
+  const { 
+    inputValue: userSearchQuery, 
+    setInputValue: setUserSearchQuery, 
+    users, 
+    isLoading: isLoadingUsers 
+  } = useDebouncedUserSearch();
+  
+  const { 
+    inputValue: teamSearchQuery, 
+    setInputValue: setTeamSearchQuery, 
+    teams, 
+    isLoading: isLoadingTeams 
+  } = useDebouncedTeamSearch();
 
   // Tracker les visites des onglets de recherche
   useTabAnalytics(activeTab, '/parties');
@@ -76,10 +93,14 @@ const Recherche = () => {
     }
   };
 
-  // Mémoriser la fonction de changement de recherche
-  const handleSearchChange = useCallback((query: string) => {
-    setSearchQuery(query);
-  }, []);
+  // Stable callback functions to prevent re-renders
+  const handleUserSearchChange = useCallback((query: string) => {
+    setUserSearchQuery(query);
+  }, [setUserSearchQuery]);
+
+  const handleTeamSearchChange = useCallback((query: string) => {
+    setTeamSearchQuery(query);
+  }, [setTeamSearchQuery]);
 
   // Composant pour les onglets nécessitant une connexion
   const AuthRequiredContent = ({ children, tabName }: { children: React.ReactNode, tabName: string }) => {
@@ -111,7 +132,8 @@ const Recherche = () => {
     return <>{children}</>;
   };
 
-  return <div className="min-h-screen flex flex-col">
+  return (
+    <div className="min-h-screen flex flex-col">
       <ScrollToTop />
       <Header />
       <main className="flex-grow">
@@ -160,11 +182,15 @@ const Recherche = () => {
                   <Card>
                     <CardContent className="pt-6">
                       <UserSearchInput 
-                        searchQuery={searchQuery}
-                        onSearchChange={handleSearchChange}
+                        searchQuery={userSearchQuery}
+                        onSearchChange={handleUserSearchChange}
                       />
                       
-                      <UserSearchResults searchQuery={searchQuery} />
+                      <UserSearchResults 
+                        users={users}
+                        isLoading={isLoadingUsers}
+                        searchQuery={userSearchQuery}
+                      />
                     </CardContent>
                   </Card>
                 </AuthRequiredContent>
@@ -176,16 +202,22 @@ const Recherche = () => {
                     <CardContent className="pt-6">
                       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
                         <TeamSearchInput 
-                          searchQuery={searchQuery}
-                          onSearchChange={handleSearchChange}
+                          searchQuery={teamSearchQuery}
+                          onSearchChange={handleTeamSearchChange}
                         />
                         
-                        {!user?.team_id && !initialLoading && <Button onClick={handleCreateTeam} className="bg-airsoft-red hover:bg-red-700 text-white w-full sm:w-auto">
+                        {!user?.team_id && !initialLoading && (
+                          <Button onClick={handleCreateTeam} className="bg-airsoft-red hover:bg-red-700 text-white w-full sm:w-auto">
                             <Plus className="h-4 w-4 mr-2" /> Créer une équipe
-                          </Button>}
+                          </Button>
+                        )}
                       </div>
                       
-                      <TeamSearchResults searchQuery={searchQuery} />
+                      <TeamSearchResults 
+                        teams={teams}
+                        isLoading={isLoadingTeams}
+                        searchQuery={teamSearchQuery}
+                      />
                     </CardContent>
                   </Card>
                 </AuthRequiredContent>
@@ -212,7 +244,8 @@ const Recherche = () => {
         open={isAddStoreDialogOpen} 
         onOpenChange={setIsAddStoreDialogOpen} 
       />
-    </div>;
+    </div>
+  );
 };
 
 export default Recherche;

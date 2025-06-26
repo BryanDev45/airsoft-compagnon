@@ -17,10 +17,10 @@ const UserSearchInput = React.memo(({ searchQuery, onSearchChange }: UserSearchI
   }, [onSearchChange]);
 
   return (
-    <div className="flex items-center border rounded-md overflow-hidden mb-6">
+    <div className="flex items-center border rounded-md overflow-hidden w-full max-w-md mb-6">
       <Input
         ref={inputRef}
-        placeholder="Rechercher un joueur par nom, localisation..."
+        placeholder="Rechercher un joueur par nom..."
         className="border-0 focus-visible:ring-0 flex-1"
         value={searchQuery}
         onChange={handleInputChange}
