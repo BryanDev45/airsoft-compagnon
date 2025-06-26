@@ -14,6 +14,9 @@ const Profile = () => {
   const { user, canFetchData, hasError, setHasError, initialLoading } = useProfileInitialization();
   const equipmentTypes = ["Réplique principale", "Réplique secondaire", "Protection", "Accessoire"];
 
+  // Only fetch data when we can and user exists - prevent infinite loops
+  const shouldFetch = canFetchData && user?.id;
+
   const {
     loading,
     profileData,
@@ -22,30 +25,33 @@ const Profile = () => {
     updateUserStats,
     updateNewsletterSubscription,
     fetchProfileData
-  } = useProfileData(canFetchData ? user?.id : undefined);
+  } = useProfileData(shouldFetch ? user.id : undefined);
 
   const {
     equipment,
     fetchEquipment,
     handleAddEquipment
-  } = useEquipmentActions(canFetchData ? user?.id : undefined);
+  } = useEquipmentActions(shouldFetch ? user.id : undefined);
 
+  // Use the optimized hook without duplication
   const {
     userGames,
     fetchUserGames
-  } = useUserGames(canFetchData ? user?.id : undefined);
+  } = useUserGames(shouldFetch ? user.id : undefined);
 
-  const { userBadges } = useUserBadges(canFetchData ? user?.id : undefined);
+  const { userBadges } = useUserBadges(shouldFetch ? user.id : undefined);
 
   // Hook unifié pour tous les dialogs
   const dialogStates = useUnifiedDialogs();
 
+  // Only fetch equipment and games once when component mounts and user is available
   useEffect(() => {
-    if (canFetchData && user?.id) {
+    if (shouldFetch) {
+      console.log('Profile: Fetching equipment and games for user:', user.id);
       fetchEquipment();
       fetchUserGames();
     }
-  }, [canFetchData, user?.id, fetchEquipment, fetchUserGames]);
+  }, [shouldFetch, user?.id]); // Removed fetchEquipment and fetchUserGames from deps to prevent loops
 
   useEffect(() => {
     if (hasError) {

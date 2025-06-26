@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useProfileFetch } from './useProfileFetch';
 import { useProfileUpdates } from './useProfileUpdates';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,11 +23,18 @@ export const useProfileData = (userId: string | undefined) => {
     updateNewsletterSubscription
   } = useProfileUpdates(userId, setProfileData, setUserStats);
 
-  // Define the fetchProfileData function as a useCallback to prevent unnecessary re-renders
+  // Create stable reference to prevent infinite loops
+  const fetchTriggeredRef = useRef(false);
+  const userIdRef = useRef<string | undefined>();
+
+  // Define the fetchProfileData function as a stable callback
   const fetchProfileData = useCallback(async (): Promise<void> => {
-    if (!userId) {
+    if (!userId || fetchTriggeredRef.current) {
       return;
     }
+    
+    // Mark as triggered to prevent multiple calls
+    fetchTriggeredRef.current = true;
     
     try {
       const { data: profile, error: profileError } = await supabase
@@ -138,9 +145,17 @@ export const useProfileData = (userId: string | undefined) => {
     }
   }, [userId, setProfileData, setUserStats]);
 
-  // Load profile data when userId changes
+  // Reset fetch trigger when userId changes
   useEffect(() => {
-    if (userId) {
+    if (userIdRef.current !== userId) {
+      userIdRef.current = userId;
+      fetchTriggeredRef.current = false;
+    }
+  }, [userId]);
+
+  // Load profile data when userId changes (only once)
+  useEffect(() => {
+    if (userId && !fetchTriggeredRef.current) {
       fetchProfileData();
     }
   }, [userId, fetchProfileData]);

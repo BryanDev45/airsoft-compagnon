@@ -4,10 +4,10 @@ import { useUserEquipment } from './useUserEquipment';
 import { useUserBadges } from './useUserBadges';
 import { useUserGamesFetch } from './useUserGamesFetch';
 import { useUserProfileUtils } from './useUserProfileUtils';
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 
 /**
- * Hook principal optimisé pour les données de profil utilisateur
+ * Hook principal optimisé pour les données de profil utilisateur - VERSION ANTI-LOOP
  */
 export const useUserProfileData = (username: string | undefined) => {
   console.log('🚀 useUserProfileData called with username:', username);
@@ -29,33 +29,22 @@ export const useUserProfileData = (username: string | undefined) => {
   const { equipment } = useUserEquipment(userData?.id);
   const { userBadges } = useUserBadges(userData?.id);
   
-  // Utiliser une référence pour éviter les re-renders inutiles
-  const userIdRef = useRef<string | undefined>();
-  const usernameRef = useRef<string | undefined>();
-  const currentUserIdRef = useRef<string | null | undefined>();
+  // Stable memoized values to prevent infinite re-renders
+  const stableUserId = useMemo(() => userData?.id, [userData?.id]);
+  const stableUsername = useMemo(() => username, [username]);
+  const stableCurrentUserId = useMemo(() => currentUserId, [currentUserId]);
   
-  // Seulement mettre à jour si les valeurs changent réellement
-  if (userIdRef.current !== userData?.id) {
-    userIdRef.current = userData?.id;
-  }
-  if (usernameRef.current !== username) {
-    usernameRef.current = username;
-  }
-  if (currentUserIdRef.current !== currentUserId) {
-    currentUserIdRef.current = currentUserId;
-  }
-  
-  console.log('🎮 About to call useUserGamesFetch with stable refs:', {
-    userId: userIdRef.current,
-    username: usernameRef.current,
-    currentUserId: currentUserIdRef.current
+  console.log('🎮 About to call useUserGamesFetch with stable values:', {
+    userId: stableUserId,
+    username: stableUsername,
+    currentUserId: stableCurrentUserId
   });
   
-  // Utiliser UNIQUEMENT le hook optimisé avec TanStack Query
+  // Use the optimized hook with stable references
   const { userGames, loading: gamesLoading } = useUserGamesFetch(
-    userIdRef.current, 
-    usernameRef.current, 
-    currentUserIdRef.current
+    stableUserId, 
+    stableUsername, 
+    stableCurrentUserId
   );
   
   console.log('📈 useUserProfileData final state:', {
