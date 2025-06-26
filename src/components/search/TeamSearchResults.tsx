@@ -55,16 +55,7 @@ const TeamSearchResults: React.FC<TeamSearchResultsProps> = ({
     );
   }
 
-  // Show initial message when no search query
-  if (!searchQuery.trim()) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-gray-500">Tapez pour rechercher des équipes...</p>
-      </div>
-    );
-  }
-
-  // Show empty results when search query exists but no results
+  // Show empty results only when search query exists but no results
   if (teams.length === 0 && searchQuery.trim()) {
     return (
       <div className="text-center py-12">

@@ -26,7 +26,7 @@ export const useTeamSearch = (searchQuery: string) => {
         .select('*');
 
       // If there's a search query, filter by name or location
-      if (searchQuery.trim()) {
+      if (searchQuery && searchQuery.trim().length > 0) {
         query = query.or(`name.ilike.%${searchQuery}%,location.ilike.%${searchQuery}%`);
       }
 

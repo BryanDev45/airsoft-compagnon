@@ -41,16 +41,7 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({
     return <UserSearchLoading />;
   }
 
-  // Show initial message when no search query
-  if (!searchQuery.trim()) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-gray-500">Tapez pour rechercher des joueurs...</p>
-      </div>
-    );
-  }
-
-  // Show empty results when search query exists but no results
+  // Show empty results only when search query exists but no results
   if (users.length === 0 && searchQuery.trim()) {
     return <UserSearchEmpty searchQuery={searchQuery} />;
   }

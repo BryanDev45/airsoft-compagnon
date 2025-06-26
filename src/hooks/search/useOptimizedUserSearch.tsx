@@ -69,7 +69,7 @@ export const useOptimizedUserSearch = (searchQuery: string) => {
         queryBuilder = queryBuilder.eq('Ban', false);
       }
       
-      // Add search filter if we have a query
+      // Add search filter only if we have a non-empty query
       if (searchQuery && searchQuery.trim().length > 0) {
         queryBuilder = queryBuilder.or(`username.ilike.%${searchQuery}%,firstname.ilike.%${searchQuery}%,lastname.ilike.%${searchQuery}%`);
       }
