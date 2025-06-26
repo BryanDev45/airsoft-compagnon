@@ -86,8 +86,8 @@ const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
       {isOwnProfile && !isVerified ? <ProfileEditableField icon={<User className="h-5 w-5" />} label="Prénom" value={currentFirstName} placeholder="Votre prénom" isEditing={isEditingFirstName} onEdit={() => setIsEditingFirstName(true)} onSave={handleFirstNameSave} onCancel={() => setIsEditingFirstName(false)} isOwnProfile={isOwnProfile} /> : <div className="flex items-start space-x-3">
           <User className="h-5 w-5 text-gray-500 flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <span className="text-sm text-gray-500 block mb-1">Prénom</span>
-            <p className="font-medium">{currentFirstName || 'Non spécifié'}</p>
+            <span className="text-sm text-gray-500 block mb-1 text-left">Prénom</span>
+            <p className="font-medium text-left">{currentFirstName || 'Non spécifié'}</p>
           </div>
         </div>}
 
@@ -95,7 +95,7 @@ const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
       {isOwnProfile && !isVerified ? <ProfileEditableField icon={<User className="h-5 w-5" />} label="Nom" value={currentLastName} placeholder="Votre nom" isEditing={isEditingLastName} onEdit={() => setIsEditingLastName(true)} onSave={handleLastNameSave} onCancel={() => setIsEditingLastName(false)} isOwnProfile={isOwnProfile} /> : <div className="flex items-start space-x-3">
           <User className="h-5 w-5 text-gray-500 flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <span className="text-sm text-gray-500 block mb-1">Nom</span>
+            <span className="text-sm text-gray-500 block mb-1 text-left">Nom</span>
             <p className="font-medium text-left">{currentLastName || 'Non spécifié'}</p>
           </div>
         </div>}
