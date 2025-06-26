@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import MapSection from '../components/MapSection';
@@ -41,19 +41,8 @@ const Recherche = () => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   // Separate search states for each tab
-  const { 
-    inputValue: userSearchQuery, 
-    setInputValue: setUserSearchQuery, 
-    users, 
-    isLoading: isLoadingUsers 
-  } = useDebouncedUserSearch();
-  
-  const { 
-    inputValue: teamSearchQuery, 
-    setInputValue: setTeamSearchQuery, 
-    teams, 
-    isLoading: isLoadingTeams 
-  } = useDebouncedTeamSearch();
+  const userSearchHook = useDebouncedUserSearch();
+  const teamSearchHook = useDebouncedTeamSearch();
 
   // Tracker les visites des onglets de recherche
   useTabAnalytics(activeTab, '/parties');
@@ -77,33 +66,33 @@ const Recherche = () => {
     checkAdminStatus();
   }, [user]);
 
-  const handleCreateParty = () => {
+  const handleCreateParty = useCallback(() => {
     if (user) {
       navigate('/parties/create');
     } else {
       navigate('/login');
     }
-  };
+  }, [user, navigate]);
 
-  const handleCreateTeam = () => {
+  const handleCreateTeam = useCallback(() => {
     if (user) {
       navigate('/team/create');
     } else {
       navigate('/login');
     }
-  };
+  }, [user, navigate]);
 
   // Stable callback functions to prevent re-renders
   const handleUserSearchChange = useCallback((query: string) => {
-    setUserSearchQuery(query);
-  }, [setUserSearchQuery]);
+    userSearchHook.setInputValue(query);
+  }, [userSearchHook.setInputValue]);
 
   const handleTeamSearchChange = useCallback((query: string) => {
-    setTeamSearchQuery(query);
-  }, [setTeamSearchQuery]);
+    teamSearchHook.setInputValue(query);
+  }, [teamSearchHook.setInputValue]);
 
-  // Composant pour les onglets nécessitant une connexion
-  const AuthRequiredContent = ({ children, tabName }: { children: React.ReactNode, tabName: string }) => {
+  // Memoize AuthRequiredContent to prevent re-renders
+  const AuthRequiredContent = useMemo(() => ({ children, tabName }: { children: React.ReactNode, tabName: string }) => {
     if (!user) {
       return (
         <Card>
@@ -130,7 +119,7 @@ const Recherche = () => {
       );
     }
     return <>{children}</>;
-  };
+  }, [user, navigate]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -182,14 +171,14 @@ const Recherche = () => {
                   <Card>
                     <CardContent className="pt-6">
                       <UserSearchInput 
-                        searchQuery={userSearchQuery}
+                        searchQuery={userSearchHook.inputValue}
                         onSearchChange={handleUserSearchChange}
                       />
                       
                       <UserSearchResults 
-                        users={users}
-                        isLoading={isLoadingUsers}
-                        searchQuery={userSearchQuery}
+                        users={userSearchHook.users}
+                        isLoading={userSearchHook.isLoading}
+                        searchQuery={userSearchHook.inputValue}
                       />
                     </CardContent>
                   </Card>
@@ -202,7 +191,7 @@ const Recherche = () => {
                     <CardContent className="pt-6">
                       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
                         <TeamSearchInput 
-                          searchQuery={teamSearchQuery}
+                          searchQuery={teamSearchHook.inputValue}
                           onSearchChange={handleTeamSearchChange}
                         />
                         
@@ -214,9 +203,9 @@ const Recherche = () => {
                       </div>
                       
                       <TeamSearchResults 
-                        teams={teams}
-                        isLoading={isLoadingTeams}
-                        searchQuery={teamSearchQuery}
+                        teams={teamSearchHook.teams}
+                        isLoading={teamSearchHook.isLoading}
+                        searchQuery={teamSearchHook.inputValue}
                       />
                     </CardContent>
                   </Card>

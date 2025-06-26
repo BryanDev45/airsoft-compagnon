@@ -55,6 +55,7 @@ const TeamSearchResults: React.FC<TeamSearchResultsProps> = ({
     );
   }
 
+  // Show initial message when no search query
   if (!searchQuery.trim()) {
     return (
       <div className="text-center py-8">
@@ -63,7 +64,8 @@ const TeamSearchResults: React.FC<TeamSearchResultsProps> = ({
     );
   }
 
-  if (teams.length === 0) {
+  // Show empty results when search query exists but no results
+  if (teams.length === 0 && searchQuery.trim()) {
     return (
       <div className="text-center py-12">
         <Users className="h-12 w-12 mx-auto text-gray-400 mb-4" />
@@ -159,4 +161,4 @@ const TeamSearchResults: React.FC<TeamSearchResultsProps> = ({
   );
 };
 
-export default TeamSearchResults;
+export default React.memo(TeamSearchResults);

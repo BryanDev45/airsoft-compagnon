@@ -32,15 +32,16 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({
   isLoading, 
   searchQuery 
 }) => {
-  const handleFriendAction = (userId: string, action: 'add' | 'remove') => {
+  const handleFriendAction = React.useCallback((userId: string, action: 'add' | 'remove') => {
     console.log(`Friend action: ${action} for user: ${userId}`);
     // TODO: Implement friend action logic
-  };
+  }, []);
 
   if (isLoading) {
     return <UserSearchLoading />;
   }
 
+  // Show initial message when no search query
   if (!searchQuery.trim()) {
     return (
       <div className="text-center py-8">
@@ -49,7 +50,8 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({
     );
   }
 
-  if (users.length === 0) {
+  // Show empty results when search query exists but no results
+  if (users.length === 0 && searchQuery.trim()) {
     return <UserSearchEmpty searchQuery={searchQuery} />;
   }
 
@@ -66,4 +68,4 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({
   );
 };
 
-export default UserSearchResults;
+export default React.memo(UserSearchResults);
