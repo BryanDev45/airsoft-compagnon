@@ -32,6 +32,11 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({
   isLoading, 
   searchQuery 
 }) => {
+  const handleFriendAction = (userId: string, action: 'add' | 'remove') => {
+    console.log(`Friend action: ${action} for user: ${userId}`);
+    // TODO: Implement friend action logic
+  };
+
   if (isLoading) {
     return <UserSearchLoading />;
   }
@@ -51,7 +56,11 @@ const UserSearchResults: React.FC<UserSearchResultsProps> = ({
   return (
     <div className="space-y-4">
       {users.map((user) => (
-        <UserCard key={user.id} user={user} />
+        <UserCard 
+          key={user.id} 
+          user={user} 
+          onFriendAction={handleFriendAction}
+        />
       ))}
     </div>
   );

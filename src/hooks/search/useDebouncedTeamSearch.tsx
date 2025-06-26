@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useTeamSearch } from '../components/search/hooks/useTeamSearch';
+import { useTeamSearch } from '../../components/search/hooks/useTeamSearch';
 import { useDebounce } from '../use-debounce';
 
 export const useDebouncedTeamSearch = () => {

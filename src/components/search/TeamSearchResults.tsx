@@ -142,8 +142,13 @@ const TeamSearchResults: React.FC<TeamSearchResultsProps> = ({
                     Recrute
                   </Badge>
                 )}
-                {user && !user.team_id && team.is_recruiting && (
-                  <TeamApplicationButton teamId={team.id} teamName={team.name} />
+                {user && !user.team_id && team.is_recruiting && team.leader_id && (
+                  <TeamApplicationButton 
+                    teamId={team.id} 
+                    teamName={team.name}
+                    leaderId={team.leader_id}
+                    isRecruiting={team.is_recruiting}
+                  />
                 )}
               </div>
             </div>
