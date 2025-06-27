@@ -71,7 +71,7 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
             
             <div className="flex-1 min-h-0 overflow-hidden">
               <TabsContent value="avatar" className="h-full m-0 overflow-hidden data-[state=active]:flex data-[state=active]:flex-col">
-                <ScrollArea className="flex-1 h-full">
+                <ScrollArea className="h-[400px] sm:h-full">
                   <div className="p-1">
                     <AvatarUploader 
                       avatarPreview={avatarPreview}
@@ -82,7 +82,7 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
               </TabsContent>
               
               <TabsContent value="banner" className="h-full m-0 overflow-hidden data-[state=active]:flex data-[state=active]:flex-col">
-                <ScrollArea className="flex-1 h-full">
+                <ScrollArea className="h-[400px] sm:h-full">
                   <div className="p-1">
                     <BannerUploader 
                       bannerPreview={bannerPreview}

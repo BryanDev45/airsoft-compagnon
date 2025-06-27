@@ -25,9 +25,9 @@ const DefaultAvatarSelector: React.FC<DefaultAvatarSelectorProps> = ({
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-4">
       <div className="text-sm font-medium mb-3">Avatars par défaut</div>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-4 min-h-[300px]">
         {defaultAvatars.map((avatarUrl, index) => (
           <Button
             key={index}
