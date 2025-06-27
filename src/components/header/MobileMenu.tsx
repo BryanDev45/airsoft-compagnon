@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Wrench, Home, Search } from 'lucide-react';
+import { Wrench, Home, Search, Users } from 'lucide-react';
 import { AuthSection } from './AuthSection';
 import { LanguageSelector } from './LanguageSelector';
 import { Separator } from '@/components/ui/separator';
@@ -11,13 +11,15 @@ interface MobileMenuProps {
   notificationCount: number;
   handleSheetOpenChange: (open: boolean) => void;
   isAuthenticated: boolean;
+  userTeamId?: string | null;
 }
 
 export const MobileMenu: React.FC<MobileMenuProps> = ({ 
   isOpen, 
   notificationCount,
   handleSheetOpenChange,
-  isAuthenticated
+  isAuthenticated,
+  userTeamId
 }) => {
   if (!isOpen) return null;
 
@@ -50,6 +52,15 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
             <Wrench size={20} />
             <span className="font-medium">ToolBox</span>
           </Link>
+          {isAuthenticated && userTeamId && (
+            <Link 
+              to={`/team/${userTeamId}`} 
+              className="flex items-center gap-3 py-3 px-4 text-white hover:text-airsoft-red hover:bg-gray-700/50 rounded-lg transition-all duration-200 active:scale-95"
+            >
+              <Users size={20} />
+              <span className="font-medium">Mon équipe</span>
+            </Link>
+          )}
         </div>
         
         <Separator className="bg-gray-600/50" />
