@@ -52,7 +52,7 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[520px] h-[90vh] sm:h-auto sm:max-h-[85vh] flex flex-col p-0">
+      <DialogContent className="sm:max-w-[520px] max-h-[90vh] flex flex-col p-0">
         <div className="p-6 pb-0 flex-shrink-0">
           <DialogHeader>
             <DialogTitle>Personnaliser votre profil</DialogTitle>
@@ -62,17 +62,17 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
           </DialogHeader>
         </div>
 
-        <div className="flex-1 min-h-0 px-6">
+        <div className="flex-1 min-h-0 px-6 overflow-hidden">
           <Tabs value={currentTab} onValueChange={setCurrentTab} className="h-full flex flex-col">
             <TabsList className="grid grid-cols-2 mb-4 flex-shrink-0">
               <TabsTrigger value="avatar">Avatar</TabsTrigger>
               <TabsTrigger value="banner">Bannière</TabsTrigger>
             </TabsList>
             
-            <div className="flex-1 min-h-0">
-              <TabsContent value="avatar" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
-                <ScrollArea className="flex-1 -mx-6 px-6">
-                  <div className="pb-4">
+            <div className="flex-1 min-h-0 overflow-hidden">
+              <TabsContent value="avatar" className="h-full m-0 overflow-hidden data-[state=active]:flex data-[state=active]:flex-col">
+                <ScrollArea className="flex-1 h-full">
+                  <div className="p-1">
                     <AvatarUploader 
                       avatarPreview={avatarPreview}
                       onAvatarChange={setAvatarPreview}
@@ -81,9 +81,9 @@ const ProfileEditMediaDialog = ({ open, onOpenChange }: ProfileEditMediaDialogPr
                 </ScrollArea>
               </TabsContent>
               
-              <TabsContent value="banner" className="h-full m-0 data-[state=active]:flex data-[state=active]:flex-col">
-                <ScrollArea className="flex-1 -mx-6 px-6">
-                  <div className="pb-4">
+              <TabsContent value="banner" className="h-full m-0 overflow-hidden data-[state=active]:flex data-[state=active]:flex-col">
+                <ScrollArea className="flex-1 h-full">
+                  <div className="p-1">
                     <BannerUploader 
                       bannerPreview={bannerPreview}
                       onBannerChange={setBannerPreview}
