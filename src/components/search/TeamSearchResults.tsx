@@ -73,13 +73,16 @@ const TeamSearchResults: React.FC<TeamSearchResultsProps> = ({
   return (
     <div className="space-y-4">
       {teams.map((team) => (
-        <Card key={team.id} className="hover:shadow-md transition-shadow">
+        <div 
+          key={team.id} 
+          className="group overflow-hidden transition-all duration-200 hover:shadow-md border-l-4 border-l-transparent hover:border-l-airsoft-red bg-gradient-to-r from-white to-gray-50/50 rounded-lg shadow-md"
+        >
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div className="flex items-start space-x-4 flex-1">
-                <Avatar className="w-16 h-16">
+                <Avatar className="w-16 h-16 ring-2 ring-white shadow-sm">
                   <AvatarImage src={team.logo || ''} alt={team.name} />
-                  <AvatarFallback className="bg-airsoft-red text-white text-xl font-bold">
+                  <AvatarFallback className="bg-gradient-to-br from-airsoft-red to-red-600 text-white text-xl font-bold">
                     {team.name.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -88,7 +91,7 @@ const TeamSearchResults: React.FC<TeamSearchResultsProps> = ({
                   <div className="flex items-center gap-2 mb-2">
                     <Link 
                       to={`/team/${team.id}`}
-                      className="text-xl font-semibold text-gray-900 hover:text-airsoft-red transition-colors"
+                      className="text-xl font-semibold text-gray-900 hover:text-airsoft-red transition-colors duration-200 group-hover:text-airsoft-red"
                     >
                       {team.name}
                     </Link>
@@ -146,7 +149,7 @@ const TeamSearchResults: React.FC<TeamSearchResultsProps> = ({
               </div>
             </div>
           </CardContent>
-        </Card>
+        </div>
       ))}
     </div>
   );
