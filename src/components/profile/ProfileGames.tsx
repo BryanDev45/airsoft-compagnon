@@ -95,30 +95,35 @@ const ProfileGames = ({
             </p>
           ) : (
             displayedGames && displayedGames.map(game => (
-              <div key={game.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                  <h3 className="font-semibold text-left">{game.title}</h3>
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-gray-600">
-                    <span className="flex items-center gap-1">
-                      <Calendar size={14} /> {formatGameDate(game.date, game.end_date)}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <User size={14} /> {game.role || 'Participant'}
-                    </span>
+              <div 
+                key={game.id} 
+                className="group overflow-hidden transition-all duration-200 hover:shadow-md border-l-4 border-l-transparent hover:border-l-airsoft-red bg-gradient-to-r from-white to-gray-50/50 rounded-lg p-4"
+              >
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div>
+                    <h3 className="font-semibold text-left group-hover:text-airsoft-red transition-colors duration-200">{game.title}</h3>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-gray-600">
+                      <span className="flex items-center gap-1">
+                        <Calendar size={14} /> {formatGameDate(game.date, game.end_date)}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <User size={14} /> {game.role || 'Participant'}
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3 self-end sm:self-center">
-                  <Badge className={game.status === "À venir" ? "bg-blue-500" : game.status === "Terminé" ? "bg-gray-500" : "bg-green-500"}>
-                    {game.status}
-                  </Badge>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white" 
-                    onClick={() => handleGameDetailsClick(game)}
-                  >
-                    Détails
-                  </Button>
+                  <div className="flex items-center gap-3 self-end sm:self-center">
+                    <Badge className={game.status === "À venir" ? "bg-blue-500" : game.status === "Terminé" ? "bg-gray-500" : "bg-green-500"}>
+                      {game.status}
+                    </Badge>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="border-airsoft-red text-airsoft-red hover:bg-airsoft-red hover:text-white" 
+                      onClick={() => handleGameDetailsClick(game)}
+                    >
+                      Détails
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))
