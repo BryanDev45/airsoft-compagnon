@@ -6,6 +6,7 @@ import { Conversation } from '@/types/messaging';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Users, User } from 'lucide-react';
+import { useIsUserOnline } from '@/hooks/messaging/useUserPresence';
 
 interface ConversationItemProps {
   conversation: Conversation;
@@ -18,6 +19,10 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
   isSelected,
   onClick
 }) => {
+  // Get online status for direct conversations
+  const otherParticipantId = conversation.type === 'direct' ? conversation.participants[0]?.id : undefined;
+  const { data: isOnline } = useIsUserOnline(otherParticipantId);
+
   // Helper function to get display name
   const getDisplayName = () => {
     if (conversation.type === 'direct') {
@@ -81,7 +86,7 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
             </AvatarFallback>
           </Avatar>
           
-          {/* Type indicator */}
+          {/* Type indicator with online status for direct conversations */}
           <div className={`absolute -bottom-1 -right-1 p-1 rounded-full shadow-sm ${
             conversation.type === 'team' ? 'bg-blue-500' : 'bg-gray-500'
           }`}>
@@ -91,15 +96,33 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
               <User className="h-3 w-3 text-white" />
             )}
           </div>
+
+          {/* Online status indicator for direct conversations */}
+          {conversation.type === 'direct' && (
+            <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-white shadow-sm ${
+              isOnline ? 'bg-green-500' : 'bg-gray-400'
+            }`} />
+          )}
         </div>
         
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-1">
-            <h3 className={`font-semibold truncate transition-colors ${
-              isSelected ? 'text-gray-900' : 'text-gray-800 group-hover:text-gray-900'
-            }`}>
-              {getDisplayName()}
-            </h3>
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <h3 className={`font-semibold truncate transition-colors ${
+                isSelected ? 'text-gray-900' : 'text-gray-800 group-hover:text-gray-900'
+              }`}>
+                {getDisplayName()}
+              </h3>
+              
+              {/* Online status text for direct conversations */}
+              {conversation.type === 'direct' && (
+                <span className={`text-xs font-medium ${
+                  isOnline ? 'text-green-600' : 'text-gray-500'
+                }`}>
+                  {isOnline ? 'En ligne' : 'Hors ligne'}
+                </span>
+              )}
+            </div>
             
             <div className="flex items-center gap-2 flex-shrink-0">
               {conversation.lastMessage && (
@@ -130,22 +153,20 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
             </div>
           )}
           
-          {/* Conversation type badge */}
-          <div className="flex items-center gap-2 mt-2">
-            <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-              conversation.type === 'team' 
-                ? 'bg-blue-100 text-blue-700' 
-                : 'bg-gray-100 text-gray-700'
-            }`}>
-              {conversation.type === 'team' ? 'Équipe' : 'Direct'}
-            </span>
-            
-            {conversation.participants.length > 1 && conversation.type === 'direct' && (
-              <span className="text-xs text-gray-500">
-                +{conversation.participants.length - 1} participant{conversation.participants.length > 2 ? 's' : ''}
+          {/* Conversation type badge - only show for team conversations */}
+          {conversation.type === 'team' && (
+            <div className="flex items-center gap-2 mt-2">
+              <span className="text-xs px-2 py-1 rounded-full font-medium bg-blue-100 text-blue-700">
+                Équipe
               </span>
-            )}
-          </div>
+              
+              {conversation.participants.length > 1 && (
+                <span className="text-xs text-gray-500">
+                  {conversation.participants.length} participant{conversation.participants.length > 1 ? 's' : ''}
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
       
