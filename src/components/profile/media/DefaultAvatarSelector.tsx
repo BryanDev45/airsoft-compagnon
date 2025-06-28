@@ -2,6 +2,7 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface DefaultAvatarSelectorProps {
   onSelectAvatar: (avatarUrl: string) => void;
@@ -27,25 +28,27 @@ const DefaultAvatarSelector: React.FC<DefaultAvatarSelectorProps> = ({
   return (
     <div className="space-y-4 pb-4">
       <div className="text-sm font-medium mb-3">Avatars par défaut</div>
-      <div className="grid grid-cols-3 gap-4 min-h-[300px]">
-        {defaultAvatars.map((avatarUrl, index) => (
-          <Button
-            key={index}
-            variant="outline"
-            className={`p-3 h-auto transition-all duration-200 hover:scale-105 ${
-              selectedAvatar === avatarUrl 
-                ? 'ring-2 ring-airsoft-red shadow-md' 
-                : 'hover:shadow-sm'
-            }`}
-            onClick={() => onSelectAvatar(avatarUrl)}
-          >
-            <Avatar className="w-16 h-16">
-              <AvatarImage src={avatarUrl} alt={`Avatar ${index + 1}`} />
-              <AvatarFallback className="text-lg">A{index + 1}</AvatarFallback>
-            </Avatar>
-          </Button>
-        ))}
-      </div>
+      <ScrollArea className="h-[280px] w-full border rounded-md">
+        <div className="grid grid-cols-3 gap-4 p-4">
+          {defaultAvatars.map((avatarUrl, index) => (
+            <Button
+              key={index}
+              variant="outline"
+              className={`p-3 h-auto transition-all duration-200 hover:scale-105 ${
+                selectedAvatar === avatarUrl 
+                  ? 'ring-2 ring-airsoft-red shadow-md' 
+                  : 'hover:shadow-sm'
+              }`}
+              onClick={() => onSelectAvatar(avatarUrl)}
+            >
+              <Avatar className="w-16 h-16">
+                <AvatarImage src={avatarUrl} alt={`Avatar ${index + 1}`} />
+                <AvatarFallback className="text-lg">A{index + 1}</AvatarFallback>
+              </Avatar>
+            </Button>
+          ))}
+        </div>
+      </ScrollArea>
     </div>
   );
 };
