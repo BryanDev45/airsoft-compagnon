@@ -38,9 +38,6 @@ const Header = () => {
           <Link to="/" className="hover:text-airsoft-red transition-colors">Accueil</Link>
           <Link to="/parties" className="hover:text-airsoft-red transition-colors">Recherche</Link>
           <Link to="/toolbox" className="hover:text-airsoft-red transition-colors">ToolBox</Link>
-          {isAuthenticated && user?.team_id && (
-            <Link to={`/team/${user.team_id}`} className="hover:text-airsoft-red transition-colors">Mon équipe</Link>
-          )}
 
           <div className="flex items-center gap-4">
             <LanguageSelector />
