@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
@@ -9,7 +8,6 @@ import { MobileMenu } from './header/MobileMenu';
 import { useNotifications } from './header/useNotifications';
 import { useAuth } from '@/hooks/auth/useAuth';
 import MessagingIcon from './messaging/MessagingIcon';
-
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const {
@@ -21,16 +19,14 @@ const Header = () => {
     initialLoading
   } = useAuth();
   const isAuthenticated = !!user;
-
-  return (
-    <header className="bg-gradient-to-r from-gray-600 to-gray-900 text-white sticky top-0 z-50">
+  return <header className="bg-gradient-to-r from-gray-600 to-gray-900 text-white sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex justify-between items-center py-4">
         <div className="flex items-center">
           <Link to="/" className="flex items-center gap-2">
             <img src="/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png" alt="Airsoft Compagnon Logo" className="h-12" />
             <span style={{
-              fontFamily: 'Agency FB, sans-serif'
-            }} className="font-bold text-xl sm:text-2xl md:text-3xl">Airsoft Companion</span>
+            fontFamily: 'Agency FB, sans-serif'
+          }} className="font-bold text-xl sm:text-2xl md:text-3xl">Airsoft Companion</span>
           </Link>
         </div>
 
@@ -38,9 +34,7 @@ const Header = () => {
           <Link to="/" className="hover:text-airsoft-red transition-colors">Accueil</Link>
           <Link to="/parties" className="hover:text-airsoft-red transition-colors">Recherche</Link>
           <Link to="/toolbox" className="hover:text-airsoft-red transition-colors">ToolBox</Link>
-          {isAuthenticated && user?.team_id && (
-            <Link to={`/team/${user.team_id}`} className="hover:text-airsoft-red transition-colors">Mon équipe</Link>
-          )}
+          {isAuthenticated && user?.team_id}
 
           <div className="flex items-center gap-4">
             <LanguageSelector />
@@ -54,15 +48,7 @@ const Header = () => {
         </Button>
       </div>
 
-      <MobileMenu 
-        isOpen={isMenuOpen} 
-        notificationCount={notificationCount} 
-        handleSheetOpenChange={handleSheetOpenChange} 
-        isAuthenticated={isAuthenticated}
-        userTeamId={user?.team_id}
-      />
-    </header>
-  );
+      <MobileMenu isOpen={isMenuOpen} notificationCount={notificationCount} handleSheetOpenChange={handleSheetOpenChange} isAuthenticated={isAuthenticated} userTeamId={user?.team_id} />
+    </header>;
 };
-
 export default Header;
