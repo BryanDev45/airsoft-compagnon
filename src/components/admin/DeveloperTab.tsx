@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,13 +27,24 @@ import {
   Key,
   Zap,
   AlertCircle,
-  Info
+  Info,
+  ArrowRight,
+  Package
 } from 'lucide-react';
 
 interface CodeExample {
   title: string;
   code: string;
   language: string;
+}
+
+interface Dependency {
+  name: string;
+  type: 'import' | 'hook' | 'service' | 'component' | 'database' | 'api' | 'utility';
+  description: string;
+  required: boolean;
+  version?: string;
+  path?: string;
 }
 
 interface DataFlow {
@@ -51,7 +61,7 @@ interface ModuleInfo {
   type: 'page' | 'component' | 'hook' | 'service' | 'database' | 'utility';
   status: 'active' | 'deprecated' | 'beta';
   complexity: 'low' | 'medium' | 'high';
-  dependencies?: string[];
+  dependencies?: Dependency[];
   features?: string[];
   children?: ModuleInfo[];
   technicalDetails?: {
@@ -89,6 +99,36 @@ const DeveloperTab = () => {
       type: 'service',
       status: 'active',
       complexity: 'high',
+      dependencies: [
+        {
+          name: "@supabase/supabase-js",
+          type: 'import',
+          description: "Client Supabase pour l'authentification et les sessions",
+          required: true,
+          version: "^2.49.9",
+          path: "src/integrations/supabase/client.ts"
+        },
+        {
+          name: "@tanstack/react-query",
+          type: 'import',
+          description: "Cache et synchronisation des données d'authentification",
+          required: true,
+          version: "^5.79.2"
+        },
+        {
+          name: "React Context API",
+          type: 'service',
+          description: "Partage de l'état d'authentification global",
+          required: true
+        },
+        {
+          name: "react-router-dom",
+          type: 'import',
+          description: "Navigation et protection des routes",
+          required: true,
+          version: "^6.26.2"
+        }
+      ],
       technicalDetails: {
         filePath: "src/hooks/auth/",
         mainExports: ["useAuth", "AuthProvider", "AuthGuard"],
@@ -107,6 +147,42 @@ const DeveloperTab = () => {
           type: 'component',
           status: 'active',
           complexity: 'high',
+          dependencies: [
+            {
+              name: "useAuthState",
+              type: 'hook',
+              description: "Hook pour la gestion de l'état d'authentification",
+              required: true,
+              path: "src/hooks/auth/useAuthState.tsx"
+            },
+            {
+              name: "useAuthActions",
+              type: 'hook',
+              description: "Actions d'authentification (login, logout, register)",
+              required: true,
+              path: "src/hooks/auth/useAuthActions.tsx"
+            },
+            {
+              name: "useAuthEventHandler",
+              type: 'hook',
+              description: "Gestion des événements Supabase Auth",
+              required: true,
+              path: "src/hooks/auth/state/useAuthEventHandler.tsx"
+            },
+            {
+              name: "useSessionManager",
+              type: 'hook',
+              description: "Gestion des sessions utilisateur",
+              required: true,
+              path: "src/hooks/auth/state/useSessionManager.tsx"
+            },
+            {
+              name: "React.createContext",
+              type: 'api',
+              description: "Création du contexte d'authentification",
+              required: true
+            }
+          ],
           technicalDetails: {
             filePath: "src/hooks/auth/AuthProvider.tsx",
             mainExports: ["AuthProvider", "AuthContext"],
@@ -148,6 +224,21 @@ return <Dashboard user={user} />;`
           type: 'hook',
           status: 'active',
           complexity: 'medium',
+          dependencies: [
+            {
+              name: "AuthContext",
+              type: 'component',
+              description: "Contexte d'authentification",
+              required: true,
+              path: "src/hooks/auth/AuthProvider.tsx"
+            },
+            {
+              name: "React.useContext",
+              type: 'api',
+              description: "Consommation du contexte React",
+              required: true
+            }
+          ],
           technicalDetails: {
             filePath: "src/hooks/useAuth.tsx",
             mainExports: ["useAuth"],
@@ -181,6 +272,33 @@ return <ProtectedContent user={user} />;`
           type: 'service',
           status: 'active',
           complexity: 'medium',
+          dependencies: [
+            {
+              name: "useSocialAuth",
+              type: 'hook',
+              description: "Hook pour l'authentification sociale",
+              required: true,
+              path: "src/hooks/auth/useSocialAuth.tsx"
+            },
+            {
+              name: "Supabase Auth",
+              type: 'service',
+              description: "Service d'authentification OAuth",
+              required: true
+            },
+            {
+              name: "Google OAuth API",
+              type: 'api',
+              description: "API Google pour l'authentification",
+              required: true
+            },
+            {
+              name: "Discord OAuth API",
+              type: 'api',
+              description: "API Discord pour l'authentification",
+              required: true
+            }
+          ],
           technicalDetails: {
             filePath: "src/hooks/auth/useSocialAuth.tsx",
             mainExports: ["useSocialAuth"],
@@ -198,6 +316,35 @@ return <ProtectedContent user={user} />;`
       type: 'service',
       status: 'active',
       complexity: 'high',
+      dependencies: [
+        {
+          name: "@supabase/supabase-js",
+          type: 'import',
+          description: "Client Supabase pour les subscriptions temps réel",
+          required: true,
+          version: "^2.49.9"
+        },
+        {
+          name: "@tanstack/react-query",
+          type: 'import',
+          description: "Cache et mutations pour les messages",
+          required: true,
+          version: "^5.79.2"
+        },
+        {
+          name: "Zustand",
+          type: 'import',
+          description: "State management pour l'état des conversations",
+          required: false
+        },
+        {
+          name: "useAuth",
+          type: 'hook',
+          description: "Authentification utilisateur pour les messages",
+          required: true,
+          path: "src/hooks/useAuth.tsx"
+        }
+      ],
       technicalDetails: {
         filePath: "src/components/messaging/",
         mainExports: ["MessagingIcon", "ChatView", "ConversationList"],
@@ -215,6 +362,36 @@ return <ProtectedContent user={user} />;`
           type: 'component',
           status: 'active',
           complexity: 'high',
+          dependencies: [
+            {
+              name: "useOptimizedConversations",
+              type: 'hook',
+              description: "Hook optimisé pour les conversations",
+              required: true,
+              path: "src/hooks/messaging/useOptimizedConversations.tsx"
+            },
+            {
+              name: "useConversationData",
+              type: 'hook',
+              description: "Données des conversations",
+              required: true,
+              path: "src/hooks/messaging/useConversationData.tsx"
+            },
+            {
+              name: "ConversationItem",
+              type: 'component',
+              description: "Composant d'affichage d'une conversation",
+              required: true,
+              path: "src/components/messaging/ConversationItem.tsx"
+            },
+            {
+              name: "EmptyConversations",
+              type: 'component',
+              description: "État vide des conversations",
+              required: true,
+              path: "src/components/messaging/EmptyConversations.tsx"
+            }
+          ],
           technicalDetails: {
             filePath: "src/hooks/messaging/useOptimizedConversations.tsx",
             mainExports: ["useOptimizedConversations"],
@@ -257,6 +434,43 @@ useEffect(() => {
           type: 'hook',
           status: 'active',
           complexity: 'high',
+          dependencies: [
+            {
+              name: "useRealtimeMessages",
+              type: 'hook',
+              description: "Hook pour les messages temps réel",
+              required: true,
+              path: "src/hooks/messaging/useRealtimeMessages.tsx"
+            },
+            {
+              name: "useMessageActions",
+              type: 'hook',
+              description: "Actions sur les messages (send, edit, delete)",
+              required: true,
+              path: "src/hooks/messaging/useMessageActions.tsx"
+            },
+            {
+              name: "useMessagesData",
+              type: 'hook',
+              description: "Données des messages",
+              required: true,
+              path: "src/hooks/messaging/useMessagesData.tsx"
+            },
+            {
+              name: "MessageItem",
+              type: 'component',
+              description: "Composant d'affichage d'un message",
+              required: true,
+              path: "src/components/messaging/MessageItem.tsx"
+            },
+            {
+              name: "MessageInput",
+              type: 'component',
+              description: "Composant de saisie de message",
+              required: true,
+              path: "src/components/messaging/MessageInput.tsx"
+            }
+          ],
           technicalDetails: {
             filePath: "src/hooks/messaging/useRealtimeMessages.tsx",
             mainExports: ["useRealtimeMessages"],
@@ -298,6 +512,28 @@ const handleSendMessage = async (content: string) => {
           type: 'hook',
           status: 'active',
           complexity: 'medium',
+          dependencies: [
+            {
+              name: "useUserPresence",
+              type: 'hook',
+              description: "Hook pour la présence utilisateur",
+              required: true,
+              path: "src/hooks/messaging/useUserPresence.tsx"
+            },
+            {
+              name: "Supabase Realtime",
+              type: 'service',
+              description: "Service temps réel pour la présence",
+              required: true
+            },
+            {
+              name: "useAuth",
+              type: 'hook',
+              description: "Authentification pour associer la présence",
+              required: true,
+              path: "src/hooks/useAuth.tsx"
+            }
+          ],
           technicalDetails: {
             filePath: "src/hooks/messaging/useUserPresence.tsx",
             mainExports: ["useUserPresence", "useIsUserOnline"],
@@ -316,6 +552,43 @@ const handleSendMessage = async (content: string) => {
       type: 'service',
       status: 'active',
       complexity: 'high',
+      dependencies: [
+        {
+          name: "react-hook-form",
+          type: 'import',
+          description: "Gestion des formulaires de création/édition",
+          required: true,
+          version: "^7.56.4"
+        },
+        {
+          name: "zod",
+          type: 'import',
+          description: "Validation des schémas de jeu",
+          required: true,
+          version: "^3.25.56"
+        },
+        {
+          name: "@hookform/resolvers",
+          type: 'import',
+          description: "Intégration Zod avec React Hook Form",
+          required: true,
+          version: "^5.0.1"
+        },
+        {
+          name: "mapbox-gl",
+          type: 'import',
+          description: "Cartes pour la localisation des jeux",
+          required: true,
+          version: "^3.11.0"
+        },
+        {
+          name: "useAuth",
+          type: 'hook',
+          description: "Authentification pour les actions de jeu",
+          required: true,
+          path: "src/hooks/useAuth.tsx"
+        }
+      ],
       technicalDetails: {
         filePath: "src/pages/",
         mainExports: ["GameDetails", "CreateParty", "EditGame"],
@@ -332,6 +605,50 @@ const handleSendMessage = async (content: string) => {
           type: 'component',
           status: 'active',
           complexity: 'high',
+          dependencies: [
+            {
+              name: "useCreatePartyForm",
+              type: 'hook',
+              description: "Hook pour le formulaire de création",
+              required: true,
+              path: "src/hooks/party/useCreatePartyForm.tsx"
+            },
+            {
+              name: "usePartyFormValidation",
+              type: 'hook',
+              description: "Validation du formulaire de partie",
+              required: true,
+              path: "src/hooks/party/usePartyFormValidation.ts"
+            },
+            {
+              name: "useImageUpload",
+              type: 'hook',
+              description: "Upload d'images pour le jeu",
+              required: true,
+              path: "src/hooks/useImageUpload.ts"
+            },
+            {
+              name: "CoordinatesInput",
+              type: 'component',
+              description: "Input pour les coordonnées GPS",
+              required: true,
+              path: "src/components/party/CoordinatesInput.tsx"
+            },
+            {
+              name: "LocationSection",
+              type: 'component',
+              description: "Section de localisation",
+              required: true,
+              path: "src/components/party/LocationSection.tsx"
+            },
+            {
+              name: "ImageUploadSection",
+              type: 'component',
+              description: "Section d'upload d'images",
+              required: true,
+              path: "src/components/party/ImageUploadSection.tsx"
+            }
+          ],
           technicalDetails: {
             filePath: "src/pages/CreateParty.tsx",
             mainExports: ["CreateParty"],
@@ -371,6 +688,36 @@ const form = useForm<GameFormData>({
           type: 'component',
           status: 'active',
           complexity: 'medium',
+          dependencies: [
+            {
+              name: "useGameRegistration",
+              type: 'hook',
+              description: "Hook pour l'inscription aux jeux",
+              required: true,
+              path: "src/hooks/game/useGameRegistration.tsx"
+            },
+            {
+              name: "RegistrationDialog",
+              type: 'component',
+              description: "Dialog d'inscription",
+              required: true,
+              path: "src/components/game/RegistrationDialog.tsx"
+            },
+            {
+              name: "ParticipantsDialog",
+              type: 'component',
+              description: "Dialog des participants",
+              required: true,
+              path: "src/components/game/ParticipantsDialog.tsx"
+            },
+            {
+              name: "useAuth",
+              type: 'hook',
+              description: "Authentification pour l'inscription",
+              required: true,
+              path: "src/hooks/useAuth.tsx"
+            }
+          ],
           technicalDetails: {
             filePath: "src/hooks/game/useGameRegistration.tsx",
             mainExports: ["useGameRegistration"],
@@ -389,6 +736,36 @@ const form = useForm<GameFormData>({
       type: 'service',
       status: 'active',
       complexity: 'high',
+      dependencies: [
+        {
+          name: "@tanstack/react-query",
+          type: 'import',
+          description: "Cache et mutations pour les équipes",
+          required: true,
+          version: "^5.79.2"
+        },
+        {
+          name: "react-hook-form",
+          type: 'import',
+          description: "Formulaires d'équipe",
+          required: true,
+          version: "^7.56.4"
+        },
+        {
+          name: "zod",
+          type: 'import',
+          description: "Validation des données d'équipe",
+          required: true,
+          version: "^3.25.56"
+        },
+        {
+          name: "useAuth",
+          type: 'hook',
+          description: "Authentification pour les actions d'équipe",
+          required: true,
+          path: "src/hooks/useAuth.tsx"
+        }
+      ],
       technicalDetails: {
         filePath: "src/components/team/",
         databaseTables: ["teams", "team_members", "team_invitations", "team_news"],
@@ -405,6 +782,43 @@ const form = useForm<GameFormData>({
           type: 'component',
           status: 'active',
           complexity: 'high',
+          dependencies: [
+            {
+              name: "useTeamMemberActions",
+              type: 'hook',
+              description: "Actions sur les membres d'équipe",
+              required: true,
+              path: "src/hooks/team/useTeamMemberActions.tsx"
+            },
+            {
+              name: "useTeamData",
+              type: 'hook',
+              description: "Données de l'équipe",
+              required: true,
+              path: "src/hooks/useTeamData.ts"
+            },
+            {
+              name: "useTeamSettings",
+              type: 'hook',
+              description: "Paramètres de l'équipe",
+              required: true,
+              path: "src/hooks/useTeamSettings.ts"
+            },
+            {
+              name: "TeamMembers",
+              type: 'component',
+              description: "Liste des membres",
+              required: true,
+              path: "src/components/team/TeamMembers.tsx"
+            },
+            {
+              name: "TeamSettingsMembers",
+              type: 'component',
+              description: "Gestion des membres dans les paramètres",
+              required: true,
+              path: "src/components/team/TeamSettingsMembers.tsx"
+            }
+          ],
           technicalDetails: {
             filePath: "src/hooks/team/useTeamMemberActions.tsx",
             mainExports: ["useTeamMemberActions"],
@@ -451,6 +865,36 @@ const handleInvite = async (email: string) => {
       type: 'service',
       status: 'active',
       complexity: 'medium',
+      dependencies: [
+        {
+          name: "@tanstack/react-query",
+          type: 'import',
+          description: "Cache pour les notifications",
+          required: true,
+          version: "^5.79.2"
+        },
+        {
+          name: "@supabase/supabase-js",
+          type: 'import',
+          description: "Real-time pour les notifications",
+          required: true,
+          version: "^2.49.9"
+        },
+        {
+          name: "sonner",
+          type: 'import',
+          description: "Toast notifications",
+          required: true,
+          version: "^1.5.0"
+        },
+        {
+          name: "useAuth",
+          type: 'hook',
+          description: "Authentification pour les notifications",
+          required: true,
+          path: "src/hooks/useAuth.tsx"
+        }
+      ],
       technicalDetails: {
         filePath: "src/hooks/notifications/",
         mainExports: ["useNotifications", "useOptimizedNotifications"],
@@ -475,6 +919,43 @@ const handleInvite = async (email: string) => {
             "Admin notifications",
             "System announcements"
           ],
+          dependencies: [
+            {
+              name: "useNotificationActions",
+              type: 'hook',
+              description: "Actions sur les notifications",
+              required: true,
+              path: "src/hooks/notifications/useNotificationActions.tsx"
+            },
+            {
+              name: "useFriendRequestActions",
+              type: 'hook',
+              description: "Actions pour les demandes d'amis",
+              required: true,
+              path: "src/hooks/notifications/useFriendRequestActions.tsx"
+            },
+            {
+              name: "useTeamInvitationActions",
+              type: 'hook',
+              description: "Actions pour les invitations d'équipe",
+              required: true,
+              path: "src/hooks/notifications/useTeamInvitationActions.tsx"
+            },
+            {
+              name: "NotificationItem",
+              type: 'component',
+              description: "Composant d'affichage d'une notification",
+              required: true,
+              path: "src/components/notifications/NotificationItem.tsx"
+            },
+            {
+              name: "NotificationList",
+              type: 'component',
+              description: "Liste des notifications",
+              required: true,
+              path: "src/components/notifications/NotificationList.tsx"
+            }
+          ],
           technicalDetails: {
             filePath: "src/components/notifications/",
             mainExports: ["NotificationItem", "NotificationList"],
@@ -492,6 +973,33 @@ const handleInvite = async (email: string) => {
       type: 'database',
       status: 'active',
       complexity: 'high',
+      dependencies: [
+        {
+          name: "PostgreSQL",
+          type: 'database',
+          description: "Base de données principale",
+          required: true,
+          version: "15+"
+        },
+        {
+          name: "Supabase Platform",
+          type: 'service',
+          description: "Platform BaaS pour PostgreSQL",
+          required: true
+        },
+        {
+          name: "Row Level Security",
+          type: 'database',
+          description: "Sécurité au niveau des lignes",
+          required: true
+        },
+        {
+          name: "Supabase Realtime",
+          type: 'service',
+          description: "Service temps réel",
+          required: true
+        }
+      ],
       technicalDetails: {
         filePath: "supabase/migrations/",
         databaseTables: ["25+ tables avec relations complexes"],
@@ -508,6 +1016,32 @@ const handleInvite = async (email: string) => {
           type: 'database',
           status: 'active',
           complexity: 'high',
+          dependencies: [
+            {
+              name: "PostgreSQL RLS",
+              type: 'database',
+              description: "Row Level Security natif PostgreSQL",
+              required: true
+            },
+            {
+              name: "Supabase Auth",
+              type: 'service',
+              description: "Service d'authentification intégré",
+              required: true
+            },
+            {
+              name: "auth.uid()",
+              type: 'utility',
+              description: "Fonction Supabase pour l'ID utilisateur",
+              required: true
+            },
+            {
+              name: "auth.jwt()",
+              type: 'utility',
+              description: "Fonction Supabase pour les claims JWT",
+              required: true
+            }
+          ],
           technicalDetails: {
             filePath: "supabase/migrations/",
             mainExports: ["RLS Policies", "Security Functions"],
@@ -538,6 +1072,26 @@ CREATE POLICY "Users can only see their own messages" ON messages
           type: 'database',
           status: 'active',
           complexity: 'medium',
+          dependencies: [
+            {
+              name: "Supabase Realtime Server",
+              type: 'service',
+              description: "Serveur temps réel Supabase",
+              required: true
+            },
+            {
+              name: "PostgreSQL WAL",
+              type: 'database',
+              description: "Write-Ahead Log pour le streaming",
+              required: true
+            },
+            {
+              name: "Phoenix Channels",
+              type: 'service',
+              description: "WebSocket channels pour le temps réel",
+              required: true
+            }
+          ],
           technicalDetails: {
             filePath: "supabase/migrations/",
             realTimeFeatures: ["Toutes tables en REPLICA IDENTITY FULL"],
@@ -758,6 +1312,27 @@ const onSubmit = async (data: FormData) => {
     }
   };
 
+  const getDependencyTypeColor = (type: string) => {
+    switch (type) {
+      case 'import':
+        return 'bg-blue-100 text-blue-700';
+      case 'hook':
+        return 'bg-orange-100 text-orange-700';
+      case 'component':
+        return 'bg-purple-100 text-purple-700';
+      case 'service':
+        return 'bg-indigo-100 text-indigo-700';
+      case 'database':
+        return 'bg-cyan-100 text-cyan-700';
+      case 'api':
+        return 'bg-green-100 text-green-700';
+      case 'utility':
+        return 'bg-pink-100 text-pink-700';
+      default:
+        return 'bg-gray-100 text-gray-700';
+    }
+  };
+
   const renderModuleTree = (modules: ModuleInfo[], level = 0) => {
     return modules.map((module, index) => {
       const hasChildren = module.children && module.children.length > 0;
@@ -795,6 +1370,45 @@ const onSubmit = async (data: FormData) => {
                     </div>
                     <p className="text-sm text-gray-600 mb-3">{module.description}</p>
                     
+                    {/* Dependencies */}
+                    {module.dependencies && module.dependencies.length > 0 && (
+                      <div className="mb-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Package className="h-4 w-4 text-gray-500" />
+                          <span className="text-sm font-medium text-gray-700">Dépendances:</span>
+                        </div>
+                        <div className="space-y-2">
+                          {module.dependencies.map((dep, idx) => (
+                            <div key={idx} className="bg-gray-50 p-2 rounded-lg">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Badge className={getDependencyTypeColor(dep.type)} variant="outline">
+                                  {dep.type}
+                                </Badge>
+                                <span className="font-medium text-sm text-gray-900">{dep.name}</span>
+                                {dep.version && (
+                                  <Badge variant="outline" className="text-xs bg-gray-100 text-gray-600">
+                                    {dep.version}
+                                  </Badge>
+                                )}
+                                {dep.required && (
+                                  <Badge variant="outline" className="text-xs bg-red-100 text-red-700">
+                                    requis
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-xs text-gray-600 mb-1">{dep.description}</p>
+                              {dep.path && (
+                                <div className="flex items-center gap-1">
+                                  <ArrowRight className="h-3 w-3 text-gray-400" />
+                                  <code className="text-xs text-purple-600">{dep.path}</code>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Features */}
                     {module.features && (
                       <div className="mb-3">
@@ -849,20 +1463,6 @@ const onSubmit = async (data: FormData) => {
                               <span className="ml-1 text-yellow-600">{module.technicalDetails.errorHandling}</span>
                             </div>
                           )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Dependencies */}
-                    {module.dependencies && (
-                      <div className="mb-3">
-                        <span className="text-xs font-medium text-gray-500 mb-1 block">Dépendances:</span>
-                        <div className="flex flex-wrap gap-1">
-                          {module.dependencies.map((dep, idx) => (
-                            <Badge key={idx} className="bg-gray-100 text-gray-700 text-xs" variant="outline">
-                              {dep}
-                            </Badge>
-                          ))}
                         </div>
                       </div>
                     )}
