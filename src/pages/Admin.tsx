@@ -3,7 +3,7 @@ import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Shield, AlertTriangle, UserCheck, MessageSquare, ArrowLeft, Badge, Gavel, BarChart3 } from 'lucide-react';
+import { Shield, AlertTriangle, UserCheck, MessageSquare, ArrowLeft, Badge, Gavel, BarChart3, Code } from 'lucide-react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import UserReportsTab from '@/components/admin/UserReportsTab';
 import MessageReportsTab from '@/components/admin/MessageReportsTab';
@@ -11,6 +11,7 @@ import VerificationRequestsTab from '@/components/admin/VerificationRequestsTab'
 import BadgesManagementTab from '@/components/admin/BadgesManagementTab';
 import ModerationTab from '@/components/admin/ModerationTab';
 import StatisticsTab from '@/components/admin/StatisticsTab';
+import DeveloperTab from '@/components/admin/DeveloperTab';
 
 const Admin = () => {
   const { user, initialLoading } = useAuth();
@@ -70,7 +71,7 @@ const Admin = () => {
         {/* Tabs section - mobile responsive */}
         <Tabs defaultValue="statistics" className="space-y-6">
           <div className="overflow-x-auto">
-            <TabsList className="flex w-max min-w-full sm:grid sm:grid-cols-3 lg:grid-cols-6 gap-1 h-auto p-1">
+            <TabsList className="flex w-max min-w-full sm:grid sm:grid-cols-4 lg:grid-cols-7 gap-1 h-auto p-1">
               <TabsTrigger 
                 value="statistics" 
                 className="flex flex-col items-center gap-1 p-2 sm:p-3 text-xs whitespace-nowrap min-w-[100px] sm:min-w-0"
@@ -133,6 +134,17 @@ const Admin = () => {
                   <span className="hidden sm:block">Gestion des badges</span>
                 </span>
               </TabsTrigger>
+              
+              <TabsTrigger 
+                value="developer" 
+                className="flex flex-col items-center gap-1 p-2 sm:p-3 text-xs whitespace-nowrap min-w-[100px] sm:min-w-0"
+              >
+                <Code className="h-4 w-4 flex-shrink-0" />
+                <span className="text-center leading-tight">
+                  <span className="block sm:hidden">Dev</span>
+                  <span className="hidden sm:block">Développeur</span>
+                </span>
+              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -158,6 +170,10 @@ const Admin = () => {
           
           <TabsContent value="badges-management">
             <BadgesManagementTab />
+          </TabsContent>
+          
+          <TabsContent value="developer">
+            <DeveloperTab />
           </TabsContent>
         </Tabs>
       </div>
