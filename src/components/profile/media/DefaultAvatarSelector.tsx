@@ -2,7 +2,6 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Check } from 'lucide-react';
 
 interface DefaultAvatarSelectorProps {
@@ -33,62 +32,60 @@ const DefaultAvatarSelector: React.FC<DefaultAvatarSelectorProps> = ({
         <p className="text-sm text-gray-500">Choisissez un avatar parmi notre sélection</p>
       </div>
       
-      <ScrollArea className="h-[320px] w-full">
-        <div className="grid grid-cols-3 gap-4 p-2">
-          {defaultAvatars.map((avatarUrl, index) => {
-            const isSelected = selectedAvatar === avatarUrl;
-            
-            return (
-              <div
-                key={index}
-                className="relative group cursor-pointer"
-                onClick={() => onSelectAvatar(avatarUrl)}
-              >
-                <div className={`
-                  relative p-3 rounded-xl border-2 transition-all duration-300 ease-out
-                  ${isSelected 
-                    ? 'border-airsoft-red bg-red-50 shadow-lg ring-4 ring-red-100' 
-                    : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md hover:bg-gray-50'
-                  }
-                  group-hover:scale-105 transform
-                `}>
-                  <Avatar className="w-16 h-16 mx-auto">
-                    <AvatarImage 
-                      src={avatarUrl} 
-                      alt={`Avatar ${index + 1}`}
-                      className="object-cover"
-                    />
-                    <AvatarFallback className="text-lg bg-gradient-to-br from-gray-100 to-gray-200">
-                      A{index + 1}
-                    </AvatarFallback>
-                  </Avatar>
-                  
-                  {/* Overlay sélection */}
-                  {isSelected && (
-                    <div className="absolute inset-0 bg-airsoft-red/10 rounded-xl flex items-center justify-center">
-                      <div className="bg-airsoft-red text-white rounded-full p-1">
-                        <Check size={16} />
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Effet hover */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                </div>
+      <div className="grid grid-cols-3 gap-4 p-2">
+        {defaultAvatars.map((avatarUrl, index) => {
+          const isSelected = selectedAvatar === avatarUrl;
+          
+          return (
+            <div
+              key={index}
+              className="relative group cursor-pointer"
+              onClick={() => onSelectAvatar(avatarUrl)}
+            >
+              <div className={`
+                relative p-3 rounded-xl border-2 transition-all duration-300 ease-out
+                ${isSelected 
+                  ? 'border-airsoft-red bg-red-50 shadow-lg ring-4 ring-red-100' 
+                  : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md hover:bg-gray-50'
+                }
+                group-hover:scale-105 transform
+              `}>
+                <Avatar className="w-16 h-16 mx-auto">
+                  <AvatarImage 
+                    src={avatarUrl} 
+                    alt={`Avatar ${index + 1}`}
+                    className="object-cover"
+                  />
+                  <AvatarFallback className="text-lg bg-gradient-to-br from-gray-100 to-gray-200">
+                    A{index + 1}
+                  </AvatarFallback>
+                </Avatar>
                 
-                {/* Label numéroté */}
-                <div className="text-center mt-2">
-                  <span className={`text-xs font-medium ${
-                    isSelected ? 'text-airsoft-red' : 'text-gray-400'
-                  }`}>
-                    Avatar {index + 1}
-                  </span>
-                </div>
+                {/* Overlay sélection */}
+                {isSelected && (
+                  <div className="absolute inset-0 bg-airsoft-red/10 rounded-xl flex items-center justify-center">
+                    <div className="bg-airsoft-red text-white rounded-full p-1">
+                      <Check size={16} />
+                    </div>
+                  </div>
+                )}
+                
+                {/* Effet hover */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
               </div>
-            );
-          })}
-        </div>
-      </ScrollArea>
+              
+              {/* Label numéroté */}
+              <div className="text-center mt-2">
+                <span className={`text-xs font-medium ${
+                  isSelected ? 'text-airsoft-red' : 'text-gray-400'
+                }`}>
+                  Avatar {index + 1}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
       
       {selectedAvatar && (
         <div className="text-center p-3 bg-green-50 border border-green-200 rounded-lg">
