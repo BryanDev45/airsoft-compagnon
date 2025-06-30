@@ -859,30 +859,36 @@ export type Database = {
       team_fields: {
         Row: {
           address: string | null
+          city: string | null
           coordinates: Json | null
           created_at: string | null
           description: string | null
           id: string
           name: string
           team_id: string | null
+          zip_code: string | null
         }
         Insert: {
           address?: string | null
+          city?: string | null
           coordinates?: Json | null
           created_at?: string | null
           description?: string | null
           id?: string
           name: string
           team_id?: string | null
+          zip_code?: string | null
         }
         Update: {
           address?: string | null
+          city?: string | null
           coordinates?: Json | null
           created_at?: string | null
           description?: string | null
           id?: string
           name?: string
           team_id?: string | null
+          zip_code?: string | null
         }
         Relationships: [
           {
