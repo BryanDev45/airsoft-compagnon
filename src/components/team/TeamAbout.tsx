@@ -3,8 +3,9 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Users, Calendar, Share2, Mail, Trophy, Star } from 'lucide-react';
+import { MapPin, Users, Calendar, Share2, Mail, Trophy } from 'lucide-react';
 import TeamApplicationButton from './TeamApplicationButton';
+import TeamRatingStars from './TeamRatingStars';
 
 interface TeamAboutProps {
   team: any;
@@ -23,6 +24,13 @@ const TeamAbout: React.FC<TeamAboutProps> = ({
   currentUserId,
   onTeamUpdate
 }) => {
+  const handleRatingChange = (newRating: number) => {
+    // Optionally refresh team data to get updated average rating
+    if (onTeamUpdate) {
+      onTeamUpdate();
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Section principale À propos */}
@@ -87,10 +95,36 @@ const TeamAbout: React.FC<TeamAboutProps> = ({
                 <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Note moyenne</span>
                 <div className="flex items-center gap-2">
                   <p className="text-gray-900 font-medium">{team.stats?.averageRating || '0.0'}/5</p>
-                  <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                  <TeamRatingStars 
+                    teamId={team.id}
+                    currentRating={parseFloat(team.stats?.averageRating || '0')}
+                    readonly={true}
+                    size={16}
+                  />
                 </div>
               </div>
             </div>
+            
+            {/* Section pour noter l'équipe (si l'utilisateur n'est pas membre) */}
+            {!isTeamMember && currentUserId && (
+              <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="p-2 bg-blue-100 rounded-full">
+                  <Trophy className="h-4 w-4 text-blue-600" />
+                </div>
+                <div className="flex-1">
+                  <span className="text-xs font-medium text-blue-700 uppercase tracking-wide">Évaluer cette équipe</span>
+                  <div className="mt-1">
+                    <TeamRatingStars 
+                      teamId={team.id}
+                      currentRating={parseFloat(team.stats?.averageRating || '0')}
+                      onRatingChange={handleRatingChange}
+                      readonly={false}
+                      size={18}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
           
           {/* Badges d'informations */}
