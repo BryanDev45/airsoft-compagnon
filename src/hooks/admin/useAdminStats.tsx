@@ -4,6 +4,7 @@ import { useGameStats } from './stats/useGameStats';
 import { useMessagingStats } from './stats/useMessagingStats';
 import { useExternalStats } from './stats/useExternalStats';
 import { useChartData } from './stats/useChartData';
+import { useModerationStats } from './stats/useModerationStats';
 
 interface AdminStats {
   totalUsers: number;
@@ -34,6 +35,15 @@ interface AdminStats {
   joueursTabVisits: number;
   equipesTabVisits: number;
   magasinsTabVisits: number;
+  // Moderation stats
+  totalUserReports: number;
+  pendingUserReports: number;
+  resolvedUserReports: number;
+  totalMessageReports: number;
+  pendingMessageReports: number;
+  resolvedMessageReports: number;
+  totalWarnings: number;
+  activeWarnings: number;
   gamesPerMonth: Array<{ month: string; count: number }>;
   registrationsPerMonth: Array<{ month: string; count: number }>;
   playersByCountry: Array<{ country: string; count: number }>;
@@ -46,11 +56,12 @@ export const useAdminStats = () => {
   const { data: messagingStats, isLoading: messagingLoading, error: messagingError } = useMessagingStats();
   const { data: externalStats, isLoading: externalLoading, error: externalError } = useExternalStats();
   const { data: chartData, isLoading: chartLoading, error: chartError } = useChartData();
+  const { data: moderationStats, isLoading: moderationLoading, error: moderationError } = useModerationStats();
 
-  const isLoading = basicLoading || gameLoading || messagingLoading || externalLoading || chartLoading;
-  const error = basicError || gameError || messagingError || externalError || chartError;
+  const isLoading = basicLoading || gameLoading || messagingLoading || externalLoading || chartLoading || moderationLoading;
+  const error = basicError || gameError || messagingError || externalError || chartError || moderationError;
 
-  if (isLoading || error || !basicStats || !gameStats || !messagingStats || !externalStats || !chartData) {
+  if (isLoading || error || !basicStats || !gameStats || !messagingStats || !externalStats || !chartData || !moderationStats) {
     return { data: null, isLoading, error };
   }
 
@@ -59,6 +70,7 @@ export const useAdminStats = () => {
     ...gameStats,
     ...messagingStats,
     ...chartData,
+    ...moderationStats,
     // Utiliser directement les propriétés de externalStats
     discordBotDownloads: externalStats.discordBotDownloads,
     discordBotInvites: externalStats.discordBotInvites,

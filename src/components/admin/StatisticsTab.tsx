@@ -4,6 +4,7 @@ import { useAdminStats } from '@/hooks/admin/useAdminStats';
 import StatisticsHeader from './statistics/StatisticsHeader';
 import StatsChartsSection from './statistics/StatsChartsSection';
 import StatsCardsGrid from './statistics/StatsCardsGrid';
+import StatsModerationCards from './statistics/StatsModerationCards';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   Eye,
@@ -50,6 +51,8 @@ const StatisticsTab: React.FC = () => {
       />
 
       <StatsCardsGrid stats={stats} />
+
+      <StatsModerationCards stats={stats} />
 
       {/* Page Visit Statistics */}
       <Card className="border-0 shadow-md">
