@@ -1,16 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChevronDown, ChevronRight, Code, Database, Globe, Layers, Settings, Users, MessageSquare, Shield, Gamepad2, Store, Trophy, FileText, Search, Bell, GitBranch, Server, Key, Zap, AlertCircle, Info, ArrowRight, Package } from 'lucide-react';
+import { Switch } from "@/components/ui/switch";
+import { ChevronDown, ChevronRight, Code, Database, Globe, Layers, Settings, Users, MessageSquare, Shield, Gamepad2, Store, Trophy, FileText, Search, Bell, GitBranch, Server, Key, Zap, AlertCircle, Info, ArrowRight, Package, Download, Copy, Bookmark, BookmarkCheck, Moon, Sun, ExternalLink, Activity, BarChart3, Lock } from 'lucide-react';
+import { toast } from "@/components/ui/use-toast";
+
 interface CodeExample {
   title: string;
   code: string;
   language: string;
+  category?: 'basic' | 'advanced' | 'integration';
 }
+
+interface APIEndpoint {
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  path: string;
+  description: string;
+  parameters?: { name: string; type: string; required: boolean; description: string }[];
+  response?: { type: string; description: string };
+  example?: string;
+}
+
 interface Dependency {
   name: string;
   type: 'import' | 'hook' | 'service' | 'component' | 'database' | 'api' | 'utility';
@@ -19,12 +34,14 @@ interface Dependency {
   version?: string;
   path?: string;
 }
+
 interface DataFlow {
   from: string;
   to: string;
   description: string;
   type: 'hook' | 'component' | 'service' | 'database';
 }
+
 interface ModuleInfo {
   name: string;
   description: string;
@@ -48,356 +65,310 @@ interface ModuleInfo {
   };
   codeExamples?: CodeExample[];
   dataFlows?: DataFlow[];
+  apis?: APIEndpoint[];
 }
+
 const DeveloperTab = () => {
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState("architecture");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [bookmarkedItems, setBookmarkedItems] = useState<string[]>([]);
+  const [darkMode, setDarkMode] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+
   const toggleExpanded = (id: string) => {
-    setExpandedItems(prev => prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]);
+    setExpandedItems(prev => 
+      prev.includes(id) 
+        ? prev.filter(item => item !== id) 
+        : [...prev, id]
+    );
   };
-  const siteArchitecture: ModuleInfo[] = [{
-    name: "Système d'Authentification",
-    description: "Architecture complète d'authentification avec Supabase Auth",
-    icon: <Shield className="h-4 w-4" />,
-    type: 'service',
-    status: 'active',
-    complexity: 'high',
-    dependencies: [{
-      name: "@supabase/supabase-js",
-      type: 'import',
-      description: "Client Supabase pour l'authentification et les sessions",
-      required: true,
-      version: "^2.49.9",
-      path: "src/integrations/supabase/client.ts"
-    }, {
-      name: "@tanstack/react-query",
-      type: 'import',
-      description: "Cache et synchronisation des données d'authentification",
-      required: true,
-      version: "^5.79.2"
-    }, {
-      name: "React Context API",
-      type: 'service',
-      description: "Partage de l'état d'authentification global",
-      required: true
-    }, {
-      name: "react-router-dom",
-      type: 'import',
-      description: "Navigation et protection des routes",
-      required: true,
-      version: "^6.26.2"
-    }],
-    technicalDetails: {
-      filePath: "src/hooks/auth/",
-      mainExports: ["useAuth", "AuthProvider", "AuthGuard"],
-      stateManagement: "React Context + React Query",
-      apiEndpoints: ["/auth/login", "/auth/register", "/auth/oauth"],
-      databaseTables: ["profiles", "auth.users"],
-      realTimeFeatures: ["Session management", "Profile updates"],
-      cacheStrategy: "React Query with 5min stale time",
-      errorHandling: "Toast notifications + error boundaries"
+
+  const toggleBookmark = (id: string) => {
+    setBookmarkedItems(prev =>
+      prev.includes(id)
+        ? prev.filter(item => item !== id)
+        : [...prev, id]
+    );
+    toast({
+      title: bookmarkedItems.includes(id) ? "Signet supprimé" : "Signet ajouté",
+      description: bookmarkedItems.includes(id) 
+        ? "Element retiré des signets" 
+        : "Element ajouté aux signets"
+    });
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({
+      title: "Copié !",
+      description: "Code copié dans le presse-papiers"
+    });
+  };
+
+  const exportToPDF = () => {
+    toast({
+      title: "Export PDF",
+      description: "Fonctionnalité d'export PDF en cours de développement"
+    });
+  };
+
+  // Performance metrics data
+  const performanceMetrics = {
+    bundleSize: "2.1 MB",
+    loadTime: "1.2s",
+    firstContentfulPaint: "0.8s",
+    largestContentfulPaint: "1.1s",
+    cumulativeLayoutShift: "0.05",
+    interactions: "98ms"
+  };
+
+  // Security guidelines
+  const securityGuidelines = [
+    {
+      title: "Authentification & Sessions",
+      items: [
+        "Utilisation de JWT avec rotation automatique",
+        "Sessions sécurisées avec httpOnly cookies",
+        "Validation côté serveur pour toutes les requêtes",
+        "Rate limiting sur les endpoints sensibles"
+      ]
     },
-    children: [{
-      name: "AuthProvider",
-      description: "Context provider principal pour l'état d'authentification",
-      icon: <Code className="h-4 w-4" />,
-      type: 'component',
+    {
+      title: "Protection des Données",
+      items: [
+        "Chiffrement des données sensibles en base",
+        "RLS (Row Level Security) sur toutes les tables",
+        "Validation d'entrée stricte avec Zod",
+        "Sanitisation des données avant stockage"
+      ]
+    },
+    {
+      title: "Infrastructure",
+      items: [
+        "HTTPS obligatoire en production",
+        "Headers de sécurité CSP configurés",
+        "Backup automatique des données",
+        "Monitoring des accès et anomalies"
+      ]
+    }
+  ];
+
+  // API Documentation
+  const apiDocumentation: APIEndpoint[] = [
+    {
+      method: 'GET',
+      path: '/api/games',
+      description: 'Récupère la liste des parties d\'airsoft',
+      parameters: [
+        { name: 'page', type: 'number', required: false, description: 'Numéro de page' },
+        { name: 'limit', type: 'number', required: false, description: 'Nombre d\'éléments par page' },
+        { name: 'city', type: 'string', required: false, description: 'Filtrer par ville' }
+      ],
+      response: { type: 'Game[]', description: 'Liste des parties' },
+      example: `{
+  "data": [
+    {
+      "id": "uuid",
+      "title": "Op. Tempête du Désert",
+      "date": "2024-07-15",
+      "city": "Lyon",
+      "max_players": 50
+    }
+  ],
+  "meta": {
+    "total": 120,
+    "page": 1,
+    "limit": 10
+  }
+}`
+    },
+    {
+      method: 'POST',
+      path: '/api/games',
+      description: 'Crée une nouvelle partie d\'airsoft',
+      parameters: [
+        { name: 'title', type: 'string', required: true, description: 'Nom de la partie' },
+        { name: 'description', type: 'string', required: true, description: 'Description détaillée' },
+        { name: 'date', type: 'string', required: true, description: 'Date au format ISO' },
+        { name: 'max_players', type: 'number', required: true, description: 'Nombre maximum de joueurs' }
+      ],
+      response: { type: 'Game', description: 'Partie créée' }
+    },
+    {
+      method: 'GET',
+      path: '/api/teams/:id',
+      description: 'Récupère les détails d\'une équipe',
+      parameters: [
+        { name: 'id', type: 'uuid', required: true, description: 'ID de l\'équipe' }
+      ],
+      response: { type: 'Team', description: 'Détails de l\'équipe' }
+    },
+    {
+      method: 'POST',
+      path: '/api/messages',
+      description: 'Envoie un message dans une conversation',
+      parameters: [
+        { name: 'conversation_id', type: 'uuid', required: true, description: 'ID de la conversation' },
+        { name: 'content', type: 'string', required: true, description: 'Contenu du message' }
+      ],
+      response: { type: 'Message', description: 'Message créé' }
+    }
+  ];
+
+  const siteArchitecture: ModuleInfo[] = [
+    {
+      name: "Système d'Authentification",
+      description: "Architecture complète d'authentification avec Supabase Auth, gestion des sessions et protection des routes",
+      icon: <Shield className="h-4 w-4" />,
+      type: 'service',
       status: 'active',
       complexity: 'high',
-      dependencies: [{
-        name: "useAuthState",
-        type: 'hook',
-        description: "Hook pour la gestion de l'état d'authentification",
-        required: true,
-        path: "src/hooks/auth/useAuthState.tsx"
-      }, {
-        name: "useAuthActions",
-        type: 'hook',
-        description: "Actions d'authentification (login, logout, register)",
-        required: true,
-        path: "src/hooks/auth/useAuthActions.tsx"
-      }, {
-        name: "useAuthEventHandler",
-        type: 'hook',
-        description: "Gestion des événements Supabase Auth",
-        required: true,
-        path: "src/hooks/auth/state/useAuthEventHandler.tsx"
-      }, {
-        name: "useSessionManager",
-        type: 'hook',
-        description: "Gestion des sessions utilisateur",
-        required: true,
-        path: "src/hooks/auth/state/useSessionManager.tsx"
-      }, {
-        name: "React.createContext",
-        type: 'api',
-        description: "Création du contexte d'authentification",
-        required: true
-      }],
+      dependencies: [
+        {
+          name: "@supabase/supabase-js",
+          type: 'import',
+          description: "Client Supabase pour l'authentification et les sessions",
+          required: true,
+          version: "^2.49.9",
+          path: "src/integrations/supabase/client.ts"
+        },
+        {
+          name: "@tanstack/react-query",
+          type: 'import',
+          description: "Cache et synchronisation des données d'authentification",
+          required: true,
+          version: "^5.79.2"
+        },
+        {
+          name: "React Context API",
+          type: 'service',
+          description: "Partage de l'état d'authentification global",
+          required: true
+        }
+      ],
       technicalDetails: {
-        filePath: "src/hooks/auth/AuthProvider.tsx",
-        mainExports: ["AuthProvider", "AuthContext"],
-        stateManagement: "React Context avec useReducer",
-        realTimeFeatures: ["Session persistence", "Auto-refresh tokens"],
-        errorHandling: "Centralized error handling avec toast"
+        filePath: "src/hooks/auth/",
+        mainExports: ["useAuth", "AuthProvider", "AuthGuard"],
+        stateManagement: "React Context + React Query",
+        apiEndpoints: ["/auth/login", "/auth/register", "/auth/oauth"],
+        databaseTables: ["profiles", "auth.users"],
+        realTimeFeatures: ["Session management", "Profile updates"],
+        cacheStrategy: "React Query with 5min stale time",
+        errorHandling: "Toast notifications + error boundaries"
       },
-      codeExamples: [{
-        title: "Utilisation basique",
-        language: "typescript",
-        code: `const { user, login, logout, loading } = useAuth();
+      codeExamples: [
+        {
+          title: "Hook d'authentification basique",
+          language: "typescript",
+          category: "basic",
+          code: `const { user, login, logout, loading } = useAuth();
 
 if (loading) return <Loading />;
 if (!user) return <LoginForm />;
 
 return <Dashboard user={user} />;`
-      }],
-      dataFlows: [{
-        from: "Supabase Auth",
-        to: "AuthProvider",
-        description: "Session events et user data",
-        type: 'service'
-      }, {
-        from: "AuthProvider",
-        to: "Components",
-        description: "User state et auth actions",
-        type: 'hook'
-      }]
-    }, {
-      name: "useAuth Hook",
-      description: "Hook principal pour accéder aux données d'authentification",
-      icon: <Zap className="h-4 w-4" />,
-      type: 'hook',
-      status: 'active',
-      complexity: 'medium',
-      dependencies: [{
-        name: "AuthContext",
-        type: 'component',
-        description: "Contexte d'authentification",
-        required: true,
-        path: "src/hooks/auth/AuthProvider.tsx"
-      }, {
-        name: "React.useContext",
-        type: 'api',
-        description: "Consommation du contexte React",
-        required: true
-      }],
-      technicalDetails: {
-        filePath: "src/hooks/useAuth.tsx",
-        mainExports: ["useAuth"],
-        stateManagement: "Context consumption",
-        cacheStrategy: "No cache, direct context access",
-        errorHandling: "Throws errors to error boundary"
-      },
-      codeExamples: [{
-        title: "Hook usage avec guards",
-        language: "typescript",
-        code: `const { user, isAuthenticated, initialLoading } = useAuth();
+        },
+        {
+          title: "Protection de routes",
+          language: "typescript",
+          category: "advanced",
+          code: `const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, initialLoading } = useAuth();
+  
+  if (initialLoading) return <LoadingSpinner />;
+  
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return <>{children}</>;
+};`
+        },
+        {
+          title: "Authentification sociale",
+          language: "typescript",
+          category: "integration",
+          code: `const { signInWithOAuth } = useSocialAuth();
 
-// Loading state
-if (initialLoading) return <Spinner />;
-
-// Redirect if not authenticated
-if (!isAuthenticated) {
-  return <Navigate to="/login" replace />;
-}
-
-// Protected content
-return <ProtectedContent user={user} />;`
-      }]
-    }, {
-      name: "Social Authentication",
-      description: "OAuth avec Google et Discord",
-      icon: <Users className="h-4 w-4" />,
+const handleGoogleSignIn = async () => {
+  try {
+    await signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin
+      }
+    });
+  } catch (error) {
+    toast.error('Erreur lors de la connexion');
+  }
+};`
+        }
+      ],
+      apis: [
+        {
+          method: 'POST',
+          path: '/auth/login',
+          description: 'Connexion utilisateur avec email/mot de passe',
+          parameters: [
+            { name: 'email', type: 'string', required: true, description: 'Email de l\'utilisateur' },
+            { name: 'password', type: 'string', required: true, description: 'Mot de passe' }
+          ],
+          response: { type: 'AuthResponse', description: 'Session et données utilisateur' }
+        },
+        {
+          method: 'POST',
+          path: '/auth/register',
+          description: 'Inscription nouvel utilisateur',
+          parameters: [
+            { name: 'email', type: 'string', required: true, description: 'Email unique' },
+            { name: 'password', type: 'string', required: true, description: 'Mot de passe (min 8 caractères)' },
+            { name: 'username', type: 'string', required: true, description: 'Nom d\'utilisateur unique' }
+          ],
+          response: { type: 'AuthResponse', description: 'Confirmation d\'inscription' }
+        }
+      ]
+    },
+    {
+      name: "Système de Messagerie",
+      description: "Messagerie temps réel avec Supabase Realtime, conversations d'équipe et messages privés",
+      icon: <MessageSquare className="h-4 w-4" />,
       type: 'service',
       status: 'active',
-      complexity: 'medium',
-      dependencies: [{
-        name: "useSocialAuth",
-        type: 'hook',
-        description: "Hook pour l'authentification sociale",
-        required: true,
-        path: "src/hooks/auth/useSocialAuth.tsx"
-      }, {
-        name: "Supabase Auth",
-        type: 'service',
-        description: "Service d'authentification OAuth",
-        required: true
-      }, {
-        name: "Google OAuth API",
-        type: 'api',
-        description: "API Google pour l'authentification",
-        required: true
-      }, {
-        name: "Discord OAuth API",
-        type: 'api',
-        description: "API Discord pour l'authentification",
-        required: true
-      }],
-      technicalDetails: {
-        filePath: "src/hooks/auth/useSocialAuth.tsx",
-        mainExports: ["useSocialAuth"],
-        apiEndpoints: ["/auth/oauth/google", "/auth/oauth/discord"],
-        errorHandling: "OAuth redirect error handling",
-        cacheStrategy: "Session storage for OAuth state"
-      }
-    }]
-  }, {
-    name: "Système de Messagerie",
-    description: "Messagerie temps réel avec Supabase Realtime",
-    icon: <MessageSquare className="h-4 w-4" />,
-    type: 'service',
-    status: 'active',
-    complexity: 'high',
-    dependencies: [{
-      name: "@supabase/supabase-js",
-      type: 'import',
-      description: "Client Supabase pour les subscriptions temps réel",
-      required: true,
-      version: "^2.49.9"
-    }, {
-      name: "@tanstack/react-query",
-      type: 'import',
-      description: "Cache et mutations pour les messages",
-      required: true,
-      version: "^5.79.2"
-    }, {
-      name: "Zustand",
-      type: 'import',
-      description: "State management pour l'état des conversations",
-      required: false
-    }, {
-      name: "useAuth",
-      type: 'hook',
-      description: "Authentification utilisateur pour les messages",
-      required: true,
-      path: "src/hooks/useAuth.tsx"
-    }],
-    technicalDetails: {
-      filePath: "src/components/messaging/",
-      mainExports: ["MessagingIcon", "ChatView", "ConversationList"],
-      stateManagement: "React Query + Zustand",
-      databaseTables: ["conversations", "messages", "conversation_participants"],
-      realTimeFeatures: ["Live messages", "Typing indicators", "Online presence"],
-      cacheStrategy: "Infinite query avec optimistic updates",
-      errorHandling: "Retry logic + offline support"
-    },
-    children: [{
-      name: "Conversations Management",
-      description: "Gestion des conversations directes et d'équipe",
-      icon: <MessageSquare className="h-4 w-4" />,
-      type: 'component',
-      status: 'active',
       complexity: 'high',
-      dependencies: [{
-        name: "useOptimizedConversations",
-        type: 'hook',
-        description: "Hook optimisé pour les conversations",
-        required: true,
-        path: "src/hooks/messaging/useOptimizedConversations.tsx"
-      }, {
-        name: "useConversationData",
-        type: 'hook',
-        description: "Données des conversations",
-        required: true,
-        path: "src/hooks/messaging/useConversationData.tsx"
-      }, {
-        name: "ConversationItem",
-        type: 'component',
-        description: "Composant d'affichage d'une conversation",
-        required: true,
-        path: "src/components/messaging/ConversationItem.tsx"
-      }, {
-        name: "EmptyConversations",
-        type: 'component',
-        description: "État vide des conversations",
-        required: true,
-        path: "src/components/messaging/EmptyConversations.tsx"
-      }],
+      dependencies: [
+        {
+          name: "@supabase/supabase-js",
+          type: 'import',
+          description: "Client Supabase pour les subscriptions temps réel",
+          required: true,
+          version: "^2.49.9"
+        },
+        {
+          name: "@tanstack/react-query",
+          type: 'import',
+          description: "Cache et mutations pour les messages",
+          required: true,
+          version: "^5.79.2"
+        }
+      ],
       technicalDetails: {
-        filePath: "src/hooks/messaging/useOptimizedConversations.tsx",
-        mainExports: ["useOptimizedConversations"],
-        stateManagement: "React Query avec pagination",
-        realTimeFeatures: ["Live conversation updates", "Unread count"],
-        cacheStrategy: "Stale-while-revalidate avec 30s stale time",
-        errorHandling: "Exponential backoff retry"
+        filePath: "src/components/messaging/",
+        mainExports: ["MessagingIcon", "ChatView", "ConversationList"],
+        stateManagement: "React Query + Optimistic Updates",
+        databaseTables: ["conversations", "messages", "conversation_participants"],
+        realTimeFeatures: ["Live messages", "Typing indicators", "Online presence"],
+        cacheStrategy: "Infinite query avec optimistic updates",
+        errorHandling: "Retry logic + offline support"
       },
-      codeExamples: [{
-        title: "Fetch conversations avec real-time",
-        language: "typescript",
-        code: `const { 
-  conversations, 
-  isLoading, 
-  hasNextPage, 
-  fetchNextPage 
-} = useOptimizedConversations();
+      codeExamples: [
+        {
+          title: "Envoi de message avec optimistic update",
+          language: "typescript",
+          category: "advanced",
+          code: `const { sendMessage } = useMessageActions(conversationId);
 
-// Real-time subscription
-useEffect(() => {
-  const channel = supabase
-    .channel('conversations')
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'conversations'
-    }, handleConversationUpdate)
-    .subscribe();
-
-  return () => supabase.removeChannel(channel);
-}, []);`
-      }]
-    }, {
-      name: "Real-time Messages",
-      description: "Messages en temps réel avec optimistic updates",
-      icon: <Zap className="h-4 w-4" />,
-      type: 'hook',
-      status: 'active',
-      complexity: 'high',
-      dependencies: [{
-        name: "useRealtimeMessages",
-        type: 'hook',
-        description: "Hook pour les messages temps réel",
-        required: true,
-        path: "src/hooks/messaging/useRealtimeMessages.tsx"
-      }, {
-        name: "useMessageActions",
-        type: 'hook',
-        description: "Actions sur les messages (send, edit, delete)",
-        required: true,
-        path: "src/hooks/messaging/useMessageActions.tsx"
-      }, {
-        name: "useMessagesData",
-        type: 'hook',
-        description: "Données des messages",
-        required: true,
-        path: "src/hooks/messaging/useMessagesData.tsx"
-      }, {
-        name: "MessageItem",
-        type: 'component',
-        description: "Composant d'affichage d'un message",
-        required: true,
-        path: "src/components/messaging/MessageItem.tsx"
-      }, {
-        name: "MessageInput",
-        type: 'component',
-        description: "Composant de saisie de message",
-        required: true,
-        path: "src/components/messaging/MessageInput.tsx"
-      }],
-      technicalDetails: {
-        filePath: "src/hooks/messaging/useRealtimeMessages.tsx",
-        mainExports: ["useRealtimeMessages"],
-        stateManagement: "React Query mutations",
-        realTimeFeatures: ["Live message updates", "Delivery status"],
-        cacheStrategy: "Optimistic updates avec rollback",
-        errorHandling: "Message retry queue"
-      },
-      codeExamples: [{
-        title: "Optimistic message sending",
-        language: "typescript",
-        code: `const { sendMessage, messages } = useRealtimeMessages(conversationId);
-
-const handleSendMessage = async (content: string) => {
-  // Optimistic update
+const handleSend = async (content: string) => {
   const tempMessage = {
     id: generateTempId(),
     content,
@@ -409,1106 +380,1077 @@ const handleSendMessage = async (content: string) => {
   try {
     await sendMessage.mutateAsync(content);
   } catch (error) {
-    // Rollback optimistic update
-    showErrorToast('Échec de l\'envoi du message');
+    showErrorToast('Échec de l\'envoi');
   }
 };`
-      }]
-    }, {
-      name: "User Presence",
-      description: "Système de présence utilisateur en temps réel",
-      icon: <Users className="h-4 w-4" />,
-      type: 'hook',
-      status: 'active',
-      complexity: 'medium',
-      dependencies: [{
-        name: "useUserPresence",
-        type: 'hook',
-        description: "Hook pour la présence utilisateur",
-        required: true,
-        path: "src/hooks/messaging/useUserPresence.tsx"
-      }, {
-        name: "Supabase Realtime",
-        type: 'service',
-        description: "Service temps réel pour la présence",
-        required: true
-      }, {
-        name: "useAuth",
-        type: 'hook',
-        description: "Authentification pour associer la présence",
-        required: true,
-        path: "src/hooks/useAuth.tsx"
-      }],
-      technicalDetails: {
-        filePath: "src/hooks/messaging/useUserPresence.tsx",
-        mainExports: ["useUserPresence", "useIsUserOnline"],
-        databaseTables: ["user_presence"],
-        realTimeFeatures: ["Online status", "Last seen"],
-        cacheStrategy: "Background updates every 30s",
-        errorHandling: "Graceful degradation if offline"
-      }
-    }]
-  }, {
-    name: "Système de Jeux",
-    description: "Gestion complète des parties d'airsoft",
-    icon: <Gamepad2 className="h-4 w-4" />,
-    type: 'service',
-    status: 'active',
-    complexity: 'high',
-    dependencies: [{
-      name: "react-hook-form",
-      type: 'import',
-      description: "Gestion des formulaires de création/édition",
-      required: true,
-      version: "^7.56.4"
-    }, {
-      name: "zod",
-      type: 'import',
-      description: "Validation des schémas de jeu",
-      required: true,
-      version: "^3.25.56"
-    }, {
-      name: "@hookform/resolvers",
-      type: 'import',
-      description: "Intégration Zod avec React Hook Form",
-      required: true,
-      version: "^5.0.1"
-    }, {
-      name: "mapbox-gl",
-      type: 'import',
-      description: "Cartes pour la localisation des jeux",
-      required: true,
-      version: "^3.11.0"
-    }, {
-      name: "useAuth",
-      type: 'hook',
-      description: "Authentification pour les actions de jeu",
-      required: true,
-      path: "src/hooks/useAuth.tsx"
-    }],
-    technicalDetails: {
-      filePath: "src/pages/",
-      mainExports: ["GameDetails", "CreateParty", "EditGame"],
-      databaseTables: ["airsoft_games", "game_participants", "game_comments"],
-      stateManagement: "React Query + React Hook Form",
-      cacheStrategy: "Aggressive caching avec background refetch",
-      errorHandling: "Form validation + server error handling"
+        },
+        {
+          title: "Subscription temps réel",
+          language: "typescript",
+          category: "integration",
+          code: `useEffect(() => {
+  const channel = supabase
+    .channel('messages')
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'messages'
+    }, handleNewMessage)
+    .subscribe();
+
+  return () => supabase.removeChannel(channel);
+}, [conversationId]);`
+        }
+      ]
     },
-    children: [{
-      name: "Game Creation Flow",
-      description: "Processus complet de création de partie",
+    {
+      name: "Système de Jeux",
+      description: "Gestion complète des parties d'airsoft avec géolocalisation, inscriptions et commentaires",
       icon: <Gamepad2 className="h-4 w-4" />,
-      type: 'component',
+      type: 'service',
       status: 'active',
       complexity: 'high',
-      dependencies: [{
-        name: "useCreatePartyForm",
-        type: 'hook',
-        description: "Hook pour le formulaire de création",
-        required: true,
-        path: "src/hooks/party/useCreatePartyForm.tsx"
-      }, {
-        name: "usePartyFormValidation",
-        type: 'hook',
-        description: "Validation du formulaire de partie",
-        required: true,
-        path: "src/hooks/party/usePartyFormValidation.ts"
-      }, {
-        name: "useImageUpload",
-        type: 'hook',
-        description: "Upload d'images pour le jeu",
-        required: true,
-        path: "src/hooks/useImageUpload.ts"
-      }, {
-        name: "CoordinatesInput",
-        type: 'component',
-        description: "Input pour les coordonnées GPS",
-        required: true,
-        path: "src/components/party/CoordinatesInput.tsx"
-      }, {
-        name: "LocationSection",
-        type: 'component',
-        description: "Section de localisation",
-        required: true,
-        path: "src/components/party/LocationSection.tsx"
-      }, {
-        name: "ImageUploadSection",
-        type: 'component',
-        description: "Section d'upload d'images",
-        required: true,
-        path: "src/components/party/ImageUploadSection.tsx"
-      }],
+      dependencies: [
+        {
+          name: "react-hook-form",
+          type: 'import',
+          description: "Gestion des formulaires de création/édition",
+          required: true,
+          version: "^7.56.4"
+        },
+        {
+          name: "zod",
+          type: 'import',
+          description: "Validation des schémas de jeu",
+          required: true,
+          version: "^3.25.56"
+        },
+        {
+          name: "mapbox-gl",
+          type: 'import',
+          description: "Cartes pour la localisation des jeux",
+          required: true,
+          version: "^3.11.0"
+        }
+      ],
       technicalDetails: {
-        filePath: "src/pages/CreateParty.tsx",
-        mainExports: ["CreateParty"],
-        stateManagement: "React Hook Form avec Zod validation",
-        apiEndpoints: ["/api/games", "/api/upload"],
-        errorHandling: "Multi-step form validation"
+        filePath: "src/pages/",
+        mainExports: ["GameDetails", "CreateParty", "EditGame"],
+        databaseTables: ["airsoft_games", "game_participants", "game_comments"],
+        stateManagement: "React Query + React Hook Form",
+        cacheStrategy: "Aggressive caching avec background refetch",
+        errorHandling: "Form validation + server error handling"
       },
-      codeExamples: [{
-        title: "Form validation avec Zod",
-        language: "typescript",
-        code: `const gameSchema = z.object({
-  title: z.string().min(3, "Titre trop court"),
-  date: z.date().min(new Date(), "Date dans le futur"),
-  max_players: z.number().min(2).max(100),
-  coordinates: z.object({
-    lat: z.number(),
-    lng: z.number()
-  })
+      codeExamples: [
+        {
+          title: "Validation de formulaire de jeu",
+          language: "typescript",
+          category: "basic",
+          code: `const gameSchema = z.object({
+  title: z.string().min(5, "Titre trop court"),
+  date: z.string().refine(date => new Date(date) > new Date(), "Date invalide"),
+  max_players: z.number().min(6).max(200),
+  city: z.string().min(2),
+  description: z.string().min(20)
 });
 
-const form = useForm<GameFormData>({
-  resolver: zodResolver(gameSchema),
-  defaultValues: {
-    title: "",
-    date: undefined,
-    max_players: 20
-  }
+const { register, handleSubmit, formState: { errors } } = useForm({
+  resolver: zodResolver(gameSchema)
 });`
-      }]
-    }, {
-      name: "Game Registration System",
-      description: "Système d'inscription aux parties",
+        }
+      ]
+    },
+    {
+      name: "Système d'Équipes",
+      description: "Gestion des équipes d'airsoft avec hiérarchie, invitations et actualités",
       icon: <Users className="h-4 w-4" />,
-      type: 'component',
+      type: 'service',
       status: 'active',
       complexity: 'medium',
-      dependencies: [{
-        name: "useGameRegistration",
-        type: 'hook',
-        description: "Hook pour l'inscription aux jeux",
-        required: true,
-        path: "src/hooks/game/useGameRegistration.tsx"
-      }, {
-        name: "RegistrationDialog",
-        type: 'component',
-        description: "Dialog d'inscription",
-        required: true,
-        path: "src/components/game/RegistrationDialog.tsx"
-      }, {
-        name: "ParticipantsDialog",
-        type: 'component',
-        description: "Dialog des participants",
-        required: true,
-        path: "src/components/game/ParticipantsDialog.tsx"
-      }, {
-        name: "useAuth",
-        type: 'hook',
-        description: "Authentification pour l'inscription",
-        required: true,
-        path: "src/hooks/useAuth.tsx"
-      }],
       technicalDetails: {
-        filePath: "src/hooks/game/useGameRegistration.tsx",
-        mainExports: ["useGameRegistration"],
-        databaseTables: ["game_participants"],
-        stateManagement: "React Query mutations",
-        cacheStrategy: "Invalidate queries on registration",
-        errorHandling: "Conflict resolution pour places limitées"
+        filePath: "src/components/team/",
+        mainExports: ["TeamView", "TeamSettings", "TeamMembers"],
+        databaseTables: ["teams", "team_members", "team_invitations", "team_news"],
+        stateManagement: "React Query avec mutations",
+        cacheStrategy: "Team data cached pour 10min",
+        errorHandling: "Validation permissions + rollback"
       }
-    }]
-  }, {
-    name: "Système d'Équipes",
-    description: "Gestion complète des équipes d'airsoft",
-    icon: <Users className="h-4 w-4" />,
-    type: 'service',
-    status: 'active',
-    complexity: 'high',
-    dependencies: [{
-      name: "@tanstack/react-query",
-      type: 'import',
-      description: "Cache et mutations pour les équipes",
-      required: true,
-      version: "^5.79.2"
-    }, {
-      name: "react-hook-form",
-      type: 'import',
-      description: "Formulaires d'équipe",
-      required: true,
-      version: "^7.56.4"
-    }, {
-      name: "zod",
-      type: 'import',
-      description: "Validation des données d'équipe",
-      required: true,
-      version: "^3.25.56"
-    }, {
-      name: "useAuth",
-      type: 'hook',
-      description: "Authentification pour les actions d'équipe",
-      required: true,
-      path: "src/hooks/useAuth.tsx"
-    }],
-    technicalDetails: {
-      filePath: "src/components/team/",
-      databaseTables: ["teams", "team_members", "team_invitations", "team_news"],
-      stateManagement: "React Query + Context pour team state",
-      realTimeFeatures: ["Team invitations", "Member updates"],
-      cacheStrategy: "Hierarchical caching par team",
-      errorHandling: "Permission-based error handling"
     },
-    children: [{
-      name: "Team Management",
-      description: "Gestion des membres et permissions",
-      icon: <Settings className="h-4 w-4" />,
-      type: 'component',
-      status: 'active',
-      complexity: 'high',
-      dependencies: [{
-        name: "useTeamMemberActions",
-        type: 'hook',
-        description: "Actions sur les membres d'équipe",
-        required: true,
-        path: "src/hooks/team/useTeamMemberActions.tsx"
-      }, {
-        name: "useTeamData",
-        type: 'hook',
-        description: "Données de l'équipe",
-        required: true,
-        path: "src/hooks/useTeamData.ts"
-      }, {
-        name: "useTeamSettings",
-        type: 'hook',
-        description: "Paramètres de l'équipe",
-        required: true,
-        path: "src/hooks/useTeamSettings.ts"
-      }, {
-        name: "TeamMembers",
-        type: 'component',
-        description: "Liste des membres",
-        required: true,
-        path: "src/components/team/TeamMembers.tsx"
-      }, {
-        name: "TeamSettingsMembers",
-        type: 'component',
-        description: "Gestion des membres dans les paramètres",
-        required: true,
-        path: "src/components/team/TeamSettingsMembers.tsx"
-      }],
-      technicalDetails: {
-        filePath: "src/hooks/team/useTeamMemberActions.tsx",
-        mainExports: ["useTeamMemberActions"],
-        databaseTables: ["team_members", "team_invitations"],
-        stateManagement: "React Query avec optimistic updates",
-        errorHandling: "Role-based action validation"
-      },
-      codeExamples: [{
-        title: "Gestion des permissions d'équipe",
-        language: "typescript",
-        code: `const { 
-  inviteMember, 
-  removeMember, 
-  updateMemberRole,
-  canManageMembers 
-} = useTeamMemberActions(teamId);
-
-// Permission check
-if (!canManageMembers) {
-  return <AccessDenied />;
-}
-
-const handleInvite = async (email: string) => {
-  try {
-    await inviteMember.mutateAsync({ 
-      email, 
-      role: 'member' 
-    });
-    showSuccessToast('Invitation envoyée');
-  } catch (error) {
-    handleTeamError(error);
-  }
-};`
-      }]
-    }]
-  }, {
-    name: "Système de Notifications",
-    description: "Notifications en temps réel multi-types",
-    icon: <Bell className="h-4 w-4" />,
-    type: 'service',
-    status: 'active',
-    complexity: 'medium',
-    dependencies: [{
-      name: "@tanstack/react-query",
-      type: 'import',
-      description: "Cache pour les notifications",
-      required: true,
-      version: "^5.79.2"
-    }, {
-      name: "@supabase/supabase-js",
-      type: 'import',
-      description: "Real-time pour les notifications",
-      required: true,
-      version: "^2.49.9"
-    }, {
-      name: "sonner",
-      type: 'import',
-      description: "Toast notifications",
-      required: true,
-      version: "^1.5.0"
-    }, {
-      name: "useAuth",
-      type: 'hook',
-      description: "Authentification pour les notifications",
-      required: true,
-      path: "src/hooks/useAuth.tsx"
-    }],
-    technicalDetails: {
-      filePath: "src/hooks/notifications/",
-      mainExports: ["useNotifications", "useOptimizedNotifications"],
-      databaseTables: ["notifications"],
-      stateManagement: "React Query avec polling",
-      realTimeFeatures: ["Live notifications", "Push notifications"],
-      cacheStrategy: "Background polling every 30s",
-      errorHandling: "Graceful degradation + retry"
-    },
-    children: [{
-      name: "Notification Types",
-      description: "Différents types de notifications système",
+    {
+      name: "Système de Notifications",
+      description: "Notifications en temps réel pour toutes les interactions",
       icon: <Bell className="h-4 w-4" />,
       type: 'service',
       status: 'active',
       complexity: 'medium',
-      features: ["Friend requests", "Team invitations", "Game updates", "Admin notifications", "System announcements"],
-      dependencies: [{
-        name: "useNotificationActions",
-        type: 'hook',
-        description: "Actions sur les notifications",
-        required: true,
-        path: "src/hooks/notifications/useNotificationActions.tsx"
-      }, {
-        name: "useFriendRequestActions",
-        type: 'hook',
-        description: "Actions pour les demandes d'amis",
-        required: true,
-        path: "src/hooks/notifications/useFriendRequestActions.tsx"
-      }, {
-        name: "useTeamInvitationActions",
-        type: 'hook',
-        description: "Actions pour les invitations d'équipe",
-        required: true,
-        path: "src/hooks/notifications/useTeamInvitationActions.tsx"
-      }, {
-        name: "NotificationItem",
-        type: 'component',
-        description: "Composant d'affichage d'une notification",
-        required: true,
-        path: "src/components/notifications/NotificationItem.tsx"
-      }, {
-        name: "NotificationList",
-        type: 'component',
-        description: "Liste des notifications",
-        required: true,
-        path: "src/components/notifications/NotificationList.tsx"
-      }],
       technicalDetails: {
-        filePath: "src/components/notifications/",
-        mainExports: ["NotificationItem", "NotificationList"],
-        stateManagement: "React Query avec real-time updates",
-        realTimeFeatures: ["Live notification count", "Auto-mark as read"],
-        cacheStrategy: "Prefetch notification details"
+        filePath: "src/hooks/useNotifications.tsx",
+        mainExports: ["useNotifications", "NotificationList"],
+        databaseTables: ["notifications"],
+        realTimeFeatures: ["Live notifications", "Push notifications"],
+        cacheStrategy: "Real-time updates avec cache local"
       }
-    }]
-  }, {
-    name: "Base de Données",
-    description: "Architecture Supabase avec RLS",
-    icon: <Database className="h-4 w-4" />,
-    type: 'database',
-    status: 'active',
-    complexity: 'high',
-    dependencies: [{
-      name: "PostgreSQL",
-      type: 'database',
-      description: "Base de données principale",
-      required: true,
-      version: "15+"
-    }, {
-      name: "Supabase Platform",
-      type: 'service',
-      description: "Platform BaaS pour PostgreSQL",
-      required: true
-    }, {
-      name: "Row Level Security",
-      type: 'database',
-      description: "Sécurité au niveau des lignes",
-      required: true
-    }, {
-      name: "Supabase Realtime",
-      type: 'service',
-      description: "Service temps réel",
-      required: true
-    }],
-    technicalDetails: {
-      filePath: "supabase/migrations/",
-      databaseTables: ["25+ tables avec relations complexes"],
-      stateManagement: "Row Level Security (RLS)",
-      realTimeFeatures: ["Tous les tables avec REPLICA IDENTITY FULL"],
-      cacheStrategy: "Supabase edge caching",
-      errorHandling: "Database triggers + constraints"
-    },
-    children: [{
-      name: "Security Architecture",
-      description: "Système de sécurité avec RLS et policies",
-      icon: <Shield className="h-4 w-4" />,
-      type: 'database',
-      status: 'active',
-      complexity: 'high',
-      dependencies: [{
-        name: "PostgreSQL RLS",
-        type: 'database',
-        description: "Row Level Security natif PostgreSQL",
-        required: true
-      }, {
-        name: "Supabase Auth",
-        type: 'service',
-        description: "Service d'authentification intégré",
-        required: true
-      }, {
-        name: "auth.uid()",
-        type: 'utility',
-        description: "Fonction Supabase pour l'ID utilisateur",
-        required: true
-      }, {
-        name: "auth.jwt()",
-        type: 'utility',
-        description: "Fonction Supabase pour les claims JWT",
-        required: true
-      }],
-      technicalDetails: {
-        filePath: "supabase/migrations/",
-        mainExports: ["RLS Policies", "Security Functions"],
-        stateManagement: "Row Level Security",
-        errorHandling: "Policy-based access control"
-      },
-      codeExamples: [{
-        title: "Exemple de RLS Policy",
-        language: "sql",
-        code: `-- Policy pour les messages privés
-CREATE POLICY "Users can only see their own messages" ON messages
-  FOR SELECT USING (
-    sender_id = auth.uid() OR
-    EXISTS (
-      SELECT 1 FROM conversation_participants cp
-      WHERE cp.conversation_id = messages.conversation_id
-      AND cp.user_id = auth.uid()
-    )
-  );`
-      }]
-    }, {
-      name: "Real-time Subscriptions",
-      description: "Configuration temps réel pour toutes les tables",
-      icon: <Zap className="h-4 w-4" />,
-      type: 'database',
-      status: 'active',
-      complexity: 'medium',
-      dependencies: [{
-        name: "Supabase Realtime Server",
-        type: 'service',
-        description: "Serveur temps réel Supabase",
-        required: true
-      }, {
-        name: "PostgreSQL WAL",
-        type: 'database',
-        description: "Write-Ahead Log pour le streaming",
-        required: true
-      }, {
-        name: "Phoenix Channels",
-        type: 'service',
-        description: "WebSocket channels pour le temps réel",
-        required: true
-      }],
-      technicalDetails: {
-        filePath: "supabase/migrations/",
-        realTimeFeatures: ["Toutes tables en REPLICA IDENTITY FULL"],
-        cacheStrategy: "Supabase realtime avec filtering",
-        errorHandling: "Connection resilience"
-      },
-      codeExamples: [{
-        title: "Configuration realtime",
-        language: "sql",
-        code: `-- Enable realtime
-ALTER TABLE messages REPLICA IDENTITY FULL;
-ALTER TABLE conversations REPLICA IDENTITY FULL;
-ALTER TABLE notifications REPLICA IDENTITY FULL;
-
--- Add to publication
-ALTER PUBLICATION supabase_realtime ADD TABLE messages;
-ALTER PUBLICATION supabase_realtime ADD TABLE conversations;`
-      }]
-    }]
-  }];
-  const architecturePrinciples = [{
-    title: "Separation of Concerns",
-    description: "Chaque module a une responsabilité claire et définie",
-    icon: <Layers className="h-4 w-4" />,
-    examples: ["Hooks pour la logique métier", "Components pour l'UI", "Services pour les API calls", "Utils pour les fonctions helper"]
-  }, {
-    title: "Data Fetching Strategy",
-    description: "React Query pour le cache et state management",
-    icon: <Database className="h-4 w-4" />,
-    examples: ["Stale-while-revalidate par défaut", "Optimistic updates pour les mutations", "Background refetch pour les données critiques", "Infinite queries pour les listes paginées"]
-  }, {
-    title: "Error Handling",
-    description: "Gestion d'erreurs à plusieurs niveaux",
-    icon: <AlertCircle className="h-4 w-4" />,
-    examples: ["Error boundaries pour les erreurs React", "Toast notifications pour les erreurs user", "Retry logic pour les erreurs réseau", "Graceful degradation pour l'offline"]
-  }, {
-    title: "Performance Optimization",
-    description: "Optimisations pour une expérience fluide",
-    icon: <Zap className="h-4 w-4" />,
-    examples: ["Code splitting par route", "Lazy loading des composants", "Memoization des calculs coûteux", "Virtual scrolling pour les grandes listes"]
-  }];
-  const codePatterns = [{
-    title: "Custom Hooks Pattern",
-    description: "Encapsulation de la logique métier",
-    code: `// Hook personnalisé pour la gestion des jeux
-export const useGameData = (gameId: string) => {
-  const { data: game, isLoading } = useQuery({
-    queryKey: ['game', gameId],
-    queryFn: () => fetchGameById(gameId),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-
-  const { mutate: updateGame } = useMutation({
-    mutationFn: updateGameData,
-    onSuccess: () => {
-      queryClient.invalidateQueries(['game', gameId]);
-      showSuccessToast('Jeu mis à jour');
-    },
-    onError: (error) => {
-      handleGameError(error);
     }
-  });
+  ];
 
-  return { game, isLoading, updateGame };
-};`
-  }, {
-    title: "Optimistic Updates Pattern",
-    description: "Mise à jour optimiste pour l'UX",
-    code: `const { mutate: sendMessage } = useMutation({
-  mutationFn: async (content: string) => {
-    // Optimistic update
-    queryClient.setQueryData(['messages', conversationId], (old) => [
-      ...old,
-      { id: tempId, content, status: 'sending' }
-    ]);
-
-    const result = await sendMessageAPI(content);
+  // Filter and search functionality
+  const filteredArchitecture = useMemo(() => {
+    if (!searchQuery && selectedCategory === "all") return siteArchitecture;
     
-    // Replace temp message with real one
-    queryClient.setQueryData(['messages', conversationId], (old) =>
-      old.map(msg => msg.id === tempId ? result : msg)
-    );
-
-    return result;
-  },
-  onError: () => {
-    // Rollback on error
-    queryClient.setQueryData(['messages', conversationId], (old) =>
-      old.filter(msg => msg.id !== tempId)
-    );
-  }
-});`
-  }, {
-    title: "Real-time Subscription Pattern",
-    description: "Intégration Supabase Realtime",
-    code: `useEffect(() => {
-  const channel = supabase
-    .channel(\`game-\${gameId}\`)
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'game_participants',
-      filter: \`game_id=eq.\${gameId}\`
-    }, (payload) => {
-      queryClient.invalidateQueries(['game', gameId, 'participants']);
-    })
-    .subscribe();
-
-  return () => {
-    supabase.removeChannel(channel);
-  };
-}, [gameId]);`
-  }, {
-    title: "Form Validation Pattern",
-    description: "Validation avec Zod et React Hook Form",
-    code: `const schema = z.object({
-  title: z.string().min(3, 'Titre requis'),
-  date: z.date().min(new Date(), 'Date future requise'),
-  maxPlayers: z.number().min(2).max(100)
-});
-
-const form = useForm<FormData>({
-  resolver: zodResolver(schema),
-  defaultValues: {
-    title: '',
-    maxPlayers: 20
-  }
-});
-
-const onSubmit = async (data: FormData) => {
-  try {
-    await createGame.mutateAsync(data);
-    navigate('/games');
-  } catch (error) {
-    form.setError('root', { message: error.message });
-  }
-};`
-  }];
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-800';
-      case 'beta':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'deprecated':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'page':
-        return 'bg-blue-100 text-blue-800';
-      case 'component':
-        return 'bg-purple-100 text-purple-800';
-      case 'hook':
-        return 'bg-orange-100 text-orange-800';
-      case 'service':
-        return 'bg-indigo-100 text-indigo-800';
-      case 'database':
-        return 'bg-cyan-100 text-cyan-800';
-      case 'utility':
-        return 'bg-pink-100 text-pink-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-  const getComplexityColor = (complexity: string) => {
-    switch (complexity) {
-      case 'low':
-        return 'bg-green-100 text-green-700';
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-700';
-      case 'high':
-        return 'bg-red-100 text-red-700';
-      default:
-        return 'bg-gray-100 text-gray-700';
-    }
-  };
-  const getDependencyTypeColor = (type: string) => {
-    switch (type) {
-      case 'import':
-        return 'bg-blue-100 text-blue-700';
-      case 'hook':
-        return 'bg-orange-100 text-orange-700';
-      case 'component':
-        return 'bg-purple-100 text-purple-700';
-      case 'service':
-        return 'bg-indigo-100 text-indigo-700';
-      case 'database':
-        return 'bg-cyan-100 text-cyan-700';
-      case 'api':
-        return 'bg-green-100 text-green-700';
-      case 'utility':
-        return 'bg-pink-100 text-pink-700';
-      default:
-        return 'bg-gray-100 text-gray-700';
-    }
-  };
-  const renderModuleTree = (modules: ModuleInfo[], level = 0) => {
-    return modules.map((module, index) => {
-      const hasChildren = module.children && module.children.length > 0;
-      const itemId = `${level}-${index}`;
-      const isExpanded = expandedItems.includes(itemId);
-      return <div key={itemId} className={`${level > 0 ? 'ml-6 border-l border-gray-200 pl-4' : ''}`}>
-          <Collapsible>
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" className="w-full justify-start p-3 h-auto hover:bg-gray-50" onClick={() => hasChildren && toggleExpanded(itemId)}>
-                <div className="flex items-start gap-3 w-full">
-                  {hasChildren ? isExpanded ? <ChevronDown className="h-4 w-4 mt-1" /> : <ChevronRight className="h-4 w-4 mt-1" /> : <div className="w-4" />}
-                  {module.icon}
-                  <div className="flex-1 text-left">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="font-semibold text-gray-900">{module.name}</span>
-                      <Badge className={getStatusColor(module.status)} variant="outline">
-                        {module.status}
-                      </Badge>
-                      <Badge className={getTypeColor(module.type)} variant="outline">
-                        {module.type}
-                      </Badge>
-                      <Badge className={getComplexityColor(module.complexity)} variant="outline">
-                        {module.complexity}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-3">{module.description}</p>
-                    
-                    {/* Dependencies */}
-                    {module.dependencies && module.dependencies.length > 0 && <div className="mb-3">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Package className="h-4 w-4 text-gray-500" />
-                          <span className="text-sm font-medium text-gray-700">Dépendances:</span>
-                        </div>
-                        <div className="space-y-2">
-                          {module.dependencies.map((dep, idx) => <div key={idx} className="bg-gray-50 p-2 rounded-lg">
-                              <div className="flex items-center gap-2 mb-1">
-                                <Badge className={getDependencyTypeColor(dep.type)} variant="outline">
-                                  {dep.type}
-                                </Badge>
-                                <span className="font-medium text-sm text-gray-900">{dep.name}</span>
-                                {dep.version && <Badge variant="outline" className="text-xs bg-gray-100 text-gray-600">
-                                    {dep.version}
-                                  </Badge>}
-                                {dep.required && <Badge variant="outline" className="text-xs bg-red-100 text-red-700">
-                                    requis
-                                  </Badge>}
-                              </div>
-                              <p className="text-xs text-gray-600 mb-1">{dep.description}</p>
-                              {dep.path && <div className="flex items-center gap-1">
-                                  <ArrowRight className="h-3 w-3 text-gray-400" />
-                                  <code className="text-xs text-purple-600">{dep.path}</code>
-                                </div>}
-                            </div>)}
-                        </div>
-                      </div>}
-
-                    {/* Features */}
-                    {module.features && <div className="mb-3">
-                        <span className="text-xs font-medium text-gray-500 mb-1 block">Fonctionnalités:</span>
-                        <div className="flex flex-wrap gap-1">
-                          {module.features.map((feature, idx) => <Badge key={idx} className="bg-blue-50 text-blue-700 text-xs" variant="outline">
-                              {feature}
-                            </Badge>)}
-                        </div>
-                      </div>}
-
-                    {/* Technical Details */}
-                    {module.technicalDetails && <div className="bg-gray-50 p-3 rounded-lg mb-3 text-xs">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                          {module.technicalDetails.filePath && <div>
-                              <span className="font-medium text-gray-700">Chemin:</span>
-                              <code className="ml-1 text-purple-600">{module.technicalDetails.filePath}</code>
-                            </div>}
-                          {module.technicalDetails.mainExports && <div>
-                              <span className="font-medium text-gray-700">Exports:</span>
-                              <span className="ml-1 text-green-600">{module.technicalDetails.mainExports.join(', ')}</span>
-                            </div>}
-                          {module.technicalDetails.stateManagement && <div>
-                              <span className="font-medium text-gray-700">State:</span>
-                              <span className="ml-1 text-orange-600">{module.technicalDetails.stateManagement}</span>
-                            </div>}
-                          {module.technicalDetails.cacheStrategy && <div>
-                              <span className="font-medium text-gray-700">Cache:</span>
-                              <span className="ml-1 text-blue-600">{module.technicalDetails.cacheStrategy}</span>
-                            </div>}
-                          {module.technicalDetails.realTimeFeatures && <div className="md:col-span-2">
-                              <span className="font-medium text-gray-700">Real-time:</span>
-                              <span className="ml-1 text-red-600">{module.technicalDetails.realTimeFeatures.join(', ')}</span>
-                            </div>}
-                          {module.technicalDetails.errorHandling && <div className="md:col-span-2">
-                              <span className="font-medium text-gray-700">Error Handling:</span>
-                              <span className="ml-1 text-yellow-600">{module.technicalDetails.errorHandling}</span>
-                            </div>}
-                        </div>
-                      </div>}
-
-                    {/* Code Examples */}
-                    {module.codeExamples && <div className="mb-3">
-                        <span className="text-xs font-medium text-gray-500 mb-2 block">Exemples de code:</span>
-                        {module.codeExamples.map((example, idx) => <div key={idx} className="bg-gray-900 text-gray-100 p-3 rounded-lg text-xs mb-2">
-                            <div className="text-green-400 font-medium mb-1">{example.title}</div>
-                            <pre className="whitespace-pre-wrap overflow-x-auto">
-                              <code>{example.code}</code>
-                            </pre>
-                          </div>)}
-                      </div>}
-
-                    {/* Data Flows */}
-                    {module.dataFlows && <div className="mb-3">
-                        <span className="text-xs font-medium text-gray-500 mb-2 block">Flux de données:</span>
-                        <div className="space-y-1">
-                          {module.dataFlows.map((flow, idx) => <div key={idx} className="flex items-center gap-2 text-xs">
-                              <span className="font-medium text-blue-600">{flow.from}</span>
-                              <span className="text-gray-400">→</span>
-                              <span className="font-medium text-green-600">{flow.to}</span>
-                              <span className="text-gray-500">({flow.description})</span>
-                            </div>)}
-                        </div>
-                      </div>}
-                  </div>
-                </div>
-              </Button>
-            </CollapsibleTrigger>
-            {hasChildren && <CollapsibleContent className={`${isExpanded ? 'block' : 'hidden'} mt-2`}>
-                {renderModuleTree(module.children!, level + 1)}
-              </CollapsibleContent>}
-          </Collapsible>
-        </div>;
+    return siteArchitecture.filter(module => {
+      const matchesSearch = searchQuery === "" || 
+        module.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        module.description.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const matchesCategory = selectedCategory === "all" || 
+        module.type === selectedCategory;
+      
+      return matchesSearch && matchesCategory;
     });
-  };
-  return <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Code className="h-5 w-5" />
-            Documentation Développeur - Airsoft Companion
-          </CardTitle>
-          <CardDescription>
-            Documentation technique complète pour les développeurs externes
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="architecture">Architecture</TabsTrigger>
-              <TabsTrigger value="patterns">Patterns Code</TabsTrigger>
-              <TabsTrigger value="principles">Principes</TabsTrigger>
-              <TabsTrigger value="stack">Stack Tech</TabsTrigger>
-            </TabsList>
+  }, [searchQuery, selectedCategory, siteArchitecture]);
 
-            <TabsContent value="architecture" className="mt-6">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Globe className="h-5 w-5 text-blue-600" />
-                    <span className="font-semibold text-blue-900">Pages & Routes</span>
-                  </div>
-                  <p className="text-sm text-blue-700">12 pages avec React Router, guards et lazy loading</p>
+  const CodeBlock = ({ code, language, title }: { code: string; language: string; title: string }) => (
+    <div className={`relative rounded-lg border ${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
+      <div className={`flex items-center justify-between px-4 py-2 border-b ${darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-100'}`}>
+        <div className="flex items-center gap-2">
+          <Code className="h-4 w-4" />
+          <span className="text-sm font-medium">{title}</span>
+          <Badge variant="outline" className="text-xs">{language}</Badge>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => copyToClipboard(code)}
+          className="h-8 w-8 p-0"
+        >
+          <Copy className="h-3 w-3" />
+        </Button>
+      </div>
+      <ScrollArea className="max-h-64">
+        <pre className={`p-4 text-sm overflow-x-auto ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>
+          <code>{code}</code>
+        </pre>
+      </ScrollArea>
+    </div>
+  );
+
+  const ModuleCard = ({ module, depth = 0 }: { module: ModuleInfo; depth?: number }) => {
+    const isExpanded = expandedItems.includes(module.name);
+    const isBookmarked = bookmarkedItems.includes(module.name);
+    const hasChildren = module.children && module.children.length > 0;
+
+    return (
+      <Card className={`mb-4 ${depth > 0 ? 'ml-6 border-l-2 border-l-primary' : ''}`}>
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-3 flex-1">
+              <div className="p-2 rounded-lg bg-primary/10">
+                {module.icon}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <CardTitle className="text-lg">{module.name}</CardTitle>
+                  <Badge variant={module.status === 'active' ? 'default' : module.status === 'beta' ? 'secondary' : 'destructive'}>
+                    {module.status}
+                  </Badge>
+                  <Badge variant="outline">
+                    {module.complexity}
+                  </Badge>
                 </div>
-                <div className="bg-purple-50 p-4 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Layers className="h-5 w-5 text-purple-600" />
-                    <span className="font-semibold text-purple-900">Composants</span>
+                <CardDescription className="text-sm">
+                  {module.description}
+                </CardDescription>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => toggleBookmark(module.name)}
+                className="h-8 w-8 p-0"
+              >
+                {isBookmarked ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+              </Button>
+              {(hasChildren || module.codeExamples?.length || module.technicalDetails) && (
+                <Collapsible open={isExpanded} onOpenChange={() => toggleExpanded(module.name)}>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                    </Button>
+                  </CollapsibleTrigger>
+                </Collapsible>
+              )}
+            </div>
+          </div>
+        </CardHeader>
+
+        <Collapsible open={isExpanded} onOpenChange={() => toggleExpanded(module.name)}>
+          <CollapsibleContent>
+            <CardContent className="pt-0">
+              {/* Technical Details */}
+              {module.technicalDetails && (
+                <div className="mb-6 p-4 rounded-lg bg-muted/50">
+                  <h4 className="font-semibold mb-3 flex items-center gap-2">
+                    <Settings className="h-4 w-4" />
+                    Détails Techniques
+                  </h4>
+                  <div className="grid md:grid-cols-2 gap-4 text-sm">
+                    {module.technicalDetails.filePath && (
+                      <div>
+                        <span className="font-medium">Chemin:</span>
+                        <code className="ml-2 px-2 py-1 bg-muted rounded text-xs">
+                          {module.technicalDetails.filePath}
+                        </code>
+                      </div>
+                    )}
+                    {module.technicalDetails.stateManagement && (
+                      <div>
+                        <span className="font-medium">State Management:</span>
+                        <span className="ml-2">{module.technicalDetails.stateManagement}</span>
+                      </div>
+                    )}
+                    {module.technicalDetails.cacheStrategy && (
+                      <div>
+                        <span className="font-medium">Cache:</span>
+                        <span className="ml-2">{module.technicalDetails.cacheStrategy}</span>
+                      </div>
+                    )}
+                    {module.technicalDetails.errorHandling && (
+                      <div>
+                        <span className="font-medium">Gestion d'erreurs:</span>
+                        <span className="ml-2">{module.technicalDetails.errorHandling}</span>
+                      </div>
+                    )}
+                    {module.technicalDetails.databaseTables && (
+                      <div className="md:col-span-2">
+                        <span className="font-medium">Tables DB:</span>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {module.technicalDetails.databaseTables.map((table, i) => (
+                            <Badge key={i} variant="outline" className="text-xs">
+                              {table}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {module.technicalDetails.realTimeFeatures && (
+                      <div className="md:col-span-2">
+                        <span className="font-medium">Features Temps Réel:</span>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {module.technicalDetails.realTimeFeatures.map((feature, i) => (
+                            <Badge key={i} variant="secondary" className="text-xs">
+                              {feature}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <p className="text-sm text-purple-700">150+ composants avec shadcn/ui et patterns réutilisables</p>
                 </div>
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Database className="h-5 w-5 text-green-600" />
-                    <span className="font-semibold text-green-900">Base de Données</span>
+              )}
+
+              {/* Dependencies */}
+              {module.dependencies && module.dependencies.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="font-semibold mb-3 flex items-center gap-2">
+                    <Package className="h-4 w-4" />
+                    Dépendances
+                  </h4>
+                  <div className="space-y-2">
+                    {module.dependencies.map((dep, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 rounded-lg border">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <code className="text-sm font-medium">{dep.name}</code>
+                            {dep.version && (
+                              <Badge variant="outline" className="text-xs">{dep.version}</Badge>
+                            )}
+                            <Badge variant={dep.required ? 'destructive' : 'secondary'} className="text-xs">
+                              {dep.required ? 'Requis' : 'Optionnel'}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1">{dep.description}</p>
+                          {dep.path && (
+                            <code className="text-xs text-muted-foreground">{dep.path}</code>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <p className="text-sm text-green-700">33 tables Supabase avec RLS et real-time</p>
+                </div>
+              )}
+
+              {/* Code Examples */}
+              {module.codeExamples && module.codeExamples.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="font-semibold mb-3 flex items-center gap-2">
+                    <Code className="h-4 w-4" />
+                    Exemples de Code
+                  </h4>
+                  <div className="space-y-4">
+                    {module.codeExamples.map((example, i) => (
+                      <CodeBlock
+                        key={i}
+                        code={example.code}
+                        language={example.language}
+                        title={example.title}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* API Endpoints */}
+              {module.apis && module.apis.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="font-semibold mb-3 flex items-center gap-2">
+                    <Globe className="h-4 w-4" />
+                    API Endpoints
+                  </h4>
+                  <div className="space-y-3">
+                    {module.apis.map((api, i) => (
+                      <div key={i} className="p-4 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant={api.method === 'GET' ? 'secondary' : api.method === 'POST' ? 'default' : 'destructive'}>
+                            {api.method}
+                          </Badge>
+                          <code className="text-sm font-mono">{api.path}</code>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">{api.description}</p>
+                        
+                        {api.parameters && api.parameters.length > 0 && (
+                          <div className="mb-3">
+                            <h5 className="text-xs font-semibold mb-2">Paramètres:</h5>
+                            <div className="space-y-1">
+                              {api.parameters.map((param, j) => (
+                                <div key={j} className="text-xs">
+                                  <code className="font-mono">{param.name}</code>
+                                  <span className="text-muted-foreground"> ({param.type})</span>
+                                  {param.required && <span className="text-red-500 ml-1">*</span>}
+                                  <span className="text-muted-foreground ml-2">- {param.description}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {api.response && (
+                          <div className="mb-3">
+                            <h5 className="text-xs font-semibold mb-1">Réponse:</h5>
+                            <div className="text-xs">
+                              <code className="font-mono">{api.response.type}</code>
+                              <span className="text-muted-foreground ml-2">- {api.response.description}</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {api.example && (
+                          <div>
+                            <h5 className="text-xs font-semibold mb-2">Exemple:</h5>
+                            <pre className="text-xs bg-muted p-2 rounded overflow-x-auto">
+                              <code>{api.example}</code>
+                            </pre>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Children Modules */}
+              {hasChildren && (
+                <div>
+                  <h4 className="font-semibold mb-3 flex items-center gap-2">
+                    <Layers className="h-4 w-4" />
+                    Sous-modules
+                  </h4>
+                  <div className="space-y-4">
+                    {module.children!.map((child, i) => (
+                      <ModuleCard key={i} module={child} depth={depth + 1} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </CollapsibleContent>
+        </Collapsible>
+      </Card>
+    );
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header with controls */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">Documentation Développeur</h2>
+          <p className="text-muted-foreground">
+            Documentation technique complète de l'application Airsoft Companion
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
+            <Sun className="h-4 w-4" />
+            <Switch
+              checked={darkMode}
+              onCheckedChange={setDarkMode}
+            />
+            <Moon className="h-4 w-4" />
+          </div>
+          <Button onClick={exportToPDF} variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Export PDF
+          </Button>
+        </div>
+      </div>
+
+      {/* Search and filters */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Rechercher dans la documentation..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              {['all', 'service', 'component', 'hook', 'database'].map((category) => (
+                <Button
+                  key={category}
+                  variant={selectedCategory === category ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedCategory(category)}
+                  className="capitalize"
+                >
+                  {category === 'all' ? 'Tous' : category}
+                </Button>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="grid grid-cols-2 lg:grid-cols-6 w-full">
+          <TabsTrigger value="architecture" className="flex items-center gap-2">
+            <Layers className="h-4 w-4" />
+            <span className="hidden sm:inline">Architecture</span>
+          </TabsTrigger>
+          <TabsTrigger value="api" className="flex items-center gap-2">
+            <Globe className="h-4 w-4" />
+            <span className="hidden sm:inline">API</span>
+          </TabsTrigger>
+          <TabsTrigger value="database" className="flex items-center gap-2">
+            <Database className="h-4 w-4" />
+            <span className="hidden sm:inline">Base de Données</span>
+          </TabsTrigger>
+          <TabsTrigger value="performance" className="flex items-center gap-2">
+            <Activity className="h-4 w-4" />
+            <span className="hidden sm:inline">Performance</span>
+          </TabsTrigger>
+          <TabsTrigger value="security" className="flex items-center gap-2">
+            <Lock className="h-4 w-4" />
+            <span className="hidden sm:inline">Sécurité</span>
+          </TabsTrigger>
+          <TabsTrigger value="deployment" className="flex items-center gap-2">
+            <Server className="h-4 w-4" />
+            <span className="hidden sm:inline">Déploiement</span>
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="architecture" className="space-y-6">
+          {/* Architecture Diagram */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <GitBranch className="h-5 w-5" />
+                Diagramme d'Architecture
+              </CardTitle>
+              <CardDescription>
+                Vue d'ensemble de l'architecture système
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="p-6 bg-muted/50 rounded-lg">
+                <div className="text-center text-muted-foreground">
+                  <div className="mb-4">
+                    <pre className="text-left text-sm">
+{`┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Frontend      │    │   Supabase       │    │   External      │
+│   (React)       │    │   Backend        │    │   Services      │
+├─────────────────┤    ├──────────────────┤    ├─────────────────┤
+│ • Auth Context  │◄──►│ • Auth Service   │    │ • Google OAuth  │
+│ • React Query   │    │ • Database       │    │ • Discord OAuth │
+│ • Zustand       │    │ • Realtime       │    │ • Mapbox        │
+│ • React Router  │    │ • Storage        │    │ • Email Service │
+│ • Form Handling │    │ • Edge Functions │    │ • Push Notifs   │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+         │                        │                        │
+         └────────────────────────┼────────────────────────┘
+                                  │
+                    ┌──────────────▼──────────────┐
+                    │      User Interface         │
+                    │  • Games Management         │
+                    │  • Team Management          │
+                    │  • Messaging System         │
+                    │  • User Profiles            │
+                    │  • Admin Dashboard          │
+                    └─────────────────────────────┘`}
+                    </pre>
+                  </div>
+                  <p className="text-sm">
+                    Architecture modulaire avec séparation claire des responsabilités
+                  </p>
                 </div>
               </div>
+            </CardContent>
+          </Card>
 
-              <ScrollArea className="h-[800px] w-full">
-                <div className="space-y-2">
-                  {renderModuleTree(siteArchitecture)}
+          {/* Bookmarked items */}
+          {bookmarkedItems.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BookmarkCheck className="h-5 w-5" />
+                  Signets ({bookmarkedItems.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  {bookmarkedItems.map((item) => (
+                    <Badge key={item} variant="secondary" className="cursor-pointer">
+                      {item}
+                    </Badge>
+                  ))}
                 </div>
-              </ScrollArea>
-            </TabsContent>
+              </CardContent>
+            </Card>
+          )}
 
-            <TabsContent value="patterns" className="mt-6">
+          {/* Architecture modules */}
+          <div className="space-y-4">
+            {filteredArchitecture.map((module, index) => (
+              <ModuleCard key={index} module={module} />
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="api" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="h-5 w-5" />
+                Documentation API
+              </CardTitle>
+              <CardDescription>
+                Endpoints disponibles et leur utilisation
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {apiDocumentation.map((endpoint, i) => (
+                  <div key={i} className="p-4 rounded-lg border">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Badge variant={endpoint.method === 'GET' ? 'secondary' : endpoint.method === 'POST' ? 'default' : 'destructive'}>
+                        {endpoint.method}
+                      </Badge>
+                      <code className="text-sm font-mono bg-muted px-2 py-1 rounded">
+                        {endpoint.path}
+                      </code>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-3">{endpoint.description}</p>
+                    
+                    {endpoint.parameters && endpoint.parameters.length > 0 && (
+                      <div className="mb-4">
+                        <h4 className="text-sm font-semibold mb-2">Paramètres:</h4>
+                        <div className="space-y-2">
+                          {endpoint.parameters.map((param, j) => (
+                            <div key={j} className="flex items-center justify-between p-2 bg-muted/50 rounded text-sm">
+                              <div className="flex items-center gap-2">
+                                <code className="font-mono">{param.name}</code>
+                                <Badge variant="outline" className="text-xs">{param.type}</Badge>
+                                {param.required && (
+                                  <Badge variant="destructive" className="text-xs">Requis</Badge>
+                                )}
+                              </div>
+                              <span className="text-muted-foreground">{param.description}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {endpoint.response && (
+                      <div className="mb-4">
+                        <h4 className="text-sm font-semibold mb-2">Réponse:</h4>
+                        <div className="p-2 bg-muted/50 rounded text-sm">
+                          <code className="font-mono">{endpoint.response.type}</code>
+                          <span className="text-muted-foreground ml-2">- {endpoint.response.description}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {endpoint.example && (
+                      <div>
+                        <h4 className="text-sm font-semibold mb-2">Exemple de réponse:</h4>
+                        <CodeBlock
+                          code={endpoint.example}
+                          language="json"
+                          title="Response Example"
+                        />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="database" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Database className="h-5 w-5" />
+                Schéma de Base de Données
+              </CardTitle>
+              <CardDescription>
+                Structure des tables et relations
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
               <div className="space-y-6">
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-2">Patterns de Code Utilisés</h3>
-                  <p className="text-gray-600">Exemples concrets des patterns architecturaux implémentés dans le projet.</p>
+                {/* Database Schema Diagram */}
+                <div className="p-6 bg-muted/50 rounded-lg">
+                  <h4 className="font-semibold mb-4">Diagramme ERD Simplifié</h4>
+                  <div className="text-sm">
+                    <pre className="whitespace-pre-wrap font-mono">
+{`┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│    profiles     │    │     teams       │    │  airsoft_games  │
+├─────────────────┤    ├─────────────────┤    ├─────────────────┤
+│ id (PK)         │    │ id (PK)         │    │ id (PK)         │
+│ username        │    │ name            │    │ title           │
+│ email           │    │ description     │    │ description     │
+│ team_id (FK)    │◄──►│ leader_id (FK)  │    │ created_by (FK) │
+│ is_verified     │    │ member_count    │    │ date            │
+│ reputation      │    │ rating          │    │ max_players     │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                        │                        │
+         │                        │                        │
+         ▼                        ▼                        ▼
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│  conversations  │    │  team_members   │    │ game_participants│
+├─────────────────┤    ├─────────────────┤    ├─────────────────┤
+│ id (PK)         │    │ id (PK)         │    │ id (PK)         │
+│ type            │    │ team_id (FK)    │    │ game_id (FK)    │
+│ team_id (FK)    │    │ user_id (FK)    │    │ user_id (FK)    │
+│ created_at      │    │ role            │    │ status          │
+└─────────────────┘    │ status          │    │ role            │
+         │              └─────────────────┘    └─────────────────┘
+         │
+         ▼
+┌─────────────────┐
+│    messages     │
+├─────────────────┤
+│ id (PK)         │
+│ conversation_id │
+│ sender_id (FK)  │
+│ content         │
+│ created_at      │
+└─────────────────┘`}
+                    </pre>
+                  </div>
                 </div>
-                
-                {codePatterns.map((pattern, index) => <Card key={index}>
+
+                {/* Main Tables */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Card>
                     <CardHeader>
-                      <CardTitle className="text-base">{pattern.title}</CardTitle>
-                      <CardDescription>{pattern.description}</CardDescription>
+                      <CardTitle className="text-lg">Tables Principales</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
-                        <pre className="text-sm">
-                          <code>{pattern.code}</code>
-                        </pre>
-                      </div>
-                    </CardContent>
-                  </Card>)}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="principles" className="mt-6">
-              <div className="space-y-6">
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-2">Principes Architecturaux</h3>
-                  <p className="text-gray-600">Les principes fondamentaux qui guident le développement du projet.</p>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {architecturePrinciples.map((principle, index) => <Card key={index}>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-base">
-                          {principle.icon}
-                          {principle.title}
-                        </CardTitle>
-                        <CardDescription>{principle.description}</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <ul className="space-y-2">
-                          {principle.examples.map((example, idx) => <li key={idx} className="flex items-center gap-2 text-sm">
-                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                              {example}
-                            </li>)}
-                        </ul>
-                      </CardContent>
-                    </Card>)}
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="stack" className="mt-6">
-              <div className="space-y-6">
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-2">Stack Technologique</h3>
-                  <p className="text-gray-600">Technologies, versions et configuration utilisées.</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {[{
-                  name: 'React',
-                  version: '18.3.1',
-                  type: 'Frontend Framework',
-                  description: 'Library principale avec hooks et contexte'
-                }, {
-                  name: 'TypeScript',
-                  version: 'Latest',
-                  type: 'Language',
-                  description: 'Typage strict pour la robustesse'
-                }, {
-                  name: 'Vite',
-                  version: 'Latest',
-                  type: 'Build Tool',
-                  description: 'Build rapide avec HMR'
-                }, {
-                  name: 'Tailwind CSS',
-                  version: 'Latest',
-                  type: 'Styling',
-                  description: 'Utility-first CSS framework'
-                }, {
-                  name: 'Shadcn/ui',
-                  version: 'Latest',
-                  type: 'UI Library',
-                  description: 'Composants pré-built avec Radix'
-                }, {
-                  name: 'React Query',
-                  version: '5.79.2',
-                  type: 'State Management',
-                  description: 'Cache et synchronisation server state'
-                }, {
-                  name: 'React Router',
-                  version: '6.26.2',
-                  type: 'Routing',
-                  description: 'Routing avec lazy loading'
-                }, {
-                  name: 'Supabase',
-                  version: '2.49.9',
-                  type: 'Backend',
-                  description: 'Database, Auth, Storage, Real-time'
-                }, {
-                  name: 'React Hook Form',
-                  version: '7.56.4',
-                  type: 'Forms',
-                  description: 'Gestion forms avec validation'
-                }, {
-                  name: 'Zod',
-                  version: '3.25.56',
-                  type: 'Validation',
-                  description: 'Schema validation TypeScript-first'
-                }, {
-                  name: 'Lucide React',
-                  version: '0.462.0',
-                  type: 'Icons',
-                  description: 'Icônes SVG légères'
-                }, {
-                  name: 'Date-fns',
-                  version: '3.6.0',
-                  type: 'Utils',
-                  description: 'Manipulation des dates'
-                }].map((tech, index) => <Card key={index} className="p-4">
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="font-semibold text-gray-900">{tech.name}</div>
-                        <Badge variant="outline" className="text-xs">{tech.type}</Badge>
-                      </div>
-                      <div className="text-sm text-gray-600 mb-2">{tech.version}</div>
-                      <div className="text-xs text-gray-500">{tech.description}</div>
-                    </Card>)}
-                </div>
-
-                <Card className="mt-6">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Settings className="h-5 w-5" />
-                      Configuration du Projet
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <h4 className="font-semibold mb-3">Structure des Dossiers</h4>
-                        <div className="bg-gray-900 text-gray-100 p-3 rounded-lg text-sm">
-                          <pre>{`src/
-├── components/     # Composants réutilisables
-│   ├── ui/        # Composants shadcn/ui
-│   ├── auth/      # Composants d'authentification
-│   ├── messaging/ # Composants de messagerie
-│   └── ...
-├── hooks/         # Custom hooks
-├── pages/         # Pages de l'application
-├── utils/         # Fonctions utilitaires
-├── types/         # Types TypeScript
-└── lib/          # Configuration libraries`}</pre>
+                      <div className="space-y-3 text-sm">
+                        <div>
+                          <code className="font-mono font-semibold">profiles</code>
+                          <p className="text-muted-foreground">Données utilisateur et profils publics</p>
+                        </div>
+                        <div>
+                          <code className="font-mono font-semibold">airsoft_games</code>
+                          <p className="text-muted-foreground">Parties d'airsoft organisées</p>
+                        </div>
+                        <div>
+                          <code className="font-mono font-semibold">teams</code>
+                          <p className="text-muted-foreground">Équipes et associations</p>
+                        </div>
+                        <div>
+                          <code className="font-mono font-semibold">conversations</code>
+                          <p className="text-muted-foreground">Conversations de messagerie</p>
                         </div>
                       </div>
-                      <div>
-                        <h4 className="font-semibold mb-3">Scripts Principaux</h4>
-                        <div className="space-y-2 text-sm">
-                          <div><code className="bg-gray-100 px-2 py-1 rounded">npm run dev</code> - Serveur de développement</div>
-                          <div><code className="bg-gray-100 px-2 py-1 rounded">npm run build</code> - Build de production</div>
-                          <div><code className="bg-gray-100 px-2 py-1 rounded">npm run preview</code> - Preview du build</div>
-                          <div><code className="bg-gray-100 px-2 py-1 rounded">npm run type-check</code> - Vérification TypeScript</div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Tables de Relations</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3 text-sm">
+                        <div>
+                          <code className="font-mono font-semibold">game_participants</code>
+                          <p className="text-muted-foreground">Inscriptions aux parties</p>
+                        </div>
+                        <div>
+                          <code className="font-mono font-semibold">team_members</code>
+                          <p className="text-muted-foreground">Membres des équipes</p>
+                        </div>
+                        <div>
+                          <code className="font-mono font-semibold">friendships</code>
+                          <p className="text-muted-foreground">Relations d'amitié</p>
+                        </div>
+                        <div>
+                          <code className="font-mono font-semibold">user_ratings</code>
+                          <p className="text-muted-foreground">Système de notation</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* RLS Policies */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Politiques RLS (Row Level Security)</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="p-3 bg-muted/50 rounded">
+                        <h4 className="font-semibold text-sm mb-2">profiles</h4>
+                        <ul className="text-sm text-muted-foreground space-y-1">
+                          <li>• Lecture: Tous les profils publics</li>
+                          <li>• Modification: Utilisateur propriétaire uniquement</li>
+                          <li>• Données sensibles: Accès restreint aux admins</li>
+                        </ul>
+                      </div>
+                      <div className="p-3 bg-muted/50 rounded">
+                        <h4 className="font-semibold text-sm mb-2">messages</h4>
+                        <ul className="text-sm text-muted-foreground space-y-1">
+                          <li>• Lecture: Participants de la conversation uniquement</li>
+                          <li>• Écriture: Utilisateurs authentifiés</li>
+                          <li>• Suppression: Auteur du message uniquement</li>
+                        </ul>
+                      </div>
+                      <div className="p-3 bg-muted/50 rounded">
+                        <h4 className="font-semibold text-sm mb-2">airsoft_games</h4>
+                        <ul className="text-sm text-muted-foreground space-y-1">
+                          <li>• Lecture: Jeux publics pour tous</li>
+                          <li>• Modification: Créateur ou admins</li>
+                          <li>• Jeux privés: Participants uniquement</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="performance" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5" />
+                Métriques de Performance
+              </CardTitle>
+              <CardDescription>
+                Indicateurs de performance de l'application
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {Object.entries(performanceMetrics).map(([key, value]) => (
+                  <Card key={key}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium capitalize">
+                            {key.replace(/([A-Z])/g, ' $1').toLowerCase()}
+                          </p>
+                          <p className="text-2xl font-bold">{value}</p>
+                        </div>
+                        <Activity className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              <div className="mt-6 space-y-4">
+                <h4 className="font-semibold">Optimisations Mises en Place</h4>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Frontend</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-2 text-sm">
+                        <li className="flex items-center gap-2">
+                          <Zap className="h-4 w-4 text-green-500" />
+                          Code splitting automatique avec Vite
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <Zap className="h-4 w-4 text-green-500" />
+                          Optimistic updates pour les mutations
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <Zap className="h-4 w-4 text-green-500" />
+                          Images lazy loading avec intersection observer
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <Zap className="h-4 w-4 text-green-500" />
+                          Cache intelligent avec React Query
+                        </li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Backend</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-2 text-sm">
+                        <li className="flex items-center gap-2">
+                          <Database className="h-4 w-4 text-blue-500" />
+                          Index optimisés sur les requêtes fréquentes
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <Database className="h-4 w-4 text-blue-500" />
+                          Connection pooling Supabase
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <Database className="h-4 w-4 text-blue-500" />
+                          Triggers optimisés pour les agrégations
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <Database className="h-4 w-4 text-blue-500" />
+                          CDN pour les assets statiques
+                        </li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="security" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Directives de Sécurité
+              </CardTitle>
+              <CardDescription>
+                Mesures de sécurité implémentées
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {securityGuidelines.map((section, i) => (
+                  <Card key={i}>
+                    <CardHeader>
+                      <CardTitle className="text-lg">{section.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-2">
+                        {section.items.map((item, j) => (
+                          <li key={j} className="flex items-start gap-2 text-sm">
+                            <Shield className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                ))}
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Audit de Sécurité</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="grid md:grid-cols-3 gap-4">
+                        <div className="p-3 bg-green-50 dark:bg-green-950 rounded border border-green-200 dark:border-green-800">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Shield className="h-4 w-4 text-green-600" />
+                            <span className="font-medium text-green-700 dark:text-green-300">Authentification</span>
+                          </div>
+                          <p className="text-sm text-green-600 dark:text-green-400">Sécurisé ✓</p>
+                        </div>
+                        <div className="p-3 bg-green-50 dark:bg-green-950 rounded border border-green-200 dark:border-green-800">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Database className="h-4 w-4 text-green-600" />
+                            <span className="font-medium text-green-700 dark:text-green-300">Base de Données</span>
+                          </div>
+                          <p className="text-sm text-green-600 dark:text-green-400">RLS Activé ✓</p>
+                        </div>
+                        <div className="p-3 bg-green-50 dark:bg-green-950 rounded border border-green-200 dark:border-green-800">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Globe className="h-4 w-4 text-green-600" />
+                            <span className="font-medium text-green-700 dark:text-green-300">API</span>
+                          </div>
+                          <p className="text-sm text-green-600 dark:text-green-400">Rate Limited ✓</p>
                         </div>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               </div>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Info className="h-5 w-5" />
-            Guide de Démarrage Rapide
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h4 className="font-semibold mb-3">Installation</h4>
-              <div className="bg-gray-900 text-gray-100 p-3 rounded-lg text-sm">
-                <pre>{`# Cloner le projet
-git clone [repository-url]
+        <TabsContent value="deployment" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Server className="h-5 w-5" />
+                Guide de Déploiement
+              </CardTitle>
+              <CardDescription>
+                Instructions pour le déploiement en production
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Prérequis</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-2 text-sm">
+                      <li className="flex items-center gap-2">
+                        <ArrowRight className="h-4 w-4" />
+                        Node.js 18+ et npm/yarn
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <ArrowRight className="h-4 w-4" />
+                        Compte Supabase configuré
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <ArrowRight className="h-4 w-4" />
+                        Variables d'environnement configurées
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <ArrowRight className="h-4 w-4" />
+                        Certificat SSL valide
+                      </li>
+                    </ul>
+                  </CardContent>
+                </Card>
 
-# Installer les dépendances
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Étapes de Déploiement</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="p-4 border rounded-lg">
+                        <h4 className="font-semibold mb-2">1. Build de Production</h4>
+                        <CodeBlock
+                          code={`# Installation des dépendances
 npm install
 
-# Configurer les variables d'environnement
-cp .env.example .env.local
+# Build optimisé pour la production
+npm run build
 
-# Démarrer le serveur de développement
-npm run dev`}</pre>
+# Test du build en local
+npm run preview`}
+                          language="bash"
+                          title="Commands de Build"
+                        />
+                      </div>
+
+                      <div className="p-4 border rounded-lg">
+                        <h4 className="font-semibold mb-2">2. Configuration Supabase</h4>
+                        <CodeBlock
+                          code={`# Déploiement des migrations
+supabase db push
+
+# Déploiement des edge functions
+supabase functions deploy
+
+# Configuration des buckets storage
+supabase storage create-bucket --public profile_images`}
+                          language="bash"
+                          title="Supabase Deployment"
+                        />
+                      </div>
+
+                      <div className="p-4 border rounded-lg">
+                        <h4 className="font-semibold mb-2">3. Variables d'Environnement</h4>
+                        <CodeBlock
+                          code={`# Variables requises en production
+VITE_SUPABASE_URL=your-project-url
+VITE_SUPABASE_ANON_KEY=your-anon-key
+VITE_MAPBOX_ACCESS_TOKEN=your-mapbox-token
+
+# Optionnelles
+VITE_APP_ENV=production
+VITE_SENTRY_DSN=your-sentry-dsn`}
+                          language="bash"
+                          title="Environment Variables"
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Monitoring & Maintenance</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <h4 className="font-semibold mb-2">Surveillance</h4>
+                        <ul className="space-y-1 text-sm text-muted-foreground">
+                          <li>• Monitoring Supabase Dashboard</li>
+                          <li>• Logs des Edge Functions</li>
+                          <li>• Métriques de performance</li>
+                          <li>• Alertes d'erreur</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold mb-2">Maintenance</h4>
+                        <ul className="space-y-1 text-sm text-muted-foreground">
+                          <li>• Backup automatique des données</li>
+                          <li>• Mise à jour des dépendances</li>
+                          <li>• Rotation des clés API</li>
+                          <li>• Nettoyage des logs anciens</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-3">Variables d'Environnement</h4>
-              <div className="space-y-2 text-sm">
-                <div><code className="bg-gray-100 px-2 py-1 rounded">VITE_SUPABASE_URL</code> - URL Supabase</div>
-                <div><code className="bg-gray-100 px-2 py-1 rounded">VITE_SUPABASE_ANON_KEY</code> - Clé publique Supabase</div>
-                <div><code className="bg-gray-100 px-2 py-1 rounded">VITE_MAPBOX_TOKEN</code> - Token Mapbox pour la carte</div>
-                <div><code className="bg-gray-100 px-2 py-1 rounded">VITE_GEOCODING_API_KEY</code> - Clé API géocodage</div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>;
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
 };
+
 export default DeveloperTab;
