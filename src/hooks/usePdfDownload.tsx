@@ -29,6 +29,13 @@ export const usePdfDownload = () => {
       doc.setFillColor(...primaryColor);
       doc.rect(0, 0, pageWidth, 40, 'F');
       
+      // Ajouter le logo dans l'en-tête
+      try {
+        doc.addImage('/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png', 'PNG', 15, 10, 20, 20);
+      } catch (error) {
+        console.warn('Logo non trouvé pour le PDF');
+      }
+      
       // Titre principal en blanc
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(22);
@@ -48,17 +55,10 @@ export const usePdfDownload = () => {
       doc.setDrawColor(...secondaryColor);
       doc.rect(20, 50, pageWidth - 40, 35, 'S');
       
-      // Ajouter le logo
-      try {
-        doc.addImage('/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png', 'PNG', 25, 53, 15, 15);
-      } catch (error) {
-        console.warn('Logo non trouvé pour le PDF');
-      }
-      
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(...primaryColor);
-      doc.text('INFORMATIONS DE LA PARTIE', 45, 62);
+      doc.text('INFORMATIONS DE LA PARTIE', 25, 62);
       
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(0, 0, 0);
@@ -180,7 +180,7 @@ export const usePdfDownload = () => {
       // Note importante
       doc.setFontSize(8);
       doc.setTextColor(...secondaryColor);
-      doc.text('⚠️ Cette liste est confidentielle et ne doit pas être divulguée à des tiers', pageWidth / 2, finalY + 35, { align: 'center' });
+      doc.text('Cette liste est confidentielle et ne doit pas être divulguée à des tiers', 20, finalY + 35);
       
       // Téléchargement du fichier
       const fileName = `participants_${gameTitle.replace(/[^a-zA-Z0-9]/g, '_')}_${gameDate.replace(/\//g, '-')}.pdf`;
