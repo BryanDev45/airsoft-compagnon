@@ -25,47 +25,56 @@ export const usePdfDownload = () => {
       const lightGray: [number, number, number] = [249, 250, 251];
       
       // **HEADER SECTION**
-      // Fond coloré pour l'en-tête
+      // Fond coloré pour l'en-tête avec dégradé visuel
       doc.setFillColor(...primaryColor);
-      doc.rect(0, 0, pageWidth, 40, 'F');
+      doc.rect(0, 0, pageWidth, 50, 'F');
       
-      // Ajouter le logo dans l'en-tête
+      // Fond blanc semi-transparent pour le logo
+      doc.setFillColor(240, 240, 240);
+      doc.rect(10, 8, 40, 34, 'F');
+      
+      // Logo plus grand et mieux positionné
       try {
-        doc.addImage('/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png', 'PNG', 15, 10, 20, 20);
+        doc.addImage('/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png', 'PNG', 15, 12, 30, 26);
       } catch (error) {
         console.warn('Logo non trouvé pour le PDF');
       }
       
-      // Titre principal en blanc
+      // Titre principal en blanc avec ombre
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(22);
+      doc.setFontSize(24);
       doc.setFont('helvetica', 'bold');
-      doc.text('LISTE DES PARTICIPANTS', pageWidth / 2, 20, { align: 'center' });
+      doc.text('LISTE DES PARTICIPANTS', pageWidth / 2, 22, { align: 'center' });
       
       doc.setFontSize(12);
       doc.setFont('helvetica', 'normal');
-      doc.text('Partie d\'Airsoft - Gestion des inscriptions', pageWidth / 2, 32, { align: 'center' });
+      doc.text('Partie d\'Airsoft - Gestion des inscriptions', pageWidth / 2, 36, { align: 'center' });
+      
+      // Ligne décorative
+      doc.setDrawColor(255, 255, 255);
+      doc.setLineWidth(0.5);
+      doc.line(60, 42, pageWidth - 60, 42);
       
       // Retour au noir pour le reste
       doc.setTextColor(0, 0, 0);
       
       // **INFORMATIONS DE LA PARTIE**
       doc.setFillColor(...lightGray);
-      doc.rect(20, 50, pageWidth - 40, 35, 'F');
+      doc.rect(20, 60, pageWidth - 40, 35, 'F');
       doc.setDrawColor(...secondaryColor);
-      doc.rect(20, 50, pageWidth - 40, 35, 'S');
+      doc.rect(20, 60, pageWidth - 40, 35, 'S');
       
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(...primaryColor);
-      doc.text('INFORMATIONS DE LA PARTIE', 25, 62);
+      doc.text('INFORMATIONS DE LA PARTIE', 25, 72);
       
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(11);
-      doc.text(`Titre: ${gameTitle}`, 25, 72);
-      doc.text(`Date: ${gameDate}`, 25, 79);
-      doc.text(`Nombre total de participants: ${participants.length}`, 120, 72);
+      doc.text(`Titre: ${gameTitle}`, 25, 82);
+      doc.text(`Date: ${gameDate}`, 25, 89);
+      doc.text(`Nombre total de participants: ${participants.length}`, 120, 82);
       
       // Préparation des données pour le tableau
       const tableData = participants.map((participant, index) => {
@@ -132,7 +141,7 @@ export const usePdfDownload = () => {
       autoTable(doc, {
         head: [['#', 'Nom & Prénom (Pseudo)', 'Contact', 'Équipe', 'Rôle', 'Statut']],
         body: tableData,
-        startY: 95,
+        startY: 105,
         styles: {
           fontSize: 9,
           cellPadding: 3,

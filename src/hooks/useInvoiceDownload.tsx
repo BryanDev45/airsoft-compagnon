@@ -25,15 +25,36 @@ export const useInvoiceDownload = () => {
       const lightGray: [number, number, number] = [249, 250, 251];
       
       // **HEADER SECTION**
-      // Fond coloré pour l'en-tête
+      // Fond coloré pour l'en-tête avec dégradé visuel
       doc.setFillColor(...primaryColor);
-      doc.rect(0, 0, pageWidth, 35, 'F');
+      doc.rect(0, 0, pageWidth, 50, 'F');
       
-      // Titre principal en blanc
+      // Fond blanc semi-transparent pour le logo
+      doc.setFillColor(240, 240, 240);
+      doc.rect(10, 8, 40, 34, 'F');
+      
+      // Logo plus grand et mieux positionné
+      try {
+        doc.addImage('/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png', 'PNG', 15, 12, 30, 26);
+      } catch (error) {
+        console.warn('Logo non trouvé pour le PDF');
+      }
+      
+      // Titre principal en blanc avec ombre
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(24);
       doc.setFont('helvetica', 'bold');
       doc.text('FACTURE DE RÉSERVATION', pageWidth / 2, 22, { align: 'center' });
+      
+      // Sous-titre
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Confirmation d\'inscription - Partie d\'Airsoft', pageWidth / 2, 36, { align: 'center' });
+      
+      // Ligne décorative
+      doc.setDrawColor(255, 255, 255);
+      doc.setLineWidth(0.5);
+      doc.line(60, 42, pageWidth - 60, 42);
       
       // Retour au noir pour le reste
       doc.setTextColor(0, 0, 0);
@@ -44,32 +65,32 @@ export const useInvoiceDownload = () => {
       
       // Boîte d'informations facture (droite)
       doc.setFillColor(...lightGray);
-      doc.rect(120, 45, 70, 35, 'F');
+      doc.rect(120, 55, 70, 35, 'F');
       doc.setDrawColor(...secondaryColor);
-      doc.rect(120, 45, 70, 35, 'S');
+      doc.rect(120, 55, 70, 35, 'S');
       
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(...secondaryColor);
-      doc.text('N° FACTURE', 125, 53);
-      doc.text('DATE D\'ÉMISSION', 125, 68);
+      doc.text('N° FACTURE', 125, 63);
+      doc.text('DATE D\'ÉMISSION', 125, 78);
       
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(11);
-      doc.text(invoiceNumber, 125, 60);
-      doc.text(currentDate, 125, 75);
+      doc.text(invoiceNumber, 125, 70);
+      doc.text(currentDate, 125, 85);
       
       // **INFORMATIONS CLIENT**
       doc.setFillColor(...lightGray);
-      doc.rect(20, 45, 85, 35, 'F');
+      doc.rect(20, 55, 85, 35, 'F');
       doc.setDrawColor(...secondaryColor);
-      doc.rect(20, 45, 85, 35, 'S');
+      doc.rect(20, 55, 85, 35, 'S');
       
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(...secondaryColor);
-      doc.text('FACTURÉ À', 25, 53);
+      doc.text('FACTURÉ À', 25, 63);
       
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(0, 0, 0);
@@ -77,30 +98,30 @@ export const useInvoiceDownload = () => {
       const customerName = userProfile?.firstname && userProfile?.lastname 
         ? `${userProfile.firstname} ${userProfile.lastname}`
         : userProfile?.username || 'Participant';
-      doc.text(customerName, 25, 62);
+      doc.text(customerName, 25, 72);
       
       if (userProfile?.email) {
         doc.setFontSize(9);
         doc.setTextColor(...secondaryColor);
-        doc.text(userProfile.email, 25, 70);
+        doc.text(userProfile.email, 25, 80);
       }
       
       if (userProfile?.location) {
         doc.setFontSize(9);
         doc.setTextColor(...secondaryColor);
-        doc.text(userProfile.location, 25, 77);
+        doc.text(userProfile.location, 25, 87);
       }
       
       // **DÉTAILS DE LA PARTIE**
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(...primaryColor);
-      doc.text('DÉTAILS DE LA PARTIE', 20, 100);
+      doc.text('DÉTAILS DE LA PARTIE', 20, 110);
       
       // Ligne de séparation
       doc.setDrawColor(...primaryColor);
       doc.setLineWidth(0.5);
-      doc.line(20, 105, pageWidth - 20, 105);
+      doc.line(20, 115, pageWidth - 20, 115);
       
       // Contenu des détails
       doc.setFont('helvetica', 'normal');
@@ -127,7 +148,7 @@ export const useInvoiceDownload = () => {
         });
       }
       
-      let yPos = 115;
+      let yPos = 125;
       details.forEach((detail) => {
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(10);
