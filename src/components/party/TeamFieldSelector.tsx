@@ -36,42 +36,12 @@ const TeamFieldSelector: React.FC<TeamFieldSelectorProps> = ({
       
       if (error) throw error;
       
-      // Parse the address to extract city and zip code if not already separated
-      return (data || []).map(field => {
-        let parsedCity = '';
-        let parsedZipCode = '';
-        let cleanAddress = field.address || '';
-        
-        if (field.address) {
-          // Try to extract city and zip code from address
-          // Look for patterns like "75001 Paris" or "Paris 75001"
-          const zipPattern = /\b(\d{5})\b/;
-          const zipMatch = field.address.match(zipPattern);
-          
-          if (zipMatch) {
-            parsedZipCode = zipMatch[1];
-            // Remove zip code from address and clean up
-            cleanAddress = field.address.replace(zipPattern, '').replace(/,\s*$/, '').trim();
-            
-            // The remaining part after removing zip code should be the city
-            const parts = cleanAddress.split(',').map(part => part.trim()).filter(Boolean);
-            if (parts.length > 0) {
-              // Take the last non-empty part as city
-              parsedCity = parts[parts.length - 1];
-              // Remove city from address
-              cleanAddress = parts.slice(0, -1).join(', ');
-            }
-          }
-        }
-        
-        return {
-          ...field,
-          address: cleanAddress,
-          city: parsedCity,
-          zip_code: parsedZipCode,
-          coordinates: field.coordinates as number[] | { lat: number; lng: number }
-        };
-      });
+      return (data || []).map(field => ({
+        ...field,
+        city: field.city || '',
+        zip_code: field.zip_code || '',
+        coordinates: field.coordinates as number[] | { lat: number; lng: number }
+      }));
     },
     enabled: !!teamId
   });
