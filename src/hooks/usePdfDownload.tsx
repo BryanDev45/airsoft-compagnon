@@ -44,21 +44,28 @@ export const usePdfDownload = () => {
       
       // **INFORMATIONS DE LA PARTIE**
       doc.setFillColor(...lightGray);
-      doc.rect(20, 50, pageWidth - 40, 25, 'F');
+      doc.rect(20, 50, pageWidth - 40, 35, 'F');
       doc.setDrawColor(...secondaryColor);
-      doc.rect(20, 50, pageWidth - 40, 25, 'S');
+      doc.rect(20, 50, pageWidth - 40, 35, 'S');
+      
+      // Ajouter le logo
+      try {
+        doc.addImage('/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png', 'PNG', 25, 53, 15, 15);
+      } catch (error) {
+        console.warn('Logo non trouvé pour le PDF');
+      }
       
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(...primaryColor);
-      doc.text('INFORMATIONS DE LA PARTIE', 25, 60);
+      doc.text('INFORMATIONS DE LA PARTIE', 45, 62);
       
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(11);
-      doc.text(`Titre: ${gameTitle}`, 25, 68);
-      doc.text(`Date: ${gameDate}`, 120, 68);
-      doc.text(`Nombre total de participants: ${participants.length}`, 25, 75);
+      doc.text(`Titre: ${gameTitle}`, 25, 72);
+      doc.text(`Date: ${gameDate}`, 25, 79);
+      doc.text(`Nombre total de participants: ${participants.length}`, 120, 72);
       
       // Préparation des données pour le tableau
       const tableData = participants.map((participant, index) => {
@@ -125,7 +132,7 @@ export const usePdfDownload = () => {
       autoTable(doc, {
         head: [['#', 'Nom & Prénom (Pseudo)', 'Contact', 'Équipe', 'Rôle', 'Statut']],
         body: tableData,
-        startY: 85,
+        startY: 95,
         styles: {
           fontSize: 9,
           cellPadding: 3,
@@ -168,7 +175,7 @@ export const usePdfDownload = () => {
       doc.setFontSize(9);
       doc.setTextColor(...secondaryColor);
       doc.text(`Document généré automatiquement le ${new Date().toLocaleString('fr-FR')}`, 20, finalY + 25);
-      doc.text('Plateforme Airsoft - Gestion des parties', pageWidth - 20, finalY + 25, { align: 'right' });
+      doc.text('Airsoft Companion - Gestion des parties', pageWidth - 20, finalY + 25, { align: 'right' });
       
       // Note importante
       doc.setFontSize(8);
