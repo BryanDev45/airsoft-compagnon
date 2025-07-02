@@ -25,36 +25,34 @@ export const useInvoiceDownload = () => {
       const lightGray: [number, number, number] = [249, 250, 251];
       
       // **HEADER SECTION**
-      // Fond coloré pour l'en-tête avec dégradé visuel
-      doc.setFillColor(...primaryColor);
-      doc.rect(0, 0, pageWidth, 50, 'F');
+      // Dégradé de rouge pour l'en-tête (simulé avec plusieurs rectangles)
+      doc.setFillColor(220, 38, 38); // Rouge principal
+      doc.rect(0, 0, pageWidth, 42, 'F');
+      doc.setFillColor(200, 30, 30); // Rouge plus foncé
+      doc.rect(0, 35, pageWidth, 7, 'F');
       
-      // Fond blanc semi-transparent pour le logo
-      doc.setFillColor(240, 240, 240);
-      doc.rect(10, 8, 40, 34, 'F');
-      
-      // Logo plus grand et mieux positionné
+      // Logo mieux positionné sans cadre
       try {
-        doc.addImage('/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png', 'PNG', 15, 12, 30, 26);
+        doc.addImage('/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png', 'PNG', 15, 10, 28, 22);
       } catch (error) {
         console.warn('Logo non trouvé pour le PDF');
       }
       
-      // Titre principal en blanc avec ombre
+      // Titre principal en blanc
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(24);
+      doc.setFontSize(22);
       doc.setFont('helvetica', 'bold');
-      doc.text('FACTURE DE RÉSERVATION', pageWidth / 2, 22, { align: 'center' });
+      doc.text('FACTURE DE RÉSERVATION', pageWidth / 2, 20, { align: 'center' });
       
       // Sous-titre
-      doc.setFontSize(12);
+      doc.setFontSize(11);
       doc.setFont('helvetica', 'normal');
-      doc.text('Confirmation d\'inscription - Partie d\'Airsoft', pageWidth / 2, 36, { align: 'center' });
+      doc.text('Confirmation d\'inscription - Partie d\'Airsoft', pageWidth / 2, 32, { align: 'center' });
       
       // Ligne décorative
       doc.setDrawColor(255, 255, 255);
-      doc.setLineWidth(0.5);
-      doc.line(60, 42, pageWidth - 60, 42);
+      doc.setLineWidth(0.3);
+      doc.line(60, 37, pageWidth - 60, 37);
       
       // Retour au noir pour le reste
       doc.setTextColor(0, 0, 0);
@@ -65,32 +63,32 @@ export const useInvoiceDownload = () => {
       
       // Boîte d'informations facture (droite)
       doc.setFillColor(...lightGray);
-      doc.rect(120, 55, 70, 35, 'F');
+      doc.rect(120, 47, 70, 35, 'F');
       doc.setDrawColor(...secondaryColor);
-      doc.rect(120, 55, 70, 35, 'S');
+      doc.rect(120, 47, 70, 35, 'S');
       
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(...secondaryColor);
-      doc.text('N° FACTURE', 125, 63);
-      doc.text('DATE D\'ÉMISSION', 125, 78);
+      doc.text('N° FACTURE', 125, 55);
+      doc.text('DATE D\'ÉMISSION', 125, 70);
       
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(11);
-      doc.text(invoiceNumber, 125, 70);
-      doc.text(currentDate, 125, 85);
+      doc.text(invoiceNumber, 125, 62);
+      doc.text(currentDate, 125, 77);
       
       // **INFORMATIONS CLIENT**
       doc.setFillColor(...lightGray);
-      doc.rect(20, 55, 85, 35, 'F');
+      doc.rect(20, 47, 85, 35, 'F');
       doc.setDrawColor(...secondaryColor);
-      doc.rect(20, 55, 85, 35, 'S');
+      doc.rect(20, 47, 85, 35, 'S');
       
       doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(...secondaryColor);
-      doc.text('FACTURÉ À', 25, 63);
+      doc.text('FACTURÉ À', 25, 55);
       
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(0, 0, 0);
@@ -98,30 +96,30 @@ export const useInvoiceDownload = () => {
       const customerName = userProfile?.firstname && userProfile?.lastname 
         ? `${userProfile.firstname} ${userProfile.lastname}`
         : userProfile?.username || 'Participant';
-      doc.text(customerName, 25, 72);
+      doc.text(customerName, 25, 64);
       
       if (userProfile?.email) {
         doc.setFontSize(9);
         doc.setTextColor(...secondaryColor);
-        doc.text(userProfile.email, 25, 80);
+        doc.text(userProfile.email, 25, 72);
       }
       
       if (userProfile?.location) {
         doc.setFontSize(9);
         doc.setTextColor(...secondaryColor);
-        doc.text(userProfile.location, 25, 87);
+        doc.text(userProfile.location, 25, 79);
       }
       
       // **DÉTAILS DE LA PARTIE**
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(...primaryColor);
-      doc.text('DÉTAILS DE LA PARTIE', 20, 110);
+      doc.text('DÉTAILS DE LA PARTIE', 20, 102);
       
       // Ligne de séparation
       doc.setDrawColor(...primaryColor);
       doc.setLineWidth(0.5);
-      doc.line(20, 115, pageWidth - 20, 115);
+      doc.line(20, 107, pageWidth - 20, 107);
       
       // Contenu des détails
       doc.setFont('helvetica', 'normal');
@@ -148,7 +146,7 @@ export const useInvoiceDownload = () => {
         });
       }
       
-      let yPos = 125;
+      let yPos = 117;
       details.forEach((detail) => {
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(10);
@@ -199,15 +197,16 @@ export const useInvoiceDownload = () => {
       doc.text('1', 150, tableStartY + 40);
       doc.text(`${price}€`, 175, tableStartY + 40);
       
-      // Total
+      // Total - Correction de l'affichage
       doc.setFillColor(...primaryColor);
-      doc.rect(140, tableStartY + 45, pageWidth - 160, 20, 'F');
+      doc.rect(130, tableStartY + 45, 60, 18, 'F');
+      
       doc.setTextColor(255, 255, 255);
       doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('TOTAL À PAYER', 135, tableStartY + 54);
       doc.setFontSize(14);
-      doc.text('TOTAL À PAYER', 145, tableStartY + 55);
-      doc.setFontSize(16);
-      doc.text(`${price}€`, 175, tableStartY + 58);
+      doc.text(`${price}€`, 170, tableStartY + 57);
       
       // **INFORMATIONS ADDITIONNELLES**
       const footerStartY = tableStartY + 80;
@@ -241,7 +240,7 @@ export const useInvoiceDownload = () => {
       doc.setFontSize(9);
       doc.setTextColor(...secondaryColor);
       doc.text(`Document généré automatiquement le ${new Date().toLocaleString('fr-FR')}`, 20, pageHeight - 20);
-      doc.text('Plateforme Airsoft - www.airsoft-platform.com', pageWidth - 20, pageHeight - 20, { align: 'right' });
+      doc.text('Airsoft Companion - airsoft-companion.com', pageWidth - 20, pageHeight - 20, { align: 'right' });
       
       // Téléchargement du fichier
       const fileName = `Facture_${gameData.title.replace(/[^a-zA-Z0-9]/g, '_')}_${invoiceNumber}.pdf`;
