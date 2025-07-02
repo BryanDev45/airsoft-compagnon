@@ -15,7 +15,7 @@ export const useAddUserWarning = () => {
             .from('user_warnings')
             .insert({
                 warned_user_id: warnedUserId,
-                admin_id: user.id,
+                warning_by: user.id,
                 reason,
                 context
             });

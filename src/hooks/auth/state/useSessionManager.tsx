@@ -60,9 +60,8 @@ export const useSessionManager = () => {
   };
 
   const loadProfile = (userId: string, sessionData: any) => {
-    setTimeout(() => {
-      loadUserProfile(userId, sessionData, setUser, setSession, setInitialLoading);
-    }, 0);
+    // Load profile immediately for faster auth
+    loadUserProfile(userId, sessionData, setUser, setSession, setInitialLoading);
   };
 
   return {

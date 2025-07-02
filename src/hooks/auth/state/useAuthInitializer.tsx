@@ -38,7 +38,10 @@ export const useAuthInitializer = ({
         
         if (initialSession && mounted) {
           console.log("Found initial session, loading user profile");
+          // Load profile immediately without setTimeout for faster auth
           loadProfile(initialSession.user.id, initialSession);
+        } else if (mounted) {
+          setInitialLoading(false);
         }
       } catch (error) {
         console.error('Error getting initial session:', error);
@@ -53,7 +56,7 @@ export const useAuthInitializer = ({
         console.log("Auth initialization timeout reached, setting loading to false");
         setInitialLoading(false);
       }
-    }, 3000);
+    }, 2000); // Reduced from 3s to 2s for faster loading
 
     if (!cachedUser || !cachedSession) {
       initializeAuth();

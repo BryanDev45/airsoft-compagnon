@@ -18,8 +18,8 @@ export const useModerationStats = () => {
     queryFn: async (): Promise<ModerationStats> => {
       console.log('Fetching moderation admin statistics...');
 
-      // Check if user_warnings table exists, if not, provide default values
-      const moderationQueries = await Promise.allSettled([
+      // Get reports stats
+      const reportQueries = await Promise.allSettled([
         supabase.from('user_reports').select('*', { count: 'exact', head: true }),
         supabase.from('user_reports').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
         supabase.from('user_reports').select('*', { count: 'exact', head: true }).eq('status', 'resolved'),
@@ -32,15 +32,19 @@ export const useModerationStats = () => {
         return result.status === 'fulfilled' ? (result.value?.count || defaultValue) : defaultValue;
       };
 
+      // Placeholder for warnings - will be implemented once table types are updated
+      const totalWarnings = 0;
+      const activeWarnings = 0;
+
       return {
-        totalUserReports: getCount(moderationQueries[0]),
-        pendingUserReports: getCount(moderationQueries[1]),
-        resolvedUserReports: getCount(moderationQueries[2]),
-        totalMessageReports: getCount(moderationQueries[3]),
-        pendingMessageReports: getCount(moderationQueries[4]),
-        resolvedMessageReports: getCount(moderationQueries[5]),
-        totalWarnings: 0, // Will be implemented when user_warnings table is available
-        activeWarnings: 0, // Will be implemented when user_warnings table is available
+        totalUserReports: getCount(reportQueries[0]),
+        pendingUserReports: getCount(reportQueries[1]),
+        resolvedUserReports: getCount(reportQueries[2]),
+        totalMessageReports: getCount(reportQueries[3]),
+        pendingMessageReports: getCount(reportQueries[4]),
+        resolvedMessageReports: getCount(reportQueries[5]),
+        totalWarnings,
+        activeWarnings,
       };
     },
     staleTime: 30000,

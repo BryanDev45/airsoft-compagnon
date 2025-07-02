@@ -39,6 +39,7 @@ const UserReportsTab = () => {
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ['user-reports'],
     queryFn: async (): Promise<UserReport[]> => {
+      // Optimized query - fetch all data in one go to avoid N+1 problem
       const { data, error } = await supabase
         .from('user_reports')
         .select(`
@@ -49,38 +50,29 @@ const UserReportsTab = () => {
           created_at,
           admin_notes,
           reporter_id,
-          reported_user_id
+          reported_user_id,
+          reporter_profile:profiles!user_reports_reporter_id_fkey(username),
+          reported_profile:profiles!user_reports_reported_user_id_fkey(username)
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching reports:', error);
+        throw error;
+      }
 
-      const reportsWithProfiles = await Promise.all(
-        (data || []).map(async (report) => {
-          // Fetch reporter profile
-          const { data: reporterProfile } = await supabase
-            .from('profiles')
-            .select('username')
-            .eq('id', report.reporter_id)
-            .single();
-
-          // Fetch reported user profile
-          const { data: reportedProfile } = await supabase
-            .from('profiles')
-            .select('username')
-            .eq('id', report.reported_user_id)
-            .single();
-
-          return {
-            ...report,
-            reporter_profile: reporterProfile,
-            reported_profile: reportedProfile
-          };
-        })
-      );
-
-      return reportsWithProfiles;
-    }
+      return (data || []).map(report => ({
+        ...report,
+        reporter_profile: Array.isArray(report.reporter_profile) 
+          ? report.reporter_profile[0] 
+          : report.reporter_profile,
+        reported_profile: Array.isArray(report.reported_profile) 
+          ? report.reported_profile[0] 
+          : report.reported_profile,
+      }));
+    },
+    staleTime: 30000, // Cache for 30 seconds
+    refetchInterval: 60000, // Refetch every minute
   });
 
   const updateReportMutation = useMutation({
