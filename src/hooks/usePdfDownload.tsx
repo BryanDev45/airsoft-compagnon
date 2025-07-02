@@ -17,15 +17,48 @@ export const usePdfDownload = () => {
       setIsGenerating(true);
       
       const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.width;
       
-      // En-tête du document
-      doc.setFontSize(20);
-      doc.text('Liste des Participants', 20, 20);
+      // Variables pour les couleurs et styles
+      const primaryColor: [number, number, number] = [220, 38, 38]; // Rouge airsoft
+      const secondaryColor: [number, number, number] = [107, 114, 128]; // Gris
+      const lightGray: [number, number, number] = [249, 250, 251];
+      
+      // **HEADER SECTION**
+      // Fond coloré pour l'en-tête
+      doc.setFillColor(...primaryColor);
+      doc.rect(0, 0, pageWidth, 40, 'F');
+      
+      // Titre principal en blanc
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(22);
+      doc.setFont('helvetica', 'bold');
+      doc.text('LISTE DES PARTICIPANTS', pageWidth / 2, 20, { align: 'center' });
+      
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Partie d\'Airsoft - Gestion des inscriptions', pageWidth / 2, 32, { align: 'center' });
+      
+      // Retour au noir pour le reste
+      doc.setTextColor(0, 0, 0);
+      
+      // **INFORMATIONS DE LA PARTIE**
+      doc.setFillColor(...lightGray);
+      doc.rect(20, 50, pageWidth - 40, 25, 'F');
+      doc.setDrawColor(...secondaryColor);
+      doc.rect(20, 50, pageWidth - 40, 25, 'S');
       
       doc.setFontSize(14);
-      doc.text(`Partie: ${gameTitle}`, 20, 35);
-      doc.text(`Date: ${gameDate}`, 20, 45);
-      doc.text(`Nombre de participants: ${participants.length}`, 20, 55);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...primaryColor);
+      doc.text('INFORMATIONS DE LA PARTIE', 25, 60);
+      
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(11);
+      doc.text(`Titre: ${gameTitle}`, 25, 68);
+      doc.text(`Date: ${gameDate}`, 120, 68);
+      doc.text(`Nombre total de participants: ${participants.length}`, 25, 75);
       
       // Préparation des données pour le tableau
       const tableData = participants.map((participant, index) => {
@@ -37,14 +70,21 @@ export const usePdfDownload = () => {
           profileKeys: profile ? Object.keys(profile) : null
         });
         
-        // Pseudonyme (username en priorité absolue)
+        // Nom complet avec pseudo entre parenthèses
         let displayName = 'Utilisateur inconnu';
-        if (profile?.username) {
-          displayName = profile.username;
-        } else if (profile?.firstname || profile?.lastname) {
-          const firstName = profile.firstname || '';
-          const lastName = profile.lastname || '';
-          displayName = `${firstName} ${lastName}`.trim() || 'Utilisateur inconnu';
+        const firstName = profile?.firstname || '';
+        const lastName = profile?.lastname || '';
+        const username = profile?.username || '';
+        
+        if (firstName || lastName) {
+          const fullName = `${firstName} ${lastName}`.trim();
+          if (username) {
+            displayName = `${fullName} (${username})`;
+          } else {
+            displayName = fullName || 'Utilisateur inconnu';
+          }
+        } else if (username) {
+          displayName = `(${username})`;
         }
         
         // Contact (priorité au téléphone, sinon email)  
@@ -83,38 +123,57 @@ export const usePdfDownload = () => {
       
       // Génération du tableau avec largeurs ajustées
       autoTable(doc, {
-        head: [['#', 'Pseudonyme', 'Contact', 'Équipe', 'Rôle', 'Statut']],
+        head: [['#', 'Nom & Prénom (Pseudo)', 'Contact', 'Équipe', 'Rôle', 'Statut']],
         body: tableData,
-        startY: 70,
+        startY: 85,
         styles: {
           fontSize: 9,
-          cellPadding: 2
+          cellPadding: 3,
+          lineColor: [107, 114, 128],
+          lineWidth: 0.1
         },
         headStyles: {
           fillColor: [220, 38, 38], // Rouge airsoft
           textColor: 255,
-          fontSize: 10
+          fontSize: 10,
+          fontStyle: 'bold',
+          halign: 'center'
         },
         alternateRowStyles: {
-          fillColor: [245, 245, 245]
+          fillColor: [249, 250, 251]
         },
         columnStyles: {
-          0: { halign: 'center', cellWidth: 12 }, // # 
-          1: { cellWidth: 35 }, // Pseudonyme
-          2: { cellWidth: 50 }, // Contact
+          0: { halign: 'center', cellWidth: 12 }, // #
+          1: { cellWidth: 50 }, // Nom & Prénom (Pseudo) - plus large pour le nom complet
+          2: { cellWidth: 45 }, // Contact
           3: { cellWidth: 30 }, // Équipe
           4: { cellWidth: 25 }, // Rôle
-          5: { cellWidth: 25 }  // Statut
+          5: { halign: 'center', cellWidth: 25 }  // Statut
         },
-        // Options pour gérer le débordement
         tableWidth: 'wrap',
-        margin: { left: 15, right: 15 }
+        margin: { left: 15, right: 15 },
+        theme: 'striped'
       });
       
-      // Ajout d'un pied de page
-      const finalY = (doc as any).lastAutoTable.finalY || 70;
-      doc.setFontSize(10);
-      doc.text(`Généré le ${new Date().toLocaleString('fr-FR')}`, 20, finalY + 20);
+      // **PIED DE PAGE PROFESSIONNEL**
+      const finalY = (doc as any).lastAutoTable.finalY || 85;
+      const pageHeight = doc.internal.pageSize.height;
+      
+      // Ligne de séparation
+      doc.setDrawColor(...secondaryColor);
+      doc.setLineWidth(0.5);
+      doc.line(20, finalY + 15, pageWidth - 20, finalY + 15);
+      
+      // Informations de génération
+      doc.setFontSize(9);
+      doc.setTextColor(...secondaryColor);
+      doc.text(`Document généré automatiquement le ${new Date().toLocaleString('fr-FR')}`, 20, finalY + 25);
+      doc.text('Plateforme Airsoft - Gestion des parties', pageWidth - 20, finalY + 25, { align: 'right' });
+      
+      // Note importante
+      doc.setFontSize(8);
+      doc.setTextColor(...secondaryColor);
+      doc.text('⚠️ Cette liste est confidentielle et ne doit pas être divulguée à des tiers', pageWidth / 2, finalY + 35, { align: 'center' });
       
       // Téléchargement du fichier
       const fileName = `participants_${gameTitle.replace(/[^a-zA-Z0-9]/g, '_')}_${gameDate.replace(/\//g, '-')}.pdf`;
