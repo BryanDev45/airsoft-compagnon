@@ -12,13 +12,39 @@ export const useInvoiceDownload = () => {
     gameData: GameData,
     userProfile: Profile | null
   ) => {
-    console.log('useInvoiceDownload: Starting invoice generation', { gameData, userProfile });
+    console.log('🧾 INVOICE DEBUG: Starting invoice generation', { gameData, userProfile });
+    
+    // Vérifications de base
+    if (!gameData) {
+      console.error('🧾 INVOICE ERROR: No game data provided');
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Données de la partie manquantes"
+      });
+      return;
+    }
+
+    if (!userProfile) {
+      console.error('🧾 INVOICE ERROR: No user profile provided');
+      toast({
+        variant: "destructive",
+        title: "Erreur", 
+        description: "Profil utilisateur manquant"
+      });
+      return;
+    }
+
     try {
       setIsGenerating(true);
+      console.log('🧾 INVOICE DEBUG: State set to generating, creating PDF...');
       
       const doc = new jsPDF();
+      console.log('🧾 INVOICE DEBUG: jsPDF instance created successfully');
+      
       const pageWidth = doc.internal.pageSize.width;
       const pageHeight = doc.internal.pageSize.height;
+      console.log('🧾 INVOICE DEBUG: Page dimensions', { pageWidth, pageHeight });
       
       // Variables pour les couleurs et styles
       const primaryColor: [number, number, number] = [220, 38, 38]; // Rouge airsoft
@@ -36,11 +62,13 @@ export const useInvoiceDownload = () => {
         doc.rect(x, 0, 1, 42, 'F');
       }
       
-      // Logo avec proportions correctes
+       // Logo avec proportions correctes
+      console.log('🧾 INVOICE DEBUG: Starting header generation...');
       try {
         doc.addImage('/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png', 'PNG', 15, 8, 32, 30);
+        console.log('🧾 INVOICE DEBUG: Logo added successfully');
       } catch (error) {
-        console.warn('Logo non trouvé pour le PDF');
+        console.warn('🧾 INVOICE WARNING: Logo not found for PDF', error);
       }
       
       // Titre principal en blanc
@@ -289,22 +317,54 @@ export const useInvoiceDownload = () => {
       doc.text('Airsoft Companion - airsoft-companion.com', pageWidth - 20, pageHeight - 20, { align: 'right' });
       
       // Téléchargement du fichier
+      console.log('🧾 INVOICE DEBUG: PDF generation completed, starting download...');
       const fileName = `Facture_${gameData.title.replace(/[^a-zA-Z0-9]/g, '_')}_${invoiceNumber}.pdf`;
-      doc.save(fileName);
+      console.log('🧾 INVOICE DEBUG: Generated filename:', fileName);
       
-      toast({
-        title: "Facture téléchargée",
-        description: "Votre facture de réservation a été téléchargée avec succès."
-      });
+      try {
+        doc.save(fileName);
+        console.log('🧾 INVOICE SUCCESS: PDF download initiated successfully');
+        
+        // Petit délai pour vérifier que le téléchargement s'est bien lancé
+        setTimeout(() => {
+          console.log('🧾 INVOICE DEBUG: Download should be completed by now');
+        }, 1000);
+        
+        toast({
+          title: "Facture téléchargée",
+          description: "Votre facture de réservation a été téléchargée avec succès."
+        });
+      } catch (downloadError) {
+        console.error('🧾 INVOICE ERROR: Failed to save PDF', downloadError);
+        throw downloadError;
+      }
       
     } catch (error) {
-      console.error('Erreur lors de la génération de la facture:', error);
+      console.error('🧾 INVOICE ERROR: Failed to generate invoice', error);
+      console.error('🧾 INVOICE ERROR: Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error instanceof Error ? error.name : undefined
+      });
+      
+      // Diagnostic détaillé
+      console.log('🧾 INVOICE DEBUG: Browser info:', {
+        userAgent: navigator.userAgent,
+        jsPDFImported: typeof jsPDF !== 'undefined',
+        gameDataValid: !!gameData,
+        userProfileValid: !!userProfile,
+        isGeneratingState: isGenerating
+      });
+      
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: "Impossible de générer la facture. Veuillez réessayer."
+        title: "Erreur de génération",
+        description: error instanceof Error 
+          ? `Erreur technique: ${error.message}` 
+          : "Impossible de générer la facture. Vérifiez votre navigateur et réessayez."
       });
     } finally {
+      console.log('🧾 INVOICE DEBUG: Resetting generating state');
       setIsGenerating(false);
     }
   };

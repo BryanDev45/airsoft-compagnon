@@ -36,14 +36,19 @@ const InvoiceDownloadButton: React.FC<InvoiceDownloadButtonProps> = ({
       variant="outline"
       onClick={handleDownload}
       disabled={isGenerating}
-      className={`flex items-center gap-2 ${className}`}
+      className={`flex items-center gap-2 ${className} ${isGenerating ? 'cursor-not-allowed opacity-70' : ''}`}
     >
       {isGenerating ? (
-        <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
+        <>
+          <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
+          <span>Génération en cours...</span>
+        </>
       ) : (
-        <Download size={16} />
+        <>
+          <Download size={16} />
+          <span>Télécharger la facture</span>
+        </>
       )}
-      {isGenerating ? 'Génération...' : 'Télécharger la facture'}
     </Button>
   );
 };
