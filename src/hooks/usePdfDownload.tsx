@@ -25,11 +25,15 @@ export const usePdfDownload = () => {
       const lightGray: [number, number, number] = [249, 250, 251];
       
       // **HEADER SECTION**
-      // Dégradé gris pour l'en-tête (simulé avec plusieurs rectangles)
-      doc.setFillColor(75, 85, 99); // gray-600
-      doc.rect(0, 0, pageWidth, 42, 'F');
-      doc.setFillColor(17, 24, 39); // gray-900
-      doc.rect(0, 35, pageWidth, 7, 'F');
+      // Dégradé gris pour l'en-tête (créer un vrai dégradé)
+      for (let i = 0; i < 42; i++) {
+        const ratio = i / 42;
+        const r = Math.round(75 + (17 - 75) * ratio);
+        const g = Math.round(85 + (24 - 85) * ratio);
+        const b = Math.round(99 + (39 - 99) * ratio);
+        doc.setFillColor(r, g, b);
+        doc.rect(0, i, pageWidth, 1, 'F');
+      }
       
       // Logo mieux positionné sans cadre
       try {

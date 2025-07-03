@@ -25,11 +25,15 @@ export const useInvoiceDownload = () => {
       const lightGray: [number, number, number] = [249, 250, 251];
       
       // **HEADER SECTION**
-      // Dégradé gris pour l'en-tête (simulé avec plusieurs rectangles)
-      doc.setFillColor(75, 85, 99); // gray-600
-      doc.rect(0, 0, pageWidth, 42, 'F');
-      doc.setFillColor(17, 24, 39); // gray-900
-      doc.rect(0, 35, pageWidth, 7, 'F');
+      // Dégradé gris pour l'en-tête (créer un vrai dégradé)
+      for (let i = 0; i < 42; i++) {
+        const ratio = i / 42;
+        const r = Math.round(75 + (17 - 75) * ratio);
+        const g = Math.round(85 + (24 - 85) * ratio);
+        const b = Math.round(99 + (39 - 99) * ratio);
+        doc.setFillColor(r, g, b);
+        doc.rect(0, i, pageWidth, 1, 'F');
+      }
       
       // Logo mieux positionné sans cadre
       try {
@@ -199,39 +203,80 @@ export const useInvoiceDownload = () => {
       
       // Total - Correction de l'affichage
       doc.setFillColor(...primaryColor);
-      doc.rect(130, tableStartY + 45, 60, 15, 'F');
+      doc.rect(120, tableStartY + 45, 70, 18, 'F');
       
       doc.setTextColor(255, 255, 255);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
-      doc.text('TOTAL À PAYER:', 135, tableStartY + 55);
+      doc.text('TOTAL À PAYER:', 125, tableStartY + 55);
       doc.setFontSize(14);
-      doc.text(`${price}€`, 170, tableStartY + 55);
+      doc.text(`${price}€`, 160, tableStartY + 58);
       
       // **INFORMATIONS ADDITIONNELLES**
       const footerStartY = tableStartY + 80;
       
-      doc.setTextColor(0, 0, 0);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.text('INFORMATIONS IMPORTANTES', 20, footerStartY);
-      
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      doc.setTextColor(...secondaryColor);
-      
-      const conditions = [
-        '• Cette facture confirme votre inscription à la partie d\'airsoft',
-        '• En cas d\'annulation, veuillez contacter l\'organisateur',
-        '• Veuillez présenter cette facture le jour de la partie',
-        '• Pour toute question, contactez l\'organisateur via la plateforme'
-      ];
-      
-      let conditionY = footerStartY + 10;
-      conditions.forEach(condition => {
-        doc.text(condition, 25, conditionY);
-        conditionY += 8;
-      });
+      // Vérifier si on a assez de place pour les informations importantes
+      const neededSpace = 60; // Espace nécessaire pour les informations
+      if (footerStartY + neededSpace > pageHeight - 40) {
+        // Ajouter une nouvelle page
+        doc.addPage();
+        const newFooterStartY = 30;
+        
+        doc.setTextColor(0, 0, 0);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.text('INFORMATIONS IMPORTANTES', 20, newFooterStartY);
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(...secondaryColor);
+        
+        const conditions = [
+          '• Cette facture confirme votre inscription à la partie d\'airsoft',
+          '• En cas d\'annulation, veuillez contacter l\'organisateur',
+          '• Veuillez présenter cette facture le jour de la partie',
+          '• Pour toute question, contactez l\'organisateur via la plateforme'
+        ];
+        
+        let conditionY = newFooterStartY + 10;
+        conditions.forEach(condition => {
+          doc.text(condition, 25, conditionY);
+          conditionY += 8;
+        });
+        
+        // Pied de page sur la nouvelle page
+        doc.setDrawColor(...secondaryColor);
+        doc.line(20, pageHeight - 30, pageWidth - 20, pageHeight - 30);
+        
+        doc.setFontSize(9);
+        doc.setTextColor(...secondaryColor);
+        doc.text(`Document généré automatiquement le ${new Date().toLocaleString('fr-FR')}`, 20, pageHeight - 20);
+        doc.text('Airsoft Companion - airsoft-companion.com', pageWidth - 20, pageHeight - 20, { align: 'right' });
+        
+        return; // Sortir pour éviter le double pied de page
+      } else {
+        doc.setTextColor(0, 0, 0);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.text('INFORMATIONS IMPORTANTES', 20, footerStartY);
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(...secondaryColor);
+        
+        const conditions = [
+          '• Cette facture confirme votre inscription à la partie d\'airsoft',
+          '• En cas d\'annulation, veuillez contacter l\'organisateur',
+          '• Veuillez présenter cette facture le jour de la partie',
+          '• Pour toute question, contactez l\'organisateur via la plateforme'
+        ];
+        
+        let conditionY = footerStartY + 10;
+        conditions.forEach(condition => {
+          doc.text(condition, 25, conditionY);
+          conditionY += 8;
+        });
+      }
       
       // **PIED DE PAGE**
       doc.setDrawColor(...secondaryColor);
