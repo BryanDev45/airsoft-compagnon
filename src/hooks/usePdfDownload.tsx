@@ -25,10 +25,10 @@ export const usePdfDownload = () => {
       const lightGray: [number, number, number] = [249, 250, 251];
       
       // **HEADER SECTION**
-      // Dégradé de rouge pour l'en-tête (simulé avec plusieurs rectangles)
-      doc.setFillColor(220, 38, 38); // Rouge principal
+      // Dégradé gris pour l'en-tête (simulé avec plusieurs rectangles)
+      doc.setFillColor(75, 85, 99); // gray-600
       doc.rect(0, 0, pageWidth, 42, 'F');
-      doc.setFillColor(200, 30, 30); // Rouge plus foncé
+      doc.setFillColor(17, 24, 39); // gray-900
       doc.rect(0, 35, pageWidth, 7, 'F');
       
       // Logo mieux positionné sans cadre
@@ -139,7 +139,7 @@ export const usePdfDownload = () => {
       autoTable(doc, {
         head: [['#', 'Nom & Prénom (Pseudo)', 'Contact', 'Équipe', 'Rôle', 'Statut']],
         body: tableData,
-        startY: 97,
+        startY: 92,
         styles: {
           fontSize: 9,
           cellPadding: 3,

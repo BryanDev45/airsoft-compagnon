@@ -25,10 +25,10 @@ export const useInvoiceDownload = () => {
       const lightGray: [number, number, number] = [249, 250, 251];
       
       // **HEADER SECTION**
-      // Dégradé de rouge pour l'en-tête (simulé avec plusieurs rectangles)
-      doc.setFillColor(220, 38, 38); // Rouge principal
+      // Dégradé gris pour l'en-tête (simulé avec plusieurs rectangles)
+      doc.setFillColor(75, 85, 99); // gray-600
       doc.rect(0, 0, pageWidth, 42, 'F');
-      doc.setFillColor(200, 30, 30); // Rouge plus foncé
+      doc.setFillColor(17, 24, 39); // gray-900
       doc.rect(0, 35, pageWidth, 7, 'F');
       
       // Logo mieux positionné sans cadre
@@ -161,7 +161,7 @@ export const useInvoiceDownload = () => {
       });
       
       // **SECTION FACTURATION**
-      const tableStartY = yPos + 20;
+      const tableStartY = yPos + 10;
       
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
@@ -199,14 +199,14 @@ export const useInvoiceDownload = () => {
       
       // Total - Correction de l'affichage
       doc.setFillColor(...primaryColor);
-      doc.rect(130, tableStartY + 45, 60, 18, 'F');
+      doc.rect(130, tableStartY + 45, 60, 15, 'F');
       
       doc.setTextColor(255, 255, 255);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
-      doc.text('TOTAL À PAYER', 135, tableStartY + 54);
+      doc.text('TOTAL À PAYER:', 135, tableStartY + 55);
       doc.setFontSize(14);
-      doc.text(`${price}€`, 170, tableStartY + 57);
+      doc.text(`${price}€`, 170, tableStartY + 55);
       
       // **INFORMATIONS ADDITIONNELLES**
       const footerStartY = tableStartY + 80;
