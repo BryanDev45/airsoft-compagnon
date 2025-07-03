@@ -3,7 +3,7 @@ import { useState } from 'react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { GameParticipant } from '@/types/game';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 export const usePdfDownload = () => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -25,19 +25,19 @@ export const usePdfDownload = () => {
       const lightGray: [number, number, number] = [249, 250, 251];
       
       // **HEADER SECTION**
-      // Dégradé gris pour l'en-tête (créer un vrai dégradé)
-      for (let i = 0; i < 42; i++) {
-        const ratio = i / 42;
+      // Dégradé gris horizontal pour l'en-tête
+      for (let x = 0; x < pageWidth; x++) {
+        const ratio = x / pageWidth;
         const r = Math.round(75 + (17 - 75) * ratio);
         const g = Math.round(85 + (24 - 85) * ratio);
         const b = Math.round(99 + (39 - 99) * ratio);
         doc.setFillColor(r, g, b);
-        doc.rect(0, i, pageWidth, 1, 'F');
+        doc.rect(x, 0, 1, 42, 'F');
       }
       
-      // Logo mieux positionné sans cadre
+      // Logo avec proportions correctes
       try {
-        doc.addImage('/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png', 'PNG', 15, 10, 28, 22);
+        doc.addImage('/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png', 'PNG', 15, 8, 32, 26);
       } catch (error) {
         console.warn('Logo non trouvé pour le PDF');
       }
