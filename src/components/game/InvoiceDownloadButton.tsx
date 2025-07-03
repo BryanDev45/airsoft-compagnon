@@ -27,6 +27,7 @@ const InvoiceDownloadButton: React.FC<InvoiceDownloadButtonProps> = ({
   }
 
   const handleDownload = () => {
+    console.log('InvoiceDownloadButton: Click detected', { gameData, userProfile });
     downloadInvoice(gameData, userProfile);
   };
 

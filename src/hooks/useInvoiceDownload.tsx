@@ -12,6 +12,7 @@ export const useInvoiceDownload = () => {
     gameData: GameData,
     userProfile: Profile | null
   ) => {
+    console.log('useInvoiceDownload: Starting invoice generation', { gameData, userProfile });
     try {
       setIsGenerating(true);
       
@@ -37,7 +38,7 @@ export const useInvoiceDownload = () => {
       
       // Logo avec proportions correctes
       try {
-        doc.addImage('/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png', 'PNG', 15, 8, 32, 26);
+        doc.addImage('/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png', 'PNG', 15, 8, 32, 30);
       } catch (error) {
         console.warn('Logo non trouvé pour le PDF');
       }

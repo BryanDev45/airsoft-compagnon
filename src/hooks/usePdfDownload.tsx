@@ -37,7 +37,7 @@ export const usePdfDownload = () => {
       
       // Logo avec proportions correctes
       try {
-        doc.addImage('/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png', 'PNG', 15, 8, 32, 26);
+        doc.addImage('/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png', 'PNG', 15, 8, 32, 30);
       } catch (error) {
         console.warn('Logo non trouvé pour le PDF');
       }
