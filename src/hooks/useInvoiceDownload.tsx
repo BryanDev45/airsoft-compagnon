@@ -142,13 +142,8 @@ export const useInvoiceDownload = () => {
       
       // Vérifier si on a besoin d'une nouvelle page
       if (shouldAddNewPage(doc, currentY, 120)) {
-        const newHeaderOptions: PDFHeaderOptions = {
-          title: 'FACTURE DE RÉSERVATION',
-          subtitle: 'Facturation - Suite',
-          logoPath: '/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png',
-          logoSize: { width: 24, height: 22, x: 15, y: 5 }
-        };
-        currentY = addNewPageWithHeader(doc, newHeaderOptions, colors);
+        doc.addPage();
+        currentY = 20; // Début simple sans en-tête répété
       }
       
       const tableStartY = currentY;
@@ -196,7 +191,7 @@ export const useInvoiceDownload = () => {
       doc.setFontSize(12);
       doc.text('TOTAL À PAYER:', 125, tableStartY + 55);
       doc.setFontSize(14);
-      doc.text(`${price}€`, 160, tableStartY + 58);
+      doc.text(`${price}€`, 185, tableStartY + 55, { align: 'right' });
       
       // **INFORMATIONS ADDITIONNELLES**
       let infoStartY = tableStartY + 80;

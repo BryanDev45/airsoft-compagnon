@@ -142,20 +142,8 @@ export const usePdfDownload = () => {
         tableWidth: 'wrap',
         margin: { left: 15, right: 15 },
         theme: 'striped',
-        // Gestion des nouvelles pages
-        didDrawPage: (data) => {
-          // Ajouter un en-tête sur chaque nouvelle page (sauf la première)
-          if (data.pageNumber > 1) {
-            const newHeaderOptions: PDFHeaderOptions = {
-              title: 'LISTE DES PARTICIPANTS',
-              subtitle: `Page ${data.pageNumber} - Suite`,
-              height: 30,
-              logoPath: '/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png',
-              logoSize: { width: 24, height: 22, x: 15, y: 5 }
-            };
-            addPDFHeader(doc, newHeaderOptions, colors);
-          }
-        }
+        // Pas d'en-tête répété sur les nouvelles pages
+        showHead: 'everyPage'
       });
       
       // **PIED DE PAGE PROFESSIONNEL**
