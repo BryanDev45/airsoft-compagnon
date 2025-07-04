@@ -76,7 +76,7 @@ export const useInvoiceDownload = () => {
       const currentDate = new Date().toLocaleDateString('fr-FR');
       
       // Informations facture (droite)
-      addInfoBox(doc, 120, 47, 70, 35, 'INFORMATIONS FACTURE', [
+      const invoiceBoxHeight = addInfoBox(doc, 120, 47, 70, 35, 'INFORMATIONS FACTURE', [
         `N°: ${invoiceNumber}`,
         `Date: ${currentDate}`
       ], colors);
@@ -90,18 +90,21 @@ export const useInvoiceDownload = () => {
       if (userProfile?.email) customerInfo.push(userProfile.email);
       if (userProfile?.location) customerInfo.push(userProfile.location);
       
-      addInfoBox(doc, 20, 47, 85, 35, 'FACTURÉ À', customerInfo, colors);
+      const customerBoxHeight = addInfoBox(doc, 20, 47, 85, 35, 'FACTURÉ À', customerInfo, colors);
+      
+      // Calculer la position suivante en fonction de la plus grande boîte
+      const nextY = 47 + Math.max(invoiceBoxHeight, customerBoxHeight) + 15;
       
       // **DÉTAILS DE LA PARTIE**
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(...colors.primary);
-      doc.text('DÉTAILS DE LA PARTIE', 20, 102);
+      doc.text('DÉTAILS DE LA PARTIE', 20, nextY);
       
       // Ligne de séparation
       doc.setDrawColor(...colors.primary);
       doc.setLineWidth(0.5);
-      doc.line(20, 107, pageWidth - 20, 107);
+      doc.line(20, nextY + 5, pageWidth - 20, nextY + 5);
       
       // Contenu des détails
       doc.setFont('helvetica', 'normal');
@@ -120,7 +123,7 @@ export const useInvoiceDownload = () => {
         gameDetails.push(`Horaires: ${gameData.start_time} - ${gameData.end_time}`);
       }
       
-      let yPos = 117;
+      let yPos = nextY + 15;
       gameDetails.forEach((detail) => {
         const [label, ...valueParts] = detail.split(': ');
         const value = valueParts.join(': ');

@@ -47,7 +47,10 @@ export const usePdfDownload = () => {
         `Participants: ${participants.length}`
       ];
       
-      addInfoBox(doc, 20, 52, pageWidth - 40, 35, 'INFORMATIONS DE LA PARTIE', gameInfo, colors);
+      const gameInfoHeight = addInfoBox(doc, 20, 52, pageWidth - 40, 35, 'INFORMATIONS DE LA PARTIE', gameInfo, colors);
+      
+      // Ajuster la position de départ du tableau en fonction de la hauteur réelle
+      const tableStartY = 52 + gameInfoHeight + 10;
       
       // Préparation des données pour le tableau
       const tableData = participants.map((participant, index) => {
@@ -114,7 +117,7 @@ export const usePdfDownload = () => {
       autoTable(doc, {
         head: [['#', 'Nom & Prénom (Pseudo)', 'Contact', 'Équipe', 'Rôle', 'Statut']],
         body: tableData,
-        startY: 92,
+        startY: tableStartY,
         styles: {
           fontSize: 9,
           cellPadding: 3,

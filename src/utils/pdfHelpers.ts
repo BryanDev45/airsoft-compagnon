@@ -95,7 +95,7 @@ export const addPDFFooter = (
 ): void => {
   const pageWidth = doc.internal.pageSize.width;
   const pageHeight = doc.internal.pageSize.height;
-  const footerY = pageHeight - 30;
+  const footerY = pageHeight - 35;
   
   // Ligne de séparation
   doc.setDrawColor(...colors.secondary);
@@ -103,7 +103,7 @@ export const addPDFFooter = (
   doc.line(20, footerY, pageWidth - 20, footerY);
   
   // Texte du pied de page
-  doc.setFontSize(9);
+  doc.setFontSize(8);
   doc.setTextColor(...colors.secondary);
   
   const leftText = options.leftText || 
@@ -112,16 +112,18 @@ export const addPDFFooter = (
       '');
   const rightText = options.rightText || 'Airsoft Companion - airsoft-companion.com';
   
+  // Première ligne du pied de page
   if (leftText) {
-    doc.text(leftText, 20, footerY + 10);
-  }
-  
-  if (options.centerText) {
-    doc.text(options.centerText, pageWidth / 2, footerY + 10, { align: 'center' });
+    doc.text(leftText, 20, footerY + 8);
   }
   
   if (rightText) {
-    doc.text(rightText, pageWidth - 20, footerY + 10, { align: 'right' });
+    doc.text(rightText, pageWidth - 20, footerY + 8, { align: 'right' });
+  }
+  
+  // Seconde ligne pour le texte central (si présent)
+  if (options.centerText) {
+    doc.text(options.centerText, pageWidth / 2, footerY + 18, { align: 'center' });
   }
 };
 
@@ -165,23 +167,29 @@ export const addNewPageWithHeader = (
 };
 
 /**
- * Crée une boîte d'information stylisée
+ * Crée une boîte d'information stylisée avec hauteur dynamique
  */
 export const addInfoBox = (
   doc: jsPDF,
   x: number,
   y: number,
   width: number,
-  height: number,
+  minHeight: number,
   title: string,
   content: string[],
   colors: PDFColors = DEFAULT_PDF_COLORS
-): void => {
+): number => {
+  // Calculer la hauteur nécessaire
+  const titleHeight = 15;
+  const lineHeight = 8;
+  const padding = 10;
+  const calculatedHeight = Math.max(minHeight, titleHeight + (content.length * lineHeight) + padding);
+  
   // Boîte de fond
   doc.setFillColor(...colors.lightGray);
-  doc.rect(x, y, width, height, 'F');
+  doc.rect(x, y, width, calculatedHeight, 'F');
   doc.setDrawColor(...colors.secondary);
-  doc.rect(x, y, width, height, 'S');
+  doc.rect(x, y, width, calculatedHeight, 'S');
   
   // Titre
   doc.setFontSize(10);
@@ -192,13 +200,35 @@ export const addInfoBox = (
   // Contenu
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(0, 0, 0);
-  doc.setFontSize(11);
+  doc.setFontSize(10);
   
   let contentY = y + 22;
   content.forEach((line) => {
-    doc.text(line, x + 5, contentY);
-    contentY += 7;
+    // Gérer les lignes trop longues en les coupant si nécessaire
+    const maxWidth = width - 15; // Marge de sécurité
+    const words = line.split(' ');
+    let currentLine = '';
+    
+    for (const word of words) {
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+      const textWidth = doc.getTextWidth(testLine);
+      
+      if (textWidth > maxWidth && currentLine) {
+        doc.text(currentLine, x + 5, contentY);
+        contentY += lineHeight;
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    }
+    
+    if (currentLine) {
+      doc.text(currentLine, x + 5, contentY);
+      contentY += lineHeight;
+    }
   });
+  
+  return calculatedHeight; // Retourner la hauteur utilisée
 };
 
 /**
