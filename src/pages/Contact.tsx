@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Mail, Phone, MapPin, Send, MessageSquare, Clock, Users, Facebook, Instagram } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
@@ -125,7 +126,21 @@ const Contact = () => {
                 }) => <FormItem>
                         <FormLabel>Sujet</FormLabel>
                         <FormControl>
-                          <Input placeholder="Sujet de votre message" {...field} required />
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Sélectionnez un sujet" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="partenariat">Partenariat</SelectItem>
+                              <SelectItem value="réclamation">Réclamation</SelectItem>
+                              <SelectItem value="signaler un bug">Signaler un bug</SelectItem>
+                              <SelectItem value="signalement">Signalement</SelectItem>
+                              <SelectItem value="question générale">Question générale</SelectItem>
+                              <SelectItem value="problème technique">Problème technique</SelectItem>
+                              <SelectItem value="suggestion d'amélioration">Suggestion d'amélioration</SelectItem>
+                              <SelectItem value="aide et support">Aide et support</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </FormControl>
                         <FormMessage />
                       </FormItem>} />
