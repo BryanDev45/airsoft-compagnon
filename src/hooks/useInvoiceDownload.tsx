@@ -4,6 +4,16 @@ import jsPDF from 'jspdf';
 import { GameData } from '@/types/game';
 import { Profile } from '@/types/profile';
 import { toast } from '@/hooks/use-toast';
+import { 
+  addPDFHeader, 
+  addPDFFooter, 
+  shouldAddNewPage, 
+  addNewPageWithHeader, 
+  addInfoBox, 
+  formatDateFR, 
+  DEFAULT_PDF_COLORS,
+  type PDFHeaderOptions 
+} from '@/utils/pdfHelpers';
 
 export const useInvoiceDownload = () => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -47,110 +57,49 @@ export const useInvoiceDownload = () => {
       console.log('🧾 INVOICE DEBUG: Page dimensions', { pageWidth, pageHeight });
       
       // Variables pour les couleurs et styles
-      const primaryColor: [number, number, number] = [220, 38, 38]; // Rouge airsoft
-      const secondaryColor: [number, number, number] = [107, 114, 128]; // Gris
-      const lightGray: [number, number, number] = [249, 250, 251];
+      const colors = DEFAULT_PDF_COLORS;
       
       // **HEADER SECTION**
-      // Dégradé gris horizontal pour l'en-tête
-      for (let x = 0; x < pageWidth; x++) {
-        const ratio = x / pageWidth;
-        const r = Math.round(75 + (17 - 75) * ratio);
-        const g = Math.round(85 + (24 - 85) * ratio);
-        const b = Math.round(99 + (39 - 99) * ratio);
-        doc.setFillColor(r, g, b);
-        doc.rect(x, 0, 1, 42, 'F');
-      }
-      
-       // Logo avec proportions correctes
       console.log('🧾 INVOICE DEBUG: Starting header generation...');
-      try {
-        doc.addImage('/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png', 'PNG', 15, 8, 32, 30);
-        console.log('🧾 INVOICE DEBUG: Logo added successfully');
-      } catch (error) {
-        console.warn('🧾 INVOICE WARNING: Logo not found for PDF', error);
-      }
+      const headerOptions: PDFHeaderOptions = {
+        title: 'FACTURE DE RÉSERVATION',
+        subtitle: 'Confirmation d\'inscription - Partie d\'Airsoft',
+        logoPath: '/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png',
+        logoSize: { width: 32, height: 30, x: 15, y: 8 }
+      };
       
-      // Titre principal en blanc
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(22);
-      doc.setFont('helvetica', 'bold');
-      doc.text('FACTURE DE RÉSERVATION', pageWidth / 2, 20, { align: 'center' });
+      addPDFHeader(doc, headerOptions, colors);
+      console.log('🧾 INVOICE DEBUG: Header added successfully');
       
-      // Sous-titre
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'normal');
-      doc.text('Confirmation d\'inscription - Partie d\'Airsoft', pageWidth / 2, 32, { align: 'center' });
-      
-      // Ligne décorative
-      doc.setDrawColor(255, 255, 255);
-      doc.setLineWidth(0.3);
-      doc.line(60, 37, pageWidth - 60, 37);
-      
-      // Retour au noir pour le reste
-      doc.setTextColor(0, 0, 0);
-      
-      // **INFORMATIONS FACTURE**
+      // **INFORMATIONS FACTURE ET CLIENT**
       const invoiceNumber = `INV-${gameData.id.substring(0, 8).toUpperCase()}`;
       const currentDate = new Date().toLocaleDateString('fr-FR');
       
-      // Boîte d'informations facture (droite)
-      doc.setFillColor(...lightGray);
-      doc.rect(120, 47, 70, 35, 'F');
-      doc.setDrawColor(...secondaryColor);
-      doc.rect(120, 47, 70, 35, 'S');
+      // Informations facture (droite)
+      addInfoBox(doc, 120, 47, 70, 35, 'INFORMATIONS FACTURE', [
+        `N°: ${invoiceNumber}`,
+        `Date: ${currentDate}`
+      ], colors);
       
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(...secondaryColor);
-      doc.text('N° FACTURE', 125, 55);
-      doc.text('DATE D\'ÉMISSION', 125, 70);
-      
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(0, 0, 0);
-      doc.setFontSize(11);
-      doc.text(invoiceNumber, 125, 62);
-      doc.text(currentDate, 125, 77);
-      
-      // **INFORMATIONS CLIENT**
-      doc.setFillColor(...lightGray);
-      doc.rect(20, 47, 85, 35, 'F');
-      doc.setDrawColor(...secondaryColor);
-      doc.rect(20, 47, 85, 35, 'S');
-      
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(...secondaryColor);
-      doc.text('FACTURÉ À', 25, 55);
-      
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(0, 0, 0);
-      doc.setFontSize(11);
+      // Informations client (gauche)
       const customerName = userProfile?.firstname && userProfile?.lastname 
         ? `${userProfile.firstname} ${userProfile.lastname}`
         : userProfile?.username || 'Participant';
-      doc.text(customerName, 25, 64);
       
-      if (userProfile?.email) {
-        doc.setFontSize(9);
-        doc.setTextColor(...secondaryColor);
-        doc.text(userProfile.email, 25, 72);
-      }
+      const customerInfo = [customerName];
+      if (userProfile?.email) customerInfo.push(userProfile.email);
+      if (userProfile?.location) customerInfo.push(userProfile.location);
       
-      if (userProfile?.location) {
-        doc.setFontSize(9);
-        doc.setTextColor(...secondaryColor);
-        doc.text(userProfile.location, 25, 79);
-      }
+      addInfoBox(doc, 20, 47, 85, 35, 'FACTURÉ À', customerInfo, colors);
       
       // **DÉTAILS DE LA PARTIE**
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(...primaryColor);
+      doc.setTextColor(...colors.primary);
       doc.text('DÉTAILS DE LA PARTIE', 20, 102);
       
       // Ligne de séparation
-      doc.setDrawColor(...primaryColor);
+      doc.setDrawColor(...colors.primary);
       doc.setLineWidth(0.5);
       doc.line(20, 107, pageWidth - 20, 107);
       
@@ -159,96 +108,64 @@ export const useInvoiceDownload = () => {
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(11);
       
-      const details = [
-        { label: 'Titre:', value: gameData.title },
-        { label: 'Date:', value: new Date(gameData.date).toLocaleDateString('fr-FR', { 
-          weekday: 'long', 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric' 
-        }) },
-        { label: 'Lieu:', value: `${gameData.address}` },
-        { label: 'Ville:', value: `${gameData.city} ${gameData.zip_code}` },
-        { label: 'Type:', value: gameData.game_type },
+      const gameDetails = [
+        `Titre: ${gameData.title}`,
+        `Date: ${formatDateFR(gameData.date)}`,
+        `Lieu: ${gameData.address}`,
+        `Ville: ${gameData.city} ${gameData.zip_code}`,
+        `Type: ${gameData.game_type}`
       ];
       
       if (gameData.start_time && gameData.end_time) {
-        details.push({ 
-          label: 'Horaires:', 
-          value: `${gameData.start_time} - ${gameData.end_time}` 
-        });
+        gameDetails.push(`Horaires: ${gameData.start_time} - ${gameData.end_time}`);
       }
       
       let yPos = 117;
-      details.forEach((detail) => {
+      gameDetails.forEach((detail) => {
+        const [label, ...valueParts] = detail.split(': ');
+        const value = valueParts.join(': ');
+        
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(10);
-        doc.setTextColor(...secondaryColor);
-        doc.text(detail.label, 25, yPos);
+        doc.setTextColor(...colors.secondary);
+        doc.text(`${label}:`, 25, yPos);
         
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(11);
         doc.setTextColor(0, 0, 0);
-        doc.text(detail.value, 60, yPos);
+        doc.text(value, 60, yPos);
         yPos += 10;
       });
       
-      // **SECTION FACTURATION** - Page 2
+      // **SECTION FACTURATION** - Gestion automatique des pages
+      let currentY = yPos + 15;
+      
       // Vérifier si on a besoin d'une nouvelle page
-      const currentY = yPos + 10;
-      if (currentY > pageHeight - 100) {
-        doc.addPage();
-        
-        // Répéter l'en-tête sur la page 2
-        // Dégradé gris horizontal pour l'en-tête
-        for (let x = 0; x < pageWidth; x++) {
-          const ratio = x / pageWidth;
-          const r = Math.round(75 + (17 - 75) * ratio);
-          const g = Math.round(85 + (24 - 85) * ratio);
-          const b = Math.round(99 + (39 - 99) * ratio);
-          doc.setFillColor(r, g, b);
-          doc.rect(x, 0, 1, 30, 'F');
-        }
-        
-        // Logo page 2
-        try {
-          doc.addImage('/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png', 'PNG', 15, 5, 24, 22);
-        } catch (error) {
-          console.warn('🧾 INVOICE WARNING: Logo not found for PDF page 2', error);
-        }
-        
-        // Titre page 2 en blanc
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(16);
-        doc.setFont('helvetica', 'bold');
-        doc.text('FACTURE DE RÉSERVATION - PAGE 2', pageWidth / 2, 18, { align: 'center' });
-        
-        // Ligne décorative
-        doc.setDrawColor(255, 255, 255);
-        doc.setLineWidth(0.3);
-        doc.line(60, 25, pageWidth - 60, 25);
-        
-        // Retour au noir pour le reste
-        doc.setTextColor(0, 0, 0);
-        
-        var tableStartY = 45;
-      } else {
-        var tableStartY = currentY;
+      if (shouldAddNewPage(doc, currentY, 120)) {
+        const newHeaderOptions: PDFHeaderOptions = {
+          title: 'FACTURE DE RÉSERVATION',
+          subtitle: 'Facturation - Suite',
+          logoPath: '/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png',
+          logoSize: { width: 24, height: 22, x: 15, y: 5 }
+        };
+        currentY = addNewPageWithHeader(doc, newHeaderOptions, colors);
       }
+      
+      const tableStartY = currentY;
       
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(...primaryColor);
+      doc.setTextColor(...colors.primary);
       doc.text('FACTURATION', 20, tableStartY);
       
       // Ligne de séparation
-      doc.setDrawColor(...primaryColor);
+      doc.setDrawColor(...colors.primary);
       doc.line(20, tableStartY + 5, pageWidth - 20, tableStartY + 5);
       
       // En-tête du tableau
-      doc.setFillColor(...lightGray);
+      doc.setFillColor(...colors.lightGray);
       doc.rect(20, tableStartY + 15, pageWidth - 40, 15, 'F');
-      doc.setDrawColor(...secondaryColor);
+      doc.setDrawColor(...colors.secondary);
       doc.rect(20, tableStartY + 15, pageWidth - 40, 15, 'S');
       
       doc.setFont('helvetica', 'bold');
@@ -271,7 +188,7 @@ export const useInvoiceDownload = () => {
       doc.text(`${price}€`, 175, tableStartY + 40);
       
       // Total
-      doc.setFillColor(...primaryColor);
+      doc.setFillColor(...colors.primary);
       doc.rect(120, tableStartY + 45, 70, 18, 'F');
       
       doc.setTextColor(255, 255, 255);
@@ -282,16 +199,27 @@ export const useInvoiceDownload = () => {
       doc.text(`${price}€`, 160, tableStartY + 58);
       
       // **INFORMATIONS ADDITIONNELLES**
-      const footerStartY = tableStartY + 90;
+      let infoStartY = tableStartY + 80;
+      
+      // Vérifier si on a besoin d'une nouvelle page pour les informations
+      if (shouldAddNewPage(doc, infoStartY, 60)) {
+        const newHeaderOptions: PDFHeaderOptions = {
+          title: 'FACTURE DE RÉSERVATION',
+          subtitle: 'Informations importantes',
+          logoPath: '/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png',
+          logoSize: { width: 24, height: 22, x: 15, y: 5 }
+        };
+        infoStartY = addNewPageWithHeader(doc, newHeaderOptions, colors);
+      }
       
       doc.setTextColor(0, 0, 0);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(12);
-      doc.text('INFORMATIONS IMPORTANTES', 20, footerStartY);
+      doc.text('INFORMATIONS IMPORTANTES', 20, infoStartY);
       
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(10);
-      doc.setTextColor(...secondaryColor);
+      doc.setTextColor(...colors.secondary);
       
       const conditions = [
         '• Cette facture confirme votre inscription à la partie d\'airsoft',
@@ -300,20 +228,18 @@ export const useInvoiceDownload = () => {
         '• Pour toute question, contactez l\'organisateur via la plateforme'
       ];
       
-      let conditionY = footerStartY + 10;
+      let conditionY = infoStartY + 12;
       conditions.forEach(condition => {
         doc.text(condition, 25, conditionY);
         conditionY += 8;
       });
       
       // **PIED DE PAGE**
-      doc.setDrawColor(...secondaryColor);
-      doc.line(20, pageHeight - 30, pageWidth - 20, pageHeight - 30);
-      
-      doc.setFontSize(9);
-      doc.setTextColor(...secondaryColor);
-      doc.text(`Document généré automatiquement le ${new Date().toLocaleString('fr-FR')}`, 20, pageHeight - 20);
-      doc.text('Airsoft Companion - airsoft-companion.com', pageWidth - 20, pageHeight - 20, { align: 'right' });
+      addPDFFooter(doc, {
+        includeTimestamp: true,
+        leftText: `Document généré le ${new Date().toLocaleString('fr-FR')}`,
+        rightText: 'Airsoft Companion - airsoft-companion.com'
+      }, colors);
       
       // Téléchargement du fichier
       console.log('🧾 INVOICE DEBUG: PDF generation completed, starting download...');
