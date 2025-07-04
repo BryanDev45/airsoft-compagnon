@@ -52,9 +52,15 @@ export const useInvoiceDownload = () => {
       const lightGray: [number, number, number] = [249, 250, 251];
       
       // **HEADER SECTION**
-      // Dégradé gris simplifié pour l'en-tête
-      doc.setFillColor(75, 85, 99);
-      doc.rect(0, 0, pageWidth, 42, 'F');
+      // Dégradé gris horizontal pour l'en-tête
+      for (let x = 0; x < pageWidth; x++) {
+        const ratio = x / pageWidth;
+        const r = Math.round(75 + (17 - 75) * ratio);
+        const g = Math.round(85 + (24 - 85) * ratio);
+        const b = Math.round(99 + (39 - 99) * ratio);
+        doc.setFillColor(r, g, b);
+        doc.rect(x, 0, 1, 42, 'F');
+      }
       
        // Logo avec proportions correctes
       console.log('🧾 INVOICE DEBUG: Starting header generation...');
@@ -187,8 +193,48 @@ export const useInvoiceDownload = () => {
         yPos += 10;
       });
       
-      // **SECTION FACTURATION**
-      const tableStartY = yPos + 10;
+      // **SECTION FACTURATION** - Page 2
+      // Vérifier si on a besoin d'une nouvelle page
+      const currentY = yPos + 10;
+      if (currentY > pageHeight - 100) {
+        doc.addPage();
+        
+        // Répéter l'en-tête sur la page 2
+        // Dégradé gris horizontal pour l'en-tête
+        for (let x = 0; x < pageWidth; x++) {
+          const ratio = x / pageWidth;
+          const r = Math.round(75 + (17 - 75) * ratio);
+          const g = Math.round(85 + (24 - 85) * ratio);
+          const b = Math.round(99 + (39 - 99) * ratio);
+          doc.setFillColor(r, g, b);
+          doc.rect(x, 0, 1, 30, 'F');
+        }
+        
+        // Logo page 2
+        try {
+          doc.addImage('/lovable-uploads/5c383bd0-1652-45d0-8623-3f4ef3653ec8.png', 'PNG', 15, 5, 24, 22);
+        } catch (error) {
+          console.warn('🧾 INVOICE WARNING: Logo not found for PDF page 2', error);
+        }
+        
+        // Titre page 2 en blanc
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('FACTURE DE RÉSERVATION - PAGE 2', pageWidth / 2, 18, { align: 'center' });
+        
+        // Ligne décorative
+        doc.setDrawColor(255, 255, 255);
+        doc.setLineWidth(0.3);
+        doc.line(60, 25, pageWidth - 60, 25);
+        
+        // Retour au noir pour le reste
+        doc.setTextColor(0, 0, 0);
+        
+        var tableStartY = 45;
+      } else {
+        var tableStartY = currentY;
+      }
       
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
@@ -224,7 +270,7 @@ export const useInvoiceDownload = () => {
       doc.text('1', 150, tableStartY + 40);
       doc.text(`${price}€`, 175, tableStartY + 40);
       
-      // Total - Correction de l'affichage
+      // Total
       doc.setFillColor(...primaryColor);
       doc.rect(120, tableStartY + 45, 70, 18, 'F');
       
@@ -236,7 +282,7 @@ export const useInvoiceDownload = () => {
       doc.text(`${price}€`, 160, tableStartY + 58);
       
       // **INFORMATIONS ADDITIONNELLES**
-      const footerStartY = tableStartY + 80;
+      const footerStartY = tableStartY + 90;
       
       doc.setTextColor(0, 0, 0);
       doc.setFont('helvetica', 'bold');
